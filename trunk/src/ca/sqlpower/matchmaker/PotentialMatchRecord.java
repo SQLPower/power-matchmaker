@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 
@@ -345,7 +344,6 @@ public class PotentialMatchRecord {
     /** 
      * Similar to {@link #setMaster(SourceTableRecord, boolean)} except the isAutoMatch
      * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
-     * @throws ArchitectException
      */
     public void setMaster(SourceTableRecord newMaster) {
     	setMaster(newMaster, false);

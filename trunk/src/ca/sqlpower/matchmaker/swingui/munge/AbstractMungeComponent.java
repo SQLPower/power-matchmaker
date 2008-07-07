@@ -996,7 +996,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		public void mouseClicked(MouseEvent e) {
 			boolean showPopup = maybeShowPopup(e);
-			if (!showPopup && e.getClickCount() == 2){; 
+			if (!showPopup && e.getClickCount() == 2) { 
 				step.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, !isExpanded());
 			}
 			bustGhost();

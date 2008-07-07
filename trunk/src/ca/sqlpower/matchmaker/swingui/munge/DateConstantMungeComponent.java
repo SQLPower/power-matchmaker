@@ -119,11 +119,11 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 			}
 		});
 
-		retNull.setSelected(new Boolean(getStep().getParameter(DateConstantMungeStep.RETURN_NULL)).booleanValue());
+		retNull.setSelected(Boolean.valueOf(getStep().getParameter(DateConstantMungeStep.RETURN_NULL)).booleanValue());
 		if (retNull.isSelected()) {
 			useCurrent.setEnabled(false);
 		}
-		useCurrent.setSelected(new Boolean(getStep().getParameter(DateConstantMungeStep.USE_CURRENT_TIME)).booleanValue());
+		useCurrent.setSelected(Boolean.valueOf(getStep().getParameter(DateConstantMungeStep.USE_CURRENT_TIME)).booleanValue());
 		if (useCurrent.isSelected()) {
 			retNull.setEnabled(false);
 		}

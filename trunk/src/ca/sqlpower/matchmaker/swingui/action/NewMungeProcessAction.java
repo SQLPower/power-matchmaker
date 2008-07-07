@@ -98,8 +98,8 @@ public class NewMungeProcessAction extends AbstractAction {
 			throw new RuntimeException(e1);
 		}
 		
-		String x = new Integer(MungePen.AUTO_SCROLL_INSET + 5).toString();
-		String y = new Integer(300).toString();
+		String x = Integer.toString(MungePen.AUTO_SCROLL_INSET + 5);
+		String y = Integer.toString(300);
 		
 		//sets the input one just outside of the autoscroll bounds
 		inputStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);

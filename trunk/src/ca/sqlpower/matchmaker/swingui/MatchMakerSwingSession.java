@@ -717,51 +717,49 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             }
             boolean save = false, doit = true;
 
-            if (oldPane != null && oldPane.hasUnsavedChanges()) {
-                String[] options = { "Save", "Discard Changes", "Cancel" };
-                final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
-                int ret = JOptionPane.showOptionDialog(
-                        frame,
-                        String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
-                        "Warning", JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE, null, options,
-                        options[0]);
+            if (oldPane != null) {
+            	if (oldPane.hasUnsavedChanges()) {
+            		String[] options = { "Save", "Discard Changes", "Cancel" };
+            		final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
+            		int ret = JOptionPane.showOptionDialog(
+            				frame,
+            				String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
+            				"Warning", JOptionPane.OK_CANCEL_OPTION,
+            				JOptionPane.QUESTION_MESSAGE, null, options,
+            				options[0]);
 
-                switch (ret) {
-                case JOptionPane.CLOSED_OPTION:
-                    save = false;
-                    doit = false;
-                    break;
-                case O_SAVE:
-                    save = true;
-                    doit = false;
-                    break;
-                case O_DISCARD:
-                    save = false;
-                    doit = true;
-                    break;
-                case O_CANCEL:
-                    save = false;
-                    doit = false;
-                    //The treepath should never be null if it reaches here
-                    //since prompting this means that the right side of the splitpane
-                    //must have at least been replaced once.
-                    tree.setSelectionPath(lastTreePath);
-                    break;
-                }
-                if (save) {
-                    if (oldPane != null) {
-                        doit = oldPane.applyChanges();
-                        if (!doit){
-                            tree.setSelectionPath(lastTreePath);
-                        }
-                    }
-                } else if (doit) {
-                	if (oldPane != null) {
-                        oldPane.discardChanges();
-                        doit = true;
-                    }
-                }
+            		switch (ret) {
+            		case JOptionPane.CLOSED_OPTION:
+            			save = false;
+            			doit = false;
+            			break;
+            		case O_SAVE:
+            			save = true;
+            			doit = false;
+            			break;
+            		case O_DISCARD:
+            			save = false;
+            			doit = true;
+            			break;
+            		case O_CANCEL:
+            			save = false;
+            			doit = false;
+            			//The treepath should never be null if it reaches here
+            			//since prompting this means that the right side of the splitpane
+            			//must have at least been replaced once.
+            			tree.setSelectionPath(lastTreePath);
+            			break;
+            		}
+            		if (save) {
+            			doit = oldPane.applyChanges();
+            			if (!doit){
+            				tree.setSelectionPath(lastTreePath);
+            			}
+            		} else if (doit) {
+            			oldPane.discardChanges();
+            			doit = true;
+            		}
+            	}
             }
             if (doit) {
             	// clears the undo stack and the listeners to the match
@@ -769,7 +767,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             	if (oldPane instanceof CleanupModel) {
             		((CleanupModel) oldPane).cleanup();
             	}
-            	
+
             	//TODO change this to a InitModel
             	if (pane instanceof AbstractUndoableEditorPane) {
             		((AbstractUndoableEditorPane) pane).initUndo();
@@ -1183,46 +1181,44 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public boolean close() {
 		boolean save = false, doit = true;
 
-        if (oldPane != null && oldPane.hasUnsavedChanges()) {
-            String[] options = { "Save", "Discard Changes", "Cancel" };
-            final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
-            int ret = JOptionPane.showOptionDialog(
-                    frame,
-                    String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
-                    "Warning", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE, null, options,
-                    options[0]);
+		if (oldPane != null) {
+			if (oldPane.hasUnsavedChanges()) {
+				String[] options = { "Save", "Discard Changes", "Cancel" };
+				final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
+				int ret = JOptionPane.showOptionDialog(
+						frame,
+						String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
+						"Warning", JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE, null, options,
+						options[0]);
 
-            switch (ret) {
-            case JOptionPane.CLOSED_OPTION:
-                save = false;
-                doit = false;
-                return false;
-            case O_SAVE:
-                save = true;
-                doit = false;
-                break;
-            case O_DISCARD:
-                save = false;
-                doit = true;
-                break;
-            case O_CANCEL:
-                save = false;
-                doit = false;
-                return false;
-            }
-            if (save) {
-                if (oldPane != null) {
-                    doit = oldPane.applyChanges();
-                }
-            } else if (doit) {
-            	if (oldPane != null) {
-                    oldPane.discardChanges();
-                    doit = true;
-                }
-            }
-        }
-        if (doit) {
+				switch (ret) {
+				case JOptionPane.CLOSED_OPTION:
+					save = false;
+					doit = false;
+					return false;
+				case O_SAVE:
+					save = true;
+					doit = false;
+					break;
+				case O_DISCARD:
+					save = false;
+					doit = true;
+					break;
+				case O_CANCEL:
+					save = false;
+					doit = false;
+					return false;
+				}
+				if (save) {
+					doit = oldPane.applyChanges();
+				} else if (doit) {
+					oldPane.discardChanges();
+					doit = true;
+				}
+			}
+		}
+		if (doit) {
         	// clears the undo stack and the listeners to the match
         	// maker object
         	if (oldPane instanceof CleanupModel) {
@@ -1455,20 +1451,18 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void mmChildrenInserted(MatchMakerEvent evt) {
 			// selects the new child on the tree if one new child is added
-			if (selectNewChild && !evt.isUndoEvent()) {
-				if (evt.getChildren().size() == 1) {
-					final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
-					if (!(insertedMMO instanceof SQLInputStep
-							|| insertedMMO instanceof MungeResultStep
-							|| insertedMMO instanceof MungeStepOutput)) {
-						SwingUtilities.invokeLater(new Runnable(){
-							public void run() {
-								MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-								TreePath treePath = treeModel.getPathForNode(insertedMMO);
-								getTree().setSelectionPath(treePath);
-							}
-						});
-					}
+			if (selectNewChild && !evt.isUndoEvent() && evt.getChildren().size() == 1) {
+				final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
+				if (!(insertedMMO instanceof SQLInputStep
+						|| insertedMMO instanceof MungeResultStep
+						|| insertedMMO instanceof MungeStepOutput)) {
+					SwingUtilities.invokeLater(new Runnable(){
+						public void run() {
+							MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+							TreePath treePath = treeModel.getPathForNode(insertedMMO);
+							getTree().setSelectionPath(treePath);
+						}
+					});
 				}
 			}
 			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				

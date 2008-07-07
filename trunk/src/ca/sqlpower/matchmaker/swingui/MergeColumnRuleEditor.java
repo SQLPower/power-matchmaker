@@ -110,19 +110,15 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				
 				// checks for invalid foreign keys types
 				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
-					if (cmr.getImportedKeyColumn() != null) {
-						if (cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
-							return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
-						}
+					if (cmr.getImportedKeyColumn() != null && cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
+						return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
 					}
 				}
 				
 				// checks for foreign keys that is not part of the parent's primary keys
 				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
-					if (cmr.getImportedKeyColumn() != null) {
-						if (cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
-							return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
-						}
+					if (cmr.getImportedKeyColumn() != null && cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
+						return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
 					}
 				}
 				

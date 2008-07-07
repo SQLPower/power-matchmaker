@@ -115,12 +115,12 @@ public class DuplicateProjectAction extends AbstractAction {
 				newProject.setName(newName);
 				folder.addChild(newProject);
 				swingSession.save(newProject);
-				return new Boolean(true);
+				return Boolean.TRUE;
 			}};
 			
 		cancelCall = new Callable<Boolean>() {
 			public Boolean call() {
-				return new Boolean(true);
+				return Boolean.TRUE;
 			}};
 			
 		dialog = DataEntryPanelBuilder.createDataEntryPanelDialog(archPanel,

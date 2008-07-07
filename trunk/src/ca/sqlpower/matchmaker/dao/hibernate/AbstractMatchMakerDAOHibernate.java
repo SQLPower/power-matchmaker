@@ -67,8 +67,7 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		} catch (RuntimeException re) {
 			t.rollback();
 			throw re;
-		} finally {
-		}
+		} 
 	}
 
 	public List<T> findAll() {
@@ -78,8 +77,7 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 			return results;
 		} catch (RuntimeException re) {
 			throw re;
-		} finally {
-		}
+		} 
 	}
 
 	public void save(T saveMe) {
@@ -92,8 +90,7 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		} catch (RuntimeException re) {
 			t.rollback();
 			throw re;
-		} finally {
-		}
+		} 
 	}
 
 }

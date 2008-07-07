@@ -169,8 +169,11 @@ public class CleanseEngineImpl extends AbstractEngine {
 					String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
 					ResultSet result = stmt.executeQuery(rowCountSQL);
 					logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
-					result.next();
-					rowCount = result.getInt("ROW_COUNT");
+					if (result.next()) {
+						rowCount = result.getInt("ROW_COUNT");
+					} else {
+						throw new AssertionError("No rows came back from source table row count query!");
+					}
 				} finally {
 					if (stmt != null) stmt.close();
 					if (con != null) con.close();

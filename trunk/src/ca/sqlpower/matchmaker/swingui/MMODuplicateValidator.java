@@ -115,12 +115,10 @@ public class MMODuplicateValidator implements Validator {
                     "Group must have a name");
         }
 
-        if (maxCharacters > 0){
-            if (value.length() > maxCharacters){
-                setComponentsEnabled(false);
-                return ValidateResult.createValidateResult(Status.FAIL, fieldName + " cannot be longer than "
-                        + maxCharacters + " characters long");
-            }
+        if (maxCharacters > 0 && value.length() > maxCharacters){
+        	setComponentsEnabled(false);
+        	return ValidateResult.createValidateResult(Status.FAIL, fieldName + " cannot be longer than "
+        			+ maxCharacters + " characters long");
         }
         if (!parent.allowsChildren()){
             return ValidateResult.createValidateResult(Status.FAIL, 
