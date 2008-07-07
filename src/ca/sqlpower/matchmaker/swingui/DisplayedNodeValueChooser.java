@@ -200,12 +200,12 @@ public class DisplayedNodeValueChooser {
 
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			if ( columnIndex == 0 ) {
+			if (columnIndex == 0) {
 				candidateColumns.get(rowIndex).setKey((Boolean) aValue);
-				if ( (Boolean) aValue ) {
+				if ((Boolean) aValue) {
 					int max = 0;
-					for ( CustomTableColumn column : candidateColumns ) {
-						if ( column.getPosition() != null && max < column.getPosition().intValue()) {
+					for (CustomTableColumn column : candidateColumns) {
+						if (column.getPosition() != null && max < column.getPosition().intValue()) {
 							max = column.getPosition().intValue();
 						}
 					}
@@ -213,9 +213,9 @@ public class DisplayedNodeValueChooser {
 				} else {
 					candidateColumns.get(rowIndex).setPosition(null);
 				}
-			} else if ( columnIndex == 1 ) {
+			} else if (columnIndex == 1) {
 				candidateColumns.get(rowIndex).setPosition((Integer) aValue);
-			}  else if ( columnIndex == 2 ) {
+			} else if (columnIndex == 2) {
 			} else {
 				throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
 			}

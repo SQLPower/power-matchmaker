@@ -66,7 +66,7 @@ public class StringConstantMungeComponent extends AbstractMungeComponent {
 			}
         });
         
-        retNull.setSelected(new Boolean(getStep().getParameter(StringConstantMungeStep.RETURN_NULL)).booleanValue());
+        retNull.setSelected(Boolean.valueOf(getStep().getParameter(StringConstantMungeStep.RETURN_NULL)).booleanValue());
         valueField.setEnabled(!retNull.isSelected());
         
         FormLayout layout = new FormLayout("pref,4dlu,pref:grow");

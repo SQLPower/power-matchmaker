@@ -1043,11 +1043,8 @@ public class MatchPool extends MonitorableImpl {
     	}
 		
 		PotentialMatchRecord possibleNoMatchEdge = getPotentialMatchFromOriginals(lhs, rhs);
-		if (possibleNoMatchEdge != null) {
-			if (possibleNoMatchEdge.getMatchStatus() == MatchType.NOMATCH) {
-				possibleNoMatchEdge.setMatchStatus(MatchType.UNMATCH);
-				
-			}
+		if (possibleNoMatchEdge != null && possibleNoMatchEdge.getMatchStatus() == MatchType.NOMATCH) {
+			possibleNoMatchEdge.setMatchStatus(MatchType.UNMATCH);
 		}
 		
     	GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =

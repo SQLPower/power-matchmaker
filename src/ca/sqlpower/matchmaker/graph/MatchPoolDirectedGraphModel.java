@@ -45,12 +45,11 @@ public class MatchPoolDirectedGraphModel extends MatchPoolGraphModel {
     public Collection<PotentialMatchRecord> getInboundEdges(SourceTableRecord node) {
     	Collection<PotentialMatchRecord> inboundEdges = new HashSet<PotentialMatchRecord>();
     	for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()) {
-    		if (pmr.isMatch()) {
-    			if (pmr.getMaster() != null && pmr.getMaster().equals(node)) {
-    				inboundEdges.add(pmr);
-    			}
+    		if (pmr.isMatch() && pmr.getMaster() != null 
+    				&& pmr.getMaster().equals(node)) {
+    			inboundEdges.add(pmr);
     		}
-        }
+    	}
     	return inboundEdges;
     }
 
@@ -61,12 +60,11 @@ public class MatchPoolDirectedGraphModel extends MatchPoolGraphModel {
     public Collection<PotentialMatchRecord> getOutboundEdges(SourceTableRecord node) {
     	Collection<PotentialMatchRecord> outboundEdges = new HashSet<PotentialMatchRecord>();
     	for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()) {
-    		if (pmr.isMatch()) {
-    			if (pmr.getDuplicate() != null && pmr.getDuplicate().equals(node)) {
-    				outboundEdges.add(pmr);
-    			}
+    		if (pmr.isMatch() && pmr.getDuplicate() != null 
+    				&& pmr.getDuplicate().equals(node)) {
+    			outboundEdges.add(pmr);
     		}
-        }
+    	}
     	return outboundEdges;
     }
     

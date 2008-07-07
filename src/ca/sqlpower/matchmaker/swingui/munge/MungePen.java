@@ -409,11 +409,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 	}
 	
-	@Override
-	public void moveToFront(Component c) {
-		super.moveToFront(c);
-	}
-	
 	/**
 	 * Returns true iff there is currently a connection being made by the user.
 	 */
@@ -587,9 +582,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 					}
 				}
 			}
-		}
-		
-		if (inputHit) {
 			finish = mcom;
 			finishNum = connectionNum;
 		} else {

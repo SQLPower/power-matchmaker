@@ -38,11 +38,6 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 		super(matchMakerSession);
 	}
 
-    @Override
-    public void save(MatchMakerTranslateGroup saveMe) {
-    	super.save(saveMe);
-    }
-
 	public Class<MatchMakerTranslateGroup> getBusinessClass() {
 		return MatchMakerTranslateGroup.class;
 	}

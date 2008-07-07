@@ -42,7 +42,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
@@ -276,7 +275,6 @@ public class TranslateGroupsEditor extends NoEditEditorPane {
 	 * The sheet is owned by matchmaker@sqlpower.ca and it's called TranslationWords.
 	 * 
 	 * @return The MatchMakerTranslateWord group from the spread sheet 
-	 * @throws ArchitectException If something goes wrong
 	 */
 	private MatchMakerTranslateGroup getOnlineTranslateGroup() {
 		SpreadsheetService sss = new SpreadsheetService("SQLPower-Power*MatchMaker-" + MatchMakerVersion.APP_VERSION);

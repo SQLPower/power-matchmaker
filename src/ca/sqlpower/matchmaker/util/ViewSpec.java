@@ -140,4 +140,14 @@ public class ViewSpec extends SQLQuery {
 		}
 		return super.equals(obj);
 	}
+	
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = super.hashCode();
+		result = PRIME * result + ((name == null) ? 0 : name.hashCode());
+		result = PRIME * result + ((schema == null) ? 0 : schema.hashCode());
+		result = PRIME * result + ((catalog == null) ? 0 : catalog.hashCode());
+		return result;
+	}
 }
