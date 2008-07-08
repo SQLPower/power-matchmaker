@@ -255,6 +255,11 @@ public class DisplayedNodeValueChooser {
 	private List<CustomTableColumn> chosenColumns = new ArrayList<CustomTableColumn>();
 
 	private SourceTableNodeRenderer renderer;
+	
+	/**
+	 * The table that sets and stores user selection of what to display.
+	 */
+	private JTable table;
 
 	/**
 	 * Creates a dialog that allows the user to make a selection of
@@ -274,9 +279,11 @@ public class DisplayedNodeValueChooser {
 	}
 	
 	public JComponent makeGUI() throws ArchitectException {
-		JTable table = new JTable(new OrderedColumnChooserTableModel(match.getSourceTable()));
-        TableUtils.fitColumnWidths(table, 250, 10);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		if (table == null) {
+			table = new JTable(new OrderedColumnChooserTableModel(match.getSourceTable()));
+			TableUtils.fitColumnWidths(table, 250, 10);
+			table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		}
         return new JScrollPane(table);
 	}
 
