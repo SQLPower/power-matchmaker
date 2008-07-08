@@ -184,7 +184,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	public void actionPerformed(ActionEvent e) {
     		try {
     			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Graph Display Values");
-				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer)graph.getNodeRenderer(), match);
+				if (chooser == null) {
+    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), match);
+    			}
 				JDefaultButton okButton = new JDefaultButton(okAction);
                 JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
 				JPanel panel = new JPanel(new BorderLayout());
