@@ -133,7 +133,7 @@ public class SourceTableRecordViewer {
                 same = viewVal.equals(masterVal);
             }
 
-            JLabel colValueLabel = new JLabel(String.valueOf(viewVal));
+            JLabel colValueLabel = new JLabel(viewVal == null ? "" : String.valueOf(viewVal));
             colValueLabel.setOpaque(true);
 
             if (same) {
