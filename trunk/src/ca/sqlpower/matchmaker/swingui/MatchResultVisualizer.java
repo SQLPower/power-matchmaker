@@ -161,7 +161,6 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	private final AbstractAction okAction = new AbstractAction("OK") {
     		public void actionPerformed(ActionEvent e) {
     			try {
-    				chooser.getRenderer().setDisplayColumns(chooser.getChosenColumns());
     				MatchResultVisualizer.this.getPool().findAll(chooser.getChosenColumns());
     				MatchResultVisualizer.this.getPanel().repaint();
     				MatchResultVisualizer.this.doAutoLayout();
@@ -506,7 +505,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         pool.findAll(displayColumns);
         graphModel = new MatchPoolGraphModel(pool);
         graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
-        graph.setNodeRenderer(new SourceTableNodeRenderer(displayColumns));
+        graph.setNodeRenderer(new SourceTableNodeRenderer());
         graph.setEdgeRenderer(new PotentialMatchEdgeRenderer(graph));
         graph.addSelectionListener(selectionListener );
         
