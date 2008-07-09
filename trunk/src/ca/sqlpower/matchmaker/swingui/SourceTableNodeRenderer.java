@@ -60,22 +60,30 @@ public class SourceTableNodeRenderer extends DefaultTableCellRenderer implements
         return this;
     }
 
+    /**
+     * Returns a string representation of the given node's display values.
+     * 
+     * IMPORTANT: It also has a side effect of setting the foreground to
+     * grey when any of the values were null.
+     */
     private String makeLabel(SourceTableRecord node) {
     	String ret = null;
     	StringBuilder sb = new StringBuilder();
     	boolean first = true;
-    	for(Object value: node.getDisplayValues()) {
+    	boolean nulls = false;
+    	for (Object value: node.getDisplayValues()) {
     		if (!first) {
     			sb.append(", ");
     		}
-    		if (value == null) {
-    			sb.append("null");
-    			continue;
-    		}
-    		sb.append(value.toString());
+    		
+    		nulls |= (value == null);
+   			sb.append(value == null ? "(null)" : String.valueOf(value));
     		first = false;
     	}
     	ret = sb.toString();
+    	
+    	setForeground(nulls ? Color.GRAY : Color.BLACK);
+    	
     	if (ret == null || ret.equals("")) return "Error";
     	return ret;
     }
