@@ -527,12 +527,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				pool.clearRecords();
 		        try {
 					pool.findAll(displayColumns);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-				} catch (ArchitectException e) {
-					// TODO Auto-generated catch block
-				}
-				DefaultGraphLayoutCache dgl = (DefaultGraphLayoutCache)graph.getLayoutCache();
+				} catch (ArchitectException ex) {
+    				MMSUtils.showExceptionDialog(getPanel(), ex.getMessage(), ex);
+    			} catch (SQLException sqlEx) {
+    				MMSUtils.showExceptionDialog(getPanel(), sqlEx.getMessage(), sqlEx);
+    			}
 				((DefaultGraphLayoutCache)graph.getLayoutCache()).clearNodes();
 				updateAutoMatchComboBox();
 				doAutoLayout();
