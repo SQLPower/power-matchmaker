@@ -72,6 +72,8 @@ import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.swingui.engine.MungeProcessSelectionList;
+import ca.sqlpower.matchmaker.swingui.graphViewer.DefaultGraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
@@ -105,11 +107,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         public void actionPerformed(ActionEvent e) {
             try {
                 File dotFile = new File(
-                        System.getProperty("user.home"), "matchmaker_graph_"+match.getName()+".dot");
+                        System.getProperty("user.home"), "matchmaker_graph_"+project.getName()+".dot");
                 JFileChooser fc = new JFileChooser(dotFile);
                 int choice = fc.showSaveDialog(getPanel());
                 if (choice == JFileChooser.APPROVE_OPTION) {
-                    MatchPoolDotExport exporter = new MatchPoolDotExport(match);
+                    MatchPoolDotExport exporter = new MatchPoolDotExport(project);
                     exporter.setDotFile(fc.getSelectedFile());
                     exporter.exportDotFile();
                 }
@@ -184,7 +186,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     		try {
     			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Graph Display Values");
 				if (chooser == null) {
-    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), match);
+    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project);
     			}
 				JDefaultButton okButton = new JDefaultButton(okAction);
                 JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
@@ -348,7 +350,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
                 recordViewerColumnHeader.removeAll();
                 recordViewerRowHeader.removeAll();
                 recordViewerCornerPanel.removeAll();
-                JPanel headerPanel = SourceTableRecordViewer.headerPanel(match);
+                JPanel headerPanel = SourceTableRecordViewer.headerPanel(project);
                 recordViewerRowHeader.add(headerPanel);
                 BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
                     new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
@@ -421,7 +423,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			int response = JOptionPane.showConfirmDialog(getPanel(), warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
 			if (response == JOptionPane.OK_OPTION) {
 				try {
-					pool.doAutoMatch((String) mungeProcessComboBox.getSelectedItem());
+					pool.doAutoMatch((MungeProcess) mungeProcessComboBox.getSelectedItem());
 					pool.store();
 					graph.repaint();
 				} catch (Exception ex) {
@@ -434,7 +436,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     /**
      * This is the match whose result table we're visualizing.
      */
-    private final Project match;
+    private final Project project;
 
     /**
      * The visual component that actually displays the match results graph.
@@ -485,6 +487,10 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     
     private JComboBox mungeProcessComboBox;
     
+    private MungeProcessSelectionList selectionButton;
+    
+    private JButton autoMatchButton;
+    
     /**
      * A list of the SQLColumns that we want to display in each SourceTableRecord
      * node in the match validation graph.
@@ -493,13 +499,47 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     
     public MatchResultVisualizer(Project project) throws SQLException, ArchitectException {
     	super();
-        this.match = project;
+        this.project = project;
 
-        JPanel buttonPanel = new JPanel(new GridLayout(2,2));
+        JPanel buttonPanel = new JPanel(new GridLayout(3,2));
         buttonPanel.add(new JButton(exportDotFileAction));
         buttonPanel.add(new JButton(viewerAutoLayoutAction));
         buttonPanel.add(new JButton(resetPoolAction));
         buttonPanel.add(new JButton(chooseDisplayedValueAction));
+        
+        selectionButton = new MungeProcessSelectionList(project) {
+
+			@Override
+			public boolean getValue(MungeProcess mp) {
+				return mp.isValidate();
+			}
+
+			@Override
+			public void setValue(MungeProcess mp, boolean value) {
+				mp.setValidate(value);
+			}
+
+		};
+		selectionButton.setCloseAction(new Runnable(){
+			public void run() {
+				graph.setSelectedNode(null);
+				graph.setFocusedNode(null);
+				pool.clearRecords();
+		        try {
+					pool.findAll(displayColumns);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+				} catch (ArchitectException e) {
+					// TODO Auto-generated catch block
+				}
+				DefaultGraphLayoutCache dgl = (DefaultGraphLayoutCache)graph.getLayoutCache();
+				((DefaultGraphLayoutCache)graph.getLayoutCache()).clearNodes();
+				updateAutoMatchComboBox();
+				doAutoLayout();
+			}
+		});        
+        
+        buttonPanel.add(selectionButton);
 
         pool = new MatchPool(project);
         pool.findAll(displayColumns);
@@ -507,16 +547,16 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
         graph.setNodeRenderer(new SourceTableNodeRenderer());
         graph.setEdgeRenderer(new PotentialMatchEdgeRenderer(graph));
-        graph.addSelectionListener(selectionListener );
+        graph.addSelectionListener(selectionListener);
         
         doAutoLayout();
 
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
         mungeProcessComboBox = new JComboBox();
-        for (MungeProcess mungeProcess : project.getMungeProcesses()) {
-        	mungeProcessComboBox.addItem(mungeProcess.getName());
-        }
-        autoMatchPanel.add(new JButton(new AutoMatchAction(graph.getModel())));
+        mungeProcessComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
+        autoMatchButton = new JButton(new AutoMatchAction(graph.getModel()));
+        autoMatchPanel.add(autoMatchButton);
+        updateAutoMatchComboBox();
         autoMatchPanel.add(new JLabel(":"));
         autoMatchPanel.add(mungeProcessComboBox);
         
@@ -668,6 +708,18 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 
 	MatchPool getPool() {
 		return pool;
+	}
+	
+	/**
+	 * Updates the Auto Match combo box to remove munge processes that are not currently shown
+	 */
+	private void updateAutoMatchComboBox(){
+		mungeProcessComboBox.removeAllItems();
+		for (MungeProcess mp : project.getValidatingMungeProcesses()) {
+			mungeProcessComboBox.addItem(mp);
+		}
+		mungeProcessComboBox.setEnabled(mungeProcessComboBox.getItemCount() > 0);
+		autoMatchButton.setEnabled(mungeProcessComboBox.getItemCount() > 0);
 	}
 
 	/**

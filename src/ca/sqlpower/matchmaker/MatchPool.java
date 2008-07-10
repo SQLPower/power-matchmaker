@@ -261,6 +261,10 @@ public class MatchPool extends MonitorableImpl {
                     continue;
                 }
                 
+				if (mungeProcess != null) {
+                	if (!mungeProcess.isValidate()) continue;
+                }
+                
                 int indexSize = sourceTableIndex.getChildCount();
                 List<Object> lhsKeyValues = new ArrayList<Object>(indexSize);
                 List<Object> rhsKeyValues = new ArrayList<Object>(indexSize);
@@ -1277,11 +1281,10 @@ public class MatchPool extends MonitorableImpl {
 	 * @throws ArchitectException
 	 * @throws SQLException
 	 */
-	public void doAutoMatch(String mungeProcessName) throws SQLException, ArchitectException {
-		MungeProcess mungeProcess = project.getMungeProcessByName(mungeProcessName);
+	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, ArchitectException {
 		if (mungeProcess == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
-					"invalid munge process name: " + mungeProcessName);
+					"invalid munge process");
 		}
 		Collection<SourceTableRecord> records = sourceTableRecords.values();
 		
@@ -1389,9 +1392,7 @@ public class MatchPool extends MonitorableImpl {
 		deletedMatches.addAll(potentialMatches.keySet());
 		deletedMatches.addAll(orphanedMatches.keySet());
 		store(aborter);
-		sourceTableRecords.clear();
-		potentialMatches.clear();
-		orphanedMatches.clear();
+		clearRecords();
 	}
 	
 	/**
@@ -1399,6 +1400,15 @@ public class MatchPool extends MonitorableImpl {
 	 */
 	public void clear() throws SQLException {
 		clear(null);
+	}
+	
+	/**
+	 * Completely removes all SourceTableRecords and PotentialMatchRecords.
+	 */
+	public void clearRecords(){
+		sourceTableRecords.clear();
+		potentialMatches.clear();
+		orphanedMatches.clear();
 	}
 	
 	/**

@@ -71,4 +71,10 @@ public class DefaultGraphLayoutCache<V, E> implements GraphLayoutCache<V, E> {
         return null;
     }
 
+	/**
+	 * Clears the position of the nodes.
+	 */
+    public void clearNodes(){
+    	positions.clear();
+    }
 }

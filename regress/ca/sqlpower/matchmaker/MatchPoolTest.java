@@ -3865,7 +3865,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("a3");
 		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(a1, a2);
 		PotentialMatchRecord pmrA1ToA3 = pool.getPotentialMatchFromOriginals(a1, a3);
@@ -3899,7 +3899,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("o3");
 		SourceTableRecord o3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrO1ToO2 = pool.getPotentialMatchFromOriginals(o1, o2);
 		PotentialMatchRecord pmrO1ToO3 = pool.getPotentialMatchFromOriginals(o1, o3);
@@ -3931,7 +3931,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("u3");
 		SourceTableRecord u3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrU1ToU2 = pool.getPotentialMatchFromOriginals(u1, u2);
 		PotentialMatchRecord pmrU1ToU3 = pool.getPotentialMatchFromOriginals(u1, u3);
@@ -3966,7 +3966,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("cycle3");
 		SourceTableRecord cycle3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrCyc1ToCyc2 = pool.getPotentialMatchFromOriginals(cycle1, cycle2);
 		PotentialMatchRecord pmrCyc1ToCyc3 = pool.getPotentialMatchFromOriginals(cycle1, cycle3);
@@ -4011,7 +4011,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("f3");
 		SourceTableRecord f3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrF1ToF2 = pool.getPotentialMatchFromOriginals(f1, f2);
 		PotentialMatchRecord pmrF1ToF3 = pool.getPotentialMatchFromOriginals(f1, f3);
@@ -4044,7 +4044,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("w3");
 		SourceTableRecord w3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrW1ToW2 = pool.getPotentialMatchFromOriginals(w1, w2);
 		PotentialMatchRecord pmrW1ToW3 = pool.getPotentialMatchFromOriginals(w1, w3);
@@ -4092,7 +4092,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("y4");
 		SourceTableRecord y4 = pool.getSourceTableRecord(keyList);
 
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrX1ToX2 = pool.getPotentialMatchFromOriginals(x1, x2);
 		PotentialMatchRecord pmrX1ToX3 = pool.getPotentialMatchFromOriginals(x1, x3);
@@ -4150,7 +4150,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("z4");
 		SourceTableRecord z4 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Munge_Process_One");
+		pool.doAutoMatch(mungeProcessOne);
 		
 		PotentialMatchRecord pmrZ1ToZ2 = pool.getPotentialMatchFromOriginals(z1, z2);
 		PotentialMatchRecord pmrZ1ToZ3 = pool.getPotentialMatchFromOriginals(z1, z3);
