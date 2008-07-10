@@ -239,6 +239,7 @@ public class ProjectDAOXML implements ProjectDAO {
             printAttribute("id", "process." + projectID + "." + processID);
             printCommonAttributes(mp);
             printAttribute("active", mp.getActive());
+            printAttribute("validate", mp.isValidate());
             printAttribute("colour", mp.getColour());
             printAttribute("priority", mp.getMatchPriority());
             niprintln(">");

@@ -20,6 +20,7 @@
 
 package ca.sqlpower.matchmaker.graph;
 
+import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -38,8 +39,8 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.swingui.ColorScheme;
-import ca.sqlpower.util.WebColour;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.sql.SQL;
 
 /**
  * A class for exporting a dot file version of a pool of match results.
@@ -106,50 +107,64 @@ public class MatchPoolDotExport {
             out.println("digraph " + project.getName());
             out.println("{");
             
-            con = project.createResultTableConnection();
-            stmt = con.createStatement();
-            StringBuilder sql = new StringBuilder();
-            String sourceTableName = DDLUtils.toQualifiedName(project.getResultTable());
-            sql.append("SELECT * FROM ").append(sourceTableName);
-            sql.append(" m1 WHERE NOT EXISTS ( SELECT 1 FROM ").append(sourceTableName);
-            sql.append(" m2 WHERE m1.dup_candidate_10 = m2.dup_candidate_20 and m1.dup_candidate_20 = m2.dup_candidate_10 and m1.dup_candidate_10 < m2.dup_candidate_10)");
-            sql.append(" ORDER BY");
-            for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
-                if (i == 0) {
-                    sql.append(" ");
-                } else {
-                    sql.append(", ");
-                }
-                sql.append(i+1);
-            }
-            rs = stmt.executeQuery(sql.toString());
-            while (rs.next()) {
-                out.print("  \"");
-                out.print(lhsOriginalNodeName(rs));
-                out.print("\" -> \"");
-                out.print(rhsOriginalNodeName(rs));
-                out.print("\" [color=\"");
-                out.print(colourForEdge(rs.getString("GROUP_ID"), true));
-                out.print("\" style=\"dotted\" arrowtail=\"none\" arrowhead=\"none\"");
-                out.println("];");
-                
-                out.print("  \"");
-                out.print(lhsNodeName(rs));
-                out.print("\" -> \"");
-                out.print(rhsNodeName(rs));
-                out.print("\" [color=\"");
-                out.print(colourForEdge(rs.getString("GROUP_ID"), false));
-                out.print("\" style=\"");
-                out.print(edgeStyle(rs.getString("MATCH_STATUS")));
-                out.print("\" arrowtail=\"");
-                out.print(arrowTailName(rs.getString("DUP1_MASTER_IND"), "vee"));
-                out.print("\" arrowhead=\"");
-                out.print(arrowHeadName(rs.getString("DUP1_MASTER_IND"), "vee"));
-                out.print("\"");
-                out.println("];");
-                
-            }
+            List<MungeProcess> mps = project.getValidatingMungeProcesses();
+            
+            if (mps.size() > 0) {
+            	con = project.createResultTableConnection();
+            	stmt = con.createStatement();
+            	StringBuilder sql = new StringBuilder();
+            	String sourceTableName = DDLUtils.toQualifiedName(project.getResultTable());
+            	sql.append("SELECT * FROM ").append(sourceTableName);
+            	sql.append(" m1 WHERE NOT EXISTS ( SELECT 1 FROM ").append(sourceTableName);
+            	sql.append(" m2 WHERE m1.dup_candidate_10 = m2.dup_candidate_20 and m1.dup_candidate_20 = m2.dup_candidate_10 and m1.dup_candidate_10 < m2.dup_candidate_10)");
+            	
+            	boolean first = true;
+            	for (MungeProcess mp : mps) {
+            		if (first) {
+            			sql.append(" AND (m1.GROUP_ID = ");
+            			first = false;
+            		} else {
+            			sql.append(" OR m1.GROUP_ID = ");
+            		}
+            		sql.append(SQL.quote(mp.getName()));
+            	}
+            	sql.append(") ORDER BY");
+            	for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
+            		if (i == 0) {
+            			sql.append(" ");
+            		} else {
+            			sql.append(", ");
+            		}
+            		sql.append(i+1);
+            	}
+            	rs = stmt.executeQuery(sql.toString());
+            	while (rs.next()) {
+            		out.print("  \"");
+            		out.print(lhsOriginalNodeName(rs));
+            		out.print("\" -> \"");
+            		out.print(rhsOriginalNodeName(rs));
+            		out.print("\" [color=\"");
+            		out.print(colourForEdge(rs.getString("GROUP_ID")));
+            		out.print("\" style=\"dotted\" arrowtail=\"none\" arrowhead=\"none\"");
+            		out.println("];");
 
+            		out.print("  \"");
+            		out.print(lhsNodeName(rs));
+            		out.print("\" -> \"");
+            		out.print(rhsNodeName(rs));
+            		out.print("\" [color=\"");
+            		out.print(colourForEdge(rs.getString("GROUP_ID")));
+            		out.print("\" style=\"");
+            		out.print(edgeStyle(rs.getString("MATCH_STATUS")));
+            		out.print("\" arrowtail=\"");
+            		out.print(arrowTailName(rs.getString("DUP1_MASTER_IND"), "vee"));
+            		out.print("\" arrowhead=\"");
+            		out.print(arrowHeadName(rs.getString("DUP1_MASTER_IND"), "vee"));
+            		out.print("\"");
+            		out.println("];");
+
+            	}
+            }
             out.println("}");
             
         } catch (ArchitectException ex) {
@@ -220,22 +235,19 @@ public class MatchPoolDotExport {
     }
 
     /**
-     * Translates the given munge process name to an X11 colour name that GraphViz can use.
+     * Translates the given munge process name to an the munge process colour
      * 
      * @param string The munge process name
-     * @return An X11 colour name such that every time this method is called with the same
-     * munge process name, the same colour name is returned, but no two munge process names will
-     * translate to the same colour for the lifetime of this instance of MatchResultVisualizer.
-     * @throws ArrayIndexOutOfBoundsException if you use more munge processes than we have set up
-     * colours for.  (see COLOURS and add more items to it if you're running into this problem).
+     * @return The colour of which the given munge process name has
+     * @throws IllegalArgumentException if you use more an invalid munge process name
      */
-    private String colourForEdge(String mungeProcessName, boolean original) {
-        int index = mungeProcessesNames.indexOf(mungeProcessName);
-        if (index < 0) {
-            mungeProcessesNames.add(mungeProcessName);
-            index = mungeProcessesNames.size()-1;
+    private String colourForEdge(String mungeProcessName) {
+    	MungeProcess mp = project.getMungeProcessByName(mungeProcessName);
+        if (mp == null) {
+        	throw new IllegalArgumentException("colourForEdge invoked with an " +
+        			"invalid munge process name: " + mungeProcessName);
         }
-        WebColour c = ColorScheme.BREWER_SET19[index];
+    	Color c = mp.getColour();
         return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
     }
 

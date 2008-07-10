@@ -77,7 +77,13 @@ public class MungeProcess
      * running a match process.  True means it will be processed.
      */
 	private boolean active = true;
-    
+
+	/**
+	 * Marks whether or not the match validator should show nodes and edges from
+	 * this munge process.  True means it will be shown
+	 */
+	private boolean validate = true;
+	
     /**
      * The colour associated with this munge process by the user.  Useful
      * in the GUI.
@@ -175,6 +181,22 @@ public class MungeProcess
 		this.filter = filter;
 		getEventSupport().firePropertyChange("filter", oldValue, filter);
 	}
+	
+	/**
+	 * Indicates whether this munge process will be displayed on the Match Validation screen
+	 */
+	public boolean isValidate() {
+		return validate;
+	}
+
+	/**
+	 * Sets whether this munge process will be displayed on the Match Validation screen
+	 */
+	public void setValidate(boolean validate) {
+		boolean oldValue = this.validate;
+		this.validate = validate;
+		getEventSupport().firePropertyChange("validate", oldValue, validate);
+	}
 
     public Color getColour() {
         return colour;
@@ -217,6 +239,7 @@ public class MungeProcess
 	public MungeProcess duplicate(MatchMakerObject parent, MatchMakerSession s){
 		MungeProcess mungeProcess = new MungeProcess();
 		mungeProcess.setActive(getActive());
+		mungeProcess.setValidate(isValidate());
 		mungeProcess.setDesc(getDesc()==null?null:new String(getDesc()));
 		mungeProcess.setFilter(getFilter()==null?null:new String(getFilter()));
         mungeProcess.setColour(getColour() == null ? null : new Color(getColour().getRGB()));

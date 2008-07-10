@@ -529,6 +529,19 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	public List<MungeProcess> getMungeProcesses() {
 		return getMungeProcessesFolder().getChildren();
 	}
+	
+	/**
+	 * Returns a list of munge processes defined by {@link MungeProcess#isValidate()}
+	 */
+	public List<MungeProcess> getValidatingMungeProcesses(){
+		List<MungeProcess> validatingProcesses = new ArrayList<MungeProcess>();
+		for (MungeProcess mp : getMungeProcesses()) {
+			if (mp.isValidate()) {
+				validatingProcesses.add(mp);
+			}
+		}
+		return validatingProcesses;
+	}
 
 	public MungeProcess getMungeProcessByName(String name) {
 		List <MungeProcess> mungeProcesses = getMungeProcesses();
