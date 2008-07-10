@@ -45,7 +45,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MungeProcessSelectionList extends JButton {
+public abstract class MungeProcessSelectionList extends JButton {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessSelectionList.class);
 	
@@ -65,7 +65,7 @@ public class MungeProcessSelectionList extends JButton {
 	private Project project;
 	
 	/**
-	 * The popup menu that contians the list of Munge Processes
+	 * The popup menu that contains the list of Munge Processes
 	 */
 	private JPopupMenu popupMenu;
 	
@@ -73,6 +73,12 @@ public class MungeProcessSelectionList extends JButton {
 	 * The list of Munge Process to be selected
 	 */
 	private List<MungeProcess> mps;
+	
+	/**
+	 * The action which is run when the selection window is closed.
+	 * It can be null.
+	 */
+	private Runnable closeAction;
 	
 	public MungeProcessSelectionList(Project project) {
 		super();
@@ -121,7 +127,7 @@ public class MungeProcessSelectionList extends JButton {
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 				int index = 0;
 				for (MungeProcess mp : mps) {
-					mp.setActive(processesList.isSelectedIndex(index));
+					setValue(mp, processesList.isSelectedIndex(index));
 					index++;
 				}
 				setPopupButtonText();
@@ -149,9 +155,12 @@ public class MungeProcessSelectionList extends JButton {
 			}			
 		});
 		
-		final JButton close = new JButton(new AbstractAction("Close"){
+		final JButton close = new JButton(new AbstractAction("OK"){
 			public void actionPerformed(ActionEvent e) {
 				popupMenu.setVisible(false);
+				if (closeAction != null) {
+					closeAction.run();
+				}
 			}
 		});
 		
@@ -207,9 +216,9 @@ public class MungeProcessSelectionList extends JButton {
 		
 		// This determines the size required for the array
 		for (MungeProcess mp : mps) {
-			if (mp.getActive()) {
+			if (getValue(mp)) {
 				count++;
-			}
+			} 
 		}
 		indices = new int[count];
 		count = 0;
@@ -218,12 +227,29 @@ public class MungeProcessSelectionList extends JButton {
 		// A List.toArray() was not used instead because it
 		// returns a Integer[] instead of a int[].
 		for (MungeProcess mp : mps) {
-			if (mp.getActive()) {
+			if (getValue(mp)) {
 				indices[count++] = index;
-			}
+			} 
 			index++;
 		}
 		return indices;
+	}
+	
+	/**
+	 * Call to be invoked whenever the selection window is closed.
+	 */
+	public abstract void setValue(MungeProcess mp, boolean value);
+	
+	/**
+	 * Call to be invoked whenever the list of munge processes is refreshed.
+	 */
+	public abstract boolean getValue(MungeProcess mp);
+	
+	/**
+	 * Sets the action to be called when the window is closed.
+	 */
+	public void setCloseAction(Runnable closeAction) {
+		this.closeAction = closeAction; 
 	}
 	
 }

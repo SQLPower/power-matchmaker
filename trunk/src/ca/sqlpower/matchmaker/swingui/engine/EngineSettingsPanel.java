@@ -52,6 +52,7 @@ import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -377,7 +378,20 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		
 
 			pb.add(new JLabel("Munge Processes to run: "), cc.xy(2, y, "r,t"));
-			pb.add(new MungeProcessSelectionList(project), cc.xy(4, y, "l,c"));
+			MungeProcessSelectionList selectionButton = new MungeProcessSelectionList(project) {
+
+				@Override
+				public boolean getValue(MungeProcess mp) {
+					return mp.getActive();
+				}
+
+				@Override
+				public void setValue(MungeProcess mp, boolean value) {
+					mp.setActive(value);
+				}
+				
+			};
+			pb.add(selectionButton, cc.xy(4, y, "l,c"));
 		}
 
 		y += 2;
