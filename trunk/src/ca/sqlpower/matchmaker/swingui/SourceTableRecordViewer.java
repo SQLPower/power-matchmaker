@@ -80,6 +80,11 @@ public class SourceTableRecordViewer {
 	
 	private static final JLabel NO_NODE_SELECTED_LABEL = new JLabel("Please select a node in the graph to see the" +
 																	" contents of its source table record.", JLabel.CENTER); 
+	
+    /**
+     * The string we show for null values.
+     */
+    private static final String NULL_STRING = "(null)";
 
 	private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
 
@@ -102,8 +107,7 @@ public class SourceTableRecordViewer {
         toolBarMinWidth = toolBar.getPreferredSize().width;
 
         JLabel label = new JLabel();  // just a label to read defaults from
-        Color differentForeground = label.getForeground();
-        Color sameForeground = differentForeground;
+        Color foreground = label.getForeground();
         Font font = label.getFont();
         Font sameFont = font.deriveFont(Font.PLAIN);
         Color sameBackground = Color.WHITE;
@@ -133,19 +137,24 @@ public class SourceTableRecordViewer {
                 same = viewVal.equals(masterVal);
             }
 
-            JLabel colValueLabel = new JLabel(viewVal == null ? "" : String.valueOf(viewVal));
-            colValueLabel.setOpaque(true);
-
+            JLabel colValueLabel;
+            if (viewVal == null) {
+            	colValueLabel = new JLabel(NULL_STRING);
+            	colValueLabel.setForeground(darkRow ? darkerColor(Color.gray) : Color.gray);
+            } else {
+            	colValueLabel= new JLabel(viewVal.toString());
+            	colValueLabel.setForeground(darkRow ? darkerColor(foreground) : foreground);
+            }
+            
             if (same) {
                 colValueLabel.setFont(sameFont);
-                colValueLabel.setForeground(darkRow ? darkerColor(sameForeground) : sameForeground);
                 colValueLabel.setBackground(darkRow ? darkerColor(sameBackground) : sameBackground);
             } else {
                 colValueLabel.setFont(differentFont);
-                colValueLabel.setForeground(darkRow ? darkerColor(differentForeground) : differentForeground);
                 colValueLabel.setBackground(darkRow ? darkerColor(differentBackground) : differentBackground);
             }
 
+            colValueLabel.setOpaque(true);
             panel.add(colValueLabel);
             darkRow = !darkRow;
         }
