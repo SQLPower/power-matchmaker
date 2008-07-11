@@ -61,7 +61,7 @@ public class RepositoryUtil {
      * The minimum PL Schema version according to that we can work with.
      * Should be checked every time a session is created.
      */
-    public static final Version MIN_PL_SCHEMA_VERSION = new Version(6, 0, 0);
+    public static final Version MIN_PL_SCHEMA_VERSION = new Version(6, 0, 1);
 
     /**
      * Class can not be instantiated.

@@ -10,7 +10,7 @@
 -- Database:
 --         {USER}   The database user name for the current connection
 
-insert into mm_schema_info values ('schema_version', '6.0.0')
+insert into mm_schema_info values ('schema_version', '6.0.1')
 ;
 
 INSERT INTO pl_group(group_name,group_desc,last_update_date,last_update_user,create_date)
