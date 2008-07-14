@@ -2,7 +2,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>ca.sqlpower.</groupId>
+	<groupId>ca.sqlpower</groupId>
 	<parent>
 		<groupId>ca.sqlpower</groupId>
 		<artifactId>project-planner</artifactId>
@@ -60,6 +60,18 @@
 				<configuration>
 				  <reportsDirectory>dist/test-results</reportsDirectory>
 				</configuration>
+			</plugin>
+
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-jar-plugin</artifactId>
+			  <configuration>
+			    <archive>
+			      <manifestEntries>
+			        <Main-Class>ca.sqlpower.matchmaker.server.ProjectPlannerServerUtils</Main-Class>
+			      </manifestEntries>
+			    </archive>
+			  </configuration>
 			</plugin>
 		</plugins>
 	</build>
