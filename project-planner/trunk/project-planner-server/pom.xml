@@ -67,9 +67,10 @@
 			  <artifactId>maven-jar-plugin</artifactId>
 			  <configuration>
 			    <archive>
-			      <manifestEntries>
-			        <Main-Class>ca.sqlpower.matchmaker.server.ProjectPlannerServerUtils</Main-Class>
-			      </manifestEntries>
+			      <manifest>
+              		<addClasspath>true</addClasspath>
+              		<mainClass>ca.sqlpower.matchmaker.server.ProjectPlannerServerUtils</mainClass>
+				  </manifest>
 			    </archive>
 			  </configuration>
 			</plugin>
