@@ -22,8 +22,9 @@ package ca.sqlpower.matchmaker.server;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
@@ -118,23 +119,24 @@ public class ProjectPlannerServerUtils {
     	return imageBuffer;
 	}
 	
-	public static void main(String[] args) {
-		if (args.length != 3) {
-			System.out.println("Invalid number of arguments!");
-			System.exit(1);
-		}
-		
-		String projectId = args[0];
-		String projectXml = args[1];
-		String currentTime = args[2];
-		
+	public static void main(String[] args) throws Exception {
+		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+		BufferedImage image = null;
 		try {
-			BufferedImage image = generateProjectThumbnail(projectId, projectXml);
-			File file = new File("thumbnail_" + projectId + "_" + currentTime + ".png");
-			ImageIO.write(image, "png", file);
-			image.flush();
+			String projectId = input.readLine();
+			StringBuilder xmlDoc = new StringBuilder(10000);
+			String line;
+			while ( (line = input.readLine()) != null) {
+				xmlDoc.append(line);
+			}
+			image = generateProjectThumbnail(projectId, xmlDoc.toString());
+			ImageIO.write(image, "png", System.out);
 		} catch (Exception e) {
-			e.printStackTrace();
+			e.printStackTrace(System.err);
+		} finally {
+			if (image != null) {
+				image.flush();
+			}
 		}
 	}
 }
