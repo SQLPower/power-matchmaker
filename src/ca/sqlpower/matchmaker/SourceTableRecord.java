@@ -142,19 +142,40 @@ public class SourceTableRecord {
     }
     
     /**
-     * Looks up and returns the column values for the row this object
-     * represents.  The values are returned in the list in the same order
-     * as the project's sourceTable's columns are listed in.  Thus, all
-     * SourceTableRecords attached to the same Project will return column
-     * values in the same order as each other.
+     * Looks up and returns the column values for the given SQLColumns.  
+     * If shownColumns is null, then all values will be returned in the 
+     * list in the same order as the project's sourceTable's columns are
+     * listed in.  Thus, all SourceTableRecords attached to the same 
+     * Project will return column values in the same order as each other.
+     * SQLException is thrown if the given columns are not within the source 
+     * table.
      * 
+     * @param The list of column data you would like to retrieve. 
      * @return The values for the row of the source table which is uniquely
      * identified by this sourceTableRecord's keyValues list.
-     * @throws ArchitectException, SQLException 
+     * @throws SQLException, ArchitectException
      */
-    public List<Object> fetchValues() throws ArchitectException, SQLException {
-        SQLTable sourceTable = project.getSourceTable();
-        List<Object> values = new ArrayList<Object>(sourceTable.getColumns().size());
+    public List<Object> fetchValues(List<SQLColumn> shownColumns) throws ArchitectException, SQLException {
+        
+    	SQLTable sourceTable = project.getSourceTable();
+    	// if null, then retrieve all the row's data
+    	if (shownColumns == null) {
+    		shownColumns = sourceTable.getColumns();
+    	} else {
+    		// if no columns should be shown, then don't run a query and just return 
+        	// an empty list. 
+    		if (shownColumns.isEmpty()) {
+    			return new ArrayList<Object>();
+    		}
+    		// check to make sure the given columns are in the source table
+    		for (SQLColumn col : shownColumns) {
+    			if (!sourceTable.getColumns().contains(col)) {
+    				throw new SQLException("Column " + col.getName() + " is not in table"
+    						+ sourceTable.getName() + "!");
+    			}
+    		}
+    	}
+    	List<Object> values = new ArrayList<Object>(shownColumns.size());
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -165,10 +186,11 @@ public class SourceTableRecord {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT ");
             boolean first = true;
-            for (SQLColumn col : sourceTable.getColumns()) {
-                if (!first) sql.append(", ");
-                sql.append(col.getName());
-                first = false;
+            
+            for (SQLColumn col : shownColumns) {
+            	if (!first) sql.append(", ");
+            	sql.append(col.getName());
+            	first = false;
             }
             sql.append("\n FROM ");
             sql.append(DDLUtils.toQualifiedName(sourceTable));
@@ -198,7 +220,7 @@ public class SourceTableRecord {
             if (!rs.next()) {
                 throw new SQLException("No data found in source table!");
             }
-            for (SQLColumn col : sourceTable.getColumns()) {
+            for (SQLColumn col : shownColumns) {
                 values.add(rs.getObject(col.getName()));
             }
             if (rs.next()) {
@@ -222,6 +244,23 @@ public class SourceTableRecord {
         }
     }
 
+    /**
+     * Calls {@link #fetchValues(List)} with null parameter, which will
+     * get all the node's data.
+     * Looks up and returns the column values for the row this object
+     * represents.  The values are returned in the list in the same order
+     * as the project's sourceTable's columns are listed in.  Thus, all
+     * SourceTableRecords attached to the same Project will return column
+     * values in the same order as each other.
+     * 
+     * @return The values for the row of the source table which is uniquely
+     * identified by this sourceTableRecord's keyValues list.
+     * @throws ArchitectException, SQLException 
+     */
+    public List<Object> fetchValues() throws ArchitectException, SQLException {
+    	return fetchValues(null);
+    }
+    
     /**
      * Two source table records are equal if their primary key values are all the 
      * same.

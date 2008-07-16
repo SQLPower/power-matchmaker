@@ -203,6 +203,55 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     			MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     		}
     	}
+    };  
+
+    /**
+     * The action for showing and hiding rows on the validation chart
+     */
+    private final Action chooseDisplayedColumnAction = new AbstractAction("Choose Displayed Column") {
+    	
+    	private JDialog dialog;    	
+    	private DisplayedNodeValueChooser chooser;
+    	
+    	private final AbstractAction okAction = new AbstractAction("OK") {
+    		public void actionPerformed(ActionEvent e) {
+    			shownColumns = chooser.getChosenColumns();
+    			updateMatchTable();
+    			dialog.dispose();
+    		}
+    	};
+    	
+    	private final AbstractAction cancelAction = new AbstractAction("Cancel") {
+    		public void actionPerformed(ActionEvent e) {
+    			dialog.dispose();
+    		}
+    	};
+    	
+    	public void actionPerformed(ActionEvent e) {
+    		try {
+    			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Chart Display Values");
+				if (chooser == null) {
+					shownColumns = new ArrayList<SQLColumn>();
+    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project);
+    				// Defaults the shown value to true
+    				chooser.setAllDefaultChosen(true);
+    				shownColumns = chooser.getChosenColumns();
+				}
+				JDefaultButton okButton = new JDefaultButton(okAction);
+                JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
+				JPanel panel = new JPanel(new BorderLayout());
+				panel.add(chooser.makeGUI(), BorderLayout.CENTER);
+				panel.add(buttonPanel, BorderLayout.SOUTH);
+				dialog.getContentPane().add(panel);
+    			dialog.pack();
+                dialog.getRootPane().setDefaultButton(okButton);
+                SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
+    			dialog.setLocationRelativeTo((Component) e.getSource());
+    			dialog.setVisible(true);
+    		} catch (ArchitectException ex) {
+    			MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
+    		}
+    	}
     };
     
     /**
@@ -333,6 +382,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     private class MyGraphSelectionListener implements GraphSelectionListener<SourceTableRecord, PotentialMatchRecord> {
 
         public void nodeDeselected(SourceTableRecord node) {
+        	selectedNode = null;
             recordViewerPanel.removeAll();
             recordViewerPanel.add(SourceTableRecordViewer.getNoNodeSelectedLabel());
             recordViewerPanel.revalidate();
@@ -345,59 +395,8 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         }
 
         public void nodeSelected(final SourceTableRecord node) {
-            try {
-                recordViewerPanel.removeAll();
-                recordViewerColumnHeader.removeAll();
-                recordViewerRowHeader.removeAll();
-                recordViewerCornerPanel.removeAll();
-                JPanel headerPanel = SourceTableRecordViewer.headerPanel(project);
-                recordViewerRowHeader.add(headerPanel);
-                BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
-                    new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
-                bfs.setComparator(new SourceTableRecordsComparator(node));
-                List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, node);
-                for (SourceTableRecord rec : reachableNodes) {
-                	if (rec.equals(node)) {
-                	    SourceTableRecordViewer recordViewer = 
-	                        new SourceTableRecordViewer(
-	                            rec, node, getActions(node, rec));
-                	    JToolBar toolBar = recordViewer.getToolBar();
-                	    EmptyBorder emptyBorder = new EmptyBorder(0, headerPanel.getPreferredSize().width
-                	    		+ RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING, 0, 0);
-						toolBar.setBorder(emptyBorder);
-                	    recordViewerCornerPanel.add(toolBar);
-                	    recordViewerRowHeader.add(recordViewer.getPanel());
-                	} else {
-	                	final SourceTableRecord str = rec;
-	                    
-	                    SourceTableRecordViewer recordViewer = 
-	                        new SourceTableRecordViewer(
-	                            str, node, getActions(node, str));
-	                    recordViewer.getPanel().addMouseListener(new MouseAdapter() {
-	                        @Override
-	                        public void mousePressed(MouseEvent e) {
-	                            if (SwingUtilities.isLeftMouseButton(e)){
-	                                if (e.getClickCount() == 1) {
-	                                    graph.setFocusedNode(str);
-	                                    graph.scrollNodeToVisible(str);
-	                                } else if (e.getClickCount() == 2) {
-	                                    graph.setSelectedNode(str);
-	                                    graph.scrollNodeToVisible(str);
-	                                }
-	                            }
-	                        }
-	                    });
-	                    recordViewerPanel.add(recordViewer.getPanel());
-	                    recordViewerColumnHeader.add(recordViewer.getToolBar());
-                	}
-                }
-            } catch (Exception ex) {
-                MMSUtils.showExceptionDialog(getPanel(), "Couldn't show potential matches", ex);
-            }
-            recordViewerPanel.revalidate();
-            recordViewerColumnHeader.revalidate();
-            recordViewerRowHeader.revalidate();
-            recordViewerCornerPanel.revalidate();
+        	selectedNode = node;
+        	updateMatchTable();
         }     
     }
     
@@ -492,6 +491,17 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     private JButton autoMatchButton;
     
     /**
+     * The node on the graph that is currently selected.
+     */
+    private SourceTableRecord selectedNode;
+    
+    /**
+     * A list of the SQLColumns that we want to display in each SourceTableRecord
+     * node in the match validation chart.
+     */
+    private List<SQLColumn> shownColumns;
+    
+    /**
      * A list of the SQLColumns that we want to display in each SourceTableRecord
      * node in the match validation graph.
      */
@@ -539,6 +549,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		});        
         
         buttonPanel.add(selectionButton);
+        buttonPanel.add(new JButton(chooseDisplayedColumnAction));
 
         pool = new MatchPool(project);
         pool.findAll(displayColumns);
@@ -719,6 +730,77 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
 		mungeProcessComboBox.setEnabled(mungeProcessComboBox.getItemCount() > 0);
 		autoMatchButton.setEnabled(mungeProcessComboBox.getItemCount() > 0);
+	}
+	
+	/**
+	 * Updates the match table based on shownColumns and the current selectedNode.
+	 */
+	private void updateMatchTable(){
+		try {
+            recordViewerPanel.removeAll();
+            recordViewerColumnHeader.removeAll();
+            recordViewerRowHeader.removeAll();
+            recordViewerCornerPanel.removeAll();
+            
+            // if there's no node selected, then there will not be any table
+            if (selectedNode == null) {
+            	recordViewerPanel.add(SourceTableRecordViewer.getNoNodeSelectedLabel());
+            }
+            // if none of the columns are shown, then there will be no table
+            else if (shownColumns != null && shownColumns.isEmpty()) {
+            	recordViewerPanel.add(SourceTableRecordViewer.getNoColumnSelectedLabel());
+            } else {
+            	// if shownColumnes is null, then all the columns will be shown
+            	JPanel headerPanel = SourceTableRecordViewer.headerPanel(project, shownColumns);
+            	recordViewerRowHeader.add(headerPanel);
+            	BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+            		new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+            	bfs.setComparator(new SourceTableRecordsComparator(selectedNode));
+            	List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, selectedNode);
+            	for (SourceTableRecord rec : reachableNodes) {
+            		if (rec.equals(selectedNode)) {
+            			// if shownColumnes is null, then all the columns will be shown
+            			SourceTableRecordViewer recordViewer = 
+            				new SourceTableRecordViewer(
+            						rec, selectedNode, getActions(selectedNode, rec), shownColumns);
+            			JToolBar toolBar = recordViewer.getToolBar();
+            			EmptyBorder emptyBorder = new EmptyBorder(0, headerPanel.getPreferredSize().width
+            					+ RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING, 0, 0);
+            			toolBar.setBorder(emptyBorder);
+            			recordViewerCornerPanel.add(toolBar);
+            			recordViewerRowHeader.add(recordViewer.getPanel());
+            		} else {
+            			final SourceTableRecord str = rec;
+            			// if shownColumnes is null, then all the columns will be shown
+            			SourceTableRecordViewer recordViewer = 
+            				new SourceTableRecordViewer(
+            						str, selectedNode, getActions(selectedNode, str), shownColumns);
+            			recordViewer.getPanel().addMouseListener(new MouseAdapter() {
+            				@Override
+            				public void mousePressed(MouseEvent e) {
+            					if (SwingUtilities.isLeftMouseButton(e)){
+            						if (e.getClickCount() == 1) {
+            							graph.setFocusedNode(str);
+            							graph.scrollNodeToVisible(str);
+            						} else if (e.getClickCount() == 2) {
+            							graph.setSelectedNode(str);
+            							graph.scrollNodeToVisible(str);
+            						}
+            					}
+            				}
+            			});
+            			recordViewerPanel.add(recordViewer.getPanel());
+            			recordViewerColumnHeader.add(recordViewer.getToolBar());
+            		}
+            	}
+            }
+		}catch (Exception ex) {
+			MMSUtils.showExceptionDialog(getPanel(), "Couldn't show potential matches", ex);
+		}
+		recordViewerPanel.revalidate();
+		recordViewerColumnHeader.revalidate();
+		recordViewerRowHeader.revalidate();
+		recordViewerCornerPanel.revalidate();
 	}
 
 	/**

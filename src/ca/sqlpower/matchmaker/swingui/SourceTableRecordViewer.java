@@ -78,17 +78,26 @@ public class SourceTableRecordViewer {
      */
 	private int toolBarMinWidth;
 	
+	/**
+	 * Label to be shown if there is no node selected
+	 */
 	private static final JLabel NO_NODE_SELECTED_LABEL = new JLabel("Please select a node in the graph to see the" +
 																	" contents of its source table record.", JLabel.CENTER); 
 	
-    /**
+	/**
+	 * Label to be shown is there is no column selected
+	 */
+	private static final JLabel NO_COLUMN_SELECTED_LABEL = new JLabel("No columns are selected to be shown!", JLabel.CENTER);
+   
+	/**
      * The string we show for null values.
      */
     private static final String NULL_STRING = "(null)";
 
 	private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
 
-    public SourceTableRecordViewer(SourceTableRecord view, SourceTableRecord master, List<Action>buttonActions) 
+    public SourceTableRecordViewer(SourceTableRecord view, SourceTableRecord master, 
+    		List<Action> buttonActions, List<SQLColumn> shownColumns) 
     	throws ArchitectException, SQLException {
     	panel = new RecordViewerPanel();
     	panel.setLayout(new GridLayout(0, 1));
@@ -122,44 +131,49 @@ public class SourceTableRecordViewer {
         Font differentFont = font.deriveFont(Font.BOLD);
         Color differentBackground = deeperColor(sameBackground);
         
-        Iterator<Object> viewIt = view.fetchValues().iterator();
-        Iterator<Object> masterIt = master.fetchValues().iterator();
-        boolean darkRow = false;
-        while (viewIt.hasNext()) {
-            Object viewVal = viewIt.next();
-            Object masterVal = masterIt.next();
+        List<Object> viewList = view.fetchValues(shownColumns);
+        List<Object> masterList = master.fetchValues(shownColumns); 
+        // no need to do anything if either list are empty
+        if (!(viewList.isEmpty() || masterList.isEmpty())) {
+        	Iterator<Object> viewIt = viewList.iterator();
+        	Iterator<Object> masterIt = masterList.iterator();
+        	boolean darkRow = false;
+        	while (viewIt.hasNext()) {
+        		Object viewVal = viewIt.next();
+        		Object masterVal = masterIt.next();
 
-            boolean same;
+        		boolean same;
 
-            if (viewVal == null) {
-                same = masterVal == null;
-            } else {
-                same = viewVal.equals(masterVal);
-            }
+        		if (viewVal == null) {
+        			same = masterVal == null;
+        		} else {
+        			same = viewVal.equals(masterVal);
+        		}
 
-            JLabel colValueLabel;
-            if (viewVal == null) {
-            	colValueLabel = new JLabel(NULL_STRING);
-            	colValueLabel.setForeground(darkRow ? darkerColor(Color.gray) : Color.gray);
-            } else {
-            	colValueLabel= new JLabel(viewVal.toString());
-            	colValueLabel.setForeground(darkRow ? darkerColor(foreground) : foreground);
-            }
-            
-            if (same) {
-                colValueLabel.setFont(sameFont);
-                colValueLabel.setBackground(darkRow ? darkerColor(sameBackground) : sameBackground);
-            } else {
-                colValueLabel.setFont(differentFont);
-                colValueLabel.setBackground(darkRow ? darkerColor(differentBackground) : differentBackground);
-            }
+        		JLabel colValueLabel;
+        		if (viewVal == null) {
+        			colValueLabel = new JLabel(NULL_STRING);
+        			colValueLabel.setForeground(darkRow ? darkerColor(Color.gray) : Color.gray);
+        		} else {
+        			colValueLabel= new JLabel(viewVal.toString());
+        			colValueLabel.setForeground(darkRow ? darkerColor(foreground) : foreground);
+        		}
 
-            colValueLabel.setOpaque(true);
-            panel.add(colValueLabel);
-            darkRow = !darkRow;
+        		if (same) {
+        			colValueLabel.setFont(sameFont);
+        			colValueLabel.setBackground(darkRow ? darkerColor(sameBackground) : sameBackground);
+        		} else {
+        			colValueLabel.setFont(differentFont);
+        			colValueLabel.setBackground(darkRow ? darkerColor(differentBackground) : differentBackground);
+        		}
+
+        		colValueLabel.setOpaque(true);
+        		panel.add(colValueLabel);
+        		darkRow = !darkRow;
+        	}
         }
 
-        toolBar.setPreferredSize(new Dimension(panel.getPreferredSize().width, toolBar.getPreferredSize().height));
+        toolBar.setPreferredSize(new Dimension(Math.max(toolBarMinWidth, panel.getPreferredSize().width), toolBar.getPreferredSize().height));
         logger.debug("toolBar min width is " + toolBarMinWidth + "; actual is " + toolBar.getPreferredSize().width);
     }
 
@@ -173,9 +187,11 @@ public class SourceTableRecordViewer {
     
     /**
      * Creates the panel of column names that should appear along
-     * the left-hand side of a grid of SourceTableRecord panels.
+     * the left-hand side of a grid of SourceTableRecord panels using 
+     * the given list.  If the list is null, then all the columns will
+     * appear.
      */
-    public static JPanel headerPanel(Project match) throws ArchitectException {
+    public static JPanel headerPanel(Project match, List<SQLColumn> shownColumns) throws ArchitectException {
         JPanel panel = new JPanel(new GridLayout(0,1));
         panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
         
@@ -183,12 +199,22 @@ public class SourceTableRecordViewer {
         Color darkBg = darkerColor(baseBg);
 
         boolean darkRow = false;
-        for (SQLColumn col : match.getSourceTable().getColumns()){
-            JLabel label = new JLabel(col.getName()); 
-            label.setOpaque(true);
-            label.setBackground(darkRow ? darkBg : baseBg);
-            panel.add(label);
-            darkRow = !darkRow;
+        if (shownColumns == null) {
+        	for (SQLColumn col : match.getSourceTable().getColumns()){
+        		JLabel label = new JLabel(col.getName()); 
+        		label.setOpaque(true);
+        		label.setBackground(darkRow ? darkBg : baseBg);
+        		panel.add(label);
+        		darkRow = !darkRow;
+        	}
+        } else {
+        	for (SQLColumn col : shownColumns){
+        		JLabel label = new JLabel(col.getName()); 
+        		label.setOpaque(true);
+        		label.setBackground(darkRow ? darkBg : baseBg);
+        		panel.add(label);
+        		darkRow = !darkRow;
+        	}
         }
         return panel;
     }
@@ -228,5 +254,9 @@ public class SourceTableRecordViewer {
 
 	public static JLabel getNoNodeSelectedLabel() {
 		return NO_NODE_SELECTED_LABEL;
+	}
+	
+	public static JLabel getNoColumnSelectedLabel() {
+		return NO_COLUMN_SELECTED_LABEL;
 	}
 }

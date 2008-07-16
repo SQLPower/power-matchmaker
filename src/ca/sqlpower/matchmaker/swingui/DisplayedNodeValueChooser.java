@@ -244,6 +244,15 @@ public class DisplayedNodeValueChooser {
 				throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
 			}
 		}
+		
+		/**
+		 * Sets all the values of the given column to the given value
+		 */
+		public void setAllRowValues(Object val, int columnIndex) {
+			for (int i = 0; i < getRowCount(); i++) {
+				setValueAt(val, i, columnIndex);
+			}
+		}
 	}
 
 	private Project match;
@@ -260,6 +269,8 @@ public class DisplayedNodeValueChooser {
 	 * The table that sets and stores user selection of what to display.
 	 */
 	private JTable table;
+	
+	private OrderedColumnChooserTableModel occtm;
 
 	/**
 	 * Creates a dialog that allows the user to make a selection of
@@ -276,11 +287,12 @@ public class DisplayedNodeValueChooser {
 		super();
 		this.renderer = renderer;
 		this.match = match;
+		this.occtm = new OrderedColumnChooserTableModel(match.getSourceTable());
 	}
 	
 	public JComponent makeGUI() throws ArchitectException {
 		if (table == null) {
-			table = new JTable(new OrderedColumnChooserTableModel(match.getSourceTable()));
+			table = new JTable(occtm);
 			TableUtils.fitColumnWidths(table, 250, 10);
 			table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		}
@@ -302,7 +314,11 @@ public class DisplayedNodeValueChooser {
 		}
 		return chosen;
 	}
-
+	
+	public void setAllDefaultChosen(Boolean b) {
+		occtm.setAllRowValues(b, 0);
+	}
+	
 	public SourceTableNodeRenderer getRenderer() {
 		return renderer;
 	}
