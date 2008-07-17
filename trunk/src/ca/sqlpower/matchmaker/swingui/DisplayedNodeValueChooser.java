@@ -246,7 +246,7 @@ public class DisplayedNodeValueChooser {
 		}
 		
 		/**
-		 * Sets all the values of the given column to the given value
+		 * Sets all the values of the given column to the given value.
 		 */
 		public void setAllRowValues(Object val, int columnIndex) {
 			for (int i = 0; i < getRowCount(); i++) {
@@ -315,7 +315,7 @@ public class DisplayedNodeValueChooser {
 		return chosen;
 	}
 	
-	public void setAllDefaultChosen(Boolean b) {
+	public void setAllDefaultChosen(boolean b) {
 		occtm.setAllRowValues(b, 0);
 	}
 	

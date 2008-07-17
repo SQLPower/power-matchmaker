@@ -103,7 +103,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     /**
      * Pops up a save dialog and saves the match pool to the chosen DOT file.
      */
-    private final Action exportDotFileAction = new AbstractAction("Export as Dot file") {
+    private final Action exportDotFileAction = new AbstractAction("Export as Dot file...") {
         public void actionPerformed(ActionEvent e) {
             try {
                 File dotFile = new File(
@@ -155,7 +155,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
      * Warning! Will throw a ClassCastException if the node renderer in graph
      * is not a SourceTableRecordRenderer.
      */
-    private final Action chooseDisplayedValueAction = new AbstractAction("Choose Displayed Value") {
+    private final Action chooseDisplayedValueAction = new AbstractAction("Choose Displayed Value...") {
     	
     	private JDialog dialog;    	
     	private DisplayedNodeValueChooser chooser;
@@ -206,9 +206,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     };  
 
     /**
-     * The action for showing and hiding rows on the validation chart
+     * The action for showing and hiding rows on the validation chart.
      */
-    private final Action chooseDisplayedColumnAction = new AbstractAction("Choose Displayed Column") {
+    private final Action chooseDisplayedColumnAction = new AbstractAction("Choose Displayed Column...") {
     	
     	private JDialog dialog;    	
     	private DisplayedNodeValueChooser chooser;
@@ -317,7 +317,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     
     /**
 	 * When this action is fired the master given to the constructor will become
-	 * the master of the given duplicate
+	 * the master of the given duplicate.
 	 */
     class SetMasterAction extends AbstractAction {
         
@@ -349,7 +349,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     
     /**
 	 * When this action is fired the master given to the constructor will become
-	 * the master of the given duplicate
+	 * the master of the given duplicate.
 	 */
     class SetDuplicateAction extends AbstractAction {
         
@@ -443,7 +443,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     private final GraphViewer<SourceTableRecord, PotentialMatchRecord> graph;
 
     /**
-     * The component that is used to layout the RecordViewer objects
+     * The component that is used to layout the RecordViewer objects.
      */
     private final JPanel recordViewerPanel = new JPanel(new RecordViewerLayout(4));
 
