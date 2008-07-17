@@ -50,27 +50,27 @@ public abstract class MungeProcessSelectionList extends JButton {
 	private static final Logger logger = Logger.getLogger(MungeProcessSelectionList.class);
 	
 	/**
-	 * The actual JList of munge processes
+	 * The actual JList of munge processes.
 	 */
 	private JList processesList;
 	
 	/**
-	 * The scrollpane containing the JList of munge processes
+	 * The scrollpane containing the JList of munge processes.
 	 */
 	private JScrollPane processesPane;
 	
 	/**
-	 * The project of which the Munge Processes will be retrieved from
+	 * The project of which the Munge Processes will be retrieved from.
 	 */
 	private Project project;
 	
 	/**
-	 * The popup menu that contains the list of Munge Processes
+	 * The popup menu that contains the list of Munge Processes.
 	 */
 	private JPopupMenu popupMenu;
 	
 	/**
-	 * The list of Munge Process to be selected
+	 * The list of Munge Process to be selected.
 	 */
 	private List<MungeProcess> mps;
 	
@@ -100,11 +100,11 @@ public abstract class MungeProcessSelectionList extends JButton {
 		int count = processesList.getSelectedIndices().length;
 		
 		if (count == 0) {
-			setText("Choose Munge Processes (None Selected)");
+			setText("Choose Munge Processes (None Selected)...");
 		} else if (count == mps.size()) {
-			setText("Choose Munge Processes (All Selected)");
+			setText("Choose Munge Processes (All Selected)...");
 		} else {
-			setText("Choose Munge Processes (" + count + " Selected)");
+			setText("Choose Munge Processes (" + count + " Selected)...");
 		}
 	}
 
@@ -196,7 +196,7 @@ public abstract class MungeProcessSelectionList extends JButton {
 	}
 	
 	/**
-	 * Refreshes the list so it will contain newly created Munge Processes
+	 * Refreshes the list so it will contain newly created Munge Processes.
 	 */
 	private void refreshList() {
 		mps = project.getMungeProcesses();

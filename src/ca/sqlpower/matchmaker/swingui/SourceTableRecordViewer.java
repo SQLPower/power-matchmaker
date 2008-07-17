@@ -79,13 +79,13 @@ public class SourceTableRecordViewer {
 	private int toolBarMinWidth;
 	
 	/**
-	 * Label to be shown if there is no node selected
+	 * Label to be shown if there is no node selected.
 	 */
 	private static final JLabel NO_NODE_SELECTED_LABEL = new JLabel("Please select a node in the graph to see the" +
 																	" contents of its source table record.", JLabel.CENTER); 
 	
 	/**
-	 * Label to be shown is there is no column selected
+	 * Label to be shown is there is no column selected.
 	 */
 	private static final JLabel NO_COLUMN_SELECTED_LABEL = new JLabel("No columns are selected to be shown!", JLabel.CENTER);
    

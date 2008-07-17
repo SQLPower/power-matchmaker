@@ -165,7 +165,7 @@ public class SourceTableRecord {
     		// if no columns should be shown, then don't run a query and just return 
         	// an empty list. 
     		if (shownColumns.isEmpty()) {
-    			return new ArrayList<Object>();
+    			return Collections.emptyList();
     		}
     		// check to make sure the given columns are in the source table
     		for (SQLColumn col : shownColumns) {
@@ -245,13 +245,14 @@ public class SourceTableRecord {
     }
 
     /**
-     * Calls {@link #fetchValues(List)} with null parameter, which will
-     * get all the node's data.
      * Looks up and returns the column values for the row this object
      * represents.  The values are returned in the list in the same order
      * as the project's sourceTable's columns are listed in.  Thus, all
      * SourceTableRecords attached to the same Project will return column
      * values in the same order as each other.
+     * <p>
+     * This is the same as calling {@link #fetchValues(List)} with a null 
+     * parameter.
      * 
      * @return The values for the row of the source table which is uniquely
      * identified by this sourceTableRecord's keyValues list.
