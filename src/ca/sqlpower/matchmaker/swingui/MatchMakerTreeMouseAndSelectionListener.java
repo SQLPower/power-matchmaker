@@ -52,8 +52,8 @@ import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionNode;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
@@ -510,16 +510,16 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 					editor.setSelectedColumn(columnMergeRule);
-				} else if (o instanceof MatchActionNode) {
-					MatchActionNode node = (MatchActionNode) o;
-					if (node.getActionType() == MatchActionType.RUN_MATCH) {
+				} else if (o instanceof ProjectActionNode) {
+					ProjectActionNode node = (ProjectActionNode) o;
+					if (node.getActionType() == ProjectActionType.RUN_MATCH) {
 						swingSession
 								.setCurrentEditorComponent(swingSession.getMatchEnginePanel(node.getProject().getMatchingEngine(), node.getProject()));
-					} else if (node.getActionType() == MatchActionType.AUDIT_INFO) {
+					} else if (node.getActionType() == ProjectActionType.AUDIT_INFO) {
 						swingSession
 								.setCurrentEditorComponent(new ProjectInfoEditor(
 										node.getProject()));
-					} else if (node.getActionType() == MatchActionType.VALIDATE_MATCHES) {
+					} else if (node.getActionType() == ProjectActionType.VALIDATE_MATCHES) {
 						if (node.getProject().getResultTable() == null) {
 							throw new Exception(
 									"Match result table does not exist!");
@@ -527,14 +527,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						swingSession
 								.setCurrentEditorComponent(new MatchResultVisualizer(
 										node.getProject()));
-					} else if (node.getActionType() == MatchActionType.VALIDATION_STATUS) {
+					} else if (node.getActionType() == ProjectActionType.VALIDATION_STATUS) {
 						swingSession
 								.setCurrentEditorComponent(new MatchValidationStatus(
 										swingSession, node.getProject()));
-					} else if (node.getActionType() == MatchActionType.RUN_MERGE) {
+					} else if (node.getActionType() == ProjectActionType.RUN_MERGE) {
 						swingSession.setCurrentEditorComponent(swingSession.getMergeEnginePanel(
 								node.getProject().getMergingEngine(), node.getProject()));
-					} else if (node.getActionType() == MatchActionType.RUN_CLEANSING) {
+					} else if (node.getActionType() == ProjectActionType.RUN_CLEANSING) {
 						swingSession.setCurrentEditorComponent(swingSession.getCleanseEnginePanel(node.getProject().getCleansingEngine(), node.getProject()));
 					}
 				} else if (o instanceof TranslateGroupParent) {
