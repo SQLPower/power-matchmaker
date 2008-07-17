@@ -43,8 +43,8 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionNode;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionType;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -90,14 +90,14 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			} else {
 				setIcon(mergeIcon);
 			}
-		} else if (value instanceof MatchActionNode) {
-			MatchActionType val = ((MatchActionNode) value).getActionType();
-			if (val.equals(MatchActionType.VALIDATE_MATCHES)) {
+		} else if (value instanceof ProjectActionNode) {
+			ProjectActionType val = ((ProjectActionNode) value).getActionType();
+			if (val.equals(ProjectActionType.VALIDATE_MATCHES)) {
 				setIcon(validateIcon);
-			} else if (val.equals(MatchActionType.RUN_MATCH) ||
-					val.equals(MatchActionType.RUN_CLEANSING)) {
+			} else if (val.equals(ProjectActionType.RUN_MATCH) ||
+					val.equals(ProjectActionType.RUN_CLEANSING)) {
 				setIcon(matchEngineIcon);
-			} else if (val.equals(MatchActionType.RUN_MERGE)) {
+			} else if (val.equals(ProjectActionType.RUN_MERGE)) {
 				setIcon(mergeEngineIcon);
 			} else { 
 				setIcon(infoIcon);

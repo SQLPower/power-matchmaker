@@ -89,7 +89,7 @@ public class MatchMakerTreeModel implements TreeModel {
     /**
      * All the types of actions associated with each project in the tree.
      */
-    public static enum MatchActionType {
+    public static enum ProjectActionType {
         
         /**
          * Shows the "run match" UI.
@@ -124,7 +124,7 @@ public class MatchMakerTreeModel implements TreeModel {
         
         private final String name;
         
-        private MatchActionType(String name) {
+        private ProjectActionType(String name) {
             this.name = name;
         }
         
@@ -140,15 +140,15 @@ public class MatchMakerTreeModel implements TreeModel {
      * project workflow is represented in one place, with pretty pictures and
      * everything.
      */
-    public class MatchActionNode extends AbstractMatchMakerObject<Project, MatchActionNode> {
+    public class ProjectActionNode extends AbstractMatchMakerObject<Project, ProjectActionNode> {
 
-        private final MatchActionType matchActionType;
+        private final ProjectActionType projectActionType;
         private final Project project;
         
-        public MatchActionNode(MatchActionType matchActionType, Project project) {
-            this.matchActionType = matchActionType;
+        public ProjectActionNode(ProjectActionType projectActionType, Project project) {
+            this.projectActionType = projectActionType;
             this.project = project;
-            setName(matchActionType.toString());
+            setName(projectActionType.toString());
         }
 
         public boolean isRoot() {
@@ -171,11 +171,11 @@ public class MatchMakerTreeModel implements TreeModel {
         }
 
         public Project duplicate(MatchMakerObject parent, MatchMakerSession session) {
-            throw new UnsupportedOperationException("A MatchActionNode cannot be duplicated");
+            throw new UnsupportedOperationException("A ProjectActionNode cannot be duplicated");
         }
         
-        public MatchActionType getActionType() {
-            return matchActionType;
+        public ProjectActionType getActionType() {
+            return projectActionType;
         }
         
         public Project getProject() {
@@ -190,7 +190,7 @@ public class MatchMakerTreeModel implements TreeModel {
     /**
      * The session this tree model belongs to.  For testing, it's acceptable
      * for this to be just a stub, but you will not be able to call
-     * {@link MatchActionNode#performAction()} unless this is actually a
+     * {@link ProjectActionNode#performAction()} unless this is actually a
      * MatchMakerSwingSession.
      */
     private final MatchMakerSession session;
@@ -204,18 +204,18 @@ public class MatchMakerTreeModel implements TreeModel {
      * The cache that is maintained by {@link #getActionNodes(Project)}. Don't ever access
      * this map directly.  Use that method.
      */
-	private Map<Project, List<MatchActionNode>> matchActionCache = new HashMap<Project, List<MatchActionNode>>();
+	private Map<Project, List<ProjectActionNode>> projectActionCache = new HashMap<Project, List<ProjectActionNode>>();
     
 	private FolderParent current;
 	private FolderParent backup;
 	private TranslateGroupParent translate;
 	
-	private static final MatchActionType[] DE_DUP_ACTIONS = 
-		{MatchActionType.RUN_MATCH, MatchActionType.VALIDATE_MATCHES, MatchActionType.VALIDATION_STATUS,
-		MatchActionType.RUN_MERGE, MatchActionType.AUDIT_INFO};
+	private static final ProjectActionType[] DE_DUP_ACTIONS = 
+		{ProjectActionType.RUN_MATCH, ProjectActionType.VALIDATE_MATCHES, ProjectActionType.VALIDATION_STATUS,
+		ProjectActionType.RUN_MERGE, ProjectActionType.AUDIT_INFO};
 	
-	private static final MatchActionType[] CLEANSING_ACTIONS = 
-		{MatchActionType.RUN_CLEANSING, MatchActionType.AUDIT_INFO};
+	private static final ProjectActionType[] CLEANSING_ACTIONS = 
+		{ProjectActionType.RUN_CLEANSING, ProjectActionType.AUDIT_INFO};
 	
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
@@ -229,7 +229,7 @@ public class MatchMakerTreeModel implements TreeModel {
      * @param s
      *            For testing, it's acceptable for this to be just a stub, but
      *            you will not be able to call
-     *            {@link MatchActionNode#performAction()} unless this is
+     *            {@link ProjectActionNode#performAction()} unless this is
      *            actually a MatchMakerSwingSession.
      */
 	public MatchMakerTreeModel(FolderParent current, FolderParent backup,
@@ -259,20 +259,20 @@ public class MatchMakerTreeModel implements TreeModel {
      * @param project The project the action nodes belong to. (It's their parent in the tree)
      * @return The unique list of action nodes for the given project.
      */
-    private List<MatchActionNode> getActionNodes(Project project) {
-        List<MatchActionNode> actionNodes = matchActionCache.get(project);
+    private List<ProjectActionNode> getActionNodes(Project project) {
+        List<ProjectActionNode> actionNodes = projectActionCache.get(project);
         if (actionNodes == null) {
-            actionNodes = new ArrayList<MatchActionNode>();
+            actionNodes = new ArrayList<ProjectActionNode>();
             if (project.getType() == ProjectMode.FIND_DUPES) {
-	            for (MatchActionType type : DE_DUP_ACTIONS) {
-	                actionNodes.add(new MatchActionNode(type, project));
+	            for (ProjectActionType type : DE_DUP_ACTIONS) {
+	                actionNodes.add(new ProjectActionNode(type, project));
 	            }
             } else if (project.getType() == ProjectMode.CLEANSE) {
-            	for (MatchActionType type : CLEANSING_ACTIONS) {
-            		actionNodes.add(new MatchActionNode(type, project));
+            	for (ProjectActionType type : CLEANSING_ACTIONS) {
+            		actionNodes.add(new ProjectActionNode(type, project));
             	}
             }
-            matchActionCache.put(project, actionNodes);
+            projectActionCache.put(project, actionNodes);
         }
         return actionNodes;
     }
@@ -290,7 +290,7 @@ public class MatchMakerTreeModel implements TreeModel {
             		visible[count++] = child;
             	}
             }
-            for (MatchActionNode child : getActionNodes(project)) {
+            for (ProjectActionNode child : getActionNodes(project)) {
             	if (child.isVisible()) {
             		visible[count++] = child;
             	}
@@ -318,8 +318,8 @@ public class MatchMakerTreeModel implements TreeModel {
         int count;
         if (mmo instanceof Project) {
             Project project = (Project) mmo;
-            List<MatchActionNode> matchActions = getActionNodes(project);
-            count = mmo.getChildren().size() + matchActions.size();
+            List<ProjectActionNode> projectActions = getActionNodes(project);
+            count = mmo.getChildren().size() + projectActions.size();
         } else {
             count = mmo.getChildren().size();
         }
@@ -540,13 +540,13 @@ public class MatchMakerTreeModel implements TreeModel {
 			if (evt.getSource() instanceof FolderParent) {
 				for (C folder : evt.getChildren()) {
 					for (Object project : folder.getChildren()) {
-						matchActionCache.remove(project);
+						projectActionCache.remove(project);
 					}
 					folder.removeMatchMakerListener(this);
 				}
 			} else if (evt.getSource() instanceof PlFolder) {
 				for (C project : evt.getChildren()) {
-					matchActionCache.remove(project);
+					projectActionCache.remove(project);
 				}
 			}
 		}
