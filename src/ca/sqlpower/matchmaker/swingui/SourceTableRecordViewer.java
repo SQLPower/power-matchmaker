@@ -191,7 +191,7 @@ public class SourceTableRecordViewer {
      * the given list.  If the list is null, then all the columns will
      * appear.
      */
-    public static JPanel headerPanel(Project match, List<SQLColumn> shownColumns) throws ArchitectException {
+    public static JPanel headerPanel(Project project, List<SQLColumn> shownColumns) throws ArchitectException {
         JPanel panel = new JPanel(new GridLayout(0,1));
         panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
         
@@ -200,7 +200,7 @@ public class SourceTableRecordViewer {
 
         boolean darkRow = false;
         if (shownColumns == null) {
-        	for (SQLColumn col : match.getSourceTable().getColumns()){
+        	for (SQLColumn col : project.getSourceTable().getColumns()){
         		JLabel label = new JLabel(col.getName()); 
         		label.setOpaque(true);
         		label.setBackground(darkRow ? darkBg : baseBg);

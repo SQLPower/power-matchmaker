@@ -111,9 +111,9 @@ public class MatchPool extends MonitorableImpl {
     private final Map<PotentialMatchRecord, PotentialMatchRecord> mergedMatches = 
     	new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
 	
-    public MatchPool(Project match) {
-        this.project = match;
-        this.session = match.getSession();
+    public MatchPool(Project project) {
+        this.project = project;
+        this.session = project.getSession();
         this.potentialMatches = new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
     }
     
