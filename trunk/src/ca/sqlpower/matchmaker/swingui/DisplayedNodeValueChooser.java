@@ -315,6 +315,13 @@ public class DisplayedNodeValueChooser {
 		return chosen;
 	}
 	
+	public void setChosenColumns(List<SQLColumn> selectedColumns) {
+		for (CustomTableColumn ctc : occtm.candidateColumns) {
+			ctc.setKey(selectedColumns.contains(ctc.getSQLColumn()));
+		}
+		occtm.updateChosenColumns();
+	}
+	
 	public void setAllDefaultChosen(boolean b) {
 		occtm.setAllRowValues(b, 0);
 	}

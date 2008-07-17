@@ -159,6 +159,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	
     	private JDialog dialog;    	
     	private DisplayedNodeValueChooser chooser;
+    	private List<SQLColumn> revertList = new ArrayList<SQLColumn>();
     	
     	private final AbstractAction okAction = new AbstractAction("OK") {
     		public void actionPerformed(ActionEvent e) {
@@ -178,6 +179,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	
     	private final AbstractAction cancelAction = new AbstractAction("Cancel") {
     		public void actionPerformed(ActionEvent e) {
+    			chooser.setChosenColumns(revertList);
     			dialog.dispose();
     		}
     	};
@@ -188,6 +190,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				if (chooser == null) {
     				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project);
     			}
+				
+				revertList = chooser.getChosenColumns();
+				
 				JDefaultButton okButton = new JDefaultButton(okAction);
                 JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
 				JPanel panel = new JPanel(new BorderLayout());
@@ -212,6 +217,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	
     	private JDialog dialog;    	
     	private DisplayedNodeValueChooser chooser;
+    	private List<SQLColumn> revertList = new ArrayList<SQLColumn>();
     	
     	private final AbstractAction okAction = new AbstractAction("OK") {
     		public void actionPerformed(ActionEvent e) {
@@ -223,6 +229,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	
     	private final AbstractAction cancelAction = new AbstractAction("Cancel") {
     		public void actionPerformed(ActionEvent e) {
+    			chooser.setChosenColumns(revertList);
     			dialog.dispose();
     		}
     	};
@@ -237,6 +244,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     				chooser.setAllDefaultChosen(true);
     				shownColumns = chooser.getChosenColumns();
 				}
+
+				revertList = chooser.getChosenColumns();
+
 				JDefaultButton okButton = new JDefaultButton(okAction);
                 JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
 				JPanel panel = new JPanel(new BorderLayout());
