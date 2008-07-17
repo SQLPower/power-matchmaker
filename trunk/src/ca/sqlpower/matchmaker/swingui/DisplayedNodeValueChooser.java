@@ -255,7 +255,7 @@ public class DisplayedNodeValueChooser {
 		}
 	}
 
-	private Project match;
+	private Project project;
 	
 	/**
 	 * This is the list of the columns that the user has chosen in the
@@ -282,12 +282,12 @@ public class DisplayedNodeValueChooser {
 	 * 						in the source table of the match
 	 */
 	public DisplayedNodeValueChooser(SourceTableNodeRenderer renderer,
-									Project match)
+									Project project)
 									throws ArchitectException {
 		super();
 		this.renderer = renderer;
-		this.match = match;
-		this.occtm = new OrderedColumnChooserTableModel(match.getSourceTable());
+		this.project = project;
+		this.occtm = new OrderedColumnChooserTableModel(project.getSourceTable());
 	}
 	
 	public JComponent makeGUI() throws ArchitectException {

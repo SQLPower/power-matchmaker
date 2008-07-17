@@ -293,11 +293,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action runMatchAction = new AbstractAction("Run Match") {
 
 		public void actionPerformed(ActionEvent e) {
-			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType() == ProjectMode.FIND_DUPES) {
+			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (project != null && project.getType() == ProjectMode.FIND_DUPES) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 			    TreePath treePath = 
-			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,2));
+			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,2));
 			    getTree().setSelectionPath(treePath);
 			}
 		}
@@ -306,11 +306,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action runMergeAction = new AbstractAction("Run Merge") {
 
 		public void actionPerformed(ActionEvent e) {
-			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType() == ProjectMode.FIND_DUPES) {
+			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (project != null && project.getType() == ProjectMode.FIND_DUPES) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 				TreePath treePath = 
-					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,5));
+					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,5));
 				getTree().setSelectionPath(treePath);
 			}
 		}
@@ -319,11 +319,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action runCleanseAction = new AbstractAction("Run Cleanse") {
 
 		public void actionPerformed(ActionEvent e) {
-			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType() == ProjectMode.CLEANSE) {
+			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (project != null && project.getType() == ProjectMode.CLEANSE) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 				TreePath treePath = 
-					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,1));
+					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,1));
 				getTree().setSelectionPath(treePath);
 			}
 		}

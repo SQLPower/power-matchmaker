@@ -282,15 +282,15 @@ public class MatchMakerTreeModel implements TreeModel {
         final MatchMakerObject<?, ?> mmoChild;
     
         if (mmoParent instanceof Project) {
-            Project match = (Project) mmoParent;
-            MatchMakerObject [] visible = new MatchMakerObject [getChildCount(match)];
+            Project project = (Project) mmoParent;
+            MatchMakerObject [] visible = new MatchMakerObject [getChildCount(project)];
             int count = 0;
-            for (MatchMakerObject child : match.getChildren()) {
+            for (MatchMakerObject child : project.getChildren()) {
             	if (child.isVisible()) {
             		visible[count++] = child;
             	}
             }
-            for (MatchActionNode child : getActionNodes(match)) {
+            for (MatchActionNode child : getActionNodes(project)) {
             	if (child.isVisible()) {
             		visible[count++] = child;
             	}
@@ -317,8 +317,8 @@ public class MatchMakerTreeModel implements TreeModel {
 		final MatchMakerObject<?, ?> mmo = (MatchMakerObject<?, ?>) parent;
         int count;
         if (mmo instanceof Project) {
-            Project match = (Project) mmo;
-            List<MatchActionNode> matchActions = getActionNodes(match);
+            Project project = (Project) mmo;
+            List<MatchActionNode> matchActions = getActionNodes(project);
             count = mmo.getChildren().size() + matchActions.size();
         } else {
             count = mmo.getChildren().size();
