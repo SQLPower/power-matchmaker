@@ -59,6 +59,7 @@ import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -69,7 +70,6 @@ import ca.sqlpower.matchmaker.swingui.munge.SQLInputMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
@@ -80,8 +80,8 @@ import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
 import ca.sqlpower.swingui.db.DataSourceTypeEditor;
 import ca.sqlpower.swingui.db.DatabaseConnectionManager;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.ExceptionReport;
-import ca.sqlpower.util.VersionFormatException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -89,7 +89,11 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 
 public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingSessionContext {
 
-    private static final Logger logger = Logger.getLogger(SwingSessionContextImpl.class);
+    private static final String DOWNLOAD_URL = "http://download.sqlpower.ca/matchmaker/current.html";
+
+	private static final String FORUM_URL = "http://www.sqlpower.ca/forum/";
+
+	private static final Logger logger = Logger.getLogger(SwingSessionContextImpl.class);
 
 	/**
 	 * The array that looks like the set of types we are expecting for the correct constructor for any munge component
@@ -254,10 +258,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSwingSession createSession(
-            SPDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, IOException, VersionFormatException,
-            PLSchemaException, ArchitectException, MatchMakerConfigurationException {
+    public MatchMakerSwingSession createSession(SPDataSource ds,
+			String username, String password) throws PLSecurityException,
+			SQLException, ArchitectException, MatchMakerConfigurationException, RepositoryVersionException {
     	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     	getSessions().add(session);
         session.addSessionLifecycleListener(getSessionLifecycleListener());
@@ -394,9 +397,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             if (!isAutoLoginEnabled()) {
                 showLoginDialog(getLastLoginDataSource());
             } else {
+            	SPDataSource dbSource = getAutoLoginDataSource();
+            	final MatchMakerSession sessionDelegate;
             	try {
-            		SPDataSource dbSource = getAutoLoginDataSource();
-            		final MatchMakerSession sessionDelegate;
             		if (dbSource != null) {
             			// tries to login to the auto login database
             			sessionDelegate = context.createSession(dbSource,
@@ -410,26 +413,81 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                     session.addSessionLifecycleListener(getSessionLifecycleListener());
             		session.showGUI();
             	} catch (Exception ex) {
-            		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed", ex);
-            		errorDialog.addWindowListener(new WindowAdapter() {
-            			
-            			// called by both dispose
-						public void windowClosed(WindowEvent e) {
-							showLoginDialog(getAutoLoginDataSource());
-						}
-						
-						// called by x button
-						public void windowClosing(WindowEvent e) {
-							showLoginDialog(getAutoLoginDataSource());
-						}
-						
-            		});
+            		if (ex instanceof RepositoryVersionException) {
+                		handleRepositoryVersionException(dbSource, (RepositoryVersionException) ex);
+                	} else {
+                		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Login failed", ex);
+                		errorDialog.addWindowListener(new WindowAdapter() {
+
+                			// called by both dispose
+                			public void windowClosed(WindowEvent e) {
+                				showLoginDialog(getAutoLoginDataSource());
+                			}
+
+                			// called by x button
+                			public void windowClosing(WindowEvent e) {
+                				showLoginDialog(getAutoLoginDataSource());
+                			}
+
+                		});
+                	}
             	}
             }
         } catch (Exception ex) {
            	MMSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
         }
     }
+    
+    /**
+     * Provides the user with options to dealing with a repository schema version problem.
+     * 
+     * @param dbSource Used for running upgrade scripts to the schema.
+     * @param ex Stores information of the schema problem.
+     */
+	public void handleRepositoryVersionException(SPDataSource dbSource,
+			RepositoryVersionException ex) {
+		if (ex.getCurrentVersion() == null) {
+			int response = JOptionPane.showOptionDialog(null, ex.getMessage() +
+					"\nPlease visit our forum for help.",
+					"MatchMaker Repository Problem", JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE, null, new String[] {"Visit Forum", "Not Now"}, "Visit Forum");
+			if (response == JOptionPane.YES_OPTION) {
+				launchBrowser(FORUM_URL);
+			}
+		} else if (ex.getCurrentVersion().compareTo(ex.getRequiredVersion()) < 0) {
+			int response = JOptionPane.showOptionDialog(null, ex.getMessage() +
+					"\nThe repository schema version is older than the MatchMaker required version." +
+					"\nWould you like to upgrade the schema now?",
+					"MatchMaker Repository Problem", JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE, null, new String[] {"Upgrade Now", "Not Now"}, "Upgrade Now");
+			if (response == JOptionPane.YES_OPTION) {
+				//upgrade here
+			}
+		} else if (ex.getCurrentVersion().compareTo(ex.getRequiredVersion()) > 0) {
+			int response = JOptionPane.showOptionDialog(null, ex.getMessage() +
+					"\nThe repository schema version is newer than the MatchMaker required version." +
+					"\nPlease download a newer version of the MatchMaker or visit our forum for help.",
+					"MatchMaker Repository Problem", JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.WARNING_MESSAGE, null, new String[] {"Download Now", "Visit Forum", "Not Now"}, "Download Now");
+			if (response == JOptionPane.YES_OPTION) { 
+				launchBrowser(DOWNLOAD_URL);
+			} else if (response == JOptionPane.NO_OPTION) {
+				launchBrowser(FORUM_URL);
+			}
+		}
+	}
+	
+	/**
+	 * Displays the given url with the default browser.
+	 * 
+	 */
+	private void launchBrowser(String url) {
+		try {
+			BrowserUtil.launch(url);
+		} catch (IOException e) {
+			SPSUtils.showExceptionDialogNoReport("Could not launch browser!", e);
+		}
+	}
 
     ///////// Private implementation details ///////////
 

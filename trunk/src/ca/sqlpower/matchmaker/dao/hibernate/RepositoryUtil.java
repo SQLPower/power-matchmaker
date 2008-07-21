@@ -161,9 +161,8 @@ public class RepositoryUtil {
      * {@link #makeRepositoryCreationScript(SQLObject)}. If there is some
      * semblance of a repository already present, its version will be checked.
      * If it is up-to-date, this method will return without side effects. If the
-     * repository is out-of-date, it will be updated if possible. In all other
-     * cases, an informative exception will be thrown, explaining what is wrong
-     * with the repository.
+     * repository is out-of-date or in other cases, an informative exception 
+     * will be thrown, explaining what is wrong with the repository.
      * 
      * @param ds The data source that points to the repository to create or update.
      * @throws SQLException If the repository in ds could not be created, or existed
@@ -198,35 +197,23 @@ public class RepositoryUtil {
                 return;
             }
             if (!rs.next()) {
-                throw new RepositoryException(
-                        "Found repository information table, but no " +
-                        "version number was present. Perhaps the repository " +
-                        "was only partially created, or a recent upgrade attempt " +
-                        "failed.");
+                throw new RepositoryVersionException("Couldn't determine the repository schema version!",
+						new SQLException("There is no schema_version entry in the mm_schema_info table."));
             }
             
             Version reposVersion;
             try {
                 reposVersion = new Version(rs.getString(1));
             } catch (VersionFormatException e) {
-                throw new RepositoryException(
-                        "Found a repository version number, but it was not correctly-formatted." +
-                        " Perhaps someone tried updating it manually and got it wrong?", e);
+                throw new RepositoryVersionException(
+                        "Invalid repository schema version!", e);
             }
             int reposDiff = reposVersion.compareTo(MIN_PL_SCHEMA_VERSION);
-            if (reposDiff < 0) {
-                // in the future, this would be the place to perform the repository upgrade
-                throw new RepositoryException(
-                        "Your repository is version " + reposVersion + ", which is not " +
-                        "compatible with the required version, " + MIN_PL_SCHEMA_VERSION + "." +
-                        " A manual repository upgrade is required.");
-            } else if (reposDiff > 0) {
-                throw new RepositoryException(
-                        "Your repository is version " + reposVersion + ", which is not " +
-                        "compatible with the required version, " + MIN_PL_SCHEMA_VERSION + "." +
-                        " A manual repository upgrade is required.");
+            if (reposDiff != 0) {
+                throw new RepositoryVersionException(
+                		"Incompatible repository schema version!", reposVersion, MIN_PL_SCHEMA_VERSION);
             }
-            
+                
             logger.debug("Repository check passed.");
         } catch (RepositoryException ex) {
             throw ex;

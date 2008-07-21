@@ -68,7 +68,6 @@ import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
@@ -157,12 +156,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * @throws MatchMakerConfigurationException If there are some user settings that are
      * not set up properly. 
      */
-	public MatchMakerHibernateSessionImpl(
-            MatchMakerSessionContext context,
-			SPDataSource ds)
-		throws PLSecurityException, UnknownFreqCodeException,
-				SQLException, PLSchemaException, VersionFormatException, ArchitectException,
-                MatchMakerConfigurationException {
+	public MatchMakerHibernateSessionImpl(MatchMakerSessionContext context,
+			SPDataSource ds) throws PLSecurityException,
+			UnknownFreqCodeException, SQLException, ArchitectException,
+			MatchMakerConfigurationException, RepositoryVersionException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
         
@@ -182,16 +179,15 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
         Statement stmt = null;
         ResultSet rs = null;
+        String versionString = null;
         try {
             stmt = con.createStatement();
             rs = stmt.executeQuery("SELECT param_value FROM " + ds.getPlSchema() + ".mm_schema_info WHERE param_name='schema_version'");
             if (!rs.next()) {
                 throw new SQLException(
-                        "There is no schema_version entry in the " +
-                        "mm_schema_info table. It is not safe to continue.");
+                        "There is no schema_version entry in the mm_schema_info table.");
             }
-            plSchemaVersion = new Version();
-            plSchemaVersion.setVersion(rs.getString(1));
+            versionString = rs.getString(1);
         } catch (SQLException e) {
         	con.close();
             String plSchema = ds.getPlSchema();
@@ -200,22 +196,26 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             	plSchema = "not set";
             }
             logger.error(e);
-			SQLException exception = new SQLException(
-                    "Couldn't determine the repository schema version!" +
-                    "\nPlease check the repository settings or create the respository.");
-            exception.setNextException(e);
-            throw exception;
+            throw new RepositoryVersionException("Couldn't determine the repository schema version!", e);
         } finally {
             if (rs != null) rs.close();
             if (stmt != null) stmt.close();
         }
-
-        if (plSchemaVersion.compareTo(RepositoryUtil.MIN_PL_SCHEMA_VERSION) < 0) {
-            throw new PLSchemaException(
-                    "The MatchMaker requires a newer version of the Repository Schema" +
-                    " than is installed in the "+ds.getDisplayName()+" database.",
-                    plSchemaVersion.toString(), RepositoryUtil.MIN_PL_SCHEMA_VERSION.toString());
+        
+        try {
+        	plSchemaVersion = new Version();
+        	plSchemaVersion.setVersion(versionString);
+        } catch (VersionFormatException e) {
+        	throw new RepositoryVersionException("Invalid repository schema version!", e);
         }
+
+        int reposDiff = plSchemaVersion.compareTo(RepositoryUtil.MIN_PL_SCHEMA_VERSION);
+        if (reposDiff != 0) {
+            throw new RepositoryVersionException(
+                    "Incompatible repository schema version!",
+                    plSchemaVersion, RepositoryUtil.MIN_PL_SCHEMA_VERSION);
+        }
+        
         sm = new PLSecurityManager(con,
 				 					dbUser.toUpperCase(),
 				 					ds.getPass(),

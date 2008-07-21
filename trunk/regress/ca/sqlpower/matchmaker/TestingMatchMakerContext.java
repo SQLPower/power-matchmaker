@@ -20,7 +20,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,11 +27,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
@@ -81,10 +79,8 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		sessions.add(session);
 	}
 
-	public MatchMakerSession createSession(SPDataSource ds,
-			String username, String password) throws PLSecurityException,
-			SQLException, IOException,
-			SchemaVersionFormatException, PLSchemaException {
+	public MatchMakerSession createSession(SPDataSource ds, String username,
+			String password) throws PLSecurityException, SQLException, RepositoryVersionException{
 		return session;
 	}
 

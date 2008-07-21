@@ -37,13 +37,11 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.UnknownFreqCodeException;
-import ca.sqlpower.util.VersionFormatException;
 
 /**
  * Basic configuration object for a MatchMaker launch.  If you want to create MatchMakerSession
@@ -129,13 +127,13 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSession createSession(
-            SPDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, 
-            VersionFormatException, PLSchemaException, ArchitectException,
-            MatchMakerConfigurationException {
+    public MatchMakerSession createSession(SPDataSource ds, String username,
+			String password) throws PLSecurityException, SQLException,
+			ArchitectException, MatchMakerConfigurationException,
+			RepositoryVersionException {
 
-        // We create a copy of the data source and change the userID and password
+        // We create a copy of the data source and change the userID and
+		// password
         //and use that for the login attempt.  We do not want to change the
         //default userID and password for the connection in here.
         SPDataSource tempDbSource = new SPDataSource(ds);
@@ -152,7 +150,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         }
     }
     
-    public MatchMakerSession createDefaultSession() {
+    public MatchMakerSession createDefaultSession() throws RepositoryException {
         ensureHSQLDBIsSetup();
         SPDataSource ds = makeDefaultDataSource();
         

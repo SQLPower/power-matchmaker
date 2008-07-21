@@ -34,6 +34,7 @@ import prefs.PreferencesFactory;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.DatabaseListChangeListener;
@@ -120,7 +121,7 @@ public class SwingSessionContextTest extends TestCase {
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
-            public MatchMakerSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
+            public MatchMakerSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
                 System.out.println("Stub MMSContext.createSession()");
                 return null;
             }
