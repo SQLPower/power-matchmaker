@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +29,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -47,7 +47,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
 
     Logger logger = Logger.getLogger(StubSwingSessionContext.class);
 
-    public MatchMakerSwingSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
+    public MatchMakerSwingSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
         logger.debug("Stub call: StubSwingSessionContext.createSession()");
         return null;
     }

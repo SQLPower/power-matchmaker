@@ -30,7 +30,6 @@ import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
@@ -97,7 +96,7 @@ public class HibernateSessionContextTest extends TestCase {
             // to check the schema version earlier.
             ctx.createSession(ds, ds.getUser(), ds.getPass());
             fail("Session init failed to report bad schema version");
-        } catch (PLSchemaException ex) {
+        } catch (RepositoryVersionException ex) {
             assertEquals(RepositoryUtil.MIN_PL_SCHEMA_VERSION.toString(), ex.getRequiredVersion());
             assertEquals(v.toString(), ex.getCurrentVersion());
         }

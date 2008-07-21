@@ -19,18 +19,16 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
-import ca.sqlpower.util.VersionFormatException;
 
 /**
  * A MatchMakerSessionContext holds global (well, systemwide) configuration and
@@ -82,16 +80,13 @@ public interface MatchMakerSessionContext {
      * that user doesn't have permission to use the MatchMaker.
      * @throws SQLException If there are general database errors (can't connect, database
      * permission denied, the PL Schema is missing, etc).
-     * @throws IOException If any bootstrap init files are missing or unreadable.
-     * @throws PLSchemaException If the version of the schema is not up to date or is missing
-     * @throws VersionFormatException If the format of the version number is not in the form x.y.z
+     * @throws RepositoryVersionException If the repository version is incorrect, invalid, or missing.
      * @throws ArchitectException If some SQLObject operations fail
      * @throws MatchMakerConfigurationException  If there is a user-fixable configuration problem.
      */
-    public MatchMakerSession createSession(SPDataSource ds,
-            String username, String password) throws PLSecurityException,
-            SQLException, IOException, PLSchemaException, VersionFormatException,
-            ArchitectException, MatchMakerConfigurationException;
+    public MatchMakerSession createSession(SPDataSource ds, String username,
+			String password) throws PLSecurityException, SQLException,
+			ArchitectException, MatchMakerConfigurationException, RepositoryVersionException;
 
     /**
      * Creates a session using some default repository data source. If the

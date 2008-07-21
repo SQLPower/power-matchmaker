@@ -46,7 +46,7 @@ import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.MonitorableWorker;
@@ -167,13 +167,9 @@ public class LoginDialog implements SwingWorkerRegistry {
             try {
                 if (getDoStuffException() != null) {
                 	finished = true;
-                	if (getDoStuffException() instanceof PLSchemaException) {
-                		PLSchemaException ex = (PLSchemaException) getDoStuffException();
-                		SPSUtils.showExceptionDialogNoReport(frame,
-                                "MatchMaker Repository Problem",
-                                "Existing version: "+ex.getCurrentVersion() +
-                                "\nRequired Version: "+ex.getRequiredVersion(),
-                                ex);
+                	if (getDoStuffException() instanceof RepositoryVersionException) {
+                		sessionContext.handleRepositoryVersionException(dbSource,
+                				(RepositoryVersionException) getDoStuffException());
                 	} else {
                 		SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
                 	}

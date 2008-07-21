@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -30,23 +29,22 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.util.VersionFormatException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 public interface SwingSessionContext extends MatchMakerSessionContext {
 
     //////// MatchMakerSessionContext implementation //////////
     public MatchMakerSwingSession createSession(SPDataSource ds,
-            String username, String password) throws PLSecurityException,
-            SQLException, IOException, PLSchemaException, VersionFormatException,
-            ArchitectException, MatchMakerConfigurationException;
+			String username, String password) throws PLSecurityException,
+			SQLException, ArchitectException, MatchMakerConfigurationException,
+			RepositoryVersionException;
 
     public List<SPDataSource> getDataSources();
 

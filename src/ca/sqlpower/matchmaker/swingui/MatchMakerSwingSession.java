@@ -29,7 +29,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -115,9 +114,7 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
@@ -437,10 +434,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      *            The session that actually does the dirty work (ORM and stuff
      *            like that).
 	 * @throws SQLException
-	 * @throws PLSchemaException
-	 * @throws SchemaVersionFormatException
      */
-	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, SchemaVersionFormatException, PLSchemaException, SQLException {
+	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws SQLException {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
