@@ -151,7 +151,7 @@ public class MMSUtils {
 	 */
     public static JDialog showExceptionDialog(Component parent, String message, Throwable t) {
     	try {
-    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION, "MatchMaker");
+    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION.toString(), "MatchMaker");
     		logger.debug(report.toString());
     		report.send();
     	} catch (Throwable seriousProblem) {
