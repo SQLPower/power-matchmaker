@@ -49,6 +49,7 @@ import ca.sqlpower.sql.SQL;
  */
 public class MergeProcessor extends AbstractProcessor {
 
+    @SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(MergeProcessor.class);
     
 	private Project project;
@@ -96,7 +97,6 @@ public class MergeProcessor extends AbstractProcessor {
 			
 			engineLogger.info("Merging records.");
 			for (PotentialMatchRecord pm : pmProcessOrder) {
-				if (monitorableHelper.getProgress() > monitorableHelper.getJobSize()) break;
                 checkCancelled();
 				monitorableHelper.incrementProgress();
 				
