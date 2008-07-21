@@ -43,16 +43,22 @@ import ca.sqlpower.matchmaker.graph.MatchPoolDirectedGraphModel;
 import ca.sqlpower.sql.SQL;
 
 /**
- * A Processor which takes a List of arrays of MungeStepOutputs, which it would
- * typically get from a MungeProcess, and performs matching on the data, and stores
- * the match results into the match repository. 
+ * Implements the merge behaviour of the MatchMaker product.  The behaviour of
+ * the merge is configured via the project's {@link MergeSettings} and its
+ * set of {@link TableMergeRules}. Logging that is user-readable is done to
+ * a special Logger instance passed in via the constructor--this log information
+ * is expected to be presented to the end user of the product, so developers
+ * maintaining this class should keep that fact in mind.
  */
 public class MergeProcessor extends AbstractProcessor {
 
     @SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(MergeProcessor.class);
     
-	private Project project;
+    /**
+     * The project we're doing the merging for.
+     */
+	private final Project project;
 
 	/**
 	 * Stores the sets of potential matches which is used for merging the data.
@@ -65,22 +71,60 @@ public class MergeProcessor extends AbstractProcessor {
      */
     private List<PotentialMatchRecord> pmProcessOrder;
     
-    private Connection con;
+    /**
+     * Connection to the database that contains the source table. This connection
+     * is the one given in the constructor.
+     */
+    private final Connection con;
+    
     private Statement stmt;
     
+    /**
+     * The special merge rule that applies to the project's source table. This is
+     * set up in {@link #initVariables()}.
+     */
     private TableMergeRules sourceTableMergeRule = null;
+    
+    /**
+     * A flag that controls an optimisation in the call() method: If none
+     * of the merge rules on the source (match) table require us to see the
+     * value in the duplicate row, then we don't need to retrieve the duplicate
+     * row at all. In this case, needsToCheckDup is false. Otherwise, we need
+     * to retrieve the duplicate row before deleting it in order to merge its
+     * information into the master row.
+     */
     private boolean needsToCheckDup = false;
+    
     private Map<SQLColumn, ColumnMergeRules> columnMergeRuleMap = 
     	new HashMap<SQLColumn, ColumnMergeRules>();
-    
+
+    /**
+     * This is the logger that the user sees. Its output appears on screen in
+     * the Swing user interface, and the messages are also written out to a file.
+     */
     private final Logger engineLogger;
-    
+
+    /**
+     * Creates a new merge processor for the given project. To start the merge
+     * processing, you call the {@link #call()} method.
+     * 
+     * @param project
+     *            The project the merging is for.
+     * @param con
+     *            Database connection to the database that contains the
+     *            project's match (source) table.
+     * @param logger
+     *            The logger that we should log end-user-visible messages to.
+     * @throws SQLException
+     *             If there are any problems with the database
+     * @throws ArchitectException
+     *             If any of the SQLObjects in play cannot populate.
+     */
 	public MergeProcessor(Project project, Connection con, Logger logger) 
 			throws SQLException, ArchitectException {
 		this.project = project;
 		this.engineLogger = logger;
 		this.con = con;
-		stmt = con.createStatement();
 	}
 	
 	/**
@@ -93,6 +137,8 @@ public class MergeProcessor extends AbstractProcessor {
 			monitorableHelper.setStarted(true);
 			monitorableHelper.setFinished(false);
 			
+			stmt = con.createStatement();
+
 			initVariables();
 			
 			engineLogger.info("Merging records.");
@@ -154,8 +200,8 @@ public class MergeProcessor extends AbstractProcessor {
 			pool.store();
 			return Boolean.TRUE;
 		} finally {
+		    monitorableHelper.setFinished(true);
 			stmt.close();
-			monitorableHelper.setFinished(true);
 		}
 		
 	}
@@ -218,9 +264,8 @@ public class MergeProcessor extends AbstractProcessor {
 	}
 	
 	/**
-	 * Merge the child tables recursively.
-	 * <p>
-	 * Note that the keyValues must be in the ordered by the same order of the columns
+	 * Merges the child tables recursively, in an order that is safe given the foreign
+	 * key constraints between the child tables.
 	 */
 	private void mergeChildTables(ResultRow parentDupRow, 
 			ResultRow parentMasterRow, 
