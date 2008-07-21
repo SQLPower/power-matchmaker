@@ -232,7 +232,7 @@ public class MergeProcessor extends AbstractProcessor {
 		pool = new MatchPool(project);
 		pool.findAll(new ArrayList<SQLColumn>());
 		
-		//Topological sort
+		//Topological sort so that chains of matches are merged in the right order
 		engineLogger.info("Sorting matches.");
 		MatchPoolDirectedGraphModel gm = new MatchPoolDirectedGraphModel(pool);
         DepthFirstSearch<SourceTableRecord, PotentialMatchRecord> dfs = 
@@ -243,7 +243,11 @@ public class MergeProcessor extends AbstractProcessor {
         //Finds the correct potential match records in the correct order
         pmProcessOrder = new ArrayList<PotentialMatchRecord>();
         for (SourceTableRecord str : processOrder) {
+            
+            // Because of the MatchPoolDirectedGraphModel, this list will only contain edges
+            // that are MATCH or AUTOMATCH; potential matches and merged records will not be in here.
         	Collection<PotentialMatchRecord> edges = gm.getOutboundEdges(str);
+
         	if (edges.size() > 1) {
 				throw new IllegalStateException(
 						"Source Table Record: " + str + " has more than one master.");
@@ -368,6 +372,7 @@ public class MergeProcessor extends AbstractProcessor {
         
         StringBuilder sb = new StringBuilder();
         
+        // format the summary table
         sb.append(String.format("%-50s %6s %6s %6s\n", "Table", "Update", "Delete", "Insert"));
         
         for (Map.Entry<String, SQLTable> ent : affectedTables.entrySet()) {
@@ -553,10 +558,6 @@ public class MergeProcessor extends AbstractProcessor {
 				engineLogger.debug("Deleting duplicate's child records on table " + childTableMergeRule.getSourceTable());
 				deleteRowsByForeignKey(childTableMergeRule, parentDupRow);
 			} 
-	
-			
-	
-			
 		}
 	}
 
