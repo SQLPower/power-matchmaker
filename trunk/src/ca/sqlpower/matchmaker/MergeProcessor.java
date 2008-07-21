@@ -189,11 +189,11 @@ public class MergeProcessor extends AbstractProcessor {
         engineLogger.debug("Order of processing: " + processOrder);
         
         // Sets the jobsize
-        monitorableHelper.setJobSize(pmProcessOrder.size());
         Integer recordsToProcess = project.getMergeSettings().getProcessCount();
-		if (recordsToProcess != null && recordsToProcess > 0) {
-			monitorableHelper.setJobSize(Math.min(pmProcessOrder.size(), recordsToProcess));
-		} 
+		if (recordsToProcess != null && recordsToProcess > 0 && pmProcessOrder.size() > recordsToProcess) {
+		    pmProcessOrder = pmProcessOrder.subList(0, recordsToProcess);
+		}
+		monitorableHelper.setJobSize(pmProcessOrder.size());
 		engineLogger.debug("The job size is: " + monitorableHelper.getJobSize());
 		
 		// Finds the correct table merge rule according to the source table
