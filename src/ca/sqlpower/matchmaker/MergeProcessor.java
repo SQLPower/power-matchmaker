@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
@@ -105,6 +106,24 @@ public class MergeProcessor extends AbstractProcessor {
     private final Logger engineLogger;
 
     /**
+     * Keeps track of how many rows have been updated in each table touched by this
+     * merge processor.
+     */
+    private final Map<SQLTable, Integer> updateCounts = new HashMap<SQLTable, Integer>();
+
+    /**
+     * Keeps track of how many rows have been inserted in each table touched by this
+     * merge processor.
+     */
+    private final Map<SQLTable, Integer> insertCounts = new HashMap<SQLTable, Integer>();
+
+    /**
+     * Keeps track of how many rows have been deleted in each table touched by this
+     * merge processor.
+     */
+    private final Map<SQLTable, Integer> deleteCounts = new HashMap<SQLTable, Integer>();
+
+    /**
      * Creates a new merge processor for the given project. To start the merge
      * processing, you call the {@link #call()} method.
      * 
@@ -141,7 +160,7 @@ public class MergeProcessor extends AbstractProcessor {
 
 			initVariables();
 			
-			engineLogger.info("Merging records.");
+			engineLogger.info("Starting merge operation");
 			for (PotentialMatchRecord pm : pmProcessOrder) {
                 checkCancelled();
 				monitorableHelper.incrementProgress();
@@ -202,6 +221,7 @@ public class MergeProcessor extends AbstractProcessor {
 		} finally {
 		    monitorableHelper.setFinished(true);
 			stmt.close();
+			engineLogger.info("\n" + getActivitySummary());
 		}
 		
 	}
@@ -263,6 +283,104 @@ public class MergeProcessor extends AbstractProcessor {
 		engineLogger.debug("needsToCheckDup: " + needsToCheckDup);
 	}
 	
+    /**
+     * Logs a message to the engine log (DEBUG level) and also increments the
+     * update count for the given row's table. You should call this just after
+     * executing the statement that performs the operation.
+     * 
+     * @param updatedRow The row that is just about to be updated.
+     * @param count The number of rows updated.
+     */
+    private void logUpdate(ResultRow updatedRow, int count) {
+        engineLogger.debug("Modified " + count + " row(s): " + updatedRow);
+        Integer updateCount = updateCounts.get(updatedRow.tableMergeRule.getSourceTable());
+        if (updateCount == null) {
+            updateCount = count;
+        } else {
+            updateCount += count;
+        }
+        updateCounts.put(updatedRow.tableMergeRule.getSourceTable(), updateCount);
+    }
+
+    /**
+     * Logs a message to the engine log (DEBUG level) and also increments the
+     * insert count for the given row's table. You should call this just after
+     * executing the statement that performs the operation.
+     * 
+     * @param insertedRow The row that is just about to be inserted.
+     * @param count The number of rows inserted.
+     */
+    private void logInsert(ResultRow insertedRow, int count) {
+        engineLogger.debug("Inserted " + count + " row(s): " + insertedRow);
+        Integer insertCount = insertCounts.get(insertedRow.tableMergeRule.getSourceTable());
+        if (insertCount == null) {
+            insertCount = count;
+        } else {
+            insertCount += count;
+        }
+        insertCounts.put(insertedRow.tableMergeRule.getSourceTable(), insertCount);
+    }
+    
+    /**
+     * Logs a message to the engine log (DEBUG level) and also increments the
+     * delete count for the given row's table.
+     * 
+     * @param deletedRow The row that is just about to be deleted.
+     * @param count The number of rows deleted.
+     */
+    private void logDelete(ResultRow deletedRow, int count) {
+        engineLogger.debug("Deleted " + count + " row(s): " + deletedRow);
+        Integer deleteCount = deleteCounts.get(deletedRow.tableMergeRule.getSourceTable());
+        if (deleteCount == null) {
+            deleteCount = count;
+        } else {
+            deleteCount += count;
+        }
+        deleteCounts.put(deletedRow.tableMergeRule.getSourceTable(), deleteCount);
+    }
+
+    /**
+     * Generates a multi-line activity summary string which can be sent to the log.
+     * This summary includes update, insert, and delete counts for all affected tables.
+     * If no tables were affected since this processor was created, this method prints
+     * a short message to that effect instead of the table.
+     */
+    private String getActivitySummary() {
+        
+        // Using a map because we want alphabetical order by name of
+        // the union of the tables in these three other maps.
+        // But we also need the original SQLTable objects so we can go back
+        // and get the counts when creating the table of values.
+        Map<String, SQLTable> affectedTables = new TreeMap<String, SQLTable>();
+        for (SQLTable t : deleteCounts.keySet()) {
+            affectedTables.put(DDLUtils.toQualifiedName(t), t);
+        }
+        for (SQLTable t : updateCounts.keySet()) {
+            affectedTables.put(DDLUtils.toQualifiedName(t), t);
+        }
+        for (SQLTable t : insertCounts.keySet()) {
+            affectedTables.put(DDLUtils.toQualifiedName(t), t);
+        }
+        
+        if (affectedTables.size() == 0) {
+            return "No tables were affected";
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(String.format("%-50s %6s %6s %6s\n", "Table", "Update", "Delete", "Insert"));
+        
+        for (Map.Entry<String, SQLTable> ent : affectedTables.entrySet()) {
+            String name = ent.getKey();
+            SQLTable t = ent.getValue();
+            int updates = updateCounts.get(t) == null ? 0 : updateCounts.get(t);
+            int deletes = deleteCounts.get(t) == null ? 0 : deleteCounts.get(t);
+            int inserts = insertCounts.get(t) == null ? 0 : insertCounts.get(t);
+            sb.append(String.format("%-50s %6d %6d %6d\n", name, updates, deletes, inserts));
+        }
+        
+        return sb.toString();
+    }
 	/**
 	 * Merges the child tables recursively, in an order that is safe given the foreign
 	 * key constraints between the child tables.
@@ -426,13 +544,13 @@ public class MergeProcessor extends AbstractProcessor {
 				}
 				
 				// Recursively merge all the grand child tables
-				engineLogger.debug("Merging duplicate's child reocrds on table " + childTableMergeRule.getSourceTable());
+				engineLogger.debug("Merging duplicate's child records on table " + childTableMergeRule.getSourceTable());
 				for (int i = 0; i < childDupRows.size(); i++) {
 					mergeChildTables(childDupRows.get(i), childMasterRows.get(i), childTableMergeRule);
 				}
 	
 				// Delete the duplicate child records
-				engineLogger.debug("Deleting duplicate's child reocrds on table " + childTableMergeRule.getSourceTable());
+				engineLogger.debug("Deleting duplicate's child records on table " + childTableMergeRule.getSourceTable());
 				deleteRowsByForeignKey(childTableMergeRule, parentDupRow);
 			} 
 	
@@ -447,7 +565,9 @@ public class MergeProcessor extends AbstractProcessor {
 		sql.append("DELETE FROM ");
 		sql.append(DDLUtils.toQualifiedName(table));
 		sql.append(generateWhereStatement(row));
-		return stmt.executeUpdate(sql.toString());
+		int count = stmt.executeUpdate(sql.toString());
+		logDelete(row, count);
+        return count;
 	}
 
 
@@ -471,7 +591,9 @@ public class MergeProcessor extends AbstractProcessor {
 				sql.append(formatObjectToSQL(ival));
 			} 
 		}
-		return stmt.executeUpdate(sql.toString());
+		int count = stmt.executeUpdate(sql.toString());
+		logDelete(foreignKeyValues, count);
+        return count;
 	}
 
 	private ResultSet findUpdateValueByPrimaryKey(SQLTable table,
@@ -578,7 +700,8 @@ public class MergeProcessor extends AbstractProcessor {
 		sql.append(")");
 		sqlValues.append(")");
 		sql.append(sqlValues.toString());
-		stmt.executeUpdate(sql.toString());
+		int count = stmt.executeUpdate(sql.toString());
+		logInsert(row, count);
 	}
 
 	private int mergeRows(ResultRow dupRowValues, ResultRow masterRowValues,
@@ -634,7 +757,9 @@ public class MergeProcessor extends AbstractProcessor {
 		if (!first) {
 			String whereStatement = generateWhereStatement(masterRowValues);
 			sql.append(whereStatement);
-			return stmt.executeUpdate(sql.toString());
+			int count = stmt.executeUpdate(sql.toString());
+			logUpdate(masterRowValues, count);
+            return count;
 		} else {
 			return 1;
 		}
