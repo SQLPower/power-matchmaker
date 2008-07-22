@@ -53,9 +53,6 @@ import ca.sqlpower.sql.SQL;
  */
 public class MergeProcessor extends AbstractProcessor {
 
-    @SuppressWarnings("unused")
-	private static final Logger logger = Logger.getLogger(MergeProcessor.class);
-    
     /**
      * The project we're doing the merging for.
      */
@@ -156,17 +153,24 @@ public class MergeProcessor extends AbstractProcessor {
 			monitorableHelper.setStarted(true);
 			monitorableHelper.setFinished(false);
 			
+			engineLogger.info("Starting merge operation for project " + project.getName());
+
 			stmt = con.createStatement();
 
 			initVariables();
 			
-			engineLogger.info("Starting merge operation");
 			for (PotentialMatchRecord pm : pmProcessOrder) {
                 checkCancelled();
 				monitorableHelper.incrementProgress();
 				
+				engineLogger.info(
+				        " ***** Merging record " + monitorableHelper.getProgress() +
+				        " of " + monitorableHelper.getJobSize() + " *****");
+				
 				ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
 				ResultRow masterKeyValues = new ResultRow(sourceTableMergeRule, pm.getMaster().getKeyValues());
+				
+				engineLogger.debug("Duplicate record: " + dupKeyValues + "; master record: " + masterKeyValues);
 				
 				// Starts the recursive merging
 				mergeChildTables(dupKeyValues, masterKeyValues, sourceTableMergeRule);
@@ -228,12 +232,14 @@ public class MergeProcessor extends AbstractProcessor {
 	
 	private void initVariables() throws SQLException, ArchitectException {
 		//Initialize the match pool
-		engineLogger.info("Loading match pool.");
+		engineLogger.info("Loading match pool...");
 		pool = new MatchPool(project);
 		pool.findAll(new ArrayList<SQLColumn>());
 		
+		engineLogger.debug("Found " + pool.getSourceTableRecords().size() + " source table records in pool");
+		
 		//Topological sort so that chains of matches are merged in the right order
-		engineLogger.info("Sorting matches.");
+		engineLogger.info("Sorting matches...");
 		MatchPoolDirectedGraphModel gm = new MatchPoolDirectedGraphModel(pool);
         DepthFirstSearch<SourceTableRecord, PotentialMatchRecord> dfs = 
         	new DepthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
@@ -256,15 +262,25 @@ public class MergeProcessor extends AbstractProcessor {
         		pmProcessOrder.add(pmr);
         	}
         }
-        engineLogger.debug("Order of processing: " + processOrder);
+        
+        if (engineLogger.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Matches have been sorted; " + pmProcessOrder.size() + " merge operations to process");
+            sb.append("\nPlanned processing order ([duplicate key] into [master key]):");
+            for (PotentialMatchRecord pmr : pmProcessOrder) {
+                sb.append("\n    ").append(pmr.getDuplicate().getKeyValues())
+                .append(" into ").append(pmr.getMaster().getKeyValues());
+            }
+            engineLogger.debug(sb.toString());
+        }
         
         // Sets the jobsize
         Integer recordsToProcess = project.getMergeSettings().getProcessCount();
 		if (recordsToProcess != null && recordsToProcess > 0 && pmProcessOrder.size() > recordsToProcess) {
+		    engineLogger.debug("Truncating processing list to user setting of " + recordsToProcess + " items.");
 		    pmProcessOrder = pmProcessOrder.subList(0, recordsToProcess);
 		}
 		monitorableHelper.setJobSize(pmProcessOrder.size());
-		engineLogger.debug("The job size is: " + monitorableHelper.getJobSize());
 		
 		// Finds the correct table merge rule according to the source table
         sourceTableMergeRule = project.getTableMergeRules().get(0);
@@ -272,19 +288,34 @@ public class MergeProcessor extends AbstractProcessor {
         	throw new IllegalStateException(
         			"The first merge rule needs to be the source table merge rule.");
         }
-        engineLogger.debug("The source TableMergeRule is: " + sourceTableMergeRule);
+        
+        StringBuilder mergeRuleMessage = new StringBuilder();
+        if (engineLogger.isDebugEnabled()) {
+            mergeRuleMessage.append("Merge rules for the source table's columns:");
+        }
         
 		// Finds the columns that needs to be merged and maps it to the 
 		// corresponding column merge rule.
 		for (ColumnMergeRules cmr : sourceTableMergeRule.getChildren()) {
-			engineLogger.debug("ColumnMergeRule: " + cmr);
+		    if (engineLogger.isDebugEnabled()) {
+		        mergeRuleMessage.append(
+		            String.format("\n    %-40s %s",
+		                    cmr.getColumnName(),
+		                    cmr.getActionType()));
+		    }
 			if (cmr.getActionType() != MergeActionType.USE_MASTER_VALUE 
 					&& cmr.getActionType() != MergeActionType.NA) {
 				needsToCheckDup = true;
 			}
 			columnMergeRuleMap.put(cmr.getColumn(), cmr);
 		}
-		engineLogger.debug("needsToCheckDup: " + needsToCheckDup);
+		
+		if (engineLogger.isDebugEnabled()) {
+		    engineLogger.debug(mergeRuleMessage.toString());
+		    if (!needsToCheckDup) {
+		        engineLogger.debug(": " + needsToCheckDup);
+		    }
+		}
 	}
 	
     /**
@@ -372,6 +403,8 @@ public class MergeProcessor extends AbstractProcessor {
         
         StringBuilder sb = new StringBuilder();
         
+        sb.append("Summary of modifications by table:\n");
+        
         // format the summary table
         sb.append(String.format("%-50s %6s %6s %6s\n", "Table", "Update", "Delete", "Insert"));
         
@@ -386,6 +419,7 @@ public class MergeProcessor extends AbstractProcessor {
         
         return sb.toString();
     }
+    
 	/**
 	 * Merges the child tables recursively, in an order that is safe given the foreign
 	 * key constraints between the child tables.
@@ -395,7 +429,7 @@ public class MergeProcessor extends AbstractProcessor {
 			TableMergeRules parentTableMergeRule) 
 	throws ArchitectException, SQLException {
 		
-		engineLogger.debug("Merging duplicate record: " + parentDupRow + " into master record: " + parentMasterRow + " on table: " + parentTableMergeRule.getSourceTable());
+		engineLogger.debug("Merging child records...");
 		
 		for (TableMergeRules childTableMergeRule : project.getTableMergeRules()) {
 			if (parentTableMergeRule == childTableMergeRule.getParentMergeRule()) {
