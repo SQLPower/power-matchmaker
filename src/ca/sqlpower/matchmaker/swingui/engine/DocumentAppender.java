@@ -61,6 +61,14 @@ class DocumentAppender extends AppenderSkeleton {
 	protected void append(LoggingEvent evt) {
 		try {
 			doc.insertString(doc.getLength(), layout.format(evt), attributes);
+			if (layout.ignoresThrowable()) {
+			    String[] throwableStrRep = evt.getThrowableStrRep();
+			    if (throwableStrRep != null) {
+			        for (String traceElem : throwableStrRep) {
+			            doc.insertString(doc.getLength(), traceElem + "\n", attributes);
+			        }
+			    }
+			}
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
