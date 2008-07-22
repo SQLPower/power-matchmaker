@@ -57,7 +57,7 @@ public class TableMergeRules
          * This action type indicates that the all child records of the
          * duplicate record shall be deleted
          */
-		DELETE_ALL_DUP_CHILD("Delete all duplicate child records"),
+		DELETE_ALL_DUP_CHILD("Delete all child records of duplicate"),
 		
 		/**
          * This action type indicates that the child records of the
@@ -65,7 +65,7 @@ public class TableMergeRules
          * master records' primary key and all other columns will be 
          * updated according to the sql if provided.
          */
-		UPDATE_USING_SQL("Update child records using the provided sql"),
+		UPDATE_USING_SQL("Reassign child records, then update using the provided SQL"),
 		
 		/**
          * This action type indicates that the child records of the
@@ -73,7 +73,7 @@ public class TableMergeRules
          * master records' primary key and the engine will fail if 
          * there are conflicts generated during this process.
          */
-		UPDATE_FAIL_ON_CONFLICT("Update child records and delete if conflictt"),
+		UPDATE_FAIL_ON_CONFLICT("Reassign child records, fail on conflict"),
 		
 		/**
          * This action type indicates that the child records of the
@@ -81,7 +81,7 @@ public class TableMergeRules
          * master records' primary key and the engine will delete the child 
          * record if the updated foreign key conflicts with another record.
          */
-		UPDATE_DELETE_ON_CONFLICT("Update child records and fail if conflict"),
+		UPDATE_DELETE_ON_CONFLICT("Reassign child records, delete on conflict"),
 		
 		/**
          * This action type indicates that the child records of the
@@ -89,7 +89,7 @@ public class TableMergeRules
          * master records' primary key and the engine will merge the records
          * if the updated foreign key conflicts with another record.
          */
-		MERGE_ON_CONFLICT("Merge child records if conflict");
+		MERGE_ON_CONFLICT("Reassign child records, merge on conflict");
 		
         /**
          * The human-readable English text shown to the user for
