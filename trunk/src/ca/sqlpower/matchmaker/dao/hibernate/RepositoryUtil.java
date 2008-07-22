@@ -325,23 +325,30 @@ public class RepositoryUtil {
 	 *             When upgrade scripts execution failed.
 	 * @throws IOException
 	 *             When upgrade scripts read failed.
-	 * @throws SAXException
-	 *             When upgrade scripts parse failed.
-	 * @throws ParserConfigurationException
-	 *             When upgrade scripts parse failed.
+	 * @throws SAXException,ParserConfigurationException
+	 *             When upgrade scripts parsing failed.
+	 * @throws ClassNotFoundException, IllegalAccessException, InstantiationException 
+	 *             When creating  ddlg from the datasource fails.
 	 */
     public static void upgradeSchema(SPDataSource dbSource, Version curVer, Version reqVer) 
-    		throws SQLException, ParserConfigurationException, SAXException, IOException {
+    		throws SQLException, ParserConfigurationException, SAXException, IOException,
+    		InstantiationException, IllegalAccessException, ClassNotFoundException {
+    	logger.debug("Creating DDLG from datasource.");
+    	DDLGenerator ddlg = DDLUtils.createDDLGenerator(dbSource);
+
+    	logger.debug("Loading upgrade scripts.");
     	String schemaQualifier = dbSource.getPlSchema() + ".";
     	List<String> upgradeStmts = readUpgradeScripts(schemaQualifier, dbSource.getParentType(), curVer, reqVer);
 
     	Connection con = null;
     	Statement stmt = null;
     	String lastSql = null;
-
+    	
   		try {
   			con = dbSource.createConnection();
     		stmt = con.createStatement();
+    		
+    		con.setAutoCommit(false);
   			
     		logger.debug("Executing upgrade sql scripts");
     		for (String sql : upgradeStmts) {
@@ -349,35 +356,43 @@ public class RepositoryUtil {
     			stmt.execute(lastSql);
     		}
     		
-    		lastSql = null;
-    		
     		logger.debug("Commiting upgrade");
     		con.commit();
     	} catch (SQLException e) {
     		logger.error("Repository schema upgrade failed at:\n" + lastSql, e);
-    		
+
     		if (lastSql != null) {
-    			e.setNextException(new SQLException("Failed sql statement: " + lastSql));
+    			e.setNextException(new SQLException("Last sql statement executed: " + lastSql));
+
+    			boolean invalidateSchema = false;
     			
-    			try {
-    				logger.debug("Attempt to rollback upgrade.");
-					con.rollback();
-				} catch (SQLException ex) {
-					logger.error("Couldn't rollback database, adding to exception:", ex);
-					e.setNextException(ex);
-				}
+    			if (ddlg.supportsRollback()) {
+    				try {
+    					logger.debug("Attempting to rollback upgrade.");
+    					con.rollback();
+    				} catch (SQLException ex) {
+    					logger.error("Rollback failed, adding to exception:", ex);
+    					e.setNextException(ex);
+    					invalidateSchema = true;
+    				}
+    			} else {
+    				invalidateSchema = true;
+    			}
+    			
+    			if (invalidateSchema) {
+    				try {
+    					logger.debug("Attempting to invalidate schema version.");
+    					invalidateSchemaVersion(dbSource);
+    				} catch (SQLException ex) {
+    					logger.error("Couldn't invalidate schema version, adding to original exception:", ex);
+    					e.setNextException(ex);
+    				}
+    			}
     		}
-    		
-    		try {
-    			logger.debug("Attempting to invalidate schema version.");
-    			invalidateSchemaVersion(dbSource);
-    		} catch (SQLException ex) {
-    			logger.error("Couldn't invalidate schema version, adding to original exception:", ex);
-    			e.setNextException(ex);
-    		}
-    		
+
     		throw e;
     	} finally {
+    		con.setAutoCommit(true);
     		if (stmt != null) {
     			try {
     				stmt.close();
