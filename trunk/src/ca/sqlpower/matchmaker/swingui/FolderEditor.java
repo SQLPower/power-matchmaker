@@ -103,7 +103,7 @@ public class FolderEditor implements DataEntryPanel {
 		pb = new PanelBuilder(layout, p);
 		CellConstraints cc = new CellConstraints();
 
-		pb.add(status, cc.xy(4,2,"r,c"));
+		pb.add(status, cc.xy(4,2,"l,c"));
 		pb.add(new JLabel("Folder Name:"), cc.xy(2,4,"r,c"));
 		pb.add(new JLabel("Description:"), cc.xy(2,6,"r,c"));
 
