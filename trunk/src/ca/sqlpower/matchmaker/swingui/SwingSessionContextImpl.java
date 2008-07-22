@@ -59,6 +59,7 @@ import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryUtil;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
@@ -89,10 +90,6 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 
 public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingSessionContext {
 
-    private static final String DOWNLOAD_URL = "http://download.sqlpower.ca/matchmaker/current.html";
-
-	private static final String FORUM_URL = "http://www.sqlpower.ca/forum/";
-
 	private static final Logger logger = Logger.getLogger(SwingSessionContextImpl.class);
 
 	/**
@@ -100,6 +97,16 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	 *  (excluding the input and output steps).
 	 */
 	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class};
+	
+	/**
+	 * A link to the page for downloading the latest MatchMaker.
+	 */
+    private static final String DOWNLOAD_URL = "http://download.sqlpower.ca/matchmaker/current.html";
+
+    /**
+     * A link to the page for forum support.
+     */
+	private static final String FORUM_URL = "http://www.sqlpower.ca/forum/";
 
     /**
 	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
@@ -416,19 +423,11 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             		if (ex instanceof RepositoryVersionException) {
                 		handleRepositoryVersionException(dbSource, (RepositoryVersionException) ex);
                 	} else {
-                		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Login failed", ex);
+                		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed!", ex);
                 		errorDialog.addWindowListener(new WindowAdapter() {
-
-                			// called by both dispose
-                			public void windowClosed(WindowEvent e) {
+                			public void windowDeactivated(WindowEvent evt) {
                 				showLoginDialog(getAutoLoginDataSource());
                 			}
-
-                			// called by x button
-                			public void windowClosing(WindowEvent e) {
-                				showLoginDialog(getAutoLoginDataSource());
-                			}
-
                 		});
                 	}
             	}
@@ -440,40 +439,68 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     
     /**
      * Provides the user with options to dealing with a repository schema version problem.
+     * If the schema is too old, attempt to run upgrade script. If the schema is too
+     * "new", prompts user to download newer mm or visit forum. Redisplays the login screen
+     * regardless of the result.
      * 
      * @param dbSource Used for running upgrade scripts to the schema.
-     * @param ex Stores information of the schema problem.
+     * @param e Stores information of the schema problem.
      */
-	public void handleRepositoryVersionException(SPDataSource dbSource,
-			RepositoryVersionException ex) {
-		if (ex.getCurrentVersion() == null) {
-			int response = JOptionPane.showOptionDialog(null, ex.getMessage() +
-					"\nPlease visit our forum for help.",
-					"MatchMaker Repository Problem", JOptionPane.YES_NO_OPTION,
-					JOptionPane.WARNING_MESSAGE, null, new String[] {"Visit Forum", "Not Now"}, "Visit Forum");
-			if (response == JOptionPane.YES_OPTION) {
-				launchBrowser(FORUM_URL);
-			}
-		} else if (ex.getCurrentVersion().compareTo(ex.getRequiredVersion()) < 0) {
-			int response = JOptionPane.showOptionDialog(null, ex.getMessage() +
+	public void handleRepositoryVersionException(final SPDataSource dbSource,
+			RepositoryVersionException e) {
+		Throwable t = null;
+		
+		if (e.getCurrentVersion() == null) {
+			// invalid schema version, just show the error dialog
+			t = e;
+		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) < 0) {
+			// schema is too old, prompt user to upgrade
+			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
 					"\nThe repository schema version is older than the MatchMaker required version." +
 					"\nWould you like to upgrade the schema now?",
 					"MatchMaker Repository Problem", JOptionPane.YES_NO_OPTION,
 					JOptionPane.WARNING_MESSAGE, null, new String[] {"Upgrade Now", "Not Now"}, "Upgrade Now");
+			
 			if (response == JOptionPane.YES_OPTION) {
-				//upgrade here
+				try {
+					RepositoryUtil.upgradeSchema(dbSource, e.getCurrentVersion(), e.getRequiredVersion());
+					
+					JOptionPane.showMessageDialog(null, "The repository schema has been sucessfully upgrade to " +
+							e.getRequiredVersion() + ".", "Repository Upgrade Success", JOptionPane.INFORMATION_MESSAGE);
+				} catch (Exception ex) {
+					// failed upgrade, pass on exception to show user
+					t = ex;
+				}
 			}
-		} else if (ex.getCurrentVersion().compareTo(ex.getRequiredVersion()) > 0) {
-			int response = JOptionPane.showOptionDialog(null, ex.getMessage() +
+		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) > 0) {
+			// schema too ...new? prompt user to download new mm or visit forum
+			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
 					"\nThe repository schema version is newer than the MatchMaker required version." +
 					"\nPlease download a newer version of the MatchMaker or visit our forum for help.",
 					"MatchMaker Repository Problem", JOptionPane.YES_NO_CANCEL_OPTION,
 					JOptionPane.WARNING_MESSAGE, null, new String[] {"Download Now", "Visit Forum", "Not Now"}, "Download Now");
+			
 			if (response == JOptionPane.YES_OPTION) { 
 				launchBrowser(DOWNLOAD_URL);
 			} else if (response == JOptionPane.NO_OPTION) {
 				launchBrowser(FORUM_URL);
 			}
+		} else {
+			// not something we're handling, just show the error dialog
+			t = e;
+		}
+		
+		if (t != null) {
+			// error not handled
+			JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Repository Schema Problem!", t);
+    		errorDialog.addWindowListener(new WindowAdapter() {
+    			public void windowDeactivated(WindowEvent arg0) {
+    				showLoginDialog(dbSource);
+    			}
+    		});
+		} else {
+			// error successfully handled
+			showLoginDialog(dbSource);
 		}
 	}
 	

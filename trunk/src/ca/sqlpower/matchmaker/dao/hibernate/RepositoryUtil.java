@@ -30,7 +30,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
@@ -45,6 +52,7 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionFormatException;
@@ -255,6 +263,8 @@ public class RepositoryUtil {
      */
     private static void createRepositorySchema(SPDataSource ds) throws RepositoryException {
         SQLDatabase db = null;
+        Connection con = null;
+        Statement stmt = null;
         try {
             db = new SQLDatabase(ds);
             SQLObject target = db.getChildByNameIgnoreCase(ds.getPlSchema());
@@ -263,19 +273,31 @@ public class RepositoryUtil {
                         "Requested repository owner \"" + ds.getPlSchema() + "\" not found. " +
                         "Please create it and try again.");
             }
-            Connection con = db.getConnection();
-            Statement stmt = con.createStatement();
+            con = db.getConnection();
+            stmt = con.createStatement();
             List<String> script = makeRepositoryCreationScript(target);
             for (String sql : script) {
                 stmt.execute(sql);
             }
-            stmt.close();
-            con.close();
         } catch (RepositoryException ex) {
             throw ex;
         } catch (Exception ex) {
             throw new RepositoryException("Failed to create repository. See nested cause for more details.", ex);
         } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException ex) {
+                    logger.error("Couldn't close statement! Squishing this exception:", ex);
+                }
+            }
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    logger.error("Couldn't close connection! Squishing this exception:", ex);
+                }
+            }
             if (db != null) {
                 try {
                     db.disconnect();
@@ -285,7 +307,239 @@ public class RepositoryUtil {
             }
         }
     }
+    
+    /**
+	 * Upgrades the repository schema to the given required version of the
+	 * MatchMaker. If it errors arise, it will attempt to perform a rollback on
+	 * the platforms that support the function. Then, it will also invalidate
+	 * the repository schema version.
+	 * 
+	 * @param dbSource
+	 *            Database connection to the repository schema.
+	 * @param curVer
+	 *            Current version of the repository schema.
+	 * @param reqVer
+	 *            Required version of the MatchMaker.
+	 * 
+	 * @throws SQLException
+	 *             When upgrade scripts execution failed.
+	 * @throws IOException
+	 *             When upgrade scripts read failed.
+	 * @throws SAXException
+	 *             When upgrade scripts parse failed.
+	 * @throws ParserConfigurationException
+	 *             When upgrade scripts parse failed.
+	 */
+    public static void upgradeSchema(SPDataSource dbSource, Version curVer, Version reqVer) 
+    		throws SQLException, ParserConfigurationException, SAXException, IOException {
+    	String schemaQualifier = dbSource.getPlSchema() + ".";
+    	List<String> upgradeStmts = readUpgradeScripts(schemaQualifier, dbSource.getParentType(), curVer, reqVer);
 
+    	Connection con = null;
+    	Statement stmt = null;
+    	String lastSql = null;
 
+  		try {
+  			con = dbSource.createConnection();
+    		stmt = con.createStatement();
+  			
+    		logger.debug("Executing upgrade sql scripts");
+    		for (String sql : upgradeStmts) {
+    			lastSql = sql;
+    			stmt.execute(lastSql);
+    		}
+    		
+    		lastSql = null;
+    		
+    		logger.debug("Commiting upgrade");
+    		con.commit();
+    	} catch (SQLException e) {
+    		logger.error("Repository schema upgrade failed at:\n" + lastSql, e);
+    		
+    		if (lastSql != null) {
+    			e.setNextException(new SQLException("Failed sql statement: " + lastSql));
+    			
+    			try {
+    				logger.debug("Attempt to rollback upgrade.");
+					con.rollback();
+				} catch (SQLException ex) {
+					logger.error("Couldn't rollback database, adding to exception:", ex);
+					e.setNextException(ex);
+				}
+    		}
+    		
+    		try {
+    			logger.debug("Attempting to invalidate schema version.");
+    			invalidateSchemaVersion(dbSource);
+    		} catch (SQLException ex) {
+    			logger.error("Couldn't invalidate schema version, adding to original exception:", ex);
+    			e.setNextException(ex);
+    		}
+    		
+    		throw e;
+    	} finally {
+    		if (stmt != null) {
+    			try {
+    				stmt.close();
+    			} catch (SQLException ex) {
+    				logger.error("Couldn't close statement! Squishing this exception:", ex);
+    			}
+    		}
+    		if (con != null) {
+    			try {
+    				con.close();
+    			} catch (SQLException ex) {
+    				logger.error("Couldn't close database! Squishing this exception:", ex);
+    			}
+    		}
+    	}
+    }
 
+    /**
+	 * Sets the repository schema version to an invalid value.
+	 * 
+	 * @param dbSource
+	 *            Database connection to the repository schema
+	 * 
+	 * @throws SQLException
+	 */
+    private static void invalidateSchemaVersion(SPDataSource dbSource) throws SQLException {
+    	String schemaQualifier = dbSource.getPlSchema() + ".";
+
+    	Connection con = null;
+    	Statement stmt = null;
+
+    	try {
+    		con = dbSource.createConnection();
+    		stmt = con.createStatement();
+    		
+    		stmt.execute("UPDATE " + schemaQualifier + "MM_SCHEMA_INFO SET PARAM_VALUE = 'INVALID' WHERE PARAM_NAME = 'schema_version'");
+    	} catch (SQLException e) {
+    		logger.error("Could not invalidate schema version!", e);
+    		throw e;
+    	} finally {
+    		if (stmt != null) {
+    			try {
+    				stmt.close();
+    			} catch (SQLException ex) {
+    				logger.error("Couldn't close statement! Squishing this exception:", ex);
+    			}
+    		}
+    		if (con != null) {
+    			try {
+    				con.close();
+    			} catch (SQLException ex) {
+    				logger.error("Couldn't close database! Squishing this exception:", ex);
+    			}
+    		}
+    	}
+	}
+    
+	/**
+	 * Reads in the list of sql statements that need be ran to upgrade the
+	 * current repository schema.
+	 * 
+	 * @param repositorySchemaQualifier
+	 *            The prefix to put on a table name in order to qualify its name
+	 *            within the database. For example, if the MatchMaker repository
+	 *            is in schema fred, pass in "fred." (trailing dot is
+	 *            important).
+	 * @param dbSourceType
+	 *            Indicates the database type of the repository schema.
+	 * @param curVer
+	 *            Version of the repository schema.
+	 * @param reqVer
+	 *            Required version of the MatchMaker.
+	 * 
+	 * @return The list of sql statements for the upgrade.
+	 * 
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     */
+    private static List<String> readUpgradeScripts(final String repositorySchemaQualifier, SPDataSourceType dbSourceType,
+			Version curVer, Version reqVer) throws ParserConfigurationException, SAXException, IOException {
+		
+    	String scriptResourcePath = "ca/sqlpower/matchmaker/dao/hibernate/upgrade_"+curVer+"_"+reqVer+".xml";
+    	// TODO this will not work if we're going more than one version up.
+    	// need a way to know which version numbers exist between current and required.
+    	InputStream xmlIn = RepositoryUtil.class.getClassLoader().
+    		getResourceAsStream(scriptResourcePath);
+    	if (xmlIn == null) {
+    		throw new UnsupportedOperationException("There is not an upgrade path from version "+curVer+" to "+reqVer+".");
+    	}
+    	
+    	final List<String> sqlStmts = new ArrayList<String>();
+		final String targetPlatform = dbSourceType.getName();
+		
+    	DefaultHandler handler = new DefaultHandler() {
+    		
+    		/**
+    		 * Current text within the &lt;sql&gt; element.
+    		 */
+    		StringBuilder currentText;
+    		
+    		/**
+    		 * Tracks whether or not the current &lt;sql&gt; element matches
+    		 * the platform we're building a script for.
+    		 */
+    		boolean foundSQL;
+    		
+    		/**
+    		 * The platform-specific sql we found within the current statement.
+    		 */
+    		String sql;
+    		
+    		@Override
+    		public void startElement(String uri, String localName, String name,	Attributes attributes) throws SAXException {
+    			if (name.equals("statement")) {
+    				foundSQL = false;
+    				sql = null;
+    			} else if (name.equals("sql")) {
+    				// only consider the first match
+    				if (sql == null) {
+    					currentText = new StringBuilder();
+    					String platform = attributes.getValue("platform");
+    					foundSQL = targetPlatform.matches(platform);
+    				}
+    			} else if (name.equals("table")) {
+    				currentText.append(repositorySchemaQualifier).append(attributes.getValue("name"));
+    			}
+    		}
+    		
+    		@Override
+    		public void endElement(String uri, String localName, String name)
+    				throws SAXException {
+    			if (name.equals("statement")) {
+    				if (sql != null) {
+    					sqlStmts.add(sql);
+    				}
+    			} else if (name.equals("sql")) {
+    				if (foundSQL) {
+    					sql = currentText.toString();
+    					foundSQL = false;
+    				}
+    			}
+    		}
+    		
+            @Override
+            public void characters(char[] ch, int start, int length) throws SAXException {
+                if (currentText != null) {
+                    currentText.append(ch, start, length);
+                }
+            }
+    		
+    	};
+		SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+		parser.parse(xmlIn, handler);
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug("Upgrade script from "+curVer+" to "+reqVer+" for "+targetPlatform+":");
+			for (String sqlstmt : sqlStmts) {
+				logger.debug(sqlstmt);
+			}
+		}
+    	
+		return sqlStmts;
+    }
 }
