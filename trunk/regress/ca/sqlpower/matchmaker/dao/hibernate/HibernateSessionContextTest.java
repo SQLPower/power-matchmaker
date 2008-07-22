@@ -97,8 +97,8 @@ public class HibernateSessionContextTest extends TestCase {
             ctx.createSession(ds, ds.getUser(), ds.getPass());
             fail("Session init failed to report bad schema version");
         } catch (RepositoryVersionException ex) {
-            assertEquals(RepositoryUtil.MIN_PL_SCHEMA_VERSION.toString(), ex.getRequiredVersion());
-            assertEquals(v.toString(), ex.getCurrentVersion());
+            assertEquals(RepositoryUtil.MIN_PL_SCHEMA_VERSION.compareTo(ex.getRequiredVersion()), 0);
+            assertEquals(v.compareTo(ex.getCurrentVersion()), 0);
         }
     }
     /**
