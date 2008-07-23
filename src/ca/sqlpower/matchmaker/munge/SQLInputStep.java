@@ -45,6 +45,15 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
  */
 public class SQLInputStep extends AbstractMungeStep {
 
+	/**
+	 * Default value to input when setting the ResultSet fetch size using
+	 * {@link ResultSet#setFetchSize(int)}. This is to help with a production bug running
+	 * the Match Engine on Oracle, which sets a default fetch size of 10. The result is a
+	 * lot of network traffic when trying to read thousands of rows from a ResultSet, 
+	 * resulting in horrible Match Engine performance.  
+	 */
+	private static final int DEFAULT_FETCH_SIZE = 1000;
+	
     /**
      * The result set that provides input to this step.  The result set cursor will
      * be advanced on every call to {@link #call()}.  The result set is opened by
@@ -158,6 +167,11 @@ public class SQLInputStep extends AbstractMungeStep {
         
         logger.debug("Attempting to execute input query: " + sql);
         rs = stmt.executeQuery(sql.toString());
+        
+        logger.debug("ResultSet fetch size is: " + rs.getFetchSize());
+        if (rs.getFetchSize() < DEFAULT_FETCH_SIZE) {
+        	rs.setFetchSize(DEFAULT_FETCH_SIZE);
+        }
     }
     
     @Override
