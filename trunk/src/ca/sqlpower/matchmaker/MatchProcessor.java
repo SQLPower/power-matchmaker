@@ -74,12 +74,13 @@ public class MatchProcessor extends AbstractProcessor {
 		
 		Collections.sort(matchData);
 		
+		int dataIndex = 0;
+		
 		for (MungeResult data: matchData) {
             checkCancelled();
 			monitorableHelper.incrementProgress();
-			int dataIndex = matchData.indexOf(data);
-			
-			for (int i=dataIndex + 1; i<matchData.size(); i++){
+			dataIndex++;
+			for (int i=dataIndex; i<matchData.size(); i++){
 				if (data.compareTo(matchData.get(i)) == 0) {
 					boolean nullMatch = false;
 					for (int j = 0; j < data.getMungedData().length; j++) {
