@@ -21,9 +21,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -33,12 +31,9 @@ import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -62,6 +57,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
+import ca.sqlpower.swingui.ColorCellRenderer;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -165,7 +161,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         subPanel.add(desc, cc.xy(4, 6));
         subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
-        ColorCellRenderer renderer = new ColorCellRenderer();
+        ColorCellRenderer renderer = new ColorCellRenderer(85, 50);
         color.setRenderer(renderer);
         subPanel.add(color, cc.xy(8, 6));
 		subPanel.add(new JButton(saveAction), cc.xy(2,8));
@@ -295,54 +291,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			return true;
 		}
         return super.hasUnsavedChanges();
-    }
-    /**
-     * Renders a rectangle of colour in a list cell.  The colour is determined
-     * by the list item value, which must be of type java.awt.Color.
-     */
-    private class ColorCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus);
-            if (value == null) {
-            	value = Color.BLACK;
-            }
-            setBackground((Color) value);
-            setOpaque(true);
-            setPreferredSize(new Dimension(50, 50));
-            setIcon(new ColorIcon((Color) value));
-            return this;
-        }
-    }
-    
-    /**
-     * This class converts a Color into an icon that has width of 85 pixels
-     * and height of 50 pixels.
-     */
-    private class ColorIcon implements Icon {
-        private int HEIGHT = 50;
-        
-        // width of 50 would make sense as the cell has dimensions 50x50 but
-        // the cell would only fill with the color icon if width is 85.
-        private int WIDTH = 85;
-        private Color colour;
-     
-        public ColorIcon(Color colour) {
-            this.colour = colour;
-        }
-     
-        public int getIconHeight() {
-            return HEIGHT;
-        }
-     
-        public int getIconWidth() {
-            return WIDTH;
-        }
-     
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            g.setColor(colour);
-            g.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
-        }
     }
     
 	private class MungeProcessNameValidator implements Validator {
