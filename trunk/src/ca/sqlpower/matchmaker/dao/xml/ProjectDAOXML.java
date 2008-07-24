@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.xml.sax.helpers.DefaultHandler;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
@@ -39,6 +40,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
@@ -536,4 +538,14 @@ public class ProjectDAOXML implements ProjectDAO {
         out.print(str);
     }
 
+    static class ProjectSAXHandler extends DefaultHandler {
+        
+        Project project;
+        
+        ProjectSAXHandler(PlFolder<Project> parentFolder) {
+            // TODO the hard part where we actually parse the document
+            // (grab the starter set of stuff from project planner--it's
+            // tested and working)
+        }
+    }
 }
