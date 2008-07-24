@@ -483,7 +483,8 @@ public class MergeProcessor extends AbstractProcessor {
 							//fail on conflict
 						    
 							throw new IllegalStateException(
-							"Merge Failed: Multiple records with the same primary key created on update.");
+							"Merge Failed: Multiple records in table '" + childTableMergeRule.getTableName() + "' with the same primary key (" 
+								+ row.tableMergeRule.getPrimaryKey()  + ") would be created on update.");
 						}
 					}
 	
