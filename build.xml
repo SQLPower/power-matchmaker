@@ -269,7 +269,7 @@
 		<mkdir dir="${build}/doc/html" />
 
 		<xslt
-			style="doc/tools/xslt/html/chunk.xsl"
+			style="doc/tools/xslt/html/docbook.xsl"
 			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
 			out="${build}/doc/html/PowerMatchMakerUserGuide.html"
 			classpathref="docbookclasspath">
