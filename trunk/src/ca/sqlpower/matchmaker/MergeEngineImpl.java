@@ -175,13 +175,14 @@ public class MergeEngineImpl extends AbstractEngine {
 			logger.warn("Merge engine terminated by user");
 			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
-			progressMessage = "Merge Engine failed, rolling back.";
-			logger.error(getMessage());
+		    logger.error("Merge failed", ex);
+			logger.error("Attempting rollback...");
 			if (con != null) {
 				try {
 					con.rollback();
+					logger.info("Rollback complete");
 				} catch (SQLException e) {
-					logger.error("Cannot roll back after exception caught.", e);
+					logger.error("Rollback failed", e);
 				}
 			}
 			throw new RuntimeException(ex);

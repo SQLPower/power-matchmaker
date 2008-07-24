@@ -326,15 +326,15 @@ public class MergeProcessor extends AbstractProcessor {
      * @param updatedRow The row that is just about to be updated.
      * @param count The number of rows updated.
      */
-    private void logUpdate(ResultRow updatedRow, int count) {
-        engineLogger.debug("Modified " + count + " row(s): " + updatedRow);
-        Integer updateCount = updateCounts.get(updatedRow.tableMergeRule.getSourceTable());
+    private void logUpdate(SQLTable table, int count) {
+        engineLogger.debug("Modified " + count + " row(s) of " + DDLUtils.toQualifiedName(table));
+        Integer updateCount = updateCounts.get(table);
         if (updateCount == null) {
             updateCount = count;
         } else {
             updateCount += count;
         }
-        updateCounts.put(updatedRow.tableMergeRule.getSourceTable(), updateCount);
+        updateCounts.put(table, updateCount);
     }
 
     /**
@@ -345,15 +345,15 @@ public class MergeProcessor extends AbstractProcessor {
      * @param insertedRow The row that is just about to be inserted.
      * @param count The number of rows inserted.
      */
-    private void logInsert(ResultRow insertedRow, int count) {
-        engineLogger.debug("Inserted " + count + " row(s): " + insertedRow);
-        Integer insertCount = insertCounts.get(insertedRow.tableMergeRule.getSourceTable());
+    private void logInsert(SQLTable table, int count) {
+        engineLogger.debug("Inserted " + count + " row(s) into " + DDLUtils.toQualifiedName(table));
+        Integer insertCount = insertCounts.get(table);
         if (insertCount == null) {
             insertCount = count;
         } else {
             insertCount += count;
         }
-        insertCounts.put(insertedRow.tableMergeRule.getSourceTable(), insertCount);
+        insertCounts.put(table, insertCount);
     }
     
     /**
@@ -363,15 +363,15 @@ public class MergeProcessor extends AbstractProcessor {
      * @param deletedRow The row that is just about to be deleted.
      * @param count The number of rows deleted.
      */
-    private void logDelete(ResultRow deletedRow, int count) {
-        engineLogger.debug("Deleted " + count + " row(s): " + deletedRow);
-        Integer deleteCount = deleteCounts.get(deletedRow.tableMergeRule.getSourceTable());
+    private void logDelete(SQLTable table, int count) {
+        engineLogger.debug("Deleted " + count + " row(s) from " + DDLUtils.toQualifiedName(table));
+        Integer deleteCount = deleteCounts.get(table);
         if (deleteCount == null) {
             deleteCount = count;
         } else {
             deleteCount += count;
         }
-        deleteCounts.put(deletedRow.tableMergeRule.getSourceTable(), deleteCount);
+        deleteCounts.put(table, deleteCount);
     }
 
     /**
@@ -429,16 +429,24 @@ public class MergeProcessor extends AbstractProcessor {
 			TableMergeRules parentTableMergeRule) 
 	throws ArchitectException, SQLException {
 		
-		engineLogger.debug("Merging child records...");
-		
-		for (TableMergeRules childTableMergeRule : project.getTableMergeRules()) {
-			if (parentTableMergeRule == childTableMergeRule.getParentMergeRule()) {
-				
+		engineLogger.debug("Merging child records of " + parentTableMergeRule.getTableName() + " ...");
+		engineLogger.debug("Duplicate: " + 
+		        (parentDupRow == null ? "none specified" : parentDupRow.values) +
+		        "; Master: " +
+		        (parentMasterRow == null ? "none specified" : parentMasterRow.values));
+
+		try {
+		    for (TableMergeRules childTableMergeRule : project.getTableMergeRules()) {
+		        if (parentTableMergeRule != childTableMergeRule.getParentMergeRule()) {
+		            continue;
+		        }
+		        
 				// populates the data required to merge the grand child tables	
 				List<ResultRow> childDupRows = findChildRowsByParentRow(parentDupRow, childTableMergeRule);
 				List<ResultRow> childMasterRows = new ArrayList<ResultRow>();
-					
-				engineLogger.debug("Merge Strategy is: " + childTableMergeRule.getChildMergeAction().toString());
+				
+				engineLogger.debug("Child table " + childTableMergeRule.getTableName() + " has "+childDupRows.size()+" child records");
+				engineLogger.debug("Merge Action is: " + childTableMergeRule.getChildMergeAction().toString());
 	
 				if (childTableMergeRule.getChildMergeAction() == 
 					TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD) {
@@ -473,6 +481,7 @@ public class MergeProcessor extends AbstractProcessor {
 						ResultRow masterRow = findRowByPrimaryKey(childTableMergeRule, row);
 						if (masterRow != null) {
 							//fail on conflict
+						    
 							throw new IllegalStateException(
 							"Merge Failed: Multiple records with the same primary key created on update.");
 						}
@@ -592,6 +601,8 @@ public class MergeProcessor extends AbstractProcessor {
 				engineLogger.debug("Deleting duplicate's child records on table " + childTableMergeRule.getSourceTable());
 				deleteRowsByForeignKey(childTableMergeRule, parentDupRow);
 			} 
+		} finally {
+		    engineLogger.debug("Finished merging on table " + parentTableMergeRule.getTableName());
 		}
 	}
 
@@ -601,7 +612,7 @@ public class MergeProcessor extends AbstractProcessor {
 		sql.append(DDLUtils.toQualifiedName(table));
 		sql.append(generateWhereStatement(row));
 		int count = stmt.executeUpdate(sql.toString());
-		logDelete(row, count);
+		logDelete(table, count);
         return count;
 	}
 
@@ -626,8 +637,9 @@ public class MergeProcessor extends AbstractProcessor {
 				sql.append(formatObjectToSQL(ival));
 			} 
 		}
+		engineLogger.debug(sql.toString());
 		int count = stmt.executeUpdate(sql.toString());
-		logDelete(foreignKeyValues, count);
+		logDelete(tableMergeRule.getSourceTable(), count);
         return count;
 	}
 
@@ -736,7 +748,7 @@ public class MergeProcessor extends AbstractProcessor {
 		sqlValues.append(")");
 		sql.append(sqlValues.toString());
 		int count = stmt.executeUpdate(sql.toString());
-		logInsert(row, count);
+		logInsert(table, count);
 	}
 
 	private int mergeRows(ResultRow dupRowValues, ResultRow masterRowValues,
@@ -793,7 +805,7 @@ public class MergeProcessor extends AbstractProcessor {
 			String whereStatement = generateWhereStatement(masterRowValues);
 			sql.append(whereStatement);
 			int count = stmt.executeUpdate(sql.toString());
-			logUpdate(masterRowValues, count);
+			logUpdate(tableMergeRules.getSourceTable(), count);
             return count;
 		} else {
 			return 1;
@@ -1008,6 +1020,10 @@ public class MergeProcessor extends AbstractProcessor {
 			return tableMergeRule.getChildren().get(index).getColumnName();
 		}
 		
+		/**
+		 * Creates a copy of this Result Row. The actual data values are shared
+		 * with the copy, but the list structure is not.
+		 */
 		public ResultRow duplicate() throws SQLException {
 			ResultRow result =  new ResultRow(tableMergeRule);
 			for (int i = 0; i < values.size(); i++) {
