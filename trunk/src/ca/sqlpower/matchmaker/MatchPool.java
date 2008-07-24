@@ -64,6 +64,9 @@ import ca.sqlpower.util.MonitorableImpl;
  * matching (and potentially matching) source table records, with
  * the edges between those records represented by the list of
  * PotentialMatchRecords.
+ * <p>
+ * MatchPool is monitorable. The activity monitored is the process
+ * of storing the match pool back to the database.
  */
 public class MatchPool extends MonitorableImpl {
     
