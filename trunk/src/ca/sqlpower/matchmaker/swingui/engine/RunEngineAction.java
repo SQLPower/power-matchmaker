@@ -24,9 +24,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.event.TaskTerminationEvent;
 import ca.sqlpower.swingui.event.TaskTerminationListener;
 
@@ -37,7 +37,12 @@ import ca.sqlpower.swingui.event.TaskTerminationListener;
 class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 	
 	/**
-	 * The application swing session
+	 * The project the engine is running in.
+	 */
+	private Project project;
+	
+	/**
+	 * The application's swing session.
 	 */
 	private MatchMakerSwingSession session;
 	
@@ -52,9 +57,9 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 	private MatchMakerEngine engine;
 	
 	/**
-	 * The DataEntryPanel (ideally the engine panel) that the engine is being executed from.
+	 * The EngineSettingsPanel (ideally the engine panel) that the engine is being executed from.
 	 */
-	private DataEntryPanel editorPane;
+	private EngineSettingsPanel editorPane;
 	
 	/**
 	 * The "action" that is run when the engine finishes
@@ -73,10 +78,11 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 	 * @param startAction An action to be run when the engine is started. Can be null.
 	 * @param finishAction An action to be run when the engine is finished. Can be null.
 	 */
-	public RunEngineAction(MatchMakerSwingSession session, MatchMakerEngine engine, String name, 
-			EngineOutputPanel engineOutputPanel, DataEntryPanel editorPane, Runnable startAction, 
+	public RunEngineAction(MatchMakerSwingSession session, Project project, MatchMakerEngine engine, String name, 
+			EngineOutputPanel engineOutputPanel, EngineSettingsPanel editorPane, Runnable startAction, 
 			Runnable finishAction) {
 		super(name);
+		this.project = project;
 		this.session = session;
 		this.engineOutputPanel = engineOutputPanel;
 		this.engine = engine;
@@ -90,15 +96,16 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 			startAction.run();
 		}
 		editorPane.applyChanges();
+		
 		engineOutputPanel.getProgressBar().getModel().setValue(0);
-		session.setAllEnginesEnabled(false);
+		session.setProjectEnginesEnabled(project, false);
 		try {
-			EngineWorker w = new EngineWorker(engine, engineOutputPanel, session, this);
+			EngineWorker w = new EngineWorker(engine, engineOutputPanel, session, project, this);
 			w.addTaskTerminationListener(this);
 			new Thread(w).start();
 		} catch (Exception ex) {
 			MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
-			session.setAllEnginesEnabled(true);
+			session.setProjectEnginesEnabled(project, true);
 			return;
 		}
 	}

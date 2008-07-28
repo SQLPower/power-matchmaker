@@ -32,6 +32,7 @@ import org.apache.log4j.Appender;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -73,6 +74,8 @@ class EngineWorker extends SPSwingWorker {
 	 */
 	private MatchMakerSwingSession session;
 	
+	private Project project;
+	
 	/**
 	 * @param engine The MatchMakerEngine that the worker will run
 	 * @param outputPanel The EngineOutputPanel where the engine will display it's output, 
@@ -82,9 +85,10 @@ class EngineWorker extends SPSwingWorker {
 	 * @throws ArchitectException
 	 */
 	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel,
-			MatchMakerSwingSession session, Action action) throws EngineSettingException, ArchitectException {
+			MatchMakerSwingSession session, Project project, Action action) throws EngineSettingException, ArchitectException {
 		super(session);
 		this.session = session;
+		this.project = project;
 		this.engine = engine;
 		this.engineOutputDoc = outputPanel.getOutputDocument();
 		this.parentComponent = outputPanel.getOutputComponent().getTopLevelAncestor();
@@ -111,7 +115,7 @@ class EngineWorker extends SPSwingWorker {
 		SwingUtilities.invokeLater(new Runnable(){
 
 			public void run() {
-				session.setAllEnginesEnabled(true);
+				session.setProjectEnginesEnabled(project, true);
 			}
 			
 		});

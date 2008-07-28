@@ -80,7 +80,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         propertiesToIgnoreForDuplication.add("resultTable");
         propertiesToIgnoreForDuplication.add("sourceTable");
         propertiesToIgnoreForDuplication.add("xrefTable");
-        
+        propertiesToIgnoreForDuplication.add("engineRunning");
         
         //These don't really differ on set and get but there are checks in
         //place that ensure that the dataSource exists and this on will not. 
