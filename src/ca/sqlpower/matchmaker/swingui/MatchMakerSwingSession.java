@@ -1282,7 +1282,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (mergeEnginPanels.get(mei) == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.MERGE_ENGINE);
 			mergeEnginPanels.put(mei,ep); 
-			ep.setEngineEnabled(enginesEnabled);
+			ep.setEngineEnabled(true);
 		}
 		return ep;
 	}
@@ -1298,7 +1298,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (ep == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.MATCH_ENGINE);
 			matchEnginePanels.put(mei,ep); 
-			ep.setEngineEnabled(enginesEnabled);
+			ep.setEngineEnabled(true);
 		}
 		return ep;
 	}
@@ -1314,7 +1314,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (ep == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.CLEANSE_ENGINE);
 			cleanseEnginPanels.put(mei,ep); 
-			ep.setEngineEnabled(enginesEnabled);
+			ep.setEngineEnabled(true);
 		}
 		return ep;
 	}
@@ -1407,18 +1407,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 *	run engine actions. Note that the actions will only
 	 *	be enabled if the form status in the panel is not fail.
 	 */
-	public void setAllEnginesEnabled(boolean enabled){
-		enginesEnabled  = enabled;
-		for (EngineSettingsPanel ep: matchEnginePanels.values()) {
-			ep.setEngineEnabled(enabled);
+	public void setProjectEnginesEnabled(Project p, boolean enabled){
+		p.setEngineRunning(!enabled);
+		if (p.getType() == ProjectMode.FIND_DUPES) {
+			getMatchEnginePanel(p.getMatchingEngine(), p).setEngineEnabled(enabled);
+			getMergeEnginePanel(p.getMergingEngine(), p).setEngineEnabled(enabled);
+		} else if (p.getType() == ProjectMode.CLEANSE) {
+			getCleanseEnginePanel(p.getCleansingEngine(), p).setEngineEnabled(enabled);
 		}
-		for (EngineSettingsPanel ep : mergeEnginPanels.values()){
-			ep.setEngineEnabled(enabled);
-		}
-		for (EngineSettingsPanel ep : cleanseEnginPanels.values()) {
-			ep.setEngineEnabled(enabled);
-		}
- 	}
+	}
 
 	/**
 	 * Returns whether the run engine actions have been 

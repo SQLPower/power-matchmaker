@@ -237,7 +237,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
 		
-		this.runEngineAction = new RunEngineAction(swingSession, engine, "Run " + engineType,
+		this.runEngineAction = new RunEngineAction(swingSession, project, engine, "Run " + engineType,
 				engineOutputPanel, this, engineStart, engineFinish);
 		
 		this.panel = buildUI();
@@ -267,7 +267,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		ValidateResult worst = handler.getWorstValidationStatus();
 		runEngineAction.setEnabled(true);
 		
-		if (worst.getStatus() == Status.FAIL || !swingSession.isEnginesEnabled()) {
+		if (worst.getStatus() == Status.FAIL || project.isEngineRunning()) {
 			runEngineAction.setEnabled(false);
 		}
 	}
@@ -479,6 +479,13 @@ public class EngineSettingsPanel implements DataEntryPanel {
 
 		swingSession.save(project);
 		return true;
+	}
+	
+	/**
+	 * The project this panel is associated with.
+	 */
+	public Project getProject(){
+		return project;
 	}
 	
 	public JComponent getPanel() {

@@ -99,6 +99,8 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         nonPersistingProperties.add("xrefTableSchema");
         nonPersistingProperties.add("xrefTableName");
         nonPersistingProperties.add("xrefTableSPDatasource");
+        
+        nonPersistingProperties.add("engineRunning");
       
 		return nonPersistingProperties;
 	}

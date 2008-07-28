@@ -157,6 +157,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * The Matching engine this will be created lazyily, because we only need one instance per project.
      */
 	private MergeEngineImpl mergingEngine = null;
+	
+	/**
+	 * Keeps track of whether or not an engine is running.
+	 */
+	private boolean engineRunning;
     
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
@@ -832,9 +837,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
+	 * Gets the cleansing engine implementation. 
+	 * This is done to ensure that only one implementation is created per project.
+	 * This creates a new one if there isn't one already.
 	 * 
-	 * @return The editor panel.
+	 * @return The engine implementation.
 	 */
 	public CleanseEngineImpl getCleansingEngine() {
 		if (cleansingEngine == null) {
@@ -844,9 +851,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
+	 * Gets the matching engine implementation. 
+	 * This is done to ensure that only one implementation is created per project.
+	 * This creates a new one if there isn't one already.
 	 * 
-	 * @return The editor panel.
+	 * @return The engine implementation.
 	 */
 	public MatchEngineImpl getMatchingEngine() {
 		if (matchingEngine == null) {
@@ -856,9 +865,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
+	 * Gets the merging engine implementation. 
+	 * This is done to ensure that only one implementation is created per project.
+	 * This creates a new one if there isn't one already.
 	 * 
-	 * @return The editor panel.
+	 * @return The engine implementation.
 	 */
 	public MergeEngineImpl getMergingEngine() {
 		if (mergingEngine == null) {
@@ -887,5 +898,13 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			return resultTablePropertiesDelegate.getSourceTable().getParentDatabase().getDataSource().createConnection();
 		} 
 		return null;
+	}
+	
+	public void setEngineRunning(boolean b){
+		this.engineRunning = b;
+	}
+	
+	public boolean isEngineRunning(){
+		return engineRunning;
 	}
 }
