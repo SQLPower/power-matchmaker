@@ -901,7 +901,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	public void setEngineRunning(boolean b){
+		if (b == engineRunning) return;
+		boolean oldVal = engineRunning;
 		this.engineRunning = b;
+		getEventSupport().firePropertyChange("engineRunning", oldVal, b);
 	}
 	
 	public boolean isEngineRunning(){
