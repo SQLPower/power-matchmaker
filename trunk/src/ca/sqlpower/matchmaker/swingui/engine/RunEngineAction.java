@@ -98,15 +98,12 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 		editorPane.applyChanges();
 		
 		engineOutputPanel.getProgressBar().getModel().setValue(0);
-		session.setProjectEnginesEnabled(project, false);
 		try {
 			EngineWorker w = new EngineWorker(engine, engineOutputPanel, session, project, this);
 			w.addTaskTerminationListener(this);
 			new Thread(w).start();
 		} catch (Exception ex) {
 			MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
-			session.setProjectEnginesEnabled(project, true);
-			return;
 		}
 	}
 

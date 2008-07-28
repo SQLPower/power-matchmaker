@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 
 import org.apache.log4j.Appender;
@@ -99,6 +98,7 @@ class EngineWorker extends SPSwingWorker {
 	
 	@Override
 	public void doStuff() throws EngineSettingException, IOException, SQLException {
+		project.setEngineRunning(true);
 		appender = new DocumentAppender(engineOutputDoc);
 		engine.getLogger().addAppender(appender);
 		engine.call();
@@ -112,13 +112,7 @@ class EngineWorker extends SPSwingWorker {
 		}
 		engine.getLogger().removeAppender(appender);
 		
-		SwingUtilities.invokeLater(new Runnable(){
-
-			public void run() {
-				session.setProjectEnginesEnabled(project, true);
-			}
-			
-		});
+		project.setEngineRunning(false);
 	}
 	
 }

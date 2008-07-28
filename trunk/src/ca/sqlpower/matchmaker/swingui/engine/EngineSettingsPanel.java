@@ -49,9 +49,13 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
@@ -71,7 +75,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * A panel that provides a GUI for setting the parameters for running the MatchMakerEngine,
  * as well as running the MatchMakerEngine itself and displaying its output on the GUI.
  */
-public class EngineSettingsPanel implements DataEntryPanel {
+public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<Project, MatchMakerFolder> {
 
 	private static final Logger logger = Logger.getLogger(EngineSettingsPanel.class);
 	
@@ -219,7 +223,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				refreshActionStatus();
+				refreshRunActionStatus();
 			}
 		});
 		this.engineOutputPanel = new EngineOutputPanel(parentFrame);
@@ -241,21 +245,8 @@ public class EngineSettingsPanel implements DataEntryPanel {
 				engineOutputPanel, this, engineStart, engineFinish);
 		
 		this.panel = buildUI();
-	}
-	
-	/**
-	 *	Enables/Disables the run engine action. The action will
-	 *	only be enabled if the form status is not fail. 
-	 * {@link MatchMakerSwingSession#isEnginesEnabled()} should
-	 *	be checked before calling this method.
-	 */
-	public void setEngineEnabled(boolean enabled) {
-		ValidateResult worst = handler.getWorstValidationStatus();
-		if (worst.getStatus() == Status.FAIL) {
-			runEngineAction.setEnabled(false);
-		} else {
-			runEngineAction.setEnabled(enabled);
-		}
+		
+		MatchMakerUtils.listenToShallowHierarchy(this, project);
 	}
 	
 	/**
@@ -263,13 +254,10 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	 * status accordingly as well as disabling the button to run the engine if
 	 * necessary.
 	 */
-	private void refreshActionStatus() {
+	private void refreshRunActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
-		runEngineAction.setEnabled(true);
-		
-		if (worst.getStatus() == Status.FAIL || project.isEngineRunning()) {
-			runEngineAction.setEnabled(false);
-		}
+		boolean valid = !(worst.getStatus() == Status.FAIL || project.isEngineRunning());
+		runEngineAction.setEnabled(valid);
 	}
 	
 	/**
@@ -457,6 +445,8 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		anotherP.add(engineAccessoryPanel, BorderLayout.SOUTH);
 		anotherP.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
+		refreshRunActionStatus();
+		
 		return anotherP;
 	}
 
@@ -464,7 +454,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	 * Saves the engine settings
 	 */
 	public boolean applyChanges() {
-		refreshActionStatus();
+		refreshRunActionStatus();
 		engineSettings.setDebug(debugMode.isSelected());
 		if (type == EngineType.MATCH_ENGINE) {
 			((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
@@ -481,13 +471,6 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		return true;
 	}
 	
-	/**
-	 * The project this panel is associated with.
-	 */
-	public Project getProject(){
-		return project;
-	}
-	
 	public JComponent getPanel() {
 		return panel;
 	}
@@ -499,7 +482,25 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	}
 
 	public void discardChanges() {
-		logger.error("Cannot discard chagnes");
+		logger.error("Cannot discard changes");
+	}
+
+	public void mmPropertyChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		if (evt.getPropertyName().equals("engineRunning")) {
+			refreshRunActionStatus();
+		}
+	}
+
+	public void mmChildrenInserted(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		// do nothing
+	}
+
+	public void mmChildrenRemoved(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		// do nothing
+	}
+
+	public void mmStructureChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		// do nothing		
 	}
 	
 }
