@@ -322,7 +322,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		return getProgress() + "/" + jobSize + ": " + progressMessage;
 	}
 
-	public int getProgress() {
+	public synchronized int getProgress() {
 		int currentProgress;
 		if (currentProcessor != null && currentProcessor instanceof Processor) {
 			currentProgress = progress + currentProcessor.getProgress();
