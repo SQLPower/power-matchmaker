@@ -259,7 +259,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 		return getProgress() + "/" + jobSize + ": " + progressMessage;
 	}
 
-	public int getProgress() {
+	public synchronized int getProgress() {
 		if (currentProcessor != null) {
 			return progress + currentProcessor.getProgress();
 		} else {
