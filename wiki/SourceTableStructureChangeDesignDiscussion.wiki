@@ -7,9 +7,10 @@ August 5, 2008 Meeting Notes:
 
   * The 'adapter' should traverse the items in the MatchMaker project tree and determine what items might need to be fixed, and try to fix them, while also asking the user for clarifications where necessary.
 
-      # Munge Process input steps outputs.
-      # Add/remove column merge rules for addition/removal of columns.
-      # Change column merge rules actions for primary key changes.
-      # Change result table for primary key changes.
-      # Match pools become invalid for primary key changes.
-      # Update imported key columns in column merge rules for child merge rules with source table as parent table.
+List of Items to Fix
+  # Munge Process input steps outputs.
+  # Add/remove column merge rules for addition/removal of columns.
+  # Change column merge rules actions for primary key changes.
+  # Change result table for primary key changes.
+  # Match pools become invalid for primary key changes.
+  # Update imported key columns in column merge rules for child merge rules with source table as parent table.
