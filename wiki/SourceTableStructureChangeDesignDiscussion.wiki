@@ -14,3 +14,4 @@ List of Items to Fix
   # Change result table for primary key changes.
   # Match pools become invalid for primary key changes.
   # Update imported key columns in column merge rules for child merge rules with source table as parent table.
+  # Update index name of parent merge rule for primary key changes.
