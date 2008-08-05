@@ -61,6 +61,15 @@ public class MatchEngineImpl extends AbstractEngine {
 
 	private String progressMessage;
 
+	/**
+	 * The current monitorable that is running in the engine.
+	 * <p>
+	 * Never ever ever EVER set the currentProcessor directly, call
+	 * {@link #setCurrentProcessor(Monitorable)} instead because it
+	 * needs synchronized access.
+	 * 
+	 * Failure to do so is punishable by death by screaming monkeys!
+	 */
 	private Monitorable currentProcessor;
 
 	private int rowCount;
@@ -196,10 +205,10 @@ public class MatchEngineImpl extends AbstractEngine {
 				jobSize += clearJobSize;
 				progressMessage = "Clearing Match Pool";
 				logger.info(progressMessage);
-				currentProcessor = pool;
+				setCurrentProcessor(pool);
 				pool.clear(new Aborter());
 				progress += clearJobSize;
-				currentProcessor = null;
+				setCurrentProcessor(null);
 			}
 			
 			checkCancelled();
@@ -209,12 +218,12 @@ public class MatchEngineImpl extends AbstractEngine {
 			mungeAndMatch(rowCount, mungeProcesses, pool);
 			
 			progressMessage = "Storing matches";
-			currentProcessor = pool;
+			setCurrentProcessor(pool);
 			logger.info(progressMessage);
 			pool.store(new Aborter());
             checkCancelled();
             progress += rowCount;
-            currentProcessor = null;
+            setCurrentProcessor(null);
             
 			progressMessage = "Match Engine finished successfully";
 			logger.info(progressMessage);
@@ -250,23 +259,23 @@ public class MatchEngineImpl extends AbstractEngine {
 			MatchPool pool) throws Exception {
 		for (MungeProcess currentProcess: mungeProcesses) {
 			munger = new MungeProcessor(currentProcess, logger);
-			currentProcessor = munger;
+			setCurrentProcessor(munger);
 			progressMessage = "Running munge process " + currentProcess.getName();
 			logger.debug(getMessage());
 			munger.call(rowCount);
 			progress += munger.getProgress();
-			currentProcessor = null;
+			setCurrentProcessor(null);
 
 			List<MungeResult> results = currentProcess.getResults();
 			
 			matcher = new MatchProcessor(pool, currentProcess, results, logger);
-			currentProcessor = matcher;
+			setCurrentProcessor(matcher);
 			progressMessage = "Matching munge process " + currentProcess.getName();
 			logger.debug(getMessage());
 			matcher.call();
             checkCancelled();
 			progress += matcher.getProgress();
-			currentProcessor = null;
+			setCurrentProcessor(null);
 		}
 	}
 
@@ -348,5 +357,9 @@ public class MatchEngineImpl extends AbstractEngine {
 		public void checkCancelled() {
 			MatchEngineImpl.this.checkCancelled();
 		}
+	}
+	
+	private synchronized void setCurrentProcessor(Monitorable processor) {
+		currentProcessor = processor;
 	}
 }
