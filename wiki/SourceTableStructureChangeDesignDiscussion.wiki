@@ -1,0 +1,9 @@
+#summary A discussion regarding how the MatchMaker application should handle changes to the source table.
+
+= Details =
+
+August 5, 2008 Meeting Notes:
+  * Suggestion is to segregate the source table change adaption code into classes separate from the normal merge engine logic so that all the adaption logic is in one place, rather than being 'baked into' the regular logic.
+
+  * The 'adapter' should traverse the items in the MatchMaker project tree and determine what items might need to be fixed, and try to fix them, while also asking the user for clarifications where necessary
+
