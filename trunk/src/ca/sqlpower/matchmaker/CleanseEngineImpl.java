@@ -55,6 +55,15 @@ public class CleanseEngineImpl extends AbstractEngine {
 
 	private String progressMessage;
 	
+	/**
+	 * The current munge processor that is running in the engine.
+	 * <p>
+	 * Never ever ever EVER set the currentProcessor directly, call
+	 * {@link #setCurrentProcessor(Processor)} instead because it
+	 * needs synchronized access.
+	 * 
+	 * Failure to do so is punishable by death by screaming monkeys!
+	 */
 	private Processor currentProcessor;
 	
 	public CleanseEngineImpl(MatchMakerSession session, Project project) {
@@ -194,7 +203,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 			
 			for (MungeProcess currentProcess: processes) {
 				munger = new MungeProcessor(currentProcess, logger);
-				currentProcessor = munger;
+				setCurrentProcessor(munger);
 				progressMessage = "Running cleanse process " + currentProcess.getName();
 				logger.debug(getMessage());
 				munger.call();
@@ -202,7 +211,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 				progress += munger.getProgress();
 			}
 			
-			currentProcessor = null;
+			setCurrentProcessor(null);
 			
 			progressMessage = "Cleanse Engine finished successfully";
 			logger.info(progressMessage);
@@ -267,6 +276,9 @@ public class CleanseEngineImpl extends AbstractEngine {
 		if (cancelled && currentProcessor != null) {
 			currentProcessor.setCancelled(true);
 		}
-		
+	}
+	
+	private synchronized void setCurrentProcessor(Processor processor) {
+		currentProcessor = processor;
 	}
 }
