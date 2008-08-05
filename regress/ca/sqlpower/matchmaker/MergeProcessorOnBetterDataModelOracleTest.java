@@ -78,7 +78,6 @@ public class MergeProcessorOnBetterDataModelOracleTest extends AbstractMergeProc
 			"\n COL_STRING VARCHAR2(250) NULL," +
 			"\n COL_DATE DATE NULL," +
 			"\n COL_NUMBER NUMBER(22,0) NULL)";
-		System.out.println(sql);
 		execSQL(con,sql);
         
 		sql = "CREATE TABLE " + getFullTableName() + "_CHILD ("+
@@ -90,7 +89,6 @@ public class MergeProcessorOnBetterDataModelOracleTest extends AbstractMergeProc
 			"\n CONSTRAINT PARENT_ID_UNIQ UNIQUE (PARENT_ID)," +
 			"\n CONSTRAINT BETTER_CHILD_PK PRIMARY KEY (ID))";
 		execSQL(con,sql);
-		System.out.println(sql);
 		
 		sql = "CREATE TABLE " + getFullTableName() + "_GCHILD ("+
 			"\n ID NUMBER(22,0) NOT NULL PRIMARY KEY," +
@@ -100,7 +98,6 @@ public class MergeProcessorOnBetterDataModelOracleTest extends AbstractMergeProc
 			"\n COL_NUMBER NUMBER(22,0) NULL," + 
 			"\n CONSTRAINT BETTER_CHILD_FK FOREIGN KEY (GPARENT_ID) references " + getFullTableName() + "_CHILD(PARENT_ID))";
 		execSQL(con,sql);
-		System.out.println(sql);
 		
 		sourceTable = db.getTableByName("BETTER_MERGE_TEST");
 		childTable = db.getTableByName("BETTER_MERGE_TEST_CHILD");

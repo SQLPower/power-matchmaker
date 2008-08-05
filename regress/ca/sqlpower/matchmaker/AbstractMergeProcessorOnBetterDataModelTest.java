@@ -878,7 +878,6 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
 	protected boolean execSQL(Connection conn, String sql) throws SQLException {
 		Statement stmt = null;
 		stmt = conn.createStatement();
-		System.out.println(sql);
 		stmt.executeUpdate(sql);
 		if (stmt != null) stmt.close();
 
