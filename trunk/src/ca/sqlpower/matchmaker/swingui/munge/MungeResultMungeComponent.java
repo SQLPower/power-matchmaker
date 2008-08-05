@@ -19,8 +19,6 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
-import java.awt.FlowLayout;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -29,8 +27,10 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
+import com.jgoodies.forms.factories.ButtonBarFactory;
+
 /**
- * This is a component for dedupe reslt munge step. It has two options, one button
+ * This is a component for dedupe result munge step. It has two options, one button
  * that adds inputs and one button to clean up the unused inputs.
  */
 public class MungeResultMungeComponent extends AbstractMungeComponent {
@@ -44,14 +44,10 @@ public class MungeResultMungeComponent extends AbstractMungeComponent {
 	
 	@Override
 	protected JPanel buildUI() {
-		JPanel content = new JPanel(new FlowLayout());
 		addInputButton = new JButton(new AddInputAction("Add Input"));
-		removeInputsButton = new JButton(
-				new RemoveUnusedInputAction("Clean Up"));
+		removeInputsButton = new JButton(new RemoveUnusedInputAction("Clean Up"));
 
-		content.add(addInputButton);
-		content.add(removeInputsButton);
-		return content;
+		return ButtonBarFactory.buildAddRemoveBar(addInputButton, removeInputsButton);
 	}
 
 	@Override
