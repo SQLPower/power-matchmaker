@@ -151,7 +151,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			
 			Connection con = project.createSourceTableConnection();
 			DatabaseMetaData dbMeta;
-			ResultSet rs;
+			ResultSet rs = null;
 			try {
 				dbMeta = con.getMetaData();
 			} catch (SQLException ex) {
@@ -214,7 +214,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 						// TODO: This is just a temporary fix for handling the problem when we are trying
 						// to derive column merge rules from a non-table. This resulted in an NPE before
 						// A better thing to do would be to only run this on tables.
-						if (table == null) continue;
+						if (table == null || !table.getObjectType().equals("TABLE")) continue;
 						SQLIndex index = table.getPrimaryKeyIndex();
 						mergeRule.setTable(table);
 						mergeRule.setTableIndex(index);
@@ -235,16 +235,23 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 						count = 0;
 					}
 				}
-			} catch (Exception e1) {
+			} catch (Exception e) {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-						"Failed to derive related table information.", e1);
+						"Failed to derive related table information.", e);
 			} finally {
 				try {
 					if (con != null) {
 						con.close();
 					}
 				} catch (SQLException e) {
-					logger.error("Error closing connection" + e);
+					logger.error("Failed to close connection! Squishing this exception: ", e);
+				}
+				try {
+					if (rs != null) {
+						rs.close();
+					}
+				} catch (SQLException e) {
+					logger.error("Failed to close result set! Squishing this exception: ", e);
 				}
 				project.endCompoundEdit();
 			}
