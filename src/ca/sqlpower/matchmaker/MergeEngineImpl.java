@@ -167,7 +167,11 @@ public class MergeEngineImpl extends AbstractEngine {
 			merger = new MergeProcessor(getProject(), con, getLogger());
 			merger.call();
             checkCancelled();
-			con.commit();			
+            if (getProject().getMergeSettings().getDebug()) {
+            	con.rollback();
+            } else {
+            	con.commit();
+            }
 			progressMessage = "Merge Engine finished successfully";
 			logger.info(progressMessage);
 			return EngineInvocationResult.SUCCESS;
