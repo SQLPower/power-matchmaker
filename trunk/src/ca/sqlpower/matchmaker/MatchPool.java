@@ -174,10 +174,6 @@ public class MatchPool extends MonitorableImpl {
      * column values for the SourceTableRecord, which is done by passing in a 
      * List of SQLColumns which represent the columns that you wish to display
      * <p>
-     * IMPORTANT NOTE ABOUT SIDE EFFECTS: before searching the table, this method will
-     * attempt to remove redundant records from the match result table.  Its name implies
-     * that it only reads the database.  This is not the case.  For details, see
-     * {@link #deleteRedundantMatchRecords()}.
      * 
      * @param displayColumns A list of which SQLColumns to use to represent a SourceTableRecord
      * in the user interface. If null or empty, then the default will be the SourceTableRecord's 
@@ -348,25 +344,62 @@ public class MatchPool extends MonitorableImpl {
 
     }
     
-    /**
-	 * This calls the regular store with a null aborter
+	/**
+	 * Calls {@link #store(Aborter, boolean)} with a null Aborter and debug
+	 * set to false.
+	 * 
+	 * @param aborter
+	 * @throws SQLException
 	 */
     public void store() throws SQLException {
-    	store(null);
+    	store(null, false);
     }
-    
-    /**
-	 * This algorithm stores and updates all of the potential match records
-	 * in the database. If the potential match record is dirty it will be updated.
-	 * If the potential match record is new it will be added to the database.
-	 * If a potential match record is in the deletedMatches set it will be deleted
-	 * from the database. If the record is clean it will not be modified in any way.
+
+	/**
+	 * This calls the regular store with a null aborter
 	 * 
-	 * @param aborter If this argument is not null, it will be checked from time to time.
-     * @throws CancellationException if the aborter's checkCancelled() method does. In this
-     * case, the changes to the match pool will be rolled back.
+	 * @param debug
+	 *            Debug mode flag. If true, then any changes made to the
+	 *            database will be rolled back at the end of the method.
+	 *            Otherwise, all changes are committed at the end.
+	 */
+    public void store(boolean debug) throws SQLException {
+    	store(null, debug);
+    }
+
+	/**
+	 * Calls {@link #store(Aborter, boolean)} with the given Aborter and debug
+	 * set to false.
+	 * 
+	 * @param aborter
+	 *            If this argument is not null, it will be checked from time to
+	 *            time.
+	 * @throws SQLException
 	 */
     public void store(Aborter aborter) throws SQLException {
+    	store(aborter, false);
+    }
+
+	/**
+	 * This algorithm stores and updates all of the potential match records in
+	 * the database. If the potential match record is dirty it will be updated.
+	 * If the potential match record is new it will be added to the database. If
+	 * a potential match record is in the deletedMatches set it will be deleted
+	 * from the database. If the record is clean it will not be modified in any
+	 * way.
+	 * 
+	 * @param aborter
+	 *            If this argument is not null, it will be checked from time to
+	 *            time.
+	 * @param debug
+	 *            Debug mode flag. If true, then any changes made to the
+	 *            database will be rolled back at the end of the method.
+	 *            Otherwise, all changes are committed at the end.
+	 * @throws CancellationException
+	 *             if the aborter's checkCancelled() method does. In this case,
+	 *             the changes to the match pool will be rolled back.
+	 */
+    public void store(Aborter aborter, boolean debug) throws SQLException {
         logger.debug("Starting to store");
 
         setJobSize(new Integer(deletedMatches.size() + potentialMatches.size() * 2));
@@ -558,7 +591,11 @@ public class MatchPool extends MonitorableImpl {
             if (ps != null) ps.close();
             ps = null;
             
-            con.commit();
+            if (debug) {
+            	con.rollback();
+            } else {
+            	con.commit();
+            }
             
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
@@ -702,58 +739,6 @@ public class MatchPool extends MonitorableImpl {
     
     public Collection<SourceTableRecord> getSourceTableRecords() {
         return Collections.unmodifiableCollection(sourceTableRecords.values());
-    }
-    
-    /**
-     * For historical reasons, the match engine populates the result table
-     * with two copies of each match record: one a-b, and one b-a.  We don't
-     * want to deal with this duplication (isn't this a de-duping tool?), so
-     * this method is designed to de-dupe the de-duping table.
-     * @throws SQLException if there is a problem executing the DELETE statement
-     * @throws ArchitectException if the source table index can't be populated
-     */
-    private void deleteRedundantMatchRecords() throws SQLException, ArchitectException {
-        Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        String lastSQL = null;
-        try {
-            con = project.createResultTableConnection();
-            stmt = con.createStatement();
-            StringBuilder sql = new StringBuilder();
-
-            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(project.getResultTable())).append(" M1");
-            sql.append("\n WHERE EXISTS( SELECT 1 FROM ").append(DDLUtils.toQualifiedName(project.getResultTable())).append(" M2");
-            sql.append("\n  WHERE ");
-            for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
-                if (i > 0) sql.append("\n   AND ");
-                sql.append("M1.DUP_CANDIDATE_1").append(i).append(" = M2.DUP_CANDIDATE_2").append(i);
-                sql.append("\n AND ");
-                sql.append("M1.DUP_CANDIDATE_2").append(i).append(" = M2.DUP_CANDIDATE_1").append(i);
-                sql.append("\n AND ");
-                sql.append("M1.DUP_CANDIDATE_1").append(i).append(" < M2.DUP_CANDIDATE_1").append(i);
-            }
-            sql.append(")");
-            
-            lastSQL = sql.toString();
-            stmt.executeUpdate(lastSQL);
-            
-            con.commit();
-            
-        } catch (SQLException ex) {
-            logger.error("Error in query: "+lastSQL, ex);
-            session.handleWarning(
-                    "Error in SQL Statement!" +
-                    "\nMessage: "+ex.getMessage() +
-                    "\nSQL State: "+ex.getSQLState() +
-                    "\nQuery: "+lastSQL);
-            throw ex;
-        } finally {
-            if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
-            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
-            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
-        }
-
     }
     
     public SourceTableRecord getSourceTableRecord(List<? extends Object> key) {
