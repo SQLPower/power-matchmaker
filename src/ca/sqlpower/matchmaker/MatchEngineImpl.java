@@ -340,9 +340,14 @@ public class MatchEngineImpl extends AbstractEngine {
 			currentProgress = progress + currentProcessor.getProgress();
 		} else if (currentProcessor != null && currentProcessor instanceof MatchPool) {
 			float poolProgress = currentProcessor.getProgress();
-			float poolJobSize = currentProcessor.getJobSize();
-			float matchPoolProgress = poolProgress / poolJobSize * rowCount;
-			currentProgress = progress + Math.round(matchPoolProgress);
+			Integer poolJobSizeInteger = currentProcessor.getJobSize();
+			if (poolJobSizeInteger == null) {
+				currentProgress = progress;
+			} else {
+				float poolJobSize = poolJobSizeInteger.floatValue();
+				float matchPoolProgress = poolProgress / poolJobSize * rowCount;
+				currentProgress = progress + Math.round(matchPoolProgress);
+			}
 		} else {
 			currentProgress = progress;
 		}
