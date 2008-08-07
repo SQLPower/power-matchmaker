@@ -60,7 +60,6 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
@@ -284,22 +283,9 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 			}
 		}));
 		
-		m.addSeparator();
 		
-		// TODO: Implement the import and export functions and
-		// replace these dummy actions.
-		m.add(new JMenuItem(new AbstractAction("Import") {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(owningFrame,
-				"Import is not yet available. We apologize for the inconvenience");				
-			}
-		}));
-		m.add(new JMenuItem(new AbstractAction("Export") {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(owningFrame,
-				"Export is not yet available. We apologize for the inconvenience");				
-			}
-		}));
+		// TODO: Implement the import and export functions
+//		m.addSeparator();
 //		m.add(new JMenuItem(new ProjectExportAction(swingSession,
 //						owningFrame)));
 //		m.add(new JMenuItem(new ProjectImportAction(swingSession,
@@ -307,7 +293,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 		m.addSeparator();
 		m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
-		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
+		// TODO: Implement Duplicate project and then re-enable here. Keep disabled until then
+//		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 
         if (logger.isDebugEnabled()) {
             m.addSeparator();

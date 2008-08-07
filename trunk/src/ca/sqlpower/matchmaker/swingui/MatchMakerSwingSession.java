@@ -108,8 +108,6 @@ import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
-import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
@@ -536,14 +534,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.add(runMatchAction);
 		projectMenu.add(runMergeAction);
 		projectMenu.add(runCleanseAction);
-		projectMenu.addSeparator();
 		
 		// TODO: Match statistics has been disabled until re-implementation
+//		projectMenu.addSeparator();
 //		projectMenu.add(showMatchStatisticInfoAction);
 //		projectMenu.addSeparator();
 		
-		projectMenu.add(new ProjectImportAction(this, frame));
-		projectMenu.add(new ProjectExportAction(this, frame));
+		// TODO: Disable Project Import and Export until they are implemented properly 
+//		projectMenu.add(new ProjectImportAction(this, frame));
+//		projectMenu.add(new ProjectExportAction(this, frame));
 		
 		menuBar.add(projectMenu);
 
