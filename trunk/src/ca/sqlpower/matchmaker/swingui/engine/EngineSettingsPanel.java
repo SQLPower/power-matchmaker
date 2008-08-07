@@ -315,14 +315,21 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			public void itemStateChanged(ItemEvent e) {
 				if (((JCheckBox) e.getSource()).isSelected()) {
 					if (type == EngineType.MATCH_ENGINE) {
-						clearMatchPool.setSelected(true);
+						clearMatchPool.setSelected(false);
+						// I've currently disabled the clear match pool option because the match
+						// in debug mode, changes should be rolled back, but if the clearing of the match
+						// pool is rolled back but the engine thinks that it is cleared, it can cause
+						// unique key violations when it tries to insert 'new' matches. But if the engine
+						// is made aware of the rollback, then it would be as if clear match pool wasn't
+						// selected in the first place, so I don't see the point in enabling it in debug mode
+						clearMatchPool.setEnabled(false);
 					}
 					recordsToProcess.setValue(new Integer(1));
 					engine.setMessageLevel(Level.ALL);
 					messageLevel.setSelectedItem(engine.getMessageLevel());
 				} else {
 					if (type == EngineType.MATCH_ENGINE) {
-						clearMatchPool.setSelected(false);
+						clearMatchPool.setEnabled(true);
 					}
 					recordsToProcess.setValue(new Integer(0));
 				}
@@ -331,6 +338,11 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 
 		if (type == EngineType.MATCH_ENGINE) {
 			clearMatchPool = new JCheckBox("Clear match pool?", ((MungeSettings)engineSettings).isClearMatchPool());
+			if (debugMode.isSelected()) {
+				clearMatchPool.setSelected(false);
+				// See comment just above about why this is disabled
+				clearMatchPool.setEnabled(false);
+			}
 		}
 
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});

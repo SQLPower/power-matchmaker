@@ -1375,6 +1375,10 @@ public class MatchPool extends MonitorableImpl {
 	/**
 	 * Completely removes all SourceTableRecords and PotentialMatchRecords, and also
 	 * removes all PotentialMatchRecords in the database repository for this MatchPool
+	 * 
+	 * @param aborter
+	 *            {@link Aborter} to alert the MatchPool to stop the clear operation if
+	 *            the user cancels it
 	 */
 	public void clear(Aborter aborter) throws SQLException {
 		deletedMatches.addAll(potentialMatches.keySet());
