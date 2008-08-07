@@ -164,6 +164,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progress = 0;
 			progressMessage = "Checking Match Engine Preconditions";
 			logger.info(progressMessage);
+			boolean inDebugMode = getProject().getMungeSettings().getDebug();
 			
 			try {
 				checkPreconditions();
@@ -200,7 +201,14 @@ public class MatchEngineImpl extends AbstractEngine {
 			// Fill pool with pre-existing matches
 			pool.findAll(null);
 			
-			if (getProject().getMungeSettings().isClearMatchPool()) {
+			// I've currently disabled the clear match pool option in debug mode because
+			// changes should be rolled back, but if the clearing of the match
+			// pool is rolled back but the engine thinks that it is cleared, it can cause
+			// unique key violations when it tries to insert 'new' matches when it calls
+			// pool.store() later on in this method. But if the engine is made aware of the rollback,
+			// then it would be as if clear match pool wasn't selected in the first place, 
+			// so I don't see the point in allowing it in debug mode for now.
+			if (!inDebugMode && getProject().getMungeSettings().isClearMatchPool()) {
 				int clearJobSize = pool.getPotentialMatches().size() + pool.getOrphanedMatches().size();
 				jobSize += clearJobSize;
 				progressMessage = "Clearing Match Pool";
@@ -220,10 +228,14 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Storing matches";
 			setCurrentProcessor(pool);
 			logger.info(progressMessage);
-			pool.store(new Aborter());
+			pool.store(new Aborter(), inDebugMode);
             checkCancelled();
             progress += rowCount;
             setCurrentProcessor(null);
+            
+            if (inDebugMode) {
+            	logger.info("In Debug Mode, so rolling back changes");
+            }
             
 			progressMessage = "Match Engine finished successfully";
 			logger.info(progressMessage);
