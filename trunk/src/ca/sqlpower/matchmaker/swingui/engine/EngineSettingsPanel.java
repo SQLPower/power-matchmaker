@@ -310,7 +310,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			recordsToProcess.setValue(engineSettings.getProcessCount());
 		}
 
-		debugMode = new JCheckBox("Debug Mode?", engineSettings.getDebug());
+		debugMode = new JCheckBox("Debug Mode? (Changes will be rolled back)", engineSettings.getDebug());
 		debugMode.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (((JCheckBox) e.getSource()).isSelected()) {
