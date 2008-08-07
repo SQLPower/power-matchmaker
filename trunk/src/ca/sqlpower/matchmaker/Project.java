@@ -197,47 +197,52 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * in the session's database; false otherwise.
      * @throws ArchitectException If there are problems accessing the session's database
      */
-	public static boolean doesResultTableExist(MatchMakerSession session, Project project) throws ArchitectException {
-		return session.tableExists(
-							project.getResultTableSPDatasource(),
-							project.getResultTableCatalog(),
-							project.getResultTableSchema(),
-							project.getResultTableName());
+	public boolean doesResultTableExist() throws ArchitectException {
+		MatchMakerSession session = getSession();
+		if (session == null) {
+			throw new IllegalStateException("Session has not been setup " +
+					"for the project, you will need session to check the result table");
+		}
+		return session.tableExists(getResultTableSPDatasource(),
+				getResultTableCatalog(), getResultTableSchema(),
+				getResultTableName());
 	}
 
 	/**
-	 * Returns true if the source table of this project exists in the
-	 * session's database; false otherwise.
+	 * Returns true if the source table of this project exists in the session's
+	 * database; false otherwise.
 	 */
-	public static boolean doesSourceTableExist(MatchMakerSession session, Project project) throws ArchitectException {
-		return session.tableExists(
-				project.getSourceTableSPDatasource(),
-				project.getSourceTableCatalog(),
-				project.getSourceTableSchema(),
-				project.getSourceTableName());
+	public boolean doesSourceTableExist() throws ArchitectException {
+		MatchMakerSession session = getSession();
+		if (session == null) {
+			throw new IllegalStateException("Session has not been setup " +
+					"for the project, you will need session to check the source table");
+		}
+		return session.tableExists(getSourceTableSPDatasource(),
+				getSourceTableCatalog(), getSourceTableSchema(),
+				getSourceTableName());
 	}
 
 	
 
 	/**
-	 * Creates the result table for this Project based on the properties
-	 * of the current source table. The result table name will be the
-	 * current setting for resultTableName.  The SQLTable itself will
-     * be added into its correct location in the correct SQLDatabase
-     * child object. 
+	 * Creates the result table for this Project based on the properties of the
+	 * current source table. The result table name will be the current setting
+	 * for resultTableName. The SQLTable itself will be added into its correct
+	 * location in the correct SQLDatabase child object.
 	 * <p>
-	 * This method only sets up an in-memory SQLTable.  You still have
-	 * to do the physical creation operation in the database yourself.
-	 *
-	 * @throws IllegalStateException If the current result table catalog,
-	 * schema, and name are not set up properly to correspond with the
-	 * session's database.
-	 * <p>
-	 * <b>or</b>
-	 * <p>
-	 * If the source table property of this project is not set yet.
-	 * @throws ArchitectException If there is trouble working with the
-	 * source table.
+	 * This method only sets up an in-memory SQLTable. You still have to do the
+	 * physical creation operation in the database yourself.
+	 * 
+	 * @throws IllegalStateException
+	 *             If the current result table catalog, schema, and name are not
+	 *             set up properly to correspond with the session's database.
+	 *             <p>
+	 *             <b>or</b>
+	 *             <p>
+	 *             If the source table property of this project is not set yet.
+	 * @throws ArchitectException
+	 *             If there is trouble working with the source table.
 	 */
 	public SQLTable createResultTable() throws ArchitectException {
 		SQLIndex si = getSourceTableIndex();
@@ -394,10 +399,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * <b>or</b>
 	 * <p>session and sql database have not been setup for the match
 	 */
-	public boolean verifyResultTableStruct() throws ArchitectException {
+	public boolean verifyResultTableStructure() throws ArchitectException {
 
 		MatchMakerSession session = getSession();
-		if ( session == null ) {
+		if (session == null) {
 			throw new IllegalStateException("Session has not been setup " +
 					"for the project, you will need session and database " +
 					"connection to check the result table");
@@ -455,6 +460,63 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			 */
 			if ( diff.getType() != DiffType.SAME &&
 					diff.getType() != DiffType.MODIFIED) {
+				diffCount++;
+			}
+		}
+		
+		return diffCount == 0;
+	}
+	
+	/**
+	 * Verify the source table structure and existence in the SQL Database by
+	 * comparing the in-memory to the physical.
+	 * 
+	 * @return false if the table does not exist in the sql database, or the
+	 *         table structure does not match original table structure.
+	 * 
+	 * @throws IllegalStateException
+	 *             If the source table has not been setup session and sql
+	 *             database have not been setup for the match
+	 */
+	public boolean verifySourceTableStructure() throws ArchitectException {
+		MatchMakerSession session = getSession();
+		if (session == null) {
+			throw new IllegalStateException("Session has not been setup " +
+					"for the project, you will need session and database " +
+					"connection to check the result table");
+		}
+		SQLDatabase db = session.getDatabase();
+		if (db == null) {
+			throw new IllegalStateException("Database has not been setup " +
+					"for the project session, you will need database " +
+					"connection to check the result table");
+		}
+		SQLTable sourceTable = getSourceTable();
+		if (sourceTable == null) {
+			throw new IllegalStateException("No source table specified " +
+					"for the project, I don't know how to vertify the stucture.");
+		}
+
+		SQLTable table = session.findPhysicalTableByName(sourceTable.getParentDatabase().getDataSource().getName(),
+				sourceTable.getCatalogName(),
+				sourceTable.getSchemaName(),
+				sourceTable.getName());
+		if (table == null) {
+			throw new IllegalStateException(
+					"The source table does not exist in the SQL Database");
+		}
+
+		List<SQLTable> inMemory = new ArrayList<SQLTable>();
+		inMemory.add(sourceTable);
+		List<SQLTable> physical = new ArrayList<SQLTable>();
+		physical.add(table);
+		CompareSQL compare = new CompareSQL(inMemory,physical);
+		List<DiffChunk<SQLObject>> tableDiffs = compare.generateTableDiffs();
+		logger.debug("Table differences are:");
+		int diffCount = 0;
+		for ( DiffChunk<SQLObject> diff : tableDiffs) {
+			logger.debug(diff.toString());
+			if (diff.getType() != DiffType.SAME) {
 				diffCount++;
 			}
 		}

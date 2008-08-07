@@ -79,7 +79,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		this.setProject(project);
 	}
 
-	public void checkPreconditions() throws EngineSettingException, ArchitectException {
+	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException {
 		MatchMakerSession session = getSession();
         Project project = getProject();
         final MatchMakerSessionContext context = session.getContext();
@@ -99,34 +99,39 @@ public class MatchEngineImpl extends AbstractEngine {
         			"PreCondition failed: data source of the session must not be null");
         }
         
-        if (!Project.doesSourceTableExist(session, project)) {
-            throw new EngineSettingException(
-                    "Your project source table \""+
+        if (!project.doesSourceTableExist()) {
+            throw new SourceTableException(
+                    "PreCondition failed: Your project source table \""+
                     DDLUtils.toQualifiedName(project.getSourceTable())+
-            "\" does not exist");
+            		"\" does not exist");
         }
+        
+        if (!project.verifySourceTableStructure()) {
+			throw new SourceTableException(
+					"PreCondition failed: Source table structure has changed!");
+		}
         
         if (!session.canSelectTable(project.getSourceTable())) {
-            throw new EngineSettingException(
-            "PreCondition failed: can not select project source table");
-        }
+			throw new EngineSettingException(
+					"PreCondition failed: can not select project source table");
+		}
         
-        if (!Project.doesResultTableExist(session, project)) {
-            throw new EngineSettingException(
-            "PreCondition failed: project result table does not exist");
-        }
+        if (!project.doesResultTableExist()) {
+			throw new EngineSettingException(
+					"PreCondition failed: project result table does not exist");
+		}
         
-        if (!project.verifyResultTableStruct() ) {
-            throw new EngineSettingException(
-            "PreCondition failed: project result table structure incorrect");
-        }
+        if (!project.verifyResultTableStructure()) {
+			throw new EngineSettingException(
+					"PreCondition failed: project result table structure incorrect");
+		}
         
         if (settings.getSendEmail()) {
         	// First checks for email settings
         	if (!validateEmailSetting(context)) {
-        		throw new EngineSettingException(
-        				"missing email setting information," +
-        				" the email sender requires smtp host name!");
+        		throw new EngineSettingException("PreCondition failed: " +
+        			 	"missing email setting information, " +
+        			 	"the email sender requires smtp host name!");
         	}
         	
         	// Then tries to set up the emails for each status
@@ -151,27 +156,28 @@ public class MatchEngineImpl extends AbstractEngine {
 	}
 	
 	@Override
-	public EngineInvocationResult call() throws EngineSettingException {
+	public EngineInvocationResult call() throws EngineSettingException, SourceTableException {
 		Level oldLoggerLevel = logger.getLevel();
 		logger.setLevel(getMessageLevel());
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
 		setCancelled(false);
 		
+		setFinished(false);
+		setStarted(true);
+		progress = 0;
+
+		boolean inDebugMode = getProject().getMungeSettings().getDebug();
+
 		try {
-			setFinished(false);
-			setStarted(true);
-			progress = 0;
 			progressMessage = "Checking Match Engine Preconditions";
 			logger.info(progressMessage);
-			boolean inDebugMode = getProject().getMungeSettings().getDebug();
-			
-			try {
-				checkPreconditions();
-			} catch (ArchitectException e) {
-				throw new RuntimeException(e);
-			}
-			
+			checkPreconditions();
+		} catch (ArchitectException e) {
+			throw new RuntimeException(e);
+		}
+
+		try {
 			String logFilePath = getProject().getMungeSettings().getLog().getAbsolutePath();
 			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
@@ -336,9 +342,9 @@ public class MatchEngineImpl extends AbstractEngine {
 
 	public synchronized int getProgress() {
 		int currentProgress;
-		if (currentProcessor != null && currentProcessor instanceof Processor) {
+		if (currentProcessor instanceof Processor) {
 			currentProgress = progress + currentProcessor.getProgress();
-		} else if (currentProcessor != null && currentProcessor instanceof MatchPool) {
+		} else if (currentProcessor instanceof MatchPool) {
 			float poolProgress = currentProcessor.getProgress();
 			Integer poolJobSizeInteger = currentProcessor.getJobSize();
 			if (poolJobSizeInteger == null) {

@@ -32,6 +32,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.SourceTableException;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -82,9 +83,10 @@ class EngineWorker extends SPSwingWorker {
 	 * @param registry The SwingWorkerRegistry that this worker will register itself with
 	 * @throws EngineSettingException
 	 * @throws ArchitectException
+	 * @throws SourceTableException 
 	 */
 	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel,
-			MatchMakerSwingSession session, Project project, Action action) throws EngineSettingException, ArchitectException {
+			MatchMakerSwingSession session, Project project, Action action) throws EngineSettingException, ArchitectException, SourceTableException {
 		super(session);
 		this.session = session;
 		this.project = project;
@@ -97,7 +99,7 @@ class EngineWorker extends SPSwingWorker {
 	}
 	
 	@Override
-	public void doStuff() throws EngineSettingException, IOException, SQLException {
+	public void doStuff() throws EngineSettingException, IOException, SQLException, SourceTableException {
 		project.setEngineRunning(true);
 		appender = new DocumentAppender(engineOutputDoc);
 		engine.getLogger().addAppender(appender);

@@ -50,14 +50,7 @@ public class MergeEngineImpl extends AbstractEngine {
 		this.setProject(project);
 	}
 	
-	/**
-	 * Checks a series of preconditions necessary for the engine to run. If any of the
-	 * preconditions fail, it will throw an EngineSettingException. 
-	 * <p>
-	 * Note: This sort of checking is only necessary because the current C-based implementation
-	 * of the engine does not provide detailed enough error messages when the preconditions fail.
-	 */
-	public void checkPreconditions() throws EngineSettingException, ArchitectException {
+	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException {
 		
 		MatchMakerSession session = getSession();
         Project project = getProject();
@@ -78,24 +71,29 @@ public class MergeEngineImpl extends AbstractEngine {
         			"PreCondition failed: data source of the session must not be null");
         }
         
-        if (!Project.doesSourceTableExist(session, project)) {
-            throw new EngineSettingException(
-                    "Your project source table \""+
+        if (!project.doesSourceTableExist()) {
+            throw new SourceTableException(
+                    "PreCondition failed: Your project source table \""+
                     DDLUtils.toQualifiedName(project.getSourceTable())+
             "\" does not exist");
         }
+        
+        if (!project.verifySourceTableStructure()) {
+			throw new SourceTableException(
+					"PreCondition failed: Source table structure has changed!");
+		}
         
         if (!session.canSelectTable(project.getSourceTable())) {
             throw new EngineSettingException(
             "PreCondition failed: can not select project source table");
         }
         
-        if (!Project.doesResultTableExist(session, project)) {
+        if (!project.doesResultTableExist()) {
             throw new EngineSettingException(
             "PreCondition failed: project result table does not exist");
         }
         
-        if (!project.verifyResultTableStruct() ) {
+        if (!project.verifyResultTableStructure() ) {
             throw new EngineSettingException(
             "PreCondition failed: project result table structure incorrect");
         }
@@ -129,26 +127,26 @@ public class MergeEngineImpl extends AbstractEngine {
 		return logger;
 	}
 	
-	public EngineInvocationResult call() throws EngineSettingException {
+	public EngineInvocationResult call() throws EngineSettingException, SourceTableException {
 		Level oldLevel = logger.getLevel();
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
 		setCancelled(false);
 		Connection con = null;
-		
+
+		logger.setLevel(getMessageLevel());
+		setFinished(false);
+		setStarted(true);
+
 		try {
-			logger.setLevel(getMessageLevel());
-			setFinished(false);
-			setStarted(true);
 			progressMessage = "Checking Merge Engine Preconditions";
 			logger.info(progressMessage);
-			
-			try {
-				checkPreconditions();
-			} catch (ArchitectException e) {
-				throw new RuntimeException(e);
-			}
-			
+			checkPreconditions();
+		} catch (ArchitectException e) {
+			throw new RuntimeException(e);
+		}
+
+		try {
 			String logFilePath = getProject().getMergeSettings().getLog().getAbsolutePath();
 			boolean appendToFile = getProject().getMergeSettings().getAppendToLog();
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
