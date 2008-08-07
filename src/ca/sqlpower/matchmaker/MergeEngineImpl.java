@@ -168,8 +168,10 @@ public class MergeEngineImpl extends AbstractEngine {
 			merger.call();
             checkCancelled();
             if (getProject().getMergeSettings().getDebug()) {
+            	logger.info("Running in Debug Mode, so rolling back changes");
             	con.rollback();
             } else {
+            	logger.debug("Commiting changes");
             	con.commit();
             }
 			progressMessage = "Merge Engine finished successfully";
