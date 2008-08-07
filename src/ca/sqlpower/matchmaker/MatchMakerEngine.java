@@ -19,8 +19,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 import org.apache.log4j.Level;
@@ -46,10 +44,10 @@ public interface MatchMakerEngine extends Monitorable,
 	 *   
 	 * @throws EngineSettingException When the preconditions for running the
 	 * engine are not met.
-	 * @throws IOException for any I/O problems 
-	 * @throws SQLException if PreMergeDataFudger fails
+     * @throws SourceTableException If there was a change in the source table that 
+     * could cause problems for running the engine.
 	 */
-	public EngineInvocationResult call() throws EngineSettingException, IOException, SQLException;
+	public EngineInvocationResult call() throws EngineSettingException, SourceTableException;
 	
 	/**
 	 * Makes an effort to verify all the assumptions that the engine makes
@@ -62,8 +60,10 @@ public interface MatchMakerEngine extends Monitorable,
 	 * @throws ArchitectException If there are errors encountered while attempting
      * to check the preconditions (this is a more severe case than a precondition
      * failure, because it means there's something wrong with the MatchMaker too).
+     * @throws SourceTableException If there was a change in the source table that 
+     * could cause problems for running the engine.
 	 */
-	public void checkPreconditions() throws EngineSettingException, ArchitectException;
+	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException;
 	
 	/**
 	 * Creates the command line to run the match engine, based on the

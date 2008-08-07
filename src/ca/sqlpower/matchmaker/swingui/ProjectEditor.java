@@ -19,32 +19,20 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.HeadlessException;
-import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -54,9 +42,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
@@ -68,9 +53,6 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.ddl.DDLGenerator;
-import ca.sqlpower.architect.ddl.DDLStatement;
-import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -81,7 +63,6 @@ import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -89,7 +70,6 @@ import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -463,6 +443,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     	}
 
         refreshIndexComboBoxAndAction(project.getSourceTable());
+        indexComboBox.setSelectedItem(project.getSourceTableIndex());
         
         //sets the resultChooser defaults
         resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
@@ -597,17 +578,17 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	        logger.debug(project.getResultTable());
         
 	        try {
-	        	if (!Project.doesResultTableExist(swingSession, project) ||
-	        			!project.verifyResultTableStruct()) {
-	        		generateResultTableSQL();
+	        	if (!project.doesResultTableExist() ||
+	        			!project.verifyResultTableStructure()) {
+	        		MMSUtils.createResultTable(swingSession.getFrame(), (SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem(), project);
 	        		
 	        		SQLTable resultTable = swingSession.findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
 	        				project.getResultTableSchema(), project.getResultTableName());
 					if (resultTable == null) return false;
 					project.setResultTable(resultTable);
 	        	}
-	        	if (!Project.doesResultTableExist(swingSession, project) ||
-	        			!project.verifyResultTableStruct()) {
+	        	if (!project.doesResultTableExist() ||
+	        			!project.verifyResultTableStructure()) {
 	        		return false;
 	        	}
 			} catch (Exception e) {
@@ -623,7 +604,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         	sourceChooser.getTableComboBox().setEnabled(false);
         	viewBuilderAction.setEnabled(false);
         	
-        	if (project.getType() != ProjectMode.CLEANSE) {
+        	if (project.getType() == ProjectMode.FIND_DUPES) {
 	        	// defaults the merge rules
 				TableMergeRules mergeRule = new TableMergeRules();
 				mergeRule.setTable(sourceTable);
@@ -635,6 +616,22 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					}
 				}
 				project.getTableMergeRulesFolder().addChild(mergeRule);
+        	}
+        } else {
+        	if (project.getType() == ProjectMode.FIND_DUPES) {
+        		for (TableMergeRules tmr : project.getTableMergeRules()) {
+        			if (tmr.isSourceMergeRule()) {
+        				tmr.setTableIndex(sourceTableIndex);
+        				for (ColumnMergeRules cmr : tmr.getChildren()) {
+        					if (tmr.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
+        						cmr.setActionType(MergeActionType.NA);
+        					} else if (cmr.getActionType() == MergeActionType.NA) {
+        						cmr.setActionType(MergeActionType.USE_MASTER_VALUE);
+        					}
+        				}
+        				break;
+        			}
+        		}
         	}
         }
 		
@@ -654,167 +651,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 		return true;
     }
-    
-    /**
-	 * Creates and shows a dialog with the generated SQL for the
-	 * result table in it. The dialog has buttons with actions 
-	 * that can save, execute, or copy the SQL to the clipboard.
-	 */
-	public void generateResultTableSQL()
-		throws InstantiationException, IllegalAccessException,
-		HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
-
-		final DDLGenerator ddlg = DDLUtils.createDDLGenerator((SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem());
-		
-		if (ddlg == null) {
-			JOptionPane.showMessageDialog(swingSession.getFrame(),
-					"Couldn't create DDL Generator for database type\n"+
-					swingSession.getDatabase().getDataSource().getDriverClass());
-			return;
-		}
-		ddlg.setTargetCatalog(project.getResultTableCatalog());
-		ddlg.setTargetSchema(project.getResultTableSchema());
-		if (Project.doesResultTableExist(swingSession, project)) {
-			int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-					"Result table exists, do you want to drop and recreate it?",
-					"Table exists",
-					JOptionPane.YES_NO_OPTION);
-			if ( answer != JOptionPane.YES_OPTION ) {
-				return;
-			}
-			ddlg.dropTable(project.getResultTable());
-		}
-		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
-
-	    final JDialog editor = new JDialog(swingSession.getFrame(),
-	    		"Create Result Table", true);
-	    JComponent cp = (JComponent) editor.getContentPane();
-
-	    Box statementsBox = Box.createVerticalBox();
-	    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
-	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
-	    	final JTextArea sqlTextArea = new JTextArea(sqlStatement.getSQLText());
-			statementsBox.add(sqlTextArea);
-			sqlTextFields.add(sqlTextArea);
-	    }
-
-	    Action saveAction = new AbstractAction("Save") {
-			public void actionPerformed(ActionEvent e) {
-				AbstractDocument doc = new DefaultStyledDocument();
-				for (JTextArea sqlText : sqlTextFields ) {
-			    	try {
-						doc.insertString(doc.getLength(),
-										sqlText.getText(),
-										null);
-						doc.insertString(doc.getLength(),";\n",null);
-					} catch (BadLocationException e1) {
-						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Unexcepted Document Error",e1);
-					}
-			    }
-				SPSUtils.saveDocument(swingSession.getFrame(),
-						doc,
-						(FileExtensionFilter)SPSUtils.SQL_FILE_FILTER);
-			}
-	    };
-	    Action copyAction = new AbstractAction("Copy to Clipboard") {
-			public void actionPerformed(ActionEvent e) {
-				StringBuffer buf = new StringBuffer();
-				for (JTextArea sqlText : sqlTextFields ) {
-					buf.append(sqlText.getText());
-					buf.append(";\n");
-			    }
-				StringSelection selection = new StringSelection(buf.toString());
-				Clipboard clipboard = Toolkit.getDefaultToolkit()
-						.getSystemClipboard();
-				clipboard.setContents(selection, selection);
-			}
-	    };
-	    Action executeAction = new AbstractAction("Execute") {
-			public void actionPerformed(ActionEvent e) {
-
-				Connection con = null;
-				Statement stmt = null;
-				String sql = null;
-				try {
-					con = project.createResultTableConnection();
-					stmt = con.createStatement();
-					int successCount = 0;
-
-					for (JTextArea sqlText : sqlTextFields ) {
-						sql = sqlText.getText();
-						try {
-							stmt.executeUpdate(sql);
-							successCount += 1;
-						} catch (SQLException e1) {
-							int choice = JOptionPane.showOptionDialog(editor,
-									"The following SQL statement failed:\n" +
-									sql +
-									"\nThe error was: " + e1.getMessage() +
-									"\n\nDo you want to continue executing the create script?",
-									"SQL Error", JOptionPane.YES_NO_OPTION,
-									JOptionPane.ERROR_MESSAGE, null,
-									new String[] {"Abort", "Continue"}, "Continue" );
-							if (choice != 1) {
-								break;
-							}
-						}
-					}
-
-					JOptionPane.showMessageDialog(swingSession.getFrame(),
-							"Successfully executed " + successCount + " of " +
-							sqlTextFields.size() + " SQL Statements." +
-							(successCount == 0 ? "\n\nBetter Luck Next Time." : ""));
-
-                    //closes the dialog if all the statement is executed successfully
-                    //if not, the dialog remains on the screen
-                    if (successCount == sqlTextFields.size()){
-					    editor.dispose();
-                    }
-				} catch (SQLException ex) {
-					SPSUtils.showExceptionDialogNoReport(editor, "Create Script Failure", ex);
-				} finally {
-                    try {
-                        if (stmt != null) {
-                            stmt.close();
-                        }
-                    } catch (SQLException ex) {
-                        logger.warn("Couldn't close statement", ex);
-                    }
-                    try {
-                        if (con != null) {
-                            con.close();
-                        }
-                    } catch (SQLException ex) {
-                        logger.warn("Couldn't close connection", ex);
-                    }
-				}
-			}
-	    };
-	    Action cancelAction = new AbstractAction("Close") {
-			public void actionPerformed(ActionEvent e) {
-				editor.dispose();
-			}
-	    };
-
-	    // the gui layout part
-	    cp.setLayout(new BorderLayout(10,10));
-	    cp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-	    cp.add(new JScrollPane(statementsBox), BorderLayout.CENTER);
-
-	    ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
-	    bbb.addGridded(new JButton(saveAction));
-	    bbb.addGridded(new JButton(copyAction));
-	    bbb.addGridded(new JButton(executeAction));
-	    bbb.addGridded(new JButton(cancelAction));
-
-	    cp.add(bbb.getPanel(), BorderLayout.SOUTH);
-
-	    editor.pack();
-	    editor.setLocationRelativeTo(null);
-	    editor.setVisible(true);
-	}
 	
     private class ProjectSourceTableValidator implements Validator {
 

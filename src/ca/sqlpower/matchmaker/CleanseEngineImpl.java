@@ -71,7 +71,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 		this.setProject(project);
 	}
 
-	public void checkPreconditions() throws EngineSettingException, ArchitectException {
+	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException {
 		MatchMakerSession session = getSession();
         Project project = getProject();
         final MatchMakerSessionContext context = session.getContext();
@@ -91,12 +91,17 @@ public class CleanseEngineImpl extends AbstractEngine {
         			"PreCondition failed: data source of the session must not be null");
         }
         
-        if (!Project.doesSourceTableExist(session, project)) {
-            throw new EngineSettingException(
-                    "Your project source table \""+
+        if (!project.doesSourceTableExist()) {
+            throw new SourceTableException(
+                    "PreCondition failed: Your project source table \""+
                     DDLUtils.toQualifiedName(project.getSourceTable())+
             "\" does not exist");
         }
+        
+        if (!project.verifySourceTableStructure()) {
+			throw new SourceTableException(
+					"PreCondition failed: Source table structure has changed!");
+		}
         
         if (!session.canSelectTable(project.getSourceTable())) {
             throw new EngineSettingException(
@@ -133,26 +138,26 @@ public class CleanseEngineImpl extends AbstractEngine {
 	}
 	
 	@Override
-	public EngineInvocationResult call() throws EngineSettingException {
+	public EngineInvocationResult call() throws EngineSettingException, SourceTableException {
 		Level oldLevel = logger.getLevel();
 		setCancelled(false);
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
 		
+		logger.setLevel(getMessageLevel());
+		setFinished(false);
+		setStarted(true);
+		progress = 0;
+
 		try {
-			logger.setLevel(getMessageLevel());
-			setFinished(false);
-			setStarted(true);
-			progress = 0;
 			progressMessage = "Checking Cleanse Engine Preconditions";
 			logger.info(progressMessage);
-			
-			try {
-				checkPreconditions();
-			} catch (ArchitectException e) {
-				throw new RuntimeException(e);
-			}
-			
+			checkPreconditions();
+		} catch (ArchitectException e) {
+			throw new RuntimeException(e);
+		}
+
+		try {
 			String logFilePath = getProject().getMungeSettings().getLog().getAbsolutePath();
 			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);

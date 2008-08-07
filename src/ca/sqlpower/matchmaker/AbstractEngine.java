@@ -111,7 +111,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		this.session = session;
 	}
 
-	public EngineInvocationResult call() throws EngineSettingException {
+	public EngineInvocationResult call() throws EngineSettingException, SourceTableException {
 		try {
 			try {
 				checkPreconditions();
