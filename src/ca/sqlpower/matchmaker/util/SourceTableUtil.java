@@ -78,6 +78,10 @@ public class SourceTableUtil {
 				oldSourceTable.getCatalogName(),
 				oldSourceTable.getSchemaName(), oldSourceTable.getName());
 		SQLIndex oldIndex = project.getSourceTableIndex();
+		TableMergeRules oldSourceTmr = null;
+		if (project.getType() == ProjectMode.FIND_DUPES) {
+			oldSourceTmr = findSourceTableMergeRule(project);
+		}
 		
 		// it's way too difficult to fix the project if the source table can't
 		// be found on the database.
@@ -127,7 +131,7 @@ public class SourceTableUtil {
 				fixCleanseResultSteps(project);
 			} else if (project.getType() == ProjectMode.FIND_DUPES) {
 				
-				fixMergeRules(project, sourceTableChanged);
+				fixMergeRules(project, oldSourceTmr, sourceTableChanged);
 				
 				if (sourceTableIndexChanged) {
 					// fix the result table.
@@ -139,6 +143,7 @@ public class SourceTableUtil {
 			
 			session.save(project);
 		} finally {
+			
 			project.endCompoundEdit();
 			session.setSelectNewChild(true);
 		}
@@ -245,15 +250,15 @@ public class SourceTableUtil {
 	 * 
 	 * @param project
 	 *            The project to perform the fix on.
+	 * @param sourceTmr
+	 *            The old source table merge rule before the fix began.
 	 * @param sourceTableIndexChanged
 	 *            Whether the source table index has been changed. If true, all
 	 *            merge rules except the source merge rule will be removed.
 	 * @throws ArchitectException
 	 *             If getting the project's source table index causes problems.
 	 */
-	private static void fixMergeRules(Project project, boolean sourceTableIndexChanged) throws ArchitectException {
-		TableMergeRules sourceTmr = findSourceTableMergeRule(project);
-		
+	private static void fixMergeRules(Project project, TableMergeRules sourceTmr, boolean sourceTableIndexChanged) throws ArchitectException {
 		// removed all the old column merge rules.
 		List<ColumnMergeRules> sourceCmrs = new ArrayList<ColumnMergeRules>(sourceTmr.getChildren());
 		for (ColumnMergeRules cmr : sourceCmrs) {
