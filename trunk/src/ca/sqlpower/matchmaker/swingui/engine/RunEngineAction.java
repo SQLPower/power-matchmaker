@@ -107,11 +107,13 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 			new Thread(w).start();
 		} catch (Exception ex) {
 			if (ex instanceof SourceTableException) {
-				int response = JOptionPane.showOptionDialog(session.getFrame(), "The MatchMaker has detected changes in the " +
-						"source table that must be fixed before running the engines.\nThe MatchMaker can attempt" +
-						" to automatically fix the project, would you like the MatchMaker to fix the project now?",
+				String errorText = "The MatchMaker has detected changes in the " +
+						"source table structure.\nYour project will require modifications before the engines can run properly.\n" +
+						"The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
+						"Would you like the MatchMaker to modify the project now?";
+				int response = JOptionPane.showOptionDialog(session.getFrame(), errorText,
 						"Source Table Changed", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
-						new String[] {"Fix Now", "Not Now"}, "Fix Now");
+						new String[] {"Fix Now", "Not Now"}, "Modify Now");
 				if (response == JOptionPane.YES_OPTION) {
 					try {
 						SourceTableUtil.checkAndfixProject(session, project);
