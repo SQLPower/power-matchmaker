@@ -27,7 +27,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
@@ -342,12 +341,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		
 		// TODO: Implement the import and export functions and
 		// replace this dummy action.
-		m.add(new JMenuItem(new AbstractAction("Import") {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(owningFrame,
-				"Import is not yet available. We apologize for the inconvenience");				
-			}
-		}));
 //		m.add(new JMenuItem(new ProjectImportAction(swingSession, owningFrame)));
 		
 		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
