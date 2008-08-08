@@ -94,8 +94,8 @@ public class NewMungeProcessAction extends AbstractAction {
 		MungeStep mungeResultStep;
 		try {
 			mungeResultStep = inputStep.getOutputStep(project);
-		} catch (ArchitectException e1) {
-			throw new RuntimeException(e1);
+		} catch (ArchitectException ex) {
+			throw new RuntimeException("Could not find or set up the result munge step!", ex);
 		}
 		
 		String x = Integer.toString(MungePen.AUTO_SCROLL_INSET + 5);
@@ -113,11 +113,11 @@ public class NewMungeProcessAction extends AbstractAction {
 		
 		if (mungeResultStep instanceof CleanseResultStep) {
 			try {
-				((CleanseResultStep)mungeResultStep).open(logger);
+				mungeResultStep.open(logger);
                 mungeResultStep.rollback();
 				mungeResultStep.close();
 			} catch (Exception ex) {
-				throw new RuntimeException("Could not set up the result munge step!", ex);
+				throw new RuntimeException("Could not set up the cleanse result munge step!", ex);
 			}
 		}
     	swingSession.save(process);

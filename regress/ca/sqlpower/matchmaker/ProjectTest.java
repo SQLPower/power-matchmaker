@@ -287,7 +287,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		SQLTable resultTable = db.getTableByName("farm", "cow", "moo");
 		assertNotNull(resultTable);
 		project.setResultTable(resultTable);
-		assertTrue(Project.doesResultTableExist(session, project));
+		assertTrue(project.doesResultTableExist());
 	}
 	
 
@@ -309,7 +309,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		SQLTable resultTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
 		project.setResultTable(resultTable);
-		assertFalse(Project.doesResultTableExist(session, project));
+		assertFalse(project.doesResultTableExist());
 	}
 
 	/**
@@ -330,7 +330,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		SQLTable resultTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		project.setResultTable(resultTable);
-		assertFalse(Project.doesResultTableExist(session, project));
+		assertFalse(project.doesResultTableExist());
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
@@ -345,7 +345,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		SQLTable sourceTable = db.getTableByName("farm", "cow", "moo");
 		assertNotNull(sourceTable);
 		project.setSourceTable(sourceTable);
-		assertTrue(Project.doesSourceTableExist(session, project));
+		assertTrue(project.doesSourceTableExist());
 	}
 
 	/**
@@ -366,7 +366,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		SQLTable sourceTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
 		project.setSourceTable(sourceTable);
-		assertFalse(Project.doesSourceTableExist(session, project));
+		assertFalse(project.doesSourceTableExist());
 	}
 
 	/**
@@ -387,7 +387,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		SQLTable sourceTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		project.setSourceTable(sourceTable);
-		assertFalse(Project.doesSourceTableExist(session, project));
+		assertFalse(project.doesSourceTableExist());
 	}
 	
 	public void testVerifyResultTableSS() throws SQLException, InstantiationException,
@@ -424,7 +424,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addIndex(idx);
 
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("project has no source table, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -432,7 +432,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTable(sourceTable);
     	
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("project has no unique index, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -440,7 +440,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTableIndex(idx);
     	
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("result table name has not been setup, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -456,7 +456,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		execSQL(con,sql);
 
 		try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("result table is not persistent, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -474,7 +474,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 //		dss.add(ds);
 //		((TestingMatchMakerContext)session.getContext()).setDataSources(dss);
 		
-		if (Project.doesResultTableExist(session, project)) {
+		if (project.doesResultTableExist()) {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
@@ -489,13 +489,13 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
     	assertTrue("we should have a good result table.",
-    			project.verifyResultTableStruct());
+    			project.verifyResultTableStructure());
     	
     	sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
     	execSQL(con,sql);
 
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("result table is droped, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -535,7 +535,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addIndex(idx);
 
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("project has no source table, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -543,7 +543,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTable(sourceTable);
     	
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("project has no unique index, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -551,7 +551,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTableIndex(idx);
     	
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("result table name has not been setup, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -567,7 +567,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		execSQL(con,sql);
 
 		try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("result table is not persistent, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -581,7 +581,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
 		
-		if (Project.doesResultTableExist(session, project)) {
+		if (project.doesResultTableExist()) {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
@@ -596,13 +596,13 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
     	assertTrue("we should have a good result table.",
-    			project.verifyResultTableStruct());
+    			project.verifyResultTableStructure());
     	
     	sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
     	execSQL(con,sql);
 
     	try {
-    		project.verifyResultTableStruct();
+    		project.verifyResultTableStructure();
     		fail("result table is droped, but no exception caught.");
     	} catch (Exception e) {
 		}
