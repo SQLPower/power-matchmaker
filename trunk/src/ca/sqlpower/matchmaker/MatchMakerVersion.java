@@ -60,7 +60,7 @@ public class MatchMakerVersion {
      * Full releases do not have a suffix.  In that case, the suffix is the empty
      * string (not null).
      */
-    public static final String APP_VERSION_SUFFIX = "alpha";
+    public static final String APP_VERSION_SUFFIX = "";
     
     /**
      * The full version number, formatted as Major.Minor.Tiny[-Suffix].  Note the square
