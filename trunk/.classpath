@@ -43,6 +43,5 @@
 	<classpathentry kind="src" path="testbed"/>
 	<classpathentry kind="lib" path="lib/commons-digester.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sqlpower_library"/>
-	<classpathentry kind="lib" path="/architect/jdbc_drivers"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
