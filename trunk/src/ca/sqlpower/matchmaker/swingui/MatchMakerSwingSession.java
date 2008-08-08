@@ -813,7 +813,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    	} catch (Exception ex) {
 		    		JDialog d = MMSUtils.showExceptionDialogNoReport("Couldn't start application!", ex);
 		    		d.addWindowListener(new WindowAdapter() {
-		    			public void windowClosing(WindowEvent e) {
+		    			public void windowDeactivated(WindowEvent e) {
 		    				System.exit(0);
 		    			}
 		    		});
