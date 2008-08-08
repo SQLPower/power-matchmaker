@@ -126,10 +126,10 @@ public class SQLInputStep extends AbstractMungeStep {
             throw new IllegalStateException("The input step is already open");
         }
 
-        if (table ==  null) { 
-        	this.table = getProject().getSourceTable();
-        	setName(table.getName());
-        }
+      	this.table = getProject().getSourceTable();
+      	if (!getName().equals(table.getName())) {
+      		setName(table.getName());
+      	}
 
         // TODO: Verify that outputs are the same with the table's columns.
         if (getChildCount() == 0) {

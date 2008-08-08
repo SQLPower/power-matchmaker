@@ -154,7 +154,7 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
 
-		if (Project.doesResultTableExist(session, project)) {
+		if (project.doesResultTableExist()) {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
