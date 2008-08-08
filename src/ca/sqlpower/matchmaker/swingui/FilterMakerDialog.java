@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
@@ -136,23 +137,9 @@ public class FilterMakerDialog extends JDialog {
         addWindowListener(windowsListener);
     }
 
-    private WindowListener windowsListener = new WindowListener(){
-
-        public void windowOpened(WindowEvent e) {
-        }
-        public void windowClosing(WindowEvent e) {
-            returnText.setEditable(true);
-        }
-        public void windowClosed(WindowEvent e) {
-            returnText.setEditable(true);
-        }
-        public void windowIconified(WindowEvent e) {
-        }
-        public void windowDeiconified(WindowEvent e) {
-        }
-        public void windowActivated(WindowEvent e) {
-        }
+    private WindowListener windowsListener = new WindowAdapter(){
         public void windowDeactivated(WindowEvent e) {
+        	returnText.setEditable(true);
         }
     };
 
