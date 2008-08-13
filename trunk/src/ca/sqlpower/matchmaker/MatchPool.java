@@ -722,6 +722,10 @@ public class MatchPool extends MonitorableImpl {
         return potentialMatches.keySet();
     }
     
+    public int getNumberOfPotentialMatches() {
+    	return potentialMatches.size();
+    }
+    
     /**
 	 * Gets the first PotentialMatchRecord in the pool that has the given nodes
 	 * as its original left and right nodes. Null is returned if no PotentialMatchRecord

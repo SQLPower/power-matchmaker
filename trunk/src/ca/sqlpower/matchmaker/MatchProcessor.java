@@ -75,6 +75,7 @@ public class MatchProcessor extends AbstractProcessor {
 		Collections.sort(matchData);
 		
 		int dataIndex = 0;
+		int matchCount = 0;
 		
 		for (MungeResult data: matchData) {
             checkCancelled();
@@ -95,6 +96,7 @@ public class MatchProcessor extends AbstractProcessor {
 						// Potential Match! so store in Match Result Table
 						engineLogger.debug("Found Match!\nRecord 1:" + data
 								+ "\nRecord 2:" + matchData.get(i));
+						matchCount++;
 						PotentialMatchRecord pmr = new PotentialMatchRecord(
 								mungeProcess, MatchType.UNMATCH, data
 										.getSourceTableRecord(), matchData.get(
@@ -111,6 +113,8 @@ public class MatchProcessor extends AbstractProcessor {
 				}
 			}
 		}
+		
+		engineLogger.info("Munge Process '" + mungeProcess.getName() + "' found " + matchCount + " matches");
 		
 		return Boolean.TRUE;
 	}
