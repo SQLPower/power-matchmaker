@@ -230,6 +230,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Searching for matches";
 			logger.info(progressMessage);
 			mungeAndMatch(rowCount, mungeProcesses, pool);
+			logger.info("Match Engine found a total of " + pool.getNumberOfPotentialMatches() + " matches");
 			
 			progressMessage = "Storing matches";
 			setCurrentProcessor(pool);
