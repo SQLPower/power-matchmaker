@@ -50,8 +50,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -95,11 +97,6 @@ import com.jgoodies.forms.layout.FormLayout;
 public class BuildExampleTableDialog extends JDialog{
 	
 	private static Logger logger = Logger.getLogger(BuildExampleTableDialog.class);
-	
-	/**
-	 * The number of records to create
-	 */
-	private static final int NUM_RECORDS = 2000;
 	
 	/**
 	 * The current swing session
@@ -170,6 +167,8 @@ public class BuildExampleTableDialog extends JDialog{
 		sourceChooser = new SQLObjectChooser(swingSession, this);
 		tableName = new JTextField(30);
 		tableName.setText("MMExampleTable");
+		spinnerNumberModel = new SpinnerNumberModel(2000, 1, Integer.MAX_VALUE, 100);
+		rowCounter = new JSpinner(spinnerNumberModel);
 		buildGUI();
 		setModal(false);
 		
@@ -207,7 +206,7 @@ public class BuildExampleTableDialog extends JDialog{
 		}
 		
 		FormLayout layout = new FormLayout(	"4dlu,pref,4dlu,pref:grow,4dlu" , 
-											"4dlu,pref:grow,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+											"4dlu,pref:grow,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		panel.setLayout(layout);
 		
 		CellConstraints cc = new CellConstraints();
@@ -233,6 +232,10 @@ public class BuildExampleTableDialog extends JDialog{
 		panel.add(tableName,cc.xy(4, row));
 		
 		row += 2;
+		panel.add(new JLabel("# of Rows to Insert:"), cc.xy(2, row));
+		panel.add(rowCounter, cc.xy(4, row));
+		
+		row += 2;
 		cancel = new JButton(new AbstractAction("Close"){
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -253,8 +256,8 @@ public class BuildExampleTableDialog extends JDialog{
 		panel.add(ButtonBarFactory.buildOKCancelBar(create, cancel), cc.xyw(2, row, 3));
 		
 		row += 2;
-		progress = new JProgressBar(0, NUM_RECORDS);
-		popMon = new PopulationMonitor(NUM_RECORDS);
+		progress = new JProgressBar(0, spinnerNumberModel.getNumber().intValue());
+		popMon = new PopulationMonitor(spinnerNumberModel.getNumber().intValue());
 		pw = new ProgressWatcher(progress, popMon);
 		
 		panel.add(progress, cc.xyw(2, row, 3));
@@ -532,6 +535,8 @@ public class BuildExampleTableDialog extends JDialog{
 		 * Populates the given table.
 		 */
 		private void populateTable(SQLTable table) {
+			progress.setMaximum(spinnerNumberModel.getNumber().intValue());
+			popMon.size = spinnerNumberModel.getNumber().intValue();
 			popMon.start();
 			for (String s: names) {
 				int firstSpace = s.indexOf(" ");
@@ -547,6 +552,13 @@ public class BuildExampleTableDialog extends JDialog{
 			Statement stmt = null;
 			Connection con = null;
 			try {
+				sourceChooser.getDataSourceComboBox().setEnabled(false);
+				sourceChooser.getCatalogComboBox().setEnabled(false);
+				sourceChooser.getSchemaComboBox().setEnabled(false);
+				sourceChooser.getTableComboBox().setEnabled(false);
+				tableName.setEnabled(false);
+				rowCounter.setEnabled(false);
+				
 				con = db.getConnection();
 				PreparedStatement ps = con.prepareStatement("INSERT INTO " + DDLUtils.toQualifiedName(table) + " (ID,FirstName,LastName,Email,Address,HomePhone,CellPhone) VALUES (?,?,?,?,?,?,?)");
 				//Uses the same seed so that all of the examples look the same
@@ -560,7 +572,7 @@ public class BuildExampleTableDialog extends JDialog{
 				String cell = null;
 				
 				//make all the data
-				for (int x = 0; x < NUM_RECORDS; x++) {
+				for (int x = 0; x < spinnerNumberModel.getNumber().intValue(); x++) {
 					popMon.inc();
 					first = firstNames.get(r.nextInt(firstNames.size()));
 					last = lastNames.get(r.nextInt(lastNames.size()));
@@ -599,9 +611,9 @@ public class BuildExampleTableDialog extends JDialog{
 				ps = con.prepareStatement("UPDATE " + DDLUtils.toQualifiedName(table) + " SET FirstName=?, LastName=?, Email=?, Address=?, HomePhone=?, CellPhone=? WHERE ID=?");
 				
 				for (int x = 0; x < 15; x++) {
-					int dup = r.nextInt(2000);
+					int dup = r.nextInt(spinnerNumberModel.getNumber().intValue());
 					for (int y = r.nextInt(3) + 3; y >= 0; y--) {
-						int curr = r.nextInt(2000);
+						int curr = r.nextInt(spinnerNumberModel.getNumber().intValue());
 						rs.absolute(dup);
 						first = rs.getString(2);
 						last = rs.getString(3);
@@ -678,6 +690,12 @@ public class BuildExampleTableDialog extends JDialog{
 					SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this,
 							"Error while trying to close connection or statment", e);
 				}
+				sourceChooser.getDataSourceComboBox().setEnabled(true);
+				sourceChooser.getCatalogComboBox().setEnabled(true);
+				sourceChooser.getSchemaComboBox().setEnabled(true);
+				sourceChooser.getTableComboBox().setEnabled(true);
+				tableName.setEnabled(true);
+				rowCounter.setEnabled(true);
 			}
 			
 			
@@ -867,6 +885,10 @@ public class BuildExampleTableDialog extends JDialog{
 	private String[] street = new String[]{
 			"street", "st", "pl", "rd", "dr"
 	};
+
+	private JSpinner rowCounter;
+
+	private SpinnerNumberModel spinnerNumberModel;
 	
 	/**
 	 * A monitor that helps to update the progress bar.
