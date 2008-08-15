@@ -72,6 +72,8 @@ public class MatchPool extends MonitorableImpl {
     
     private static final Logger logger = Logger.getLogger(MatchPool.class);
     
+    private static final int DEFAULT_BATCH_SIZE = 1000;
+    
     private final Project project;
     
     private final MatchMakerSession session;
@@ -401,7 +403,7 @@ public class MatchPool extends MonitorableImpl {
 	 */
     public void store(Aborter aborter, boolean debug) throws SQLException {
         logger.debug("Starting to store");
-
+        
         setJobSize(new Integer(deletedMatches.size() + potentialMatches.size() * 2));
         
         if (sourceTableRecords.size() == 0) return;
@@ -412,6 +414,7 @@ public class MatchPool extends MonitorableImpl {
         int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[0]).getKeyValues().size();
         try {
             con = project.createResultTableConnection();
+            boolean supportsBatchUpdates = con.getMetaData().supportsBatchUpdates();
             con.setAutoCommit(false);
             StringBuilder sql = new StringBuilder();
             sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
@@ -428,6 +431,7 @@ public class MatchPool extends MonitorableImpl {
             if (ps != null) ps.close();
             ps = con.prepareStatement(lastSQL);
             
+            int batchCount = 0;
             for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
             	incrementProgress();
             	if (aborter != null) {
@@ -441,7 +445,18 @@ public class MatchPool extends MonitorableImpl {
             		ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
                     logger.debug("Param " + (i * 2 + 2) + ": " + pmr.getOriginalRhs().getKeyValues().get(i));
             	}
-            	ps.executeUpdate();
+            	
+            	// Since not all JDBC drivers support batch updates.
+            	if (supportsBatchUpdates) {
+	        		batchCount++;
+	        		ps.addBatch();
+	        		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	        			ps.executeBatch();
+	        			batchCount = 0;
+	        		}
+            	} else {
+            		ps.executeUpdate();
+            	}
             	it.remove();
             }
             
@@ -466,12 +481,14 @@ public class MatchPool extends MonitorableImpl {
             if (ps != null) ps.close();
             ps = con.prepareStatement(lastSQL);
             
-            for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
+            batchCount = 0;
+            for (Iterator<PotentialMatchRecord> it = potentialMatches.keySet().iterator(); it.hasNext();) {
             	incrementProgress();
             	
                 if (aborter != null) {
                     aborter.checkCancelled();
                 }
+                PotentialMatchRecord pmr = it.next();
             	if (pmr.getStoreState() == StoreState.DIRTY) {
             		logger.debug("The potential match " + pmr + " was dirty, storing");
             		ps.setObject(1, pmr.getMatchStatus().getCode());
@@ -486,9 +503,23 @@ public class MatchPool extends MonitorableImpl {
             			ps.setObject(i * 2 + 3, pmr.getOriginalLhs().getKeyValues().get(i));
             			ps.setObject(i * 2 + 4, pmr.getOriginalRhs().getKeyValues().get(i));
             		}
-            		ps.executeUpdate();
+
+            		if (supportsBatchUpdates) {
+	            		batchCount++;
+	            		ps.addBatch();
+	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	            			ps.executeBatch();
+	            			batchCount = 0;
+	            		}
+            		} else {
+            			ps.executeUpdate();
+            		}
             		pmr.setStoreState(StoreState.CLEAN);
+            	} else if (!it.hasNext() && supportsBatchUpdates) {
+            		// execute remaining batched commands
+            		ps.executeBatch();
             	}
+            	
             }
             
             sql = new StringBuilder();
@@ -536,11 +567,14 @@ public class MatchPool extends MonitorableImpl {
             if (ps != null) ps.close();
             ps = con.prepareStatement(lastSQL);
             
-            for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
+            batchCount = 0;
+            
+            for (Iterator<PotentialMatchRecord> it = potentialMatches.keySet().iterator(); it.hasNext();) {
             	incrementProgress();
                 if (aborter != null) {
                     aborter.checkCancelled();
                 }
+                PotentialMatchRecord pmr = it.next();
             	if (pmr.getStoreState() == StoreState.NEW) {
             		logger.debug("The potential match " + pmr + " was new, storing");
             		for (int i = 0; i < numKeyValues; i++) {
@@ -583,8 +617,20 @@ public class MatchPool extends MonitorableImpl {
             			}
             		}
             		
-            		ps.executeUpdate();
+            		if (supportsBatchUpdates) {
+	            		batchCount++;
+	            		ps.addBatch();
+	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	            			ps.executeBatch();
+	            			batchCount = 0;
+	            		}
+            		} else {
+            			ps.executeUpdate();
+            		}
             		pmr.setStoreState(StoreState.CLEAN);
+            	} else if (!it.hasNext() && supportsBatchUpdates) {
+            		// execute remaining batched commands
+            		ps.executeBatch();
             	}
             }
             
