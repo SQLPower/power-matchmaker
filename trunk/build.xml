@@ -142,7 +142,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, pmd, pmd-cpd, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
+	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -322,7 +322,7 @@
 		<property name="reports.junit" value="${reports}/junit"/>
 		<mkdir dir="${reports.junit}"/>
 		<!-- Output all System.out and System.err messages -->
-	   <junit printsummary="on" maxmemory="512m">
+	   <junit printsummary="on" maxmemory="512m" showoutput="yes">
 	   	   <sysproperty key="ca.sqlpower.matchmaker.test.dir" value="${build.tests}"/>
 	       <classpath>
 	       		<path refid="test.classpath"/>
@@ -825,5 +825,28 @@
 		</cpd>
 		<xslt in="${cpd-results}" style="${pmd.home}/etc/xslt/cpdhtml.xslt" out="${reports}/cpd-ant-results.html" />
 		<echo message="CPD completed, output is in ${reports}/cpd-ant-results.html."/>
+	</target>
+	
+	<!-- findbugs code checking tool -->
+	<property name="findbugs.home" value="ext-tools/findbugs"/>
+	<property name="findbugs-ant.jar" value="${findbugs.home}/lib/findbugs-ant.jar"/>
+
+	<target name="findbugs"
+		description="Runs the FindBugs tool, outputs results to a text file"
+		depends="compile, getAppVersion">
+		<mkdir dir="${reports}"/>
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
+			classpath="${findbugs-ant.jar}"/>
+		<findbugs home="${findbugs.home}"
+			output="html"
+			outputFile="${reports}/findbugs-ant-results.html"
+			reportLevel="low"
+			jvmargs="-Xmx512m">  <!-- FindBugs can use up a lot of memory, so adjust the JVM memory here-->
+			<class location="${build}" />
+			<sourcePath path="${src}" />
+			<!-- Classes needed by our code but that we don't want tested -->
+			<auxClasspath path="${pmd.jar}" />
+			<systemProperty name="findbugs.maskedfields.locals" value='true'/>
+		</findbugs>
 	</target>
 </project>
