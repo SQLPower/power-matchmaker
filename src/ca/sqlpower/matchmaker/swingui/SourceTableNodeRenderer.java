@@ -92,13 +92,12 @@ public class SourceTableNodeRenderer extends DefaultTableCellRenderer implements
      * Sets up this renderer to paint the display values of the given node.
      */
     public JComponent getGraphNodeRendererComponent(SourceTableRecord node, boolean isSelected, boolean hasFocus) {
-        
         FontMetrics fm = getFontMetrics(getFont());
         labelParts = new ArrayList<LabelPart>(node.getDisplayValues().size() * 2 - 1);
         boolean first = true;
         for (Object value: node.getDisplayValues()) {
             if (!first) {
-                labelParts.add(new LabelPart(getForeground(), SEPARATOR, fm.stringWidth(SEPARATOR)));
+                labelParts.add(new LabelPart(Color.BLACK, SEPARATOR, fm.stringWidth(SEPARATOR)));
             }
             
             String label;
@@ -108,7 +107,8 @@ public class SourceTableNodeRenderer extends DefaultTableCellRenderer implements
                 color = Color.GRAY;
             } else {
                 label = value.toString();
-                color = getForeground();
+                color = Color.BLACK;
+                
             }
             labelParts.add(new LabelPart(color, label, fm.stringWidth(label)));
             first = false;
@@ -124,12 +124,12 @@ public class SourceTableNodeRenderer extends DefaultTableCellRenderer implements
     	
         return this;
     }
+    
 
     @Override
     protected void paintComponent(Graphics g) {
-
-        // don't call super.paintComponent() because it will try to draw the string again!
-        g.setColor(getBackground());
+    	// don't call super.paintComponent() because it will try to draw the string again!
+    	g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
         
         FontMetrics fm = getFontMetrics(getFont());
