@@ -80,7 +80,10 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 
+import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * The MatchResultVisualizer produces graphical representations of the matches
@@ -184,6 +187,18 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     		}
     	};
     	
+    	private final AbstractAction selectAction = new AbstractAction("Select All") {
+    		public void actionPerformed(ActionEvent e) {
+    			chooser.setAllDefaultChosen(true);
+    		}
+    	};
+    	
+    	private final AbstractAction deselectAction = new AbstractAction("Deselect All") {
+    		public void actionPerformed(ActionEvent e) {
+    			chooser.setAllDefaultChosen(false);
+    		}
+    	};
+    	
     	public void actionPerformed(ActionEvent e) {
     		try {
     			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Graph Display Values");
@@ -194,7 +209,12 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				revertList = chooser.getChosenColumns();
 				
 				JDefaultButton okButton = new JDefaultButton(okAction);
-                JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
+				JPanel buttonPanelRight = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
+				JPanel buttonPanelLeft = ButtonBarFactory.buildLeftAlignedBar(new JButton(selectAction), 
+						new JButton(deselectAction));
+                JPanel buttonPanel = new JPanel(new BorderLayout());
+                buttonPanel.add(buttonPanelLeft, BorderLayout.WEST);
+                buttonPanel.add(buttonPanelRight, BorderLayout.EAST);
 				JPanel panel = new JPanel(new BorderLayout());
 				panel.add(chooser.makeGUI(), BorderLayout.CENTER);
 				panel.add(buttonPanel, BorderLayout.SOUTH);
@@ -213,7 +233,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     /**
      * The action for showing and hiding rows on the validation chart.
      */
-    private final Action chooseDisplayedColumnAction = new AbstractAction("Choose Displayed Column...") {
+    private final Action chooseDisplayedColumnAction = new AbstractAction("Columns...") {
     	
     	private JDialog dialog;    	
     	private DisplayedNodeValueChooser chooser;
@@ -221,9 +241,14 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	
     	private final AbstractAction okAction = new AbstractAction("OK") {
     		public void actionPerformed(ActionEvent e) {
-    			shownColumns = chooser.getChosenColumns();
-    			updateMatchTable();
-    			dialog.dispose();
+    			if (chooser.getChosenColumns().isEmpty()) {
+    				JOptionPane.showMessageDialog(dialog, "Please select at least one column!", 
+    						"No columns selected", JOptionPane.INFORMATION_MESSAGE);
+    			} else {
+    				shownColumns = chooser.getChosenColumns();
+    				updateMatchTable();
+    				dialog.dispose();
+    			}
     		}
     	};
     	
@@ -231,6 +256,18 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     		public void actionPerformed(ActionEvent e) {
     			chooser.setChosenColumns(revertList);
     			dialog.dispose();
+    		}
+    	};
+    	
+    	private final AbstractAction selectAction = new AbstractAction("Select All") {
+    		public void actionPerformed(ActionEvent e) {
+    			chooser.setAllDefaultChosen(true);
+    		}
+    	};
+    	
+    	private final AbstractAction deselectAction = new AbstractAction("Deselect All") {
+    		public void actionPerformed(ActionEvent e) {
+    			chooser.setAllDefaultChosen(false);
     		}
     	};
     	
@@ -248,7 +285,12 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				revertList = chooser.getChosenColumns();
 
 				JDefaultButton okButton = new JDefaultButton(okAction);
-                JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
+				JPanel buttonPanelRight = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
+				JPanel buttonPanelLeft = ButtonBarFactory.buildLeftAlignedBar(new JButton(selectAction), 
+						new JButton(deselectAction));
+                JPanel buttonPanel = new JPanel(new BorderLayout());
+                buttonPanel.add(buttonPanelLeft, BorderLayout.WEST);
+                buttonPanel.add(buttonPanelRight, BorderLayout.EAST);
 				JPanel panel = new JPanel(new BorderLayout());
 				panel.add(chooser.makeGUI(), BorderLayout.CENTER);
 				panel.add(buttonPanel, BorderLayout.SOUTH);
@@ -455,7 +497,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     /**
      * The component that is used to layout the RecordViewer objects.
      */
-    private final JPanel recordViewerPanel = new JPanel(new RecordViewerLayout(4));
+    private final JPanel recordViewerPanel = new JPanel(new RecordViewerLayout(RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING));
 
     /**
      * The header component that is fixed above the record viewer panel (it
@@ -520,11 +562,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     public MatchResultVisualizer(Project project) throws SQLException, ArchitectException {
     	super();
         this.project = project;
-
-        JPanel buttonPanel = new JPanel(new GridLayout(3,2));
-        buttonPanel.add(new JButton(exportDotFileAction));
-        buttonPanel.add(new JButton(viewerAutoLayoutAction));
-        buttonPanel.add(new JButton(resetPoolAction));
+        FormLayout topLayout = new FormLayout("pref", "pref, pref");
+        JPanel topPanel = new JPanel (topLayout);
+        PanelBuilder pb = new PanelBuilder(topLayout, topPanel);
+        CellConstraints cc = new CellConstraints();
+        JPanel buttonPanel = new JPanel(new GridLayout(3,1));
         buttonPanel.add(new JButton(chooseDisplayedValueAction));
         
         selectionButton = new MungeProcessSelectionList(project) {
@@ -559,8 +601,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		});        
         
         buttonPanel.add(selectionButton);
-        buttonPanel.add(new JButton(chooseDisplayedColumnAction));
-
+        buttonPanel.add(new JButton(resetPoolAction));
         pool = new MatchPool(project);
         pool.findAll(displayColumns);
         graphModel = new MatchPoolGraphModel(pool);
@@ -569,8 +610,6 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         graph.setEdgeRenderer(new PotentialMatchEdgeRenderer(graph));
         graph.addSelectionListener(selectionListener);
         
-        doAutoLayout();
-
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
         mungeProcessComboBox = new JComboBox();
         mungeProcessComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
@@ -579,11 +618,14 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         updateAutoMatchComboBox();
         autoMatchPanel.add(new JLabel(":"));
         autoMatchPanel.add(mungeProcessComboBox);
+
+        pb.add(buttonPanel, cc.xy(1,1));
+        pb.add(autoMatchPanel, cc.xy(1, 2));
+        doAutoLayout();
         
         JPanel graphPanel = new JPanel(new BorderLayout());
-        graphPanel.add(buttonPanel, BorderLayout.NORTH);
+        graphPanel.add(pb.getPanel(), BorderLayout.NORTH);
         graphPanel.add(new JScrollPane(graph), BorderLayout.CENTER);
-        graphPanel.add(autoMatchPanel, BorderLayout.SOUTH);
                 
         recordViewerPanel.add(SourceTableRecordViewer.getNoNodeSelectedLabel());
         final JScrollPane recordViewerScrollPane =
@@ -752,6 +794,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             recordViewerRowHeader.removeAll();
             recordViewerCornerPanel.removeAll();
             
+            JButton displayColumnButton = new JButton(chooseDisplayedColumnAction);
+            recordViewerCornerPanel.add(displayColumnButton);
+            
             // if there's no node selected, then there will not be any table
             if (selectedNode == null) {
             	recordViewerPanel.add(SourceTableRecordViewer.getNoNodeSelectedLabel());
@@ -762,6 +807,8 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             } else {
             	// if shownColumnes is null, then all the columns will be shown
             	JPanel headerPanel = SourceTableRecordViewer.headerPanel(project, shownColumns);
+            	headerPanel.setPreferredSize(new Dimension(Math.max(displayColumnButton.getPreferredSize().width, 
+            			headerPanel.getPreferredSize().width) , headerPanel.getPreferredSize().height));
             	recordViewerRowHeader.add(headerPanel);
             	BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
             		new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
@@ -770,12 +817,15 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             	for (SourceTableRecord rec : reachableNodes) {
             		if (rec.equals(selectedNode)) {
             			// if shownColumnes is null, then all the columns will be shown
+            			
             			SourceTableRecordViewer recordViewer = 
             				new SourceTableRecordViewer(
-            						rec, selectedNode, getActions(selectedNode, rec), shownColumns);
+            						rec, selectedNode, getActions(selectedNode, rec), 
+            						shownColumns, RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING);
             			JToolBar toolBar = recordViewer.getToolBar();
             			EmptyBorder emptyBorder = new EmptyBorder(0, headerPanel.getPreferredSize().width
-            					+ RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING, 0, 0);
+            					+ RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING - displayColumnButton.getPreferredSize().width, 
+            					0, 0);
             			toolBar.setBorder(emptyBorder);
             			recordViewerCornerPanel.add(toolBar);
             			recordViewerRowHeader.add(recordViewer.getPanel());
@@ -784,7 +834,8 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             			// if shownColumnes is null, then all the columns will be shown
             			SourceTableRecordViewer recordViewer = 
             				new SourceTableRecordViewer(
-            						str, selectedNode, getActions(selectedNode, str), shownColumns);
+            						str, selectedNode, getActions(selectedNode, str), 
+            						shownColumns, RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING);
             			recordViewer.getPanel().addMouseListener(new MouseAdapter() {
             				@Override
             				public void mousePressed(MouseEvent e) {
