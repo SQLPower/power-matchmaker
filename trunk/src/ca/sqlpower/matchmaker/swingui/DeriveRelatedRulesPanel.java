@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -39,6 +40,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLRelationship;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
@@ -87,7 +89,9 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 	
 	private JTable columnTable;
 	private final JProgressBar progressBar = new JProgressBar();
-
+	private JCheckBox deriveByColumnNames;
+	private JCheckBox deriveByForeignKeyConstraints;
+	
 	private SQLTable sourceTable;
 	private ColumnChooserTableModel columnTableModel;
 	
@@ -130,60 +134,139 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		public void doStuff() throws Exception {
             started = true;
 			
-			// Adds all the user defined primary keys to the list that will be checked
-            List<String> primaryKeys = new ArrayList<String>();
-			for (SQLColumn column : columnTableModel.getSelectedSQLColumns()) {
-				primaryKeys.add(column.getName());
+            long start = System.currentTimeMillis();
+            
+            // Finds all the merge rules that the project already has\
+            TableMergeRules sourceTableMergeRule = null;
+            List<String> mergeRules = new ArrayList<String>();
+            for (TableMergeRules tmr : project.getTableMergeRules()) {
+            	mergeRules.add(tmr.getTableName());
+            	if (tmr.isSourceMergeRule()) {
+            		sourceTableMergeRule = tmr;
+            	}
+            }
+
+            List<String> primaryKeys = null;
+            Connection con = null;
+            DatabaseMetaData dbMeta = null;
+            
+            if (deriveByColumnNames.isSelected()) {
+				// Adds all the user defined primary keys to the list that will be checked
+				primaryKeys = new ArrayList<String>();
+				for (SQLColumn column : columnTableModel
+						.getSelectedSQLColumns()) {
+					primaryKeys.add(column.getName());
+				}
+				logger.debug("Sorted list of selected columns: " + primaryKeys);
+				if (primaryKeys.size() == 0) {
+					if (dialog != null)
+						dialog.dispose();
+					return;
+				}
+				logger.debug("Fetching database meta data...");
+
+				con = project.createSourceTableConnection();
+
+				try {
+					dbMeta = con.getMetaData();
+				} catch (SQLException ex) {
+					SPSUtils
+							.showExceptionDialogNoReport(
+									swingSession.getFrame(),
+									"An exception occured while retrieving database metadata for deriving collison criteria",
+									ex);
+					return;
+				}
 			}
-			logger.debug("Sorted list of selected columns: "+primaryKeys);
-
-			if (primaryKeys.size() == 0) {
-				if (dialog != null) dialog.dispose();
-				return;
+            
+			try {
+				project.startCompoundEdit();
+            	if (deriveByForeignKeyConstraints.isSelected()) {
+            		deriveMergeRulesByFKConstraints(sourceTable, sourceTableMergeRule, mergeRules);
+            	}
+            	if (deriveByColumnNames.isSelected()) {
+            		deriveMergeRulesByColumnNames(con, dbMeta, primaryKeys, sourceTableMergeRule, mergeRules);
+            	}
+	            
+   
+			} catch (Exception e) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+						"Failed to derive related table information.", e);
+			} finally {
+				project.endCompoundEdit();
 			}
+			
+			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
+		}
 
-			long start = System.currentTimeMillis();
-			logger.debug("Fetching database meta data...");
+		private void deriveMergeRulesByFKConstraints(SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws ArchitectException {
+			
+			List<SQLRelationship> exportedKeys = table.getExportedKeys();
 
+			for (SQLRelationship exportedKey : exportedKeys) {
+				SQLTable fkTable = exportedKey.getFkTable();
+				
+				// TODO: If a merge rule already exists for the table, then check if
+				// the imported key columns need supplementing. (In case the table
+				// is importing other keys)
+				if (mergeRules.contains(fkTable.getName())) continue;
+					
+				TableMergeRules mergeRule = new TableMergeRules();
+				// TODO: This is just a temporary fix for handling the problem when we are trying
+				// to derive column merge rules from a non-table. This resulted in an NPE before
+				// A better thing to do would be to only run this on tables.
+				if (fkTable == null || !fkTable.getObjectType().equals("TABLE")) continue;
+				SQLIndex index = fkTable.getPrimaryKeyIndex();
+				mergeRule.setTable(fkTable);
+				mergeRule.setTableIndex(index);
+				mergeRule.setParentMergeRule(sourceTableMergeRule);
+				mergeRule.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+				mergeRule.deriveColumnMergeRules();
+				for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+					if (index != null) {
+						if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
+							cmr.setInPrimaryKeyAndAction(true);
+						}
+					}
+					if (exportedKey.containsFkColumn(cmr.getColumn())) {
+						SQLColumn pkColumn = exportedKey.getMappingByFkCol(cmr.getColumn()).getPkColumn();
+						cmr.setImportedKeyColumnAndAction(pkColumn);
+					}
+				}
+				project.addTableMergeRule(mergeRule);
+				mergeRules.add(fkTable.getName());
+
+				// recursively derive merge rules for child tables
+				deriveMergeRulesByFKConstraints(fkTable, mergeRule, mergeRules);
+			}
+		}
+		
+		private void deriveMergeRulesByColumnNames(Connection con,
+				DatabaseMetaData dbMeta, List<String> primaryKeys,
+				TableMergeRules sourceTableMergeRule, List<String> mergeRules)
+				throws SQLException, ArchitectException {
+
+			ResultSet rs = null;
 			String lastTableName = "";
 			String lastSchemaName = "";
 			String lastCatalogName = "";
 			
-			Connection con = project.createSourceTableConnection();
-			DatabaseMetaData dbMeta;
-			ResultSet rs = null;
 			try {
-				dbMeta = con.getMetaData();
-			} catch (SQLException ex) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-						"An exception occured while retrieving database metadata for deriving collison criteria", ex);
-				return;
-			}
-			
-			// Finds all the merge rules that the project already has\
-			TableMergeRules sourceTableMergeRule = null;
-			List<String> mergeRules = new ArrayList<String>();
-			for (TableMergeRules tmr : project.getTableMergeRules()) {
-				mergeRules.add(tmr.getTableName());
-				if (tmr.isSourceMergeRule()) {
-					sourceTableMergeRule = tmr;
-				}
-			}
-
-			try {
-				project.startCompoundEdit();
+				//////// OLD MERGE RULE DERIVER ///////////
 				logger.debug("Beginning comparison on columns...");
 				rs = dbMeta.getColumns(null, null, null, null);
 				int count = 0;
-
+	
 				while (rs.next()) {
 					
 					String tableName = rs.getString("TABLE_NAME");
 					String columnName = rs.getString("COLUMN_NAME");
 					String catalogName = rs.getString("TABLE_CAT");
 					String schemaName = rs.getString("TABLE_SCHEM");
-
-					// Skip the column if a merge rule already exists for the table
+	
+					// TODO: If a merge rule already exists for the table, then check if
+					// the imported key columns need supplementing. (In case the table
+					// is importing other keys)
 					if (mergeRules.contains(tableName)) {
 						continue;
 					} 
@@ -191,7 +274,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 					if (catalogName == null) {
 						catalogName = "";
 					}
-
+	
 					// Set the variables accordingly if the table has changed
 					if (!(tableName.equals(lastTableName) && catalogName.equals(lastCatalogName) &&
 						schemaName.equals(lastSchemaName))) {				
@@ -232,12 +315,10 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 							}
 						}
 						project.addTableMergeRule(mergeRule);
+						mergeRules.add(tableName);
 						count = 0;
 					}
 				}
-			} catch (Exception e) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-						"Failed to derive related table information.", e);
 			} finally {
 				try {
 					if (con != null) {
@@ -253,10 +334,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				} catch (SQLException e) {
 					logger.error("Failed to close result set! Squishing this exception: ", e);
 				}
-				project.endCompoundEdit();
 			}
-			
-			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
 		}
 
 		public Integer getJobSize() {
@@ -304,9 +382,9 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref:grow,4dlu",
-				// column1    2    3
-		"10dlu,pref:grow,4dlu,pref:grow,4dlu,fill:min(200dlu;pref):grow,4dlu,pref,10dlu");
-		// 1        2     3   4           5                    6         7     8   9    
+		// columns: 1         2       3
+				"10dlu,pref:grow,4dlu,pref:grow,4dlu,fill:min(200dlu;pref):grow,4dlu,pref,pref,pref,10dlu");
+		// rows:   1        2     3   4           5                    6         7     8   9    10   11
 		PanelBuilder pb;
 		JPanel panel = logger.isDebugEnabled() ? new FormDebugPanel(layout)
 			: new JPanel(layout);
@@ -333,8 +411,13 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		JScrollPane scrollPane = new JScrollPane(columnTable);
 		pb.add(scrollPane, cc.xy(2, 6, "f,f"));
 		
-		pb.add(progressBar, cc.xy(2, 8, "f,f"));
+		deriveByColumnNames = new JCheckBox("Derive by column names", true);
+		pb.add(deriveByColumnNames, cc.xy(2, 8));
+		deriveByForeignKeyConstraints = new JCheckBox("Derive by foreign key constraints", true);
+		pb.add(deriveByForeignKeyConstraints, cc.xy(2, 9));
 		
+		pb.add(progressBar, cc.xy(2, 10, "f,f"));
+
 		return pb.getPanel();
 	}
 
