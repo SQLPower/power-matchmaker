@@ -39,6 +39,7 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		// The index is either mutable or unequal so ignore it in this test
 		propertiesToIgnoreForDuplication.add("tableIndex");
 		propertiesToIgnoreForDuplication.add("primaryKeyFromIndex");
+		propertiesToIgnoreForDuplication.add("uniqueKeyColumns");
 		propertiesThatDifferOnSetAndGet.add("name");
 		propertiesThatDifferOnSetAndGet.add("parent");
 		

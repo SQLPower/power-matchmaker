@@ -469,6 +469,22 @@ public class TableMergeRules
 	}
 	
 	/**
+	 * Returns a {@link List} of {@link SQLColumn} of all columns in this merge rule's
+	 * table that belong to a unique key, including the primary key and all alternate keys
+	 */
+	public List<SQLColumn> getUniqueKeyColumns() {
+		List<SQLColumn> columns = new ArrayList<SQLColumn>();
+		
+		for (ColumnMergeRules cmr: getChildren()) {
+			if (cmr.isInPrimaryKey() || cmr.getColumn().isUniqueIndexed()) {
+				columns.add(cmr.getColumn());
+			}
+		}
+		
+		return columns;
+	}
+	
+	/**
 	 * Finds the imported key for the current table merge rule.
 	 */
 	public List<ColumnMergeRules> getImportedKey() throws ArchitectException {

@@ -50,7 +50,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -125,13 +124,16 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				// checks for invalid foreign keys
 				if (parentMergeRule != null) {
 					if (parentMergeRule.isSourceMergeRule()) {
-						try {
+//						try {
 							int count = 0;
 							for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 								if (cmr.getImportedKeyColumn() != null) {
 									boolean found = false;
-									for (SQLIndex.Column column : project.getSourceTableIndex().getChildren()) {
-										if (column.getColumn().equals(cmr.getImportedKeyColumn())) {
+									
+									// TODO: This check needs to be redone because it doesn't account
+									// for the possibility of a table importing keys from more than one table 
+									for (SQLColumn column : parentMergeRule.getUniqueKeyColumns()) {
+										if (column.equals(cmr.getImportedKeyColumn())) {
 											count++;
 											found = true;
 											break;
@@ -143,13 +145,17 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 									}
 								}
 							}
-							if (count != project.getSourceTableIndex().getChildCount()) {
-								return ValidateResult.createValidateResult(Status.FAIL, 
-										"Invalid foreign imported key columns");
-							}
-						} catch (ArchitectException e) {
-							throw new RuntimeException("Cannot find the source table index.");
-						}
+							// TODO: This spot used to have a count check, which ensured that the entire
+							// primary key got imported, and not part of it. However, it has to be done differently,
+							// as the previous version did not account for alternate keys, nor did it account for 
+							// the possibility that you can import a key more than once.
+//							if (count != project.getSourceTableIndex().getChildCount()) {
+//								return ValidateResult.createValidateResult(Status.FAIL, 
+//										"Invalid foreign imported key columns");
+//							}
+//						} catch (ArchitectException e) {
+//							throw new RuntimeException("Cannot find the source table index.");
+//						}
 					} else {
 						int primaryKeyCount = 0;
 						int foreignKeyCount = 0;
@@ -158,6 +164,9 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 								primaryKeyCount++;
 							}
 						}
+						
+						// TODO: This check needs to be redone because it doesn't account
+						// for the possibility of a table importing keys from more than one table 
 						for (ColumnMergeRules childColumn : tableMergeRule.getChildren()) {
 							if (childColumn.getImportedKeyColumn() != null) {
 								boolean found = false;
@@ -174,12 +183,15 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 								}
 							}
 						}
-						if (primaryKeyCount != foreignKeyCount) {
-							return ValidateResult.createValidateResult(Status.FAIL, "Invalid foreign imported key columns");
-						}
+						// TODO: This spot used to have a count check, which ensured that the entire
+						// primary key got imported, and not part of it. However, it has to be done differently,
+						// as the previous version did not account for alternate keys, nor did it account for 
+						// the possibility that you can import a key more than once.
+//						if (primaryKeyCount != foreignKeyCount) {
+//							return ValidateResult.createValidateResult(Status.FAIL, "Invalid foreign imported key columns");
+//						}
 					}
 				}
-				
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
@@ -204,7 +216,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				JComboBox importedKeyColumns = new JComboBox();
 				if (getParentTableComboBox().getSelectedItem() != null) {
 					try {
-						List<SQLColumn> tableColumns = getParentTablePrimaryKeys();
+						List<SQLColumn> tableColumns = getParentTableUniqueKeyColumns();
 						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
 						importedKeyColumns.insertItemAt(null, 0);
 					} catch (ArchitectException e) {
@@ -461,13 +473,13 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		return parentMergeRule;
 	}
 	
-	private List<SQLColumn> getParentTablePrimaryKeys() throws ArchitectException{
-		List<SQLColumn> primaryKeys = null;
+	private List<SQLColumn> getParentTableUniqueKeyColumns() throws ArchitectException{
+		List<SQLColumn> uniqueKeys = null;
 		if (parentMergeRule.getSelectedItem() != null) {
 			TableMergeRules tmr = mergeRules.get(parentMergeRule.getSelectedIndex());
-			primaryKeys = tmr.getPrimaryKey();
+			uniqueKeys = tmr.getUniqueKeyColumns();
 		}
-		return primaryKeys;
+		return uniqueKeys;
 	}
 
 	@Override
