@@ -322,7 +322,7 @@
 		<property name="reports.junit" value="${reports}/junit"/>
 		<mkdir dir="${reports.junit}"/>
 		<!-- Output all System.out and System.err messages -->
-	   <junit printsummary="on" maxmemory="512m" showoutput="yes">
+	   <junit printsummary="on" maxmemory="512m">
 	   	   <sysproperty key="ca.sqlpower.matchmaker.test.dir" value="${build.tests}"/>
 	       <classpath>
 	       		<path refid="test.classpath"/>
