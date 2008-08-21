@@ -4178,18 +4178,21 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
+		insertSourceTableRecord(con, "4");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
+		insertResultTableRecord(con, "1", "4", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.MERGED);
 		pool.findAll(null);
-		
 		
 		assertTrue(pool.getPotentialMatches().size() != 0);
 		assertTrue(pool.getSourceTableRecords().size() != 0);
+		assertEquals(1, pool.getMergedMatches().size());
 		
 		pool.clear();
 		pool.findAll(null);
 		
 		assertEquals(0, pool.getPotentialMatches().size());
 		assertEquals(0, pool.getSourceTableRecords().size());
+		assertEquals(1, pool.getMergedMatches().size());
 	}
 }
