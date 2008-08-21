@@ -56,7 +56,8 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 	private final MatchMakerSwingSession swingSession;
 	
 	private final SQLObjectChooser chooser;
-		
+	private final JComboBox parentMergeRule;
+	
 	private final JPanel panel;
 	
 	private final StatusComponent status = new StatusComponent();
@@ -68,6 +69,12 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 		this.chooser = new SQLObjectChooser(
 				swingSession, swingSession.getFrame(),
 				project.getSourceTable().getParentDatabase().getDataSource());
+		
+		this.parentMergeRule = new JComboBox();
+		for (TableMergeRules tmr : project.getTableMergeRules()) {
+        	parentMergeRule.addItem(tmr.getSourceTable());
+        }
+		
 		this.panel = buildUI();
 		addValidators();
 		handler.resetHasValidated();
@@ -76,7 +83,7 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
 				"10dlu,pref,4dlu,fill:max(pref;" + 5*new JComboBox().getMinimumSize().getWidth() + "px):grow,10dlu", 
-	        	"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu");
+	        	"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu");
 	        	//1    2    3    4    5     6    7   8    9 
 		CellConstraints cc = new CellConstraints();
 
@@ -102,6 +109,10 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
         pb.add(new JLabel("Index:"), cc.xy(2, row));
         pb.add(chooser.getUniqueKeyComboBox(), cc.xy(4, row));
         
+        row +=2;
+        pb.add(new JLabel("Parent Table:"), cc.xy(2, row));
+        pb.add(parentMergeRule, cc.xy(4, row));
+        
 		return pb.getPanel();
 	}
 	
@@ -111,6 +122,7 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 		handler.addValidateObject(chooser.getSchemaComboBox(), v1);
 		handler.addValidateObject(chooser.getTableComboBox(), v1);
 		handler.addValidateObject(chooser.getUniqueKeyComboBox(), v1);
+		handler.addValidateObject(parentMergeRule, v1);
 	}
 	
 	public void addResizeListener(ComponentListener cl) {
@@ -122,6 +134,13 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 		mergeRule.setTable((SQLTable) chooser.getTableComboBox().getSelectedItem());
 		mergeRule.setTableIndex((SQLIndex) chooser.getUniqueKeyComboBox().getSelectedItem());
         mergeRule.deriveColumnMergeRules();
+        // XXX: This linear searching through TableMergeRules is occurring all over MatchMaker. 
+        // I think we really need to make the list of merge rules a Map of table name to merge rule.
+        for (TableMergeRules tmr: project.getTableMergeRules()) {
+        	if (tmr.getTableName().equals(((SQLTable)parentMergeRule.getSelectedItem()).getName())) {
+        		mergeRule.setParentMergeRule(tmr);
+        	}
+        }
 		
 		swingSession.setCurrentEditorComponent(
 				new MergeColumnRuleEditor(swingSession,project,mergeRule));
@@ -166,22 +185,25 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 				List<TableMergeRules> mergeRules = project.getTableMergeRules();
 				String schemaName = ((SQLSchema)chooser.getSchemaComboBox().getSelectedItem()).getName();
 				String tableName = ((SQLTable)chooser.getTableComboBox().getSelectedItem()).getName();
-				
+				SQLTable parentTable = ((SQLTable) parentMergeRule.getSelectedItem());
+
 				for (TableMergeRules rule: mergeRules) {
 					if (rule.getSchemaName().equals(schemaName) &&
 							rule.getTableName().equals(tableName)) {
-						return ValidateResult.createValidateResult(Status.FAIL,
-								"Only one merge rule can operate on an individual table");
+						if (rule.isSourceMergeRule()) {
+							return ValidateResult.createValidateResult(Status.FAIL, 
+									"Only one merge rule can operate on the Source Table");
+						}
+						if (rule.getParentMergeRule().getSourceTable().equals(parentTable)) {
+							return ValidateResult.createValidateResult(Status.FAIL,
+									"Only one merge rule can operate on an individual table" +
+							" with a particular parent table. Please choose a different parent table.");
+						}
 					}
 				}
 			}
-			if (chooser.getUniqueKeyComboBox().getSelectedItem() == null) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"Merge table index is required");
-			}
+			
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
-		
 	}
-
 }

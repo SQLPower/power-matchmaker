@@ -199,6 +199,28 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
 		}
 
+		/**
+		 * The new TableMergeRule deriver. It uses foreign key constraints to
+		 * find child tables and create merge rules for them. It then
+		 * recursively calls itself on the child tables. If a merge rule for at
+		 * table already exists, it checks if the parent table is the same. If
+		 * so, then it takes the same table merge rule and trys to add missing
+		 * imported keys (in the case that the table imports multiple keys. If
+		 * the parent table is different, then it creates a separate merge rule
+		 * for the same table but with a different parent. This will help the
+		 * Merge Engine deal with data models which contain tables with more
+		 * than one parent table.
+		 * 
+		 * @param table
+		 *            The SQLTable whose child tables we are deriving
+		 *            TableMergeRules for.
+		 * @param sourceTableMergeRule
+		 *            The TableMergeRule of the parent table
+		 * @param mergeRules
+		 *            A List of Strings containing the names of existing
+		 *            TableMergeRules for this project.
+		 * @throws ArchitectException
+		 */
 		private void deriveMergeRulesByFKConstraints(SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws ArchitectException {
 			
 			List<SQLRelationship> exportedKeys = table.getExportedKeys();
@@ -206,10 +228,25 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			for (SQLRelationship exportedKey : exportedKeys) {
 				SQLTable fkTable = exportedKey.getFkTable();
 				
-				// TODO: If a merge rule already exists for the table, then check if
+				// If a merge rule already exists for the table, then check if
 				// the imported key columns need supplementing. (In case the table
 				// is importing other keys)
-				if (mergeRules.contains(fkTable.getName())) continue;
+				if (mergeRules.contains(fkTable.getName())) {
+					boolean alreadyExists = false;
+					for (TableMergeRules mergeRule: project.getTableMergeRules()) {
+						if (mergeRule.getTableName().equals(fkTable.getName()) && 
+								mergeRule.getParentMergeRule().equals(sourceTableMergeRule)) {
+							for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+								if (exportedKey.containsFkColumn(cmr.getColumn())) {
+									SQLColumn pkColumn = exportedKey.getMappingByFkCol(cmr.getColumn()).getPkColumn();
+									cmr.setImportedKeyColumnAndAction(pkColumn);
+								}
+							}
+							alreadyExists = true;
+						}
+					}
+					if (alreadyExists) continue;
+				}
 					
 				TableMergeRules mergeRule = new TableMergeRules();
 				// TODO: This is just a temporary fix for handling the problem when we are trying
@@ -240,7 +277,36 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				deriveMergeRulesByFKConstraints(fkTable, mergeRule, mergeRules);
 			}
 		}
-		
+
+		/**
+		 * Derives TableMergeRules based on sharing the same column names as the
+		 * source table's primary key columns. This is how the MatchMaker used
+		 * to derive merge rules. It has a few flaws, including not being able
+		 * to derive merge rules on tables that change the name of the imported
+		 * primary key columns and also adds false positives on tables that may
+		 * have the same column name as the primary key column, but has no real
+		 * relationship with it (ex. if you gave all your tables surrogate keys
+		 * all called 'id') However, it is still useful in trying to derive
+		 * relationships between tables that are not enforced with a foreign key
+		 * constraint.
+		 * 
+		 * @param con
+		 *            The Connection object that will be used to query the
+		 *            database
+		 * @param dbMeta
+		 *            The DatabaseMetaData used to get the list of tables that
+		 *            share the same column name
+		 * @param primaryKeys
+		 *            A List of Strings containing the names of all the source
+		 *            table's primary key columns
+		 * @param sourceTableMergeRule
+		 *            The TableMergeRule for the source table
+		 * @param mergeRules
+		 *            A List of Strings containing all the names of the
+		 *            TableMergeRules in thie project
+		 * @throws SQLException
+		 * @throws ArchitectException
+		 */
 		private void deriveMergeRulesByColumnNames(Connection con,
 				DatabaseMetaData dbMeta, List<String> primaryKeys,
 				TableMergeRules sourceTableMergeRule, List<String> mergeRules)
@@ -252,7 +318,6 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			String lastCatalogName = "";
 			
 			try {
-				//////// OLD MERGE RULE DERIVER ///////////
 				logger.debug("Beginning comparison on columns...");
 				rs = dbMeta.getColumns(null, null, null, null);
 				int count = 0;
@@ -264,11 +329,26 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 					String catalogName = rs.getString("TABLE_CAT");
 					String schemaName = rs.getString("TABLE_SCHEM");
 	
-					// TODO: If a merge rule already exists for the table, then check if
+					// If a merge rule already exists for the table, then check if
 					// the imported key columns need supplementing. (In case the table
 					// is importing other keys)
 					if (mergeRules.contains(tableName)) {
-						continue;
+						boolean alreadyExists = false;
+						for (TableMergeRules mergeRule: project.getTableMergeRules()) {
+							if (mergeRule.getTableName().equals(tableName) && 
+									!mergeRule.isSourceMergeRule() &&
+									mergeRule.getParentMergeRule().equals(sourceTableMergeRule)) {
+								for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+									if (primaryKeys.contains(cmr.getColumnName())) {
+										cmr.setImportedKeyColumnAndAction(sourceTable.getColumnByName(cmr.getColumnName()));
+									}
+								}
+								alreadyExists = true;
+							} else if (mergeRule.isSourceMergeRule()) {
+								alreadyExists = true;
+							}
+						}
+						if (alreadyExists) continue;
 					} 
 					
 					if (catalogName == null) {
