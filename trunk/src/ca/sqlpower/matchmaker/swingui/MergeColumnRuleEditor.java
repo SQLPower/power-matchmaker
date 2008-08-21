@@ -107,6 +107,14 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				TableMergeRules tableMergeRule = getMergeRule();
 				TableMergeRules parentMergeRule = tableMergeRule.getParentMergeRule();
 				
+				boolean uniqueKeyDefined = false;
+				for (ColumnMergeRules cmr: tableMergeRule.getChildren()) {
+					uniqueKeyDefined |= cmr.isInPrimaryKey();
+				}
+				if (!uniqueKeyDefined) {
+					return ValidateResult.createValidateResult(Status.FAIL, "No primary key index defined for this table");
+				}
+				
 				// checks for invalid foreign keys types
 				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 					if (cmr.getImportedKeyColumn() != null && cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
@@ -124,38 +132,36 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				// checks for invalid foreign keys
 				if (parentMergeRule != null) {
 					if (parentMergeRule.isSourceMergeRule()) {
-//						try {
-							int count = 0;
-							for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
-								if (cmr.getImportedKeyColumn() != null) {
-									boolean found = false;
-									
-									// TODO: This check needs to be redone because it doesn't account
-									// for the possibility of a table importing keys from more than one table 
-									for (SQLColumn column : parentMergeRule.getUniqueKeyColumns()) {
-										if (column.equals(cmr.getImportedKeyColumn())) {
-											count++;
-											found = true;
-											break;
-										}
-									}
-									if (!found) {
-										return ValidateResult.createValidateResult(Status.FAIL, 
-												"Invalid foreign imported key columns");
+						int count = 0;
+						for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+							if (cmr.getImportedKeyColumn() != null) {
+								boolean found = false;
+								
+								// TODO: This check needs to be redone because it doesn't account
+								// for the possibility of a table importing keys from more than one table 
+								for (SQLColumn column : parentMergeRule.getUniqueKeyColumns()) {
+									if (column.equals(cmr.getImportedKeyColumn())) {
+										count++;
+										found = true;
+										break;
 									}
 								}
+								if (!found) {
+									return ValidateResult.createValidateResult(Status.FAIL, 
+											"Invalid foreign imported key columns");
+								}
 							}
-							// TODO: This spot used to have a count check, which ensured that the entire
-							// primary key got imported, and not part of it. However, it has to be done differently,
-							// as the previous version did not account for alternate keys, nor did it account for 
-							// the possibility that you can import a key more than once.
-//							if (count != project.getSourceTableIndex().getChildCount()) {
-//								return ValidateResult.createValidateResult(Status.FAIL, 
-//										"Invalid foreign imported key columns");
-//							}
-//						} catch (ArchitectException e) {
-//							throw new RuntimeException("Cannot find the source table index.");
-//						}
+						}
+						// TODO: This spot used to have a count check, which ensured that the entire
+						// primary key got imported, and not part of it. However, it has to be done differently,
+						// as the previous version did not account for alternate keys, nor did it account for 
+						// the possibility that you can import a key more than once.
+						// For now, here's at least a half-assed check to make sure that there is at
+						// least an imported key column defined.
+						if (count < 1) {
+							return ValidateResult.createValidateResult(Status.FAIL, 
+									"No foreign key imported columns defined");
+						}
 					} else {
 						int primaryKeyCount = 0;
 						int foreignKeyCount = 0;
@@ -187,9 +193,12 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 						// primary key got imported, and not part of it. However, it has to be done differently,
 						// as the previous version did not account for alternate keys, nor did it account for 
 						// the possibility that you can import a key more than once.
-//						if (primaryKeyCount != foreignKeyCount) {
-//							return ValidateResult.createValidateResult(Status.FAIL, "Invalid foreign imported key columns");
-//						}
+						// For now, here's at least a half-assed check to make sure that there is at
+						// least an imported key column defined.
+						if (foreignKeyCount < 1) {
+							return ValidateResult.createValidateResult(Status.FAIL, 
+									"No foreign key imported columns defined");
+						}
 					}
 				}
 			}
@@ -198,6 +207,28 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		
 	}
 
+	/**
+	 * This Validator checks to ensure that the project contains no other TableMergeRule
+	 * that shares the same parent TableMergeRule.
+	 */
+	private class ParentMergeRuleJComboBoxValidator implements Validator {
+
+		public ValidateResult validate(Object contents) {
+			TableMergeRules tableMergeRule = getMergeRule();
+			for (TableMergeRules rule: project.getTableMergeRules()) {
+				if (rule != tableMergeRule && 
+					!rule.isSourceMergeRule() &&
+					rule.getSourceTable().equals(tableMergeRule.getSourceTable()) &&
+					rule.getParentMergeRule().equals(tableMergeRule.getParentMergeRule())) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+							"There is more than one merge rule for this table with the same parent table. " +
+							"Please select a different parent table.");
+				}
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+	}
+	
 	/**
 	 * EditableJTable implementation for related merge rules. It returns 
 	 * a combo box of {@link SQLColumn} in the parent table for 
@@ -357,6 +388,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
         actions.add(saveAction);
         handler = new FormValidationHandler(status,actions);
         handler.addValidateObject(ruleTable, new MergeColumnRuleJTableValidator());
+        handler.addValidateObject(parentMergeRule, new ParentMergeRuleJComboBoxValidator());
         handler.resetHasValidated(); // avoid false hits when newly created
 	}
 	
