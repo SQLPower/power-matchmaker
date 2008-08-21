@@ -1431,9 +1431,56 @@ public class MatchPool extends MonitorableImpl {
 	 *            the user cancels it
 	 */
 	public void clear(Aborter aborter) throws SQLException {
-		deletedMatches.addAll(potentialMatches.keySet());
-		deletedMatches.addAll(orphanedMatches.keySet());
-		store(aborter);
+		SQLTable resultTable = project.getResultTable();
+        Connection con = null;
+        String lastSQL = null;
+        Statement stmt = null;
+        try {
+            con = project.createResultTableConnection();
+            con.setAutoCommit(false);
+            StringBuilder sql = new StringBuilder();
+            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
+            sql.append("\n WHERE match_status != 'MERGED'");
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            
+            stmt = con.createStatement();
+            
+            if (aborter != null) {
+        	    aborter.checkCancelled();
+            }
+            
+            stmt.executeUpdate(lastSQL);
+            con.commit();
+        } catch (SQLException ex) {
+            logger.error("Error in query: "+lastSQL, ex);
+            session.handleWarning(
+                    "Error in SQL Query while clearing the Match Pool!" +
+                    "\nMessage: "+ex.getMessage() +
+                    "\nSQL State: "+ex.getSQLState() +
+                    "\nQuery: "+lastSQL);
+            try {
+                con.rollback();
+            } catch (SQLException doubleException) {
+                logger.error("Rollback failed. Squishing this exception since it would shadow the original one:", doubleException);
+            }
+            throw ex;
+        } catch (Exception ex) {
+            try {
+                con.rollback();
+            } catch (SQLException doubleException) {
+                logger.error("Rollback failed. Squishing this exception since it would shadow the original one:", doubleException);
+            }
+            if (ex instanceof RuntimeException) {
+                throw (RuntimeException) ex;
+            } else {
+                throw new RuntimeException(ex);
+            }
+        } finally {
+        	setFinished(true);
+            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close prepared statement", ex); }
+            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+        }
 		clearRecords();
 	}
 	
@@ -1454,10 +1501,18 @@ public class MatchPool extends MonitorableImpl {
 	}
 	
 	/**
-	 * A package private mdthod for getting the set of orphaned matches.
+	 * A package private method for getting the set of orphaned matches.
 	 * This is mainly used for unit testing purposes. 
 	 */
 	Map<PotentialMatchRecord, PotentialMatchRecord> getOrphanedMatches() {
 		return orphanedMatches;
+	}
+	
+	/**
+	 * A package private method for getting the set of merged matches.
+	 * This is mainly used for unit testing purposes. 
+	 */
+	Map<PotentialMatchRecord, PotentialMatchRecord> getMergedMatches() {
+		return mergedMatches;
 	}
 }
