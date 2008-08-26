@@ -37,7 +37,7 @@ import ca.sqlpower.util.EmailAppender;
  */
 public class MergeEngineImpl extends AbstractEngine {
 
-	private static final Logger logger = Logger.getLogger(MergeEngineImpl.class);
+	private final Logger logger;
 	
 	private static final String DB_OBJECT_TYPE = "MERGE_ENGINE";
 
@@ -46,6 +46,7 @@ public class MergeEngineImpl extends AbstractEngine {
 	private MergeProcessor merger;
 	
 	public MergeEngineImpl(MatchMakerSession session, Project project) {
+		logger = Logger.getLogger(MergeEngineImpl.class + "." + project.getName());
 		this.setSession(session);
 		this.setProject(project);
 	}

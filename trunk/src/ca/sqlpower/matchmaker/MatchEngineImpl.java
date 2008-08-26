@@ -47,7 +47,7 @@ import ca.sqlpower.util.Monitorable;
  */
 public class MatchEngineImpl extends AbstractEngine {
 
-	private static final Logger logger = Logger.getLogger(MatchEngineImpl.class);
+	private final Logger logger;
 	
 	private static final String DB_OBJECT_TYPE = "MATCH_ENGINE";
 
@@ -75,6 +75,7 @@ public class MatchEngineImpl extends AbstractEngine {
 	private int rowCount;
 	
 	public MatchEngineImpl(MatchMakerSession session, Project project) {
+		logger = Logger.getLogger(MatchEngineImpl.class + "." + project.getName());
 		this.setSession(session);
 		this.setProject(project);
 	}
