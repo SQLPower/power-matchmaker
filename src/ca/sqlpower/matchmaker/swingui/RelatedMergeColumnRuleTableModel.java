@@ -48,7 +48,7 @@ public class RelatedMergeColumnRuleTableModel extends
 		if (column == 0) {
 			return "Column";
 		} else if (column == 1) {
-			return "Primary Key";
+			return "In Unique Key?";
 		} else if (column == 2) {
 			return "Imported Key Column";
 		} else if (column == 3) {
