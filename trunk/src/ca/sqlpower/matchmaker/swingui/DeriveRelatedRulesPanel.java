@@ -253,8 +253,14 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				// to derive column merge rules from a non-table. This resulted in an NPE before
 				// A better thing to do would be to only run this on tables.
 				if (fkTable == null || !fkTable.getObjectType().equals("TABLE")) continue;
-				SQLIndex index = fkTable.getPrimaryKeyIndex();
 				mergeRule.setTable(fkTable);
+				SQLIndex index = fkTable.getPrimaryKeyIndex();
+				// if PK is null, then try to get the first available Unique Key
+				if (index == null) {
+					for (SQLIndex ind: fkTable.getIndices()) {
+						if (ind.isUnique()) index = ind;
+					}
+				}
 				mergeRule.setTableIndex(index);
 				mergeRule.setParentMergeRule(sourceTableMergeRule);
 				mergeRule.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
