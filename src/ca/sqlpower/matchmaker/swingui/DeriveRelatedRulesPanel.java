@@ -49,6 +49,8 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeriveRelatedRulesAction;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
+import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator.CacheType;
 import ca.sqlpower.swingui.MonitorableDataEntryPanel;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -170,8 +172,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				try {
 					dbMeta = con.getMetaData();
 				} catch (SQLException ex) {
-					SPSUtils
-							.showExceptionDialogNoReport(
+					SPSUtils.showExceptionDialogNoReport(
 									swingSession.getFrame(),
 									"An exception occured while retrieving database metadata for deriving collison criteria",
 									ex);
@@ -179,21 +180,22 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				}
 			}
             
+            
 			try {
+				DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_TYPE, CacheType.EAGER_CACHE);
 				project.startCompoundEdit();
             	if (deriveByForeignKeyConstraints.isSelected()) {
-            		deriveMergeRulesByFKConstraints(sourceTable, sourceTableMergeRule, mergeRules);
+            		deriveMergeRulesByFKConstraints(dbMeta, sourceTable, sourceTableMergeRule, mergeRules);
             	}
             	if (deriveByColumnNames.isSelected()) {
             		deriveMergeRulesByColumnNames(con, dbMeta, primaryKeys, sourceTableMergeRule, mergeRules);
             	}
-	            
-   
 			} catch (Exception e) {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 						"Failed to derive related table information.", e);
 			} finally {
 				project.endCompoundEdit();
+				DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_TYPE, CacheType.NO_CACHE);
 			}
 			
 			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
@@ -221,9 +223,9 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		 *            TableMergeRules for this project.
 		 * @throws ArchitectException
 		 */
-		private void deriveMergeRulesByFKConstraints(SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws ArchitectException {
+		private void deriveMergeRulesByFKConstraints(DatabaseMetaData dbmd, SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws ArchitectException {
 			
-			List<SQLRelationship> exportedKeys = table.getExportedKeys();
+			List<SQLRelationship> exportedKeys = table.getExportedKeys(dbmd);
 
 			for (SQLRelationship exportedKey : exportedKeys) {
 				SQLTable fkTable = exportedKey.getFkTable();
@@ -280,7 +282,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				mergeRules.add(fkTable.getName());
 
 				// recursively derive merge rules for child tables
-				deriveMergeRulesByFKConstraints(fkTable, mergeRule, mergeRules);
+				deriveMergeRulesByFKConstraints(dbmd, fkTable, mergeRule, mergeRules);
 			}
 		}
 
