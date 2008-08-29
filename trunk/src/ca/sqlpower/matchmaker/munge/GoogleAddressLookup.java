@@ -37,15 +37,30 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     
     public static final String GOOGLE_MAPS_API_KEY = "GoogleMapsApiKey";
     public static final String GOOGLE_GEOCODER_URL = "GoogleGeocoderUrl";
+    
+    /**
+     * Minimum number of seconds between lookup requests. Google throttles access
+     * to their geocoder service, so unless you have a prior arrangement with Google,
+     * be sure to set this value high enough to avoid being flagged as an abuser.
+     * Presently (August 2008), 2.0 is a reasonable lower limit.
+     */
+    public static final String LOOKUP_RATE_LIMIT = "LookupRateLimit";
 
+    /**
+     * The last time a lookup request was issued. This step will block so as to
+     * respect the {@link #LOOKUP_RATE_LIMIT} if it is called too frequently.
+     */
+    private long lastLookupTime;
+    
     /**
      * The status code returned with the Google result.  Even if the lookup fails or the
      * API key is incorrect, this three-digit status code will still be set.  It will only
      * come out null if the URL for the geocoder service is incorrect (therefore there
      * could be no response from the Google Maps Geocoder).
      * <p>
-     * The meaning of the status codes is available in <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoStatusCode"
-     * >the Google Maps API documentation</a>.
+     * The meaning of the status codes is available in
+     * <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoStatusCode">
+     * the Google Maps API documentation</a>.
      */
     private final MungeStepOutput<BigDecimal> statusCode;
     
@@ -60,8 +75,9 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     
     /**
      * The accuracy constant for the location information.  Constant codes are
-     * documented in <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoAddressAccuracy"
-     * >the Google Maps API documentation</a>.
+     * documented in
+     * <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoAddressAccuracy">
+     * the Google Maps API documentation</a>.
      */
     private final MungeStepOutput<BigDecimal> accuracy;
     
@@ -83,6 +99,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         
         setParameter(GOOGLE_MAPS_API_KEY, "");
         setParameter(GOOGLE_GEOCODER_URL, "http://maps.google.com/maps/geo");
+        setParameter(LOOKUP_RATE_LIMIT, "2.0");
     }
     
     @Override
@@ -155,7 +172,25 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         return Boolean.TRUE;
     }
 
+    /**
+     * Requests the given HTTP URL and returns the response body. This method
+     * respects the {@link #LOOKUP_RATE_LIMIT} parameter by delaying the request
+     * until sufficient time has passed.
+     * 
+     * @param url The URL to request
+     * @return The body content returned by the server, as a string.
+     * @throws IOException If the remote HTTP server returns a failure result code.
+     */
     private String readURL(String url) throws IOException {
+        long rateLimitMS = (long) (getRateLimit() * 1000.0);
+        long nextAllowedLookupTime = lastLookupTime + rateLimitMS;
+        while (nextAllowedLookupTime > System.currentTimeMillis()) {
+            try {
+                Thread.sleep(nextAllowedLookupTime - System.currentTimeMillis());
+            } catch (InterruptedException e) {
+                // we'll just go around the loop again
+            }
+        }
         HttpURLConnection dest = (HttpURLConnection) new URL(url).openConnection();
         dest.setDoOutput(false);
         dest.setDoInput(true);
@@ -172,6 +207,18 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         }
         in.close();
         dest.disconnect();
+        
+        lastLookupTime = System.currentTimeMillis();
+
         return sb.toString();
+    }
+
+    public double getRateLimit() {
+        String rateLimitStr = getParameter(LOOKUP_RATE_LIMIT);
+        if (rateLimitStr != null) {
+            return Double.parseDouble(rateLimitStr);
+        } else {
+            return 2.0;
+        }
     }
 }
