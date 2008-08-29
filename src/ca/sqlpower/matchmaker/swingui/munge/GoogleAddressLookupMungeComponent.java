@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -37,6 +39,7 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
 
     private JTextField url;
     private JTextField key;
+    private JSpinner rateLimit;
     
     public GoogleAddressLookupMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
         super(ms, handler, session);
@@ -80,11 +83,13 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
                 step.setParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY, key.getText());
             }
         });
-        
 
+        rateLimit = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 10.0, 0.1));
+        rateLimit.setValue(temp.getRateLimit());
+        
         FormLayout layout = new FormLayout(
                 "4dlu,pref,4dlu,fill:pref:grow,4dlu", // columns
-                "4dlu,pref,4dlu,pref,4dlu"); // rows
+                "4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
         CellConstraints cc = new CellConstraints();
 
         JPanel content = new JPanel(layout);
@@ -93,6 +98,8 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
         content.add(url, cc.xy(4,2));
         content.add(new JLabel("Google Maps API Key:"), cc.xy(2,4));
         content.add(key, cc.xy(4,4));
+        content.add(new JLabel("Rate Limit (s):"), cc.xy(2,6));
+        content.add(rateLimit, cc.xy(4,6));
         
         return content;
     }
