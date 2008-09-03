@@ -184,24 +184,36 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             stmt = con.createStatement();
             rs = stmt.executeQuery("SELECT param_value FROM " + ds.getPlSchema() + ".mm_schema_info WHERE param_name='schema_version'");
             if (!rs.next()) {
-                throw new SQLException(
-                        "There is no schema_version entry in the mm_schema_info table.");
+            	throw new SQLException(
+            	"There is no schema_version entry in the mm_schema_info table.");
             }
             versionString = rs.getString(1);
         } catch (SQLException e) {
-        	con.close();
-            String plSchema = ds.getPlSchema();
-            if (plSchema == null || plSchema.length() == 0) {
-                // this case is unlikely to happen because we have to check for null when setting up hibernate 
-            	plSchema = "not set";
+        	logger.info("Failed to select from mm_schema_info table. Attempting to create new repository and try again...", e);
+            try {
+            	RepositoryUtil.createOrUpdateRepositorySchema(ds);
+            	rs = stmt.executeQuery("SELECT param_value FROM " + ds.getPlSchema() + ".mm_schema_info WHERE param_name='schema_version'");
+                if (!rs.next()) {
+                	throw new SQLException(
+                	"There is no schema_version entry in the mm_schema_info table.");
+                }
+                versionString = rs.getString(1);
+            } catch (SQLException ex) {
+            	String plSchema = ds.getPlSchema();
+            	if (plSchema == null || plSchema.length() == 0) {
+            		// this case is unlikely to happen because we have to check for null when setting up hibernate 
+            		plSchema = "not set";
+            	}
+            	logger.error(e);
+            	throw new RepositoryVersionException("Couldn't determine the repository schema version!", e);
             }
-            logger.error(e);
-            throw new RepositoryVersionException("Couldn't determine the repository schema version!", e);
         } finally {
-            if (rs != null) rs.close();
+        	if (rs != null) rs.close();
             if (stmt != null) stmt.close();
         }
         
+
+
         try {
         	plSchemaVersion = new Version();
         	plSchemaVersion.setVersion(versionString);
