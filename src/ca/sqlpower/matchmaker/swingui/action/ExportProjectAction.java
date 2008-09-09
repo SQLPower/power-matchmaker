@@ -39,9 +39,9 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
-public class ProjectExportAction extends AbstractAction {
+public class ExportProjectAction extends AbstractAction {
 
-    private final static Logger logger = Logger.getLogger(ProjectExportAction.class);
+    private final static Logger logger = Logger.getLogger(ExportProjectAction.class);
     
     private final MatchMakerSwingSession swingSession;
 	private final JFrame owningFrame;
@@ -55,8 +55,8 @@ public class ProjectExportAction extends AbstractAction {
      * @param project The project to export.  If you specify null, the project to export will be
      * determined by the current selection in the Swing Session's tree.
      */
-	public ProjectExportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
-		super("Export",
+	public ExportProjectAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
+		super("Export...",
 				SPSUtils.createIcon( "general/Export",
 						"Export"));
         logger.debug("Creating new project export action");
