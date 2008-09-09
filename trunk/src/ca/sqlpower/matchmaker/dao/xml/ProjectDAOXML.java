@@ -95,6 +95,11 @@ public class ProjectDAOXML implements ProjectDAO {
     private static final Logger logger = Logger.getLogger(ProjectDAOXML.class);
     
     /**
+     * The SimpleDateFormat string describing the format all dates are stored in.
+     */
+    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss Z";
+    
+    /**
      * The output stream this DAO instance writes to, if this DAO instance is
      * capable of output. If this is not an output instance, the output stream
      * will be null.
@@ -117,7 +122,7 @@ public class ProjectDAOXML implements ProjectDAO {
     /**
      * Date format used to represent all date/time values in the XML file.
      */
-    private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    private final DateFormat df = new SimpleDateFormat(DATE_FORMAT);
 
     /**
      * The current session context. Currently, this is null unless this DAO is set
@@ -211,6 +216,7 @@ public class ProjectDAOXML implements ProjectDAO {
         print("<project");
         printAttribute("id", "project." + projectID);
         printCommonAttributes(p);
+        printAttribute("create-date", p.getCreateDate());
         printAttribute("type", p.getType());
         niprintln(">");
         indent++;
@@ -231,11 +237,12 @@ public class ProjectDAOXML implements ProjectDAO {
                     SQLIndex idx = p.getSourceTableIndex();
                     printIndex(idx);
                 }
-                indent--;
-                println("</source-table>");
             } catch (ArchitectException ex) {
                 throw new ArchitectRuntimeException(ex);
             }
+            
+            indent--;
+            println("</source-table>");
         }
         
         // source view omitted (not used by anything)
@@ -246,11 +253,7 @@ public class ProjectDAOXML implements ProjectDAO {
             printAttribute("catalog", p.getResultTableCatalog());
             printAttribute("schema", p.getResultTableSchema());
             printAttribute("table", p.getResultTableName());
-            niprintln(">");
-            indent++;
-            printElement("where-filter", p.getFilter());
-            indent--;
-            println("</result-table>");
+            niprintln(" />");
         }
 
         if (p.getXrefTable() != null) {
@@ -259,16 +262,14 @@ public class ProjectDAOXML implements ProjectDAO {
             printAttribute("catalog", p.getXrefTableCatalog());
             printAttribute("schema", p.getXrefTableSchema());
             printAttribute("table", p.getXrefTableName());
-            niprintln(">");
-            indent++;
-            printElement("where-filter", p.getFilter());
-            indent--;
+            niprintln(" />");
         }
 
         print("<munge-settings");
         printSettingsAttributes(p.getMungeSettings());
         printAttribute("clear-match-pool", p.getMungeSettings().isClearMatchPool());
         printAttribute("auto-match-threshold", p.getMungeSettings().getAutoMatchThreshold());
+        printAttribute("last-backup-number", p.getMungeSettings().getLastBackupNo());
         niprintln(" />");
 
         print("<merge-settings");
