@@ -107,4 +107,8 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	public void closeAll() {
 		session.close();
 	}
+	
+	public void ensureDefaultRepositoryDefined() {
+		// Do nothing
+	}
 }

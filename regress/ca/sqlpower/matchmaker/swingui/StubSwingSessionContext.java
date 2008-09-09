@@ -167,4 +167,9 @@ public class StubSwingSessionContext implements SwingSessionContext {
 		logger.debug("Stub call: StubSwingSessionContext.getSessionLifecycleListener()");
 		return null;
 	}
+	
+	public void ensureDefaultRepositoryDefined() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubSwingSessionContext.ensureDefaultRepositoryDefined()");
+	}
 }
