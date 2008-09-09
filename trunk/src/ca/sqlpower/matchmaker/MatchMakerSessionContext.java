@@ -130,4 +130,10 @@ public interface MatchMakerSessionContext {
      * action for a project.
      */
     public void closeAll();
+    
+    /**
+	 * Checks whether or not the default repository is defined in the user's
+	 * data sources, and if it's not, then add an entry for it.
+	 */
+    public void ensureDefaultRepositoryDefined();
 }
