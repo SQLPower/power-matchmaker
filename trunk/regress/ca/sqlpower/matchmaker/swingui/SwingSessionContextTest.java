@@ -163,6 +163,10 @@ public class SwingSessionContextTest extends TestCase {
 			public void closeAll() {
 				System.out.println("Stub call: .closeAll()");
 			}
+			
+			public void ensureDefaultRepositoryDefined() {
+				System.out.println("Stub call: .ensureDefaultRepositoryDefined()");
+			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();
