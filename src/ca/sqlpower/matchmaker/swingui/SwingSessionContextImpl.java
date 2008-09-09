@@ -406,38 +406,47 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             if (!isAutoLoginEnabled()) {
                 showLoginDialog(getLastLoginDataSource());
             } else {
-            	SPDataSource dbSource = getAutoLoginDataSource();
-            	final MatchMakerSession sessionDelegate;
-            	try {
-            		if (dbSource != null) {
-            			// tries to login to the auto login database
-            			sessionDelegate = context.createSession(dbSource,
-            				dbSource.getUser(), dbSource.getPass());
-            		} else {
-            			// first time running match maker, run default
-            			sessionDelegate = context.createDefaultSession();
-            		}
-            		MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
-            		getSessions().add(session);
-                    session.addSessionLifecycleListener(getSessionLifecycleListener());
-            		session.showGUI();
-            	} catch (Exception ex) {
-            		if (ex instanceof RepositoryVersionException) {
-                		handleRepositoryVersionException(dbSource, (RepositoryVersionException) ex);
-                	} else {
-                		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed!", ex);
-                		errorDialog.addWindowListener(new WindowAdapter() {
-                			public void windowDeactivated(WindowEvent evt) {
-                				showLoginDialog(getAutoLoginDataSource());
-                			}
-                		});
-                	}
-            	}
+            	autoLogin();
             }
         } catch (Exception ex) {
            	MMSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
         }
     }
+
+    /**
+	 * Automatically logs the user into the repository designated as the user's
+	 * preferred repository. If the specified repository does not actually exist,
+	 * or is out of date, then the MatchMaker will attempt to create/update it.
+	 */
+	private void autoLogin() {
+		SPDataSource dbSource = getAutoLoginDataSource();
+		final MatchMakerSession sessionDelegate;
+		try {
+			if (dbSource != null) {
+				// tries to login to the auto login database
+				sessionDelegate = context.createSession(dbSource,
+					dbSource.getUser(), dbSource.getPass());
+			} else {
+				// first time running match maker, run default
+				sessionDelegate = context.createDefaultSession();
+			}
+			MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
+			getSessions().add(session);
+		    session.addSessionLifecycleListener(getSessionLifecycleListener());
+			session.showGUI();
+		} catch (Exception ex) {
+			if (ex instanceof RepositoryVersionException) {
+				handleRepositoryVersionException(dbSource, (RepositoryVersionException) ex);
+			} else {
+				JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed!", ex);
+				errorDialog.addWindowListener(new WindowAdapter() {
+					public void windowDeactivated(WindowEvent evt) {
+						showLoginDialog(getAutoLoginDataSource());
+					}
+				});
+			}
+		}
+	}
     
     /**
      * Provides the user with options to dealing with a repository schema version problem.
@@ -502,7 +511,11 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     		});
 		} else {
 			// error successfully handled
-			showLoginDialog(dbSource);
+			if (!isAutoLoginEnabled()) {
+				showLoginDialog(dbSource);
+			} else {
+				autoLogin();
+			}
 		}
 	}
 	
