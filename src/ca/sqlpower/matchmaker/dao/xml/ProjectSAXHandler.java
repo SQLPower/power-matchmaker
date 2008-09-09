@@ -20,6 +20,10 @@
 package ca.sqlpower.matchmaker.dao.xml;
 
 import java.awt.Color;
+import java.io.File;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +42,9 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerSettings;
+import ca.sqlpower.matchmaker.MergeSettings;
+import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
@@ -50,6 +57,8 @@ import ca.sqlpower.sql.SPDataSource;
 public class ProjectSAXHandler extends DefaultHandler {
     
     private static final Logger logger = Logger.getLogger(ProjectSAXHandler.class);
+    
+    private final DateFormat df = new SimpleDateFormat(ProjectDAOXML.DATE_FORMAT);
     
     /**
      * All of the allowable classes for munge step inputs/outputs. We enumerate these
@@ -213,13 +222,13 @@ public class ProjectSAXHandler extends DefaultHandler {
                 project.setSourceTable(t);
 
             } else if (qName.equals("where-filter")) {
-                if (attributes.getValue("null") != null && !Boolean.valueOf(attributes.getValue("null"))) {
+                if (attributes.getValue("null") != null || !Boolean.valueOf(attributes.getValue("null"))) {
                     text = new StringBuilder();
                     // will pick up contents in endElement
                 }
 
             } else if (qName.equals("description")) {
-                if (attributes.getValue("null") != null && !Boolean.valueOf(attributes.getValue("null"))) {
+                if (attributes.getValue("null") != null || !Boolean.valueOf(attributes.getValue("null"))) {
                     text = new StringBuilder();
                     // will pick up contents in endElement
                 }
@@ -231,10 +240,44 @@ public class ProjectSAXHandler extends DefaultHandler {
                 // TODO in matchmaker
 
             } else if (qName.equals("munge-settings")) {
-                // TODO in matchmaker
+                MungeSettings ms = project.getMungeSettings();
+                
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    String aname = attributes.getQName(i);
+                    String aval = attributes.getValue(i);
+
+                    if (handleMatchMakerSetting(ms, aname, aval)) {
+                        // ok, it was a generic setting
+                    } else if (aname.equals("clear-match-pool")) {
+                        ms.setClearMatchPool(Boolean.valueOf(aval));
+                    } else if (aname.equals("auto-match-threshold")) {
+                        ms.setAutoMatchThreshold(Short.parseShort(aval));
+                    } else if (aname.equals("last-backup-number")) {
+                        ms.setLastBackupNo(Long.parseLong(aval));
+                    } else {
+                        logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locator);
+                    }
+
+                }
 
             } else if (qName.equals("merge-settings")) {
-                // TODO in matchmaker
+                MergeSettings ms = project.getMergeSettings();
+                
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    String aname = attributes.getQName(i);
+                    String aval = attributes.getValue(i);
+
+                    if (handleMatchMakerSetting(ms, aname, aval)) {
+                        // ok, it was a generic setting
+                    } else if (aname.equals("augment-null")) {
+                        ms.setAugmentNull(Boolean.valueOf(aval));
+                    } else if (aname.equals("backup")) {
+                        ms.setBackUp(Boolean.valueOf(aval));
+                    } else {
+                        logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locator);
+                    }
+
+                }
 
             } else if (qName.equals("munge-process")) {
                 process = new MungeProcess();
@@ -411,6 +454,8 @@ public class ProjectSAXHandler extends DefaultHandler {
 
             }
 
+        } catch (ParseException e) {
+            throw new SAXException("Failed to parse value at " + locator, e);
         } catch (ArchitectException e) {
             throw new SAXException("Failed to read database structure at " + locator, e);
         } catch (ClassNotFoundException e) {
@@ -420,6 +465,40 @@ public class ProjectSAXHandler extends DefaultHandler {
         } catch (IllegalAccessException e) {
             throw new SAXException("No public constructor found at " + locator, e);
         }
+    }
+
+    /**
+     * Tries to set a MatchMakerSettings attribute on the given object.
+     * 
+     * @param ms The MatchMakerSettings instance to set the setting on.
+     * @param aname The name of the XML attribute
+     * @param aval The value of the XML attribute
+     * @return True if the attribute was recognised and set on ms; false if it was not.
+     * @throws ParseException If the last run date can't be parsed.
+     */
+    private boolean handleMatchMakerSetting(MatchMakerSettings ms, String aname, String aval) throws ParseException {
+        if (aname.equals("name")) {
+            ms.setName(aval);
+        } else if (aname.equals("visible")) {
+            ms.setVisible(Boolean.valueOf(aval));
+        } else if (aname.equals("append-to-log")) {
+            ms.setAppendToLog(Boolean.valueOf(aval));
+        } else if (aname.equals("debug")) {
+            ms.setDebug(Boolean.valueOf(aval));
+        } else if (aname.equals("description")) {
+            ms.setDescription(aval);
+        } else if (aname.equals("last-run")) {
+            ms.setLastRunDate(df.parse(aval));
+        } else if (aname.equals("log-file")) {
+            ms.setLog(new File(aval));  // XXX windows vs unix problems
+        } else if (aname.equals("process-count")) {
+            ms.setProcessCount(Integer.parseInt(aval));
+        } else if (aname.equals("send-email")) {
+            ms.setSendEmail(Boolean.valueOf(aval));
+        } else {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -439,6 +518,7 @@ public class ProjectSAXHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (text != null) {
             if (qName.equals("where-filter")) {
+                System.out.println("Found where filter. parent is "+xmlContext.get(xmlContext.size() - 2));
                 if (parentIs("source-table")) {
                     project.setFilter(text.toString());
                 } else if (parentIs("munge-process")) {
