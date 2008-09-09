@@ -32,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.ToolTipManager;
 
 import org.apache.log4j.Logger;
 
@@ -162,8 +163,20 @@ public class SourceTableRecordViewer {
 					colValueLabel = new JLabel(NULL_STRING);
         			colValueLabel.setForeground(darkRow ? darkerColor(Color.gray) : Color.gray);
 				} else {
-					colValueLabel = new JLabel(viewVal.toString());
-        			colValueLabel.setForeground(darkRow ? darkerColor(foreground) : foreground);
+					colValueLabel = new JLabel(viewVal.toString()) {
+					    @Override
+					    public String getToolTipText() {
+					        // this override is to only show the tooltip if the text
+					        // has been truncated due to the label's size
+					        if (getWidth() < getPreferredSize().width) {
+					            return getText();
+					        } else {
+					            return null;
+					        }
+					    }
+					};
+					ToolTipManager.sharedInstance().registerComponent(colValueLabel);
+					colValueLabel.setForeground(darkRow ? darkerColor(foreground) : foreground);
 				}
 
 				if (same) {
