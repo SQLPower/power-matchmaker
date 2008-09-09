@@ -255,5 +255,19 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 			if (!((MatchMakerSession) s).close()) return;
 		}
 	}
+
+	public void ensureDefaultRepositoryDefined() {
+	    SPDataSource defaultRepository = null;
+		
+	    for (SPDataSource ds : getDataSources()) {
+	        if (ds.getName().equals(DEFAULT_REPOSITORY_DATA_SOURCE_NAME)) {
+	        	defaultRepository = ds;
+	        }
+	    }
+	    
+	    if (defaultRepository == null) {
+	    	defaultRepository = makeDefaultDataSource();
+	    }
+	}
 }
 

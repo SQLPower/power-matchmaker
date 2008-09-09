@@ -401,6 +401,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public void launchDefaultSession() {
         try {
+        	ensureDefaultRepositoryDefined();
+        	
             if (!isAutoLoginEnabled()) {
                 showLoginDialog(getLastLoginDataSource());
             } else {
@@ -747,4 +749,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
     	return context.getSessionLifecycleListener();
     }
+
+	public void ensureDefaultRepositoryDefined() {
+		context.ensureDefaultRepositoryDefined();
+	}
 }
