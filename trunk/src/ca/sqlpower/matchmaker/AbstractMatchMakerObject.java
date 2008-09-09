@@ -131,12 +131,13 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
     /**
      * Replaces the list of children with the passed in list.
      * <p>
-     * This is intentionaly package private because it is only supposed to be used in methods that
-     * support the ORM.
-     *
+     * This method should only be used by code that saves and restores
+     * MatchMaker projects. At the time of this writing, this includes the
+     * Hibernate and XML persistence layers.
+     * 
      * @param children
      */
-    protected void setChildren(List<C> children){
+    public void setChildren(List<C> children){
         this.children = children;
         eventSupport.fireStructureChanged();
     }
