@@ -74,10 +74,10 @@
    <folder id="FOL60" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL61" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX62" populated="true" clustered="false" index-type="CLUSTERED" name="mm_project_pk" physicalName="PL_MATCH_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX62" populated="true" clustered="false"  name="mm_project_pk" physicalName="PL_MATCH_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC63" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL2" name="project_oid" physicalName="MATCH_OID" />
     </index>
-    <index id="IDX64" populated="true" clustered="false" index-type="CLUSTERED" name="PL_MATCH_UNIQUE" physicalName="PL_MATCH_UNIQUE" primaryKeyIndex="false" unique="true" >
+    <index id="IDX64" populated="true" clustered="false"  name="PL_MATCH_UNIQUE" physicalName="PL_MATCH_UNIQUE" primaryKeyIndex="false" unique="true" >
      <index-column id="IDC65" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL4" name="project_name" physicalName="MATCH_ID" />
     </index>
    </folder>
@@ -99,7 +99,7 @@
    <folder id="FOL78" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL79" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX80" populated="true" clustered="false" index-type="CLUSTERED" name="mm_munge_step_pk" physicalName="PL_MATCH_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX80" populated="true" clustered="false"  name="mm_munge_step_pk" physicalName="PL_MATCH_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC81" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL68" name="munge_step_oid" physicalName="munge_step_oid" />
     </index>
    </folder>
@@ -125,10 +125,10 @@
    <folder id="FOL98" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL99" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX100" populated="true" clustered="false" index-type="CLUSTERED" name="PL_MATCH_GROUP_PK" physicalName="PL_MATCH_GROUP_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX100" populated="true" clustered="false"  name="PL_MATCH_GROUP_PK" physicalName="PL_MATCH_GROUP_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC101" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL84" name="munge_process_oid" physicalName="GROUP_OID" />
     </index>
-    <index id="IDX102" populated="true" clustered="false" index-type="CLUSTERED" name="PL_MATCH_GROUP_UNIQUE" physicalName="PL_MATCH_GROUP_UNIQUE" primaryKeyIndex="false" unique="true" >
+    <index id="IDX102" populated="true" clustered="false"  name="PL_MATCH_GROUP_UNIQUE" physicalName="PL_MATCH_GROUP_UNIQUE" primaryKeyIndex="false" unique="true" >
      <index-column id="IDC103" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL85" name="project_oid" physicalName="MATCH_OID" />
      <index-column id="IDC104" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL86" name="process_name" physicalName="GROUP_ID" />
     </index>
@@ -148,7 +148,7 @@
    <folder id="FOL114" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL115" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX116" populated="true" clustered="false" index-type="CLUSTERED" name="PL_MATCH_TRANSLATE_PK" physicalName="PL_MATCH_TRANSLATE_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX116" populated="true" clustered="false"  name="PL_MATCH_TRANSLATE_PK" physicalName="PL_MATCH_TRANSLATE_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC117" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL107" name="MATCH_TRANSLATE_OID" physicalName="MATCH_TRANSLATE_OID" />
     </index>
    </folder>
@@ -164,7 +164,7 @@
    <folder id="FOL124" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL125" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX126" populated="true" clustered="false" index-type="CLUSTERED" name="PL_MATCH_TRANSLATE_GROUP_PK" physicalName="PL_MATCH_TRANSLATE_GROUP_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX126" populated="true" clustered="false"  name="PL_MATCH_TRANSLATE_GROUP_PK" physicalName="PL_MATCH_TRANSLATE_GROUP_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC127" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL120" name="TRANSLATE_GROUP_OID" physicalName="TRANSLATE_GROUP_OID" />
     </index>
    </folder>
@@ -182,7 +182,7 @@
    <folder id="FOL136" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL137" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX138" populated="true" clustered="false" index-type="CLUSTERED" name="PL_MATCH_XREF_MAP_PK" physicalName="PL_MATCH_XREF_MAP_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX138" populated="true" clustered="false"  name="PL_MATCH_XREF_MAP_PK" physicalName="PL_MATCH_XREF_MAP_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC139" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL130" name="project_oid" physicalName="MATCH_OID" />
      <index-column id="IDC140" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL131" name="MAPPING_SEQ_NO" physicalName="MAPPING_SEQ_NO" />
     </index>
@@ -207,7 +207,7 @@
    <folder id="FOL155" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL156" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX157" populated="true" clustered="false" index-type="CLUSTERED" name="mm_column_merge_rule_pk" physicalName="PL_MERGE_CONSOLIDT_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX157" populated="true" clustered="false"  name="mm_column_merge_rule_pk" physicalName="PL_MERGE_CONSOLIDT_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC158" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL143" name="column_merge_rule_oid" physicalName="MERGE_CONSOLIDATE_CRITERIA_OID" />
     </index>
    </folder>
@@ -245,7 +245,7 @@
    <folder id="FOL187" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL188" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX189" populated="true" clustered="false" index-type="CLUSTERED" name="mm_table_merge_rule_pk" physicalName="PL_MERGE_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX189" populated="true" clustered="false"  name="mm_table_merge_rule_pk" physicalName="PL_MERGE_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC190" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL161" name="table_merge_rule_oid" physicalName="MERGE_CRITERIA_OID" />
     </index>
    </folder>
@@ -276,7 +276,7 @@
    <folder id="FOL212" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL213" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX214" populated="true" clustered="false" index-type="CLUSTERED" name="PL_USER_PK" physicalName="PL_USER_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX214" populated="true" clustered="false"  name="PL_USER_PK" physicalName="PL_USER_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC215" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL193" name="USER_ID" physicalName="USER_ID" />
     </index>
    </folder>
@@ -296,7 +296,7 @@
    <folder id="FOL226" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL227" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX228" populated="true" clustered="false" index-type="CLUSTERED" name="PL_USER_NOTIFICATION_PK" physicalName="PL_USER_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX228" populated="true" clustered="false"  name="PL_USER_NOTIFICATION_PK" physicalName="PL_USER_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC229" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL218" name="USER_ID" physicalName="USER_ID" />
      <index-column id="IDC230" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL219" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
      <index-column id="IDC231" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL220" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
@@ -316,7 +316,7 @@
    <folder id="FOL240" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL241" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX242" populated="true" clustered="false" index-type="CLUSTERED" name="PL_USER_NOTIFICATION_LOG_PK" physicalName="PL_USER_NOTIFICATION_LOG_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX242" populated="true" clustered="false"  name="PL_USER_NOTIFICATION_LOG_PK" physicalName="PL_USER_NOTIFICATION_LOG_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC243" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL234" name="USER_ID" physicalName="USER_ID" />
      <index-column id="IDC244" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL235" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
      <index-column id="IDC245" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL236" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
@@ -339,7 +339,7 @@
    <folder id="FOL257" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL258" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX259" populated="true" clustered="false" index-type="CLUSTERED" name="USER_GROUP_PK" physicalName="USER_GROUP_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX259" populated="true" clustered="false"  name="USER_GROUP_PK" physicalName="USER_GROUP_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC260" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL250" name="USER_ID" physicalName="USER_ID" />
      <index-column id="IDC261" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL251" name="GROUP_NAME" physicalName="GROUP_NAME" />
     </index>
@@ -364,7 +364,7 @@
    <folder id="FOL276" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL277" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX278" populated="true" clustered="false" index-type="CLUSTERED" name="USER_OBJECT_PRIVS_PK" physicalName="USER_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX278" populated="true" clustered="false"  name="USER_OBJECT_PRIVS_PK" physicalName="USER_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC279" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL264" name="USER_ID" physicalName="USER_ID" />
      <index-column id="IDC280" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL265" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
      <index-column id="IDC281" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL266" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
@@ -390,7 +390,7 @@
    <folder id="FOL296" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL297" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX298" populated="true" clustered="false" index-type="CLUSTERED" name="USER_SYSTEM_PRIVS_PK" physicalName="USER_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX298" populated="true" clustered="false"  name="USER_SYSTEM_PRIVS_PK" physicalName="USER_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC299" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL284" name="USER_ID" physicalName="USER_ID" />
      <index-column id="IDC300" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL285" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
     </index>
@@ -410,10 +410,10 @@
    <folder id="FOL310" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL311" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX312" populated="true" clustered="false" index-type="CLUSTERED" name="PL_FOLDER2_PK" physicalName="PL_FOLDER2_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX312" populated="true" clustered="false"  name="PL_FOLDER2_PK" physicalName="PL_FOLDER2_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC313" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL303" name="FOLDER_OID" physicalName="FOLDER_OID" />
     </index>
-    <index id="IDX314" populated="true" clustered="false" index-type="CLUSTERED" name="PL_FOLDER2_NAME_UIDX" physicalName="PL_FOLDER2_NAME_UIDX" primaryKeyIndex="false" unique="true" >
+    <index id="IDX314" populated="true" clustered="false"  name="PL_FOLDER2_NAME_UIDX" physicalName="PL_FOLDER2_NAME_UIDX" primaryKeyIndex="false" unique="true" >
      <index-column id="IDC315" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL304" name="FOLDER_NAME" physicalName="FOLDER_NAME" />
     </index>
    </folder>
@@ -434,7 +434,7 @@
    <folder id="FOL327" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL328" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX329" populated="true" clustered="false" index-type="CLUSTERED" name="PL_GROUP_PK" physicalName="PL_GROUP_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX329" populated="true" clustered="false"  name="PL_GROUP_PK" physicalName="PL_GROUP_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC330" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL318" name="GROUP_NAME" physicalName="GROUP_NAME" />
     </index>
    </folder>
@@ -454,7 +454,7 @@
    <folder id="FOL341" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL342" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX343" populated="true" clustered="false" index-type="CLUSTERED" name="PL_GROUP_NOTIFICATION_PK" physicalName="PL_GROUP_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX343" populated="true" clustered="false"  name="PL_GROUP_NOTIFICATION_PK" physicalName="PL_GROUP_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC344" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL333" name="GROUP_NAME" physicalName="GROUP_NAME" />
      <index-column id="IDC345" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL334" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
      <index-column id="IDC346" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL335" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
@@ -480,7 +480,7 @@
    <folder id="FOL361" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL362" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX363" populated="true" clustered="false" index-type="CLUSTERED" name="GROUP_OBJECT_PRIVS_PK" physicalName="GROUP_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX363" populated="true" clustered="false"  name="GROUP_OBJECT_PRIVS_PK" physicalName="GROUP_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC364" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL349" name="GROUP_NAME" physicalName="GROUP_NAME" />
      <index-column id="IDC365" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL350" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
      <index-column id="IDC366" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL351" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
@@ -506,7 +506,7 @@
    <folder id="FOL381" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL382" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX383" populated="true" clustered="false" index-type="CLUSTERED" name="GROUP_SYSTEM_PRIVS_PK" physicalName="GROUP_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+    <index id="IDX383" populated="true" clustered="false"  name="GROUP_SYSTEM_PRIVS_PK" physicalName="GROUP_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC384" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL369" name="GROUP_NAME" physicalName="GROUP_NAME" />
      <index-column id="IDC385" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL370" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
     </index>
@@ -523,7 +523,7 @@
    <folder id="FOL392" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL393" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX394" populated="true" clustered="false" index-type="CLUSTERED" name="mm_munge_step_parameter_pk" physicalName="mm_munge_step_parameter_pk" primaryKeyIndex="true" unique="true" >
+    <index id="IDX394" populated="true" clustered="false"  name="mm_munge_step_parameter_pk" physicalName="mm_munge_step_parameter_pk" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC395" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL388" name="munge_step_oid" physicalName="munge_step_oid" />
      <index-column id="IDC396" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL389" name="parameter_name" physicalName="parameter_name" />
     </index>
@@ -602,7 +602,7 @@
    <folder id="FOL465" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL466" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX467" populated="true" clustered="false" index-type="CLUSTERED" name="PL_STATS_U01" physicalName="PL_STATS_U01" primaryKeyIndex="false" unique="true" >
+    <index id="IDX467" populated="true" clustered="false"  name="PL_STATS_U01" physicalName="PL_STATS_U01" primaryKeyIndex="false" unique="true" >
      <index-column id="IDC468" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL399" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
      <index-column id="IDC469" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL400" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
      <index-column id="IDC470" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL402" name="TABLE_FILE_ID" physicalName="TABLE_FILE_ID" />
@@ -610,7 +610,7 @@
      <index-column id="IDC472" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL401" name="START_DATE_TIME" physicalName="START_DATE_TIME" />
      <index-column id="IDC473" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL403" name="PROCESS_SEQ_NO" physicalName="PROCESS_SEQ_NO" />
     </index>
-    <index id="IDX474" populated="true" clustered="false" index-type="CLUSTERED" name="PL_STATS_IDX" physicalName="PL_STATS_IDX" primaryKeyIndex="false" unique="false" >
+    <index id="IDX474" populated="true" clustered="false"  name="PL_STATS_IDX" physicalName="PL_STATS_IDX" primaryKeyIndex="false" unique="false" >
      <index-column id="IDC475" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL399" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
      <index-column id="IDC476" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL425" name="TRANS_RUN_NO" physicalName="TRANS_RUN_NO" />
     </index>
@@ -626,7 +626,7 @@
    <folder id="FOL482" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL483" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX484" populated="true" clustered="false" index-type="CLUSTERED" name="mm_schema_info_pk" physicalName="mm_schema_info_pk" primaryKeyIndex="true" unique="true" >
+    <index id="IDX484" populated="true" clustered="false"  name="mm_schema_info_pk" physicalName="mm_schema_info_pk" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC485" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL479" name="param_name" physicalName="param_name" />
     </index>
    </folder>
@@ -648,7 +648,7 @@
    <folder id="FOL498" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
    <folder id="FOL499" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX500" populated="true" clustered="false" index-type="CLUSTERED" name="mm_munge_step_output_pk" physicalName="Munge_Step_Output_pk" primaryKeyIndex="true" unique="true" >
+    <index id="IDX500" populated="true" clustered="false"  name="mm_munge_step_output_pk" physicalName="Munge_Step_Output_pk" primaryKeyIndex="true" unique="true" >
      <index-column id="IDC501" populated="true" ascendingOrDescending="UNSPECIFIED" column-ref="COL488" name="munge_step_output_oid" physicalName="munge_step_output_oid" />
     </index>
    </folder>
