@@ -338,8 +338,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * This is the pairing between a MungeStepOutput value and its InputDescriptor.
 	 * The reason for this class is to avoid maintaining two separate collections of
 	 * MungeStepOutputs and their InputDescriptors.
+	 * <p>
+	 * Note this class is only public because the XML DAO needs access to it. For
+	 * normal use of the MatchMaker API, there is no need to refer to this class
+	 * directly.
 	 */
-	private static class Input{
+	public static class Input{
 		
 		/**
 		 * used by hibernate
@@ -367,7 +371,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 			descriptor = new InputDescriptor(null, null);
 		}
 		
-		Input(MungeStepOutput current, InputDescriptor descriptor, AbstractMungeStep step) {
+		public Input(MungeStepOutput current, InputDescriptor descriptor, AbstractMungeStep step) {
 			this.current = current;
 			this.descriptor = descriptor;
 			this.parentStep = step;
@@ -393,7 +397,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		 * only used by hibernate
 		 */
 		@SuppressWarnings("unused")
-		private MungeStepOutput getCurrent() {
+        public MungeStepOutput getCurrent() {
 			return current;
 		}
 
@@ -401,7 +405,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		 * only used by hibernate
 		 */
 		@SuppressWarnings("unused")
-		private void setCurrent(MungeStepOutput current) {
+        public void setCurrent(MungeStepOutput current) {
 			this.current = current;
 		}
 
@@ -409,7 +413,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		 * only used by hibernate
 		 */
 		@SuppressWarnings("unused")
-		private String getName() {
+        public String getName() {
 			return descriptor.getName();
 		}
 
@@ -420,7 +424,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
          * this method even if it appears unused.
          */
 		@SuppressWarnings("unused")
-		private Class<?> getType() {
+        public Class<?> getType() {
 			return descriptor.getType();
 		}
 
@@ -680,18 +684,16 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     }
     
     /**
-	 * only used by hibernate
+	 * Only used by hibernate and xml import/export.
 	 */
-	@SuppressWarnings("unused")
-    private void setInputs(List<Input> inputs) {
+    public void setInputs(List<Input> inputs) {
     	this.inputs = inputs;
     }
 	
 	/**
-	 * only used by hibernate
+     * Only used by hibernate and xml import/export.
 	 */
-	@SuppressWarnings("unused")
-    private List<Input> getInputs() {
+    public List<Input> getInputs() {
     	return inputs;
     }
 

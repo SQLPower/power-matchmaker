@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.dao.xml;
 
 import java.awt.Color;
 import java.io.BufferedWriter;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -31,22 +32,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.log4j.Logger;
-import org.xml.sax.helpers.DefaultHandler;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
-import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
 import ca.sqlpower.util.SQLPowerUtils;
 
 /**
@@ -97,6 +102,13 @@ public class ProjectDAOXML implements ProjectDAO {
     private PrintWriter out;
 
     /**
+     * The source of XML data for reading. Will be null if this is a write-only
+     * DAO instance.
+     */
+    private final InputStream in;
+    
+
+    /**
      * Current level of indentation while writing the output file. This value is used
      * by the {@link #println(String)} and {@link #print(String)} methods.
      */
@@ -106,7 +118,13 @@ public class ProjectDAOXML implements ProjectDAO {
      * Date format used to represent all date/time values in the XML file.
      */
     private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
-    
+
+    /**
+     * The current session context. Currently, this is null unless this DAO is set
+     * up for reading.
+     */
+    private final MatchMakerSessionContext sessionContext;
+
     /**
      * Creates a new write-only Project DAO. All of the findXXX() methods of
      * this new DAO instance will throw UnsupportedOperationException if called.
@@ -115,8 +133,22 @@ public class ProjectDAOXML implements ProjectDAO {
      */
     public ProjectDAOXML(OutputStream out) {
         this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)));
+        this.in = null;
+        sessionContext = null;
     }
-    
+
+    /**
+     * Creates a new read-only Project DAO. The save() method of this new DAO
+     * instance will throw UnsupportedOperationException if called.
+     * 
+     * @param in
+     *            The stream to read the XML project description from.
+     */
+    public ProjectDAOXML(MatchMakerSessionContext sessionContext, InputStream in) {
+        this.sessionContext = sessionContext;
+        this.in = in;
+    }
+
     public long countProjectByName(String name) {
         // TODO Auto-generated method stub
         logger.debug("Stub call: ProjectDAOXML.countProjectByName()");
@@ -148,9 +180,17 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     public List<Project> findAll() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: ProjectDAOXML.findAll()");
-        return null;
+        if (in == null) {
+            throw new UnsupportedOperationException("This is a write-only DAO instance");
+        }
+        try {
+            SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+            ProjectSAXHandler saxHandler = new ProjectSAXHandler(sessionContext);
+            parser.parse(in, saxHandler);
+            return saxHandler.getProjects();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public Class<Project> getBusinessClass() {
@@ -158,6 +198,9 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     public void save(Project p) {
+        if (out == null) {
+            throw new UnsupportedOperationException("This is a read-only DAO instance");
+        }
         println("<?xml version='1.0' encoding='UTF-8'?>");
         println("");
         println("<matchmaker-projects>");
@@ -301,12 +344,14 @@ public class ProjectDAOXML implements ProjectDAO {
                 printAttribute("ref", steps.get(step));
                 niprintln(">");
                 indent++;
-                for (MungeStepOutput<?> mso : step.getMSOInputs()) {
+                for (Input msi : ((AbstractMungeStep) step).getInputs()) {
                     print("<input");
-                    if (mso == null) {
+                    printAttribute("name", msi.getName());
+                    printAttribute("data-type", msi.getType());
+                    if (msi.getCurrent() == null) {
                         printAttribute("connected", false);
                     } else {
-                        printAttribute("from-ref", outputs.get(mso));
+                        printAttribute("from-ref", outputs.get(msi.getCurrent()));
                     }
                     niprintln(" />");
                 }
@@ -481,11 +526,13 @@ public class ProjectDAOXML implements ProjectDAO {
         String strval;
         if (value instanceof Enum) {
             strval = ((Enum) value).name();
+        } else if (value instanceof Class) {
+                strval = ((Class) value).getName();
         } else if (value instanceof Date) {
                 strval = df.format((Date) value);
         } else if (value instanceof Color) {
             Color c = (Color) value;
-            strval = String.format("%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+            strval = String.format("0x%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
         } else {
             strval = String.valueOf(value);
         }
@@ -536,16 +583,5 @@ public class ProjectDAOXML implements ProjectDAO {
      */
     private void niprint(String str) {
         out.print(str);
-    }
-
-    static class ProjectSAXHandler extends DefaultHandler {
-        
-        Project project;
-        
-        ProjectSAXHandler(PlFolder<Project> parentFolder) {
-            // TODO the hard part where we actually parse the document
-            // (grab the starter set of stuff from project planner--it's
-            // tested and working)
-        }
     }
 }

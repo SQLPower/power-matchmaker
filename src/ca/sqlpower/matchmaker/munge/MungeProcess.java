@@ -338,7 +338,7 @@ public class MungeProcess
 	}
 	
 	@Override
-	protected void setChildren(List<MungeStep> children) {
+	public void setChildren(List<MungeStep> children) {
 		super.setChildren(children);
 		for (MungeStep ms : children) {
 			includeMungeStep(ms);
