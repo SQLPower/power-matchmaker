@@ -19,12 +19,15 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import javax.swing.event.TableModelEvent;
+
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 
 /**
  * A Table model for the merge table rules. Shows the merge tables
@@ -32,10 +35,10 @@ import ca.sqlpower.matchmaker.TableMergeRules;
  * <p>
  * It has 4 columns:
  * <dl>
- * 		<dt>table catalog   <dd> merge table catalog in a combo box
- * 		<dt>table schema    <dd> merge table schema in a combo box
- * 		<dt>table name      <dd> merge table name in a combo box
- * 		<dt>delete dup ind  <dd> merge table delete dup ind in a check box
+ * 		<dt>table catalog   <dd> merge table catalog
+ * 		<dt>table schema    <dd> merge table schema
+ * 		<dt>table name      <dd> merge table name
+ * 		<dt>merge action  <dd> table merge rule merge action in a combo box
  * </dl>
  */
 public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<MatchMakerFolder<TableMergeRules>, TableMergeRules> {
@@ -45,16 +48,23 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Match
 	}
 	
 	public int getColumnCount() {
-		return 3;
+		return 4;
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
+		TableMergeRules tableMergeRule = mmo.getChildren().get(rowIndex);
 		if (columnIndex == 0) {
-			return mmo.getChildren().get(rowIndex).getCatalogName();
+			return tableMergeRule.getCatalogName();
 		} else if (columnIndex == 1) {
-			return mmo.getChildren().get(rowIndex).getSchemaName();
+			return tableMergeRule.getSchemaName();
 		} else if (columnIndex == 2) {
-			return mmo.getChildren().get(rowIndex).getTableName();
+			return tableMergeRule.getTableName();
+		} else if (columnIndex == 3) {
+			if (tableMergeRule.isSourceMergeRule()) {
+				return null;
+			} else {
+				return tableMergeRule.getChildMergeAction();
+			}
 		} else {
 			return null;
 		}
@@ -62,7 +72,13 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Match
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return false;
+		TableMergeRules rule = mmo.getChildren().get(rowIndex);
+		
+		if (columnIndex == 3 && !rule.isSourceMergeRule()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	@Override
@@ -73,6 +89,8 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Match
 			return SQLSchema.class;
 		} else if (columnIndex == 2) {
 			return SQLTable.class;
+		} else if (columnIndex == 3) {
+			return ChildMergeActionType.class;
 		}
 		return super.getColumnClass(columnIndex);
 	}
@@ -85,7 +103,21 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Match
 			return SQLObjectChooser.SCHEMA_STRING;
 		} else if (columnIndex == 2) {
 			return "Name";
+		} else if (columnIndex == 3) {
+			return "Merge Action";
 		}
 		return null;
+	}
+	
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+		TableMergeRules rule = mmo.getChildren().get(rowIndex);
+		if (rule.isSourceMergeRule()) return;
+		
+		if (columnIndex == 3) {
+			rule.setChildMergeAction((ChildMergeActionType) aValue);
+		} else {
+			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
+		}
+		fireTableChanged(new TableModelEvent(this,rowIndex));
 	}
 }
