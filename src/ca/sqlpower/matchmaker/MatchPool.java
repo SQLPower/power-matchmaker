@@ -48,7 +48,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.DijkstrasAlgorithm;
 import ca.sqlpower.graph.GraphModel;
-import ca.sqlpower.matchmaker.MatchEngineImpl.Aborter;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -403,8 +402,9 @@ public class MatchPool extends MonitorableImpl {
 	 */
     public void store(Aborter aborter, boolean debug) throws SQLException {
         logger.debug("Starting to store");
-        
-        setJobSize(new Integer(deletedMatches.size() + potentialMatches.size() * 2));
+        setProgress(0);
+        setCancelled(false);
+        setFinished(false);
         
         if (sourceTableRecords.size() == 0) return;
         SQLTable resultTable = project.getResultTable();
@@ -985,7 +985,7 @@ public class MatchPool extends MonitorableImpl {
 	 * that are connected to a different node by a no match edge where the
 	 * different node is connected to the given node by matched edges.
 	 */
-	private Set<SourceTableRecord> findNoMatchNodes(Set<SourceTableRecord> strs) {
+	Set<SourceTableRecord> findNoMatchNodes(Set<SourceTableRecord> strs) {
 		Set<SourceTableRecord> noMatchNodes = new HashSet<SourceTableRecord>();
         for (SourceTableRecord reachableNode : strs) {
         	for (PotentialMatchRecord pmr : reachableNode.getOriginalMatchEdges()) {
@@ -1514,5 +1514,10 @@ public class MatchPool extends MonitorableImpl {
 	 */
 	Map<PotentialMatchRecord, PotentialMatchRecord> getMergedMatches() {
 		return mergedMatches;
+	}
+	
+	@Override
+	public synchronized Integer getJobSize() {
+		return new Integer(deletedMatches.size() + potentialMatches.size() * 2);
 	}
 }

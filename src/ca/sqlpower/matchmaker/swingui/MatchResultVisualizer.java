@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -53,6 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
+import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
@@ -63,6 +65,8 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.ConnectedComponentFinder;
 import ca.sqlpower.graph.GraphModel;
+import ca.sqlpower.matchmaker.Aborter;
+import ca.sqlpower.matchmaker.AutoMatcher;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
@@ -78,7 +82,10 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 import ca.sqlpower.swingui.JDefaultButton;
+import ca.sqlpower.swingui.MonitorableWorker;
+import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SwingWorkerRegistry;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -466,21 +473,103 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 											+ "matches carefully before merging records because this operation\n"
 											+ "does NOT rank records based on their perceived usefulness.";
     	
-    	public AutoMatchAction(GraphModel<SourceTableRecord, PotentialMatchRecord> model) {
+    	private MatchMakerSwingSession session;
+    	
+    	public AutoMatchAction(GraphModel<SourceTableRecord, PotentialMatchRecord> model, MatchMakerSwingSession session) {
     		super("Auto-Match");
+    		this.session = session;
     	}
     	
 		public void actionPerformed(ActionEvent e) {
 			int response = JOptionPane.showConfirmDialog(getPanel(), warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
 			if (response == JOptionPane.OK_OPTION) {
 				try {
-					pool.doAutoMatch((MungeProcess) mungeProcessComboBox.getSelectedItem());
-					pool.store();
-					graph.repaint();
+					MungeProcess selectedProcess = (MungeProcess) mungeProcessComboBox.getSelectedItem();
+					AutoMatchWorker worker = new AutoMatchWorker(pool, selectedProcess, session);
+					ProgressMonitor monitor = new ProgressMonitor(getPanel(), "Auto-matching...", null, 0, 100);
+					ProgressWatcher watcher = new ProgressWatcher(monitor, worker);
+		        	watcher.start();
+		            new Thread(worker).start();
 				} catch (Exception ex) {
 					MMSUtils.showExceptionDialog(getPanel(), "Auto-Match failed, most likely a database connection error", ex);
 				}
 			}
+		}
+    }
+    
+    private class AutoMatchWorker extends MonitorableWorker {
+
+    	private AutoMatcher autoMatcher;
+    	private MungeProcess mungeProcess;
+    	private MatchPool pool;
+    	
+		public AutoMatchWorker(MatchPool pool, MungeProcess mungeProcess, SwingWorkerRegistry registry) {
+			super(registry);
+			autoMatcher = new AutoMatcher(pool);
+			this.mungeProcess = mungeProcess;
+			this.pool = pool;
+		}
+
+		@Override
+		public void cleanup() throws Exception {
+			if (getDoStuffException() != null) {
+				pool.findAll(displayColumns);
+				if (!(getDoStuffException() instanceof CancellationException)) {
+					MMSUtils.showExceptionDialog(getPanel(), "Error during auto-match", getDoStuffException());
+					logger.error("Error during auto-match", getDoStuffException());
+				}
+			}
+			graph.repaint();
+		}
+
+		@Override
+		public void doStuff() throws Exception {
+			autoMatcher.doAutoMatch(mungeProcess, new Aborter() {
+				public void checkCancelled() throws CancellationException {
+					if (autoMatcher.isCancelled()) {
+						throw new CancellationException();
+					}
+				}
+			});
+			
+			pool.store(new Aborter() {
+				public void checkCancelled() throws CancellationException {
+					if (pool.isCancelled()) {
+						throw new CancellationException();
+					}
+				}
+			});
+		}
+
+		public Integer getJobSize() {
+			return autoMatcher.getJobSize() + pool.getJobSize();
+		}
+
+		public String getMessage() {
+			return autoMatcher.getMessage();
+		}
+
+		public int getProgress() {
+			if (!autoMatcher.isFinished()) {
+				return autoMatcher.getProgress();
+			} else {
+				return autoMatcher.getProgress() + pool.getProgress();
+			}
+		}
+
+		public boolean hasStarted() {
+			return autoMatcher.hasStarted();
+		}
+
+		public boolean isFinished() {
+			return autoMatcher.isFinished() && pool.isFinished();
+		}
+    	
+		@Override
+		public synchronized void setCancelled(boolean cancelled) {
+			super.setCancelled(cancelled);
+			autoMatcher.setCancelled(cancelled);
+			pool.setCancelled(cancelled);
 		}
     }
     
@@ -534,7 +623,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 
     private final MatchPool pool;
 
-    private final GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
+    private GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
     
     private JComboBox mungeProcessComboBox;
     
@@ -559,7 +648,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
      */
     private List<SQLColumn> displayColumns = new ArrayList<SQLColumn>();
     
-    public MatchResultVisualizer(Project project) throws SQLException, ArchitectException {
+    public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, ArchitectException {
     	super();
         this.project = project;
         FormLayout topLayout = new FormLayout("pref", "pref, pref");
@@ -613,7 +702,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
         mungeProcessComboBox = new JComboBox();
         mungeProcessComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-        autoMatchButton = new JButton(new AutoMatchAction(graph.getModel()));
+        autoMatchButton = new JButton(new AutoMatchAction(graph.getModel(), session));
         autoMatchPanel.add(autoMatchButton);
         updateAutoMatchComboBox();
         autoMatchPanel.add(new JLabel(":"));
@@ -950,5 +1039,5 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				return types.indexOf(o1) - types.indexOf(o2);
 			}			
 		}
-	}	
+	}
 }
