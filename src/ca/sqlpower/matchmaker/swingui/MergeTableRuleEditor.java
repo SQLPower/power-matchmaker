@@ -26,6 +26,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -37,12 +38,14 @@ import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.action.DeriveRelatedRulesAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
@@ -84,10 +87,32 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 		
 	}
 	
+	/**
+	 * EditableJTable implementation for table merge rules. It returns 
+	 * a combo box of the {@link ChildMergeActionType} in the third column.
+	 */
+	private class RelatedTableMergeRulesTable extends EditableJTable {
+		
+		public RelatedTableMergeRulesTable(MergeTableRuleTableModel ruleTableModel) {
+			super(ruleTableModel);
+		}
+
+		@Override
+		public TableCellEditor getCellEditor(int row, int column) {
+			if (column == 3) {
+				JComboBox mergeActionComboBox = new JComboBox(TableMergeRules.ChildMergeActionType.values());
+				mergeActionComboBox.setSelectedItem(getModel().getValueAt(row, column));
+				return new DefaultCellEditor(mergeActionComboBox);
+			} else {
+				return super.getCellEditor(row, column);
+			}
+		}
+	}
+	
 	private void setupRulesTable(MatchMakerSwingSession swingSession, Project project) {
 		mergeTableRuleTableModel = new MergeTableRuleTableModel(project);
 
-		mergeRulesTable = new EditableJTable(mergeTableRuleTableModel);
+		mergeRulesTable = new RelatedTableMergeRulesTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
 
         //Enables/disables the buttons according to the selected table row
