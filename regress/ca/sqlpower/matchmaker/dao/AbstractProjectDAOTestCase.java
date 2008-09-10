@@ -55,7 +55,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		Project project = new Project();
 		project.setSession(getSession());
 		try {
-			setAllSetters(project, getNonPersitingProperties());
+			setAllSetters(getSession(), project, getNonPersitingProperties());
 			project.setName("Project "+count);
 			
 			PlFolder f = new PlFolder("test folder" + count);

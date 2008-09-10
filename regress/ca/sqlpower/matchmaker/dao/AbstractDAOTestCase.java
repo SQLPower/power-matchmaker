@@ -219,7 +219,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	public void setAllSetters(MatchMakerObject object,List<String> propertiesThatAreNotPersisted) throws Exception {
+	public static void setAllSetters(MatchMakerSession session, MatchMakerObject object, List<String> propertiesThatAreNotPersisted) throws Exception {
 		MatchMakerObject mmo = object;
 
 		MatchMakerEventCounter listener = new MatchMakerEventCounter();
@@ -273,14 +273,14 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						}
 					} else if (property.getPropertyType() == MungeSettings.class) {
 						MungeSettings mungeSettings = new MungeSettings();
-						setAllSetters(mungeSettings, propertiesThatAreNotPersisted);
+						setAllSetters(session, mungeSettings, propertiesThatAreNotPersisted);
 						newVal = mungeSettings;
 					} else if (property.getPropertyType() == MergeSettings.class) {
 						MergeSettings mergeSettings = new MergeSettings();
-						setAllSetters(mergeSettings, propertiesThatAreNotPersisted);
+						setAllSetters(session, mergeSettings, propertiesThatAreNotPersisted);
 						newVal = mergeSettings;
 					} else if (property.getPropertyType() == SQLTable.class) {
-						newVal = getSession().findPhysicalTableByName("", "MM_TEST", "fake_table");
+						newVal = session.findPhysicalTableByName("", "MM_TEST", "fake_table");
 					} else if (property.getPropertyType() == ViewSpec.class) {
 						newVal = new ViewSpec("select clause", "from clause", "where clause");
 					} else if (property.getPropertyType() == File.class) {
@@ -338,7 +338,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 
 
 					if (newVal instanceof MatchMakerObject){
-						((MatchMakerObject)newVal).setSession(getSession());
+						((MatchMakerObject)newVal).setSession(session);
 					}
 
                     assertNotNull("Ooops we should have set "+property.getName() + " to a value in "+mmo.getClass().getName(),newVal);

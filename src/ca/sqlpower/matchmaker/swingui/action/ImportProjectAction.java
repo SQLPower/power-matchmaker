@@ -84,7 +84,7 @@ public class ImportProjectAction extends AbstractAction {
 		BufferedInputStream in = null;
 		try {
 		    in = new BufferedInputStream(new FileInputStream(importFile));
-		    ProjectDAOXML xmldao = new ProjectDAOXML(swingSession.getContext(), in);
+		    ProjectDAOXML xmldao = new ProjectDAOXML(swingSession, in);
 		    projects = xmldao.findAll();
 		} catch (FileNotFoundException e1) {
 		    SPSUtils.showExceptionDialogNoReport(owningFrame,

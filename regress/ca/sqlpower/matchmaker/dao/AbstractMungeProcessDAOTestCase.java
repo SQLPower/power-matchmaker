@@ -77,7 +77,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		MungeProcess mungeProcess = new MungeProcess();
         mungeProcess.setSession(getSession());
 		try {
-			setAllSetters(mungeProcess, getNonPersitingProperties());
+			setAllSetters(getSession(), mungeProcess, getNonPersitingProperties());
             mungeProcess.setName("Munge Process "+count);
             project.addMungeProcess(mungeProcess);
 		} catch (IllegalAccessException e) {

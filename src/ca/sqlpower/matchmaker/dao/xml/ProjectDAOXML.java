@@ -42,7 +42,7 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -125,10 +125,11 @@ public class ProjectDAOXML implements ProjectDAO {
     private final DateFormat df = new SimpleDateFormat(DATE_FORMAT);
 
     /**
-     * The current session context. Currently, this is null unless this DAO is set
-     * up for reading.
+     * The session that all MatchMakerObjects read in from the XML file will be
+     * associated with. Currently, this is null unless this DAO is set up for
+     * reading.
      */
-    private final MatchMakerSessionContext sessionContext;
+    private final MatchMakerSession session;
 
     /**
      * Creates a new write-only Project DAO. All of the findXXX() methods of
@@ -139,7 +140,7 @@ public class ProjectDAOXML implements ProjectDAO {
     public ProjectDAOXML(OutputStream out) {
         this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)));
         this.in = null;
-        sessionContext = null;
+        session = null;
     }
 
     /**
@@ -149,8 +150,8 @@ public class ProjectDAOXML implements ProjectDAO {
      * @param in
      *            The stream to read the XML project description from.
      */
-    public ProjectDAOXML(MatchMakerSessionContext sessionContext, InputStream in) {
-        this.sessionContext = sessionContext;
+    public ProjectDAOXML(MatchMakerSession session, InputStream in) {
+        this.session = session;
         this.in = in;
     }
 
@@ -190,7 +191,7 @@ public class ProjectDAOXML implements ProjectDAO {
         }
         try {
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-            ProjectSAXHandler saxHandler = new ProjectSAXHandler(sessionContext);
+            ProjectSAXHandler saxHandler = new ProjectSAXHandler(session);
             parser.parse(in, saxHandler);
             return saxHandler.getProjects();
         } catch (Exception ex) {
@@ -208,7 +209,7 @@ public class ProjectDAOXML implements ProjectDAO {
         }
         println("<?xml version='1.0' encoding='UTF-8'?>");
         println("");
-        println("<matchmaker-projects>");
+        println("<matchmaker-projects export-format=\"1.0.0\">");
         indent++;
         
         int projectID = 0;
