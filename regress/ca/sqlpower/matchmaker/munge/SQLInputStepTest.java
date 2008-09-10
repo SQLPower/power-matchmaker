@@ -20,23 +20,18 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.Types;
 import java.util.Date;
-import java.util.Properties;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.FakeSQLDatabase;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 
@@ -44,45 +39,9 @@ public class SQLInputStepTest extends TestCase {
 
 	private final Logger logger = Logger.getLogger("testLogger");
 	
-    private class FakeDatabase extends SQLDatabase {
-        
-        private MockJDBCConnection con;
-
-        public FakeDatabase() {
-            String url = "jdbc:mock:tables=table1";
-            con = new MockJDBCConnection(url, new Properties());
-            
-            MockJDBCResultSet rs = new MockJDBCResultSet(3);
-            rs.addRow(new Object[] {"row1,1", new Integer(12), new Date(1234)});
-            rs.addRow(new Object[] {null,     null,            null});
-            rs.addRow(new Object[] {"row3,1", new Integer(32), new Date(5678)});
-            
-            con.registerResultSet("SELECT.*FROM table1.*", rs);
-        }
-        
-        public Connection getConnection() {
-            return con;
-        }
-        
-        @Override
-        public SPDataSource getDataSource() {
-        	return new SPDataSource((DataSourceCollection)null) {
-        		@Override
-        		public SPDataSourceType getParentType() {
-        			return new SPDataSourceType() {
-        				@Override
-        				public boolean getSupportsUpdateableResultSets() {
-        					return true;
-        				}
-        			};
-        		}
-        	};
-        };
-    }
-    
     SQLInputStep step;
     MungeResultStep resultStep;
-    SQLDatabase db;
+    FakeSQLDatabase db;
     Project project;
     MungeProcess process;
     
@@ -90,7 +49,16 @@ public class SQLInputStepTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        db = new FakeDatabase();
+        db = new FakeSQLDatabase("jdbc:mock:tables=table1");
+        
+        MockJDBCResultSet rs = new MockJDBCResultSet(3);
+        rs.addRow(new Object[] {"row1,1", new Integer(12), new Date(1234)});
+        rs.addRow(new Object[] {null,     null,            null});
+        rs.addRow(new Object[] {"row3,1", new Integer(32), new Date(5678)});
+        
+        MockJDBCConnection con = db.getConnection();
+        con.registerResultSet("SELECT.*FROM table1.*", rs);
+
         SQLTable table = new SQLTable(db, true);
         db.addChild(table);
         

@@ -195,6 +195,11 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	InputDescriptor getInputDescriptor(int inputNumber);
 	
 	/**
+	 * Returns the number of inputs on this step.
+	 */
+	int getInputCount();
+	
+	/**
 	 * This returns true if this munge step allows for adding new inputs; false if otherwise.
 	 */	
 	boolean canAddInput();
