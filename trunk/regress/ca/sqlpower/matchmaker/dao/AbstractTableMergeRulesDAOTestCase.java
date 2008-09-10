@@ -70,7 +70,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 		TableMergeRules mergeRules = new TableMergeRules();
 		mergeRules.setSession(getSession());
 		try {
-			setAllSetters(mergeRules, getNonPersitingProperties());
+			setAllSetters(getSession(), mergeRules, getNonPersitingProperties());
 			mergeRules.setName("MergeRule "+count);
 			mergeRules.setTableName("table"+count);
             project.addTableMergeRule(mergeRules);

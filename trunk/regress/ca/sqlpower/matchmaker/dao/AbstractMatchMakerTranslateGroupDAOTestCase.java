@@ -40,7 +40,7 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
         MatchMakerTranslateGroup translateGroup = new MatchMakerTranslateGroup();
         translateGroup.setSession(getSession());
 		try {
-			setAllSetters(translateGroup, getNonPersitingProperties());
+			setAllSetters(getSession(), translateGroup, getNonPersitingProperties());
             translateGroup.setName("Translate Group "+count);
             translateGroup.setParent(null);
 		} catch (IllegalAccessException e) {

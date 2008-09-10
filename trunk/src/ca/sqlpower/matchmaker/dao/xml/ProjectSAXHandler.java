@@ -38,10 +38,9 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
@@ -53,10 +52,25 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.util.Version;
 
 public class ProjectSAXHandler extends DefaultHandler {
     
     private static final Logger logger = Logger.getLogger(ProjectSAXHandler.class);
+
+    /**
+     * This is the version we support reading.
+     * <p>
+     * Forward compatibility policy: It will be allowable to read files with a
+     * newer version, as long as the major and minor version numbers are the
+     * same as the supported version. For example, if the supported version is
+     * 2.3.4, we can read 2.3.5 and 2.3.455, but not 2.4.0.
+     * <p>
+     * Backward compatibility policy: we can read older files that have the same
+     * major version number and the supported minor version or less. There is no
+     * compatibility between major versions.
+     */
+    public static final Version SUPPORTED_EXPORT_VERSION = new Version(1,0,0);
     
     private final DateFormat df = new SimpleDateFormat(ProjectDAOXML.DATE_FORMAT);
     
@@ -93,7 +107,10 @@ public class ProjectSAXHandler extends DefaultHandler {
 
     private Locator locator;
 
-    private final MatchMakerSessionContext sessionContext;
+    /**
+     * The session all MMOs read in from the XML document should belong to.
+     */
+    private final MatchMakerSession session;
 
     private StringBuilder text;
 
@@ -139,8 +156,10 @@ public class ProjectSAXHandler extends DefaultHandler {
 
     private List<AbstractMungeStep> steps;
 
-    ProjectSAXHandler(MatchMakerSessionContext sessionContext) {
-        this.sessionContext = sessionContext;
+    private SQLIndex currentIndex;
+
+    ProjectSAXHandler(MatchMakerSession session) {
+        this.session = session;
     }
 
     @Override
@@ -150,9 +169,21 @@ public class ProjectSAXHandler extends DefaultHandler {
 
             if (qName.equals("matchmaker-projects")) {
                 projectIdMap = new HashMap<String, Project>();
+                String fileFormat = attributes.getValue("export-format");
+                checkMandatory("export-format", fileFormat);
+                Version formatVersion = new Version(fileFormat);
+                if (formatVersion.getMajor() > SUPPORTED_EXPORT_VERSION.getMajor() ||
+                        formatVersion.getMinor() > SUPPORTED_EXPORT_VERSION.getMinor()) {
+                    throw new SAXException(
+                            "The export file format is "+fileFormat+", but I only understand "+
+                            SUPPORTED_EXPORT_VERSION.getMajor()+"."+
+                            SUPPORTED_EXPORT_VERSION.getMajor()+".x or older. Try importing " +
+                            "into a newer version of Power*MatchMaker.");
+                }
 
             } else if (qName.equals("project")) {
                 project = new Project();
+                project.setSession(session);
                 projects.add(project);
                 
                 String id = null;
@@ -181,45 +212,32 @@ public class ProjectSAXHandler extends DefaultHandler {
 
             } else if (qName.equals("source-table")) {
 
-                SPDataSource datasource = null;
-                String catalog = null;
-                String schema = null;
-                String table = null;
-
                 for (int i = 0; i < attributes.getLength(); i++) {
                     String aname = attributes.getQName(i);
                     String aval = attributes.getValue(i);
 
                     if (aname.equals("datasource")) {
-                        DataSourceCollection plini = sessionContext.getPlDotIni();
-                        datasource = plini.getDataSource(aval);
+                        DataSourceCollection plini = session.getContext().getPlDotIni();
+                        SPDataSource datasource = plini.getDataSource(aval);
                         if (datasource == null) {
                             throw new SAXException(
                                     "Data Source \""+aval+"\" not found! Please create a " +
-                            "data source with this name and try again");
+                            "data source with this name and try the import again.");
                         }
+                        project.setSourceTableSPDatasource(aval);
                     } else if (aname.equals("catalog")) {
-                        catalog = aval;
+                        project.setSourceTableCatalog(aval);
                     } else if (aname.equals("schema")) {
-                        schema = aval;
+                        project.setSourceTableSchema(aval);
                     } else if (aname.equals("table")) {
-                        table = aval;
+                        project.setSourceTableName(aval);
                     } else {
                         logger.warn("Unexpected attribute of <source-table>: " + aname + "=" + aval + " at " + locator);
                     }
                 }
 
-                checkMandatory("table", table);
-                checkMandatory("datasource", datasource);
-
-                SQLDatabase db = new SQLDatabase(datasource);
-                SQLTable t = db.getTableByName(catalog, schema, table);
-
-                if (t == null) {
-                    throw new SAXException("Couldn't find table "+catalog+"."+schema+"."+table+" in database "+datasource.getName()+" at " + locator);
-                }
-
-                project.setSourceTable(t);
+                checkMandatory("table", project.getSourceTableName());
+                checkMandatory("datasource", project.getSourceTableSPDatasource());
 
             } else if (qName.equals("where-filter")) {
                 if (attributes.getValue("null") != null || !Boolean.valueOf(attributes.getValue("null"))) {
@@ -234,10 +252,57 @@ public class ProjectSAXHandler extends DefaultHandler {
                 }
 
             } else if (qName.equals("unique-index")) {
-                // TODO in matchmaker
+                if (!parentIs("source-table")) {
+                    throw new SAXException("Found <unique-index> element in wrong place: " + locator);
+                }
+                currentIndex = new SQLIndex();
+                currentIndex.setName(attributes.getValue("name"));
+                checkMandatory("name", currentIndex.getName());
+                project.setSourceTableIndex(currentIndex);
+                // TODO verify column list against actual index in endElement()
+
+            } else if (qName.equals("column")) {
+                if (!parentIs("unique-index")) {
+                    throw new SAXException("Found <column> element in wrong place: " + locator);
+                }
+                String colName = attributes.getValue("name");
+                checkMandatory("name", colName);
+                SQLColumn col = project.getSourceTable().getColumnByName(colName);
+                if (col == null) {
+                    throw new SAXException(
+                            "Source table unique index column \""+colName+"\"" +
+                            " is not in the source table (at " + locator + ")");
+                }
+                currentIndex.addIndexColumn(col, SQLIndex.AscendDescend.UNSPECIFIED);
 
             } else if (qName.equals("result-table")) {
-                // TODO in matchmaker
+                
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    String aname = attributes.getQName(i);
+                    String aval = attributes.getValue(i);
+
+                    if (aname.equals("datasource")) {
+                        DataSourceCollection plini = session.getContext().getPlDotIni();
+                        SPDataSource datasource = plini.getDataSource(aval);
+                        if (datasource == null) {
+                            throw new SAXException(
+                                    "Data Source \""+aval+"\" not found! Please create a " +
+                            "data source with this name and try the import again.");
+                        }
+                        project.setResultTableSPDatasource(aval);
+                    } else if (aname.equals("catalog")) {
+                        project.setResultTableCatalog(aval);
+                    } else if (aname.equals("schema")) {
+                        project.setResultTableSchema(aval);
+                    } else if (aname.equals("table")) {
+                        project.setResultTableName(aval);
+                    } else {
+                        logger.warn("Unexpected attribute of <result-table>: " + aname + "=" + aval + " at " + locator);
+                    }
+                }
+
+                checkMandatory("table", project.getResultTableName());
+                checkMandatory("datasource", project.getResultTableSPDatasource());
 
             } else if (qName.equals("munge-settings")) {
                 MungeSettings ms = project.getMungeSettings();
@@ -255,7 +320,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("last-backup-number")) {
                         ms.setLastBackupNo(Long.parseLong(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <munge-settings>: " + aname + "=" + aval + " at " + locator);
                     }
 
                 }
@@ -274,7 +339,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("backup")) {
                         ms.setBackUp(Boolean.valueOf(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <merge-settings>: " + aname + "=" + aval + " at " + locator);
                     }
 
                 }
@@ -454,16 +519,8 @@ public class ProjectSAXHandler extends DefaultHandler {
 
             }
 
-        } catch (ParseException e) {
-            throw new SAXException("Failed to parse value at " + locator, e);
-        } catch (ArchitectException e) {
-            throw new SAXException("Failed to read database structure at " + locator, e);
-        } catch (ClassNotFoundException e) {
-            throw new SAXException("Class not found at " + locator, e);
-        } catch (InstantiationException e) {
-            throw new SAXException("Could not create instance at " + locator, e);
-        } catch (IllegalAccessException e) {
-            throw new SAXException("No public constructor found at " + locator, e);
+        } catch (Exception e) {
+            throw new SAXException("Project import failed at " + locator, e);
         }
     }
 
