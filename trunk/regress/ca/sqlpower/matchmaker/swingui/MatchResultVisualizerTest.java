@@ -118,7 +118,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		project.setSourceTable(sourceTable);
 		project.setSourceTableIndex(sourceTableIndex);
 		
-		visualizer = new MatchResultVisualizer(project);
+		visualizer = new MatchResultVisualizer(project, null);
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("lhs");
 		lhs = new SourceTableRecord(session,

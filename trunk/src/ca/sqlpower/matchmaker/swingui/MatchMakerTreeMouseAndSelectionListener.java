@@ -506,7 +506,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						}
 						swingSession
 								.setCurrentEditorComponent(new MatchResultVisualizer(
-										node.getProject()));
+										node.getProject(), swingSession));
 					} else if (node.getActionType() == ProjectActionType.VALIDATION_STATUS) {
 						swingSession
 								.setCurrentEditorComponent(new MatchValidationStatus(

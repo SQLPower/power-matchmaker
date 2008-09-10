@@ -221,7 +221,7 @@ public class MatchEngineImpl extends AbstractEngine {
 				progressMessage = "Clearing Match Pool";
 				logger.info(progressMessage);
 				setCurrentProcessor(pool);
-				pool.clear(new Aborter());
+				pool.clear(new MatchEngineAborter());
 				progress += clearJobSize;
 				setCurrentProcessor(null);
 			}
@@ -236,7 +236,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Storing matches";
 			setCurrentProcessor(pool);
 			logger.info(progressMessage);
-			pool.store(new Aborter(), inDebugMode);
+			pool.store(new MatchEngineAborter(), inDebugMode);
             checkCancelled();
             progress += rowCount;
             setCurrentProcessor(null);
@@ -378,7 +378,11 @@ public class MatchEngineImpl extends AbstractEngine {
 	 * A small class that can be passed to the merge pool that tells it to stop 
 	 * what its doing if the user presses cancel.
 	 */
-	public class Aborter {
+	public class MatchEngineAborter implements Aborter {
+		/**
+		 * Checks if the Match Engine was cancelled by another thread. If so,
+		 * then it throws a {@link CancellationException}
+		 */
 		public void checkCancelled() {
 			MatchEngineImpl.this.checkCancelled();
 		}
