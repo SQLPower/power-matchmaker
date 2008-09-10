@@ -41,7 +41,7 @@
 	<classpathentry kind="lib" path="lib/opencsv-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/osx_adapter.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
-	<classpathentry kind="lib" path="lib/architect_lib.jar"/>
+	<classpathentry kind="lib" path="lib/architect_lib.jar" sourcepath="/architect/src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
