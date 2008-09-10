@@ -362,6 +362,8 @@ public class ProjectSAXHandler extends DefaultHandler {
                         process.setName(aval);
                     } else if (aname.equals("visible")) {
                         process.setVisible(Boolean.valueOf(aval));
+                    } else if (aname.equals("validate")) {
+                        process.setValidate(Boolean.valueOf(aval));
                     } else if (aname.equals("active")) {
                         process.setActive(Boolean.valueOf(aval));
                     } else if (aname.equals("colour")) {

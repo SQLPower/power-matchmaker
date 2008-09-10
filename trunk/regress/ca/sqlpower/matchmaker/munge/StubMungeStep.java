@@ -67,6 +67,11 @@ public class StubMungeStep implements MungeStep {
         logger.debug("Stub call: StubMungeStep.getInputDescriptor()");
         return null;
     }
+    
+    public int getInputCount() {
+        logger.debug("Stub call: StubMungeStep.getInputCount()");
+        return 0;
+    }
 
     public List<MungeStepOutput> getMSOInputs() {
         logger.debug("Stub call: StubMungeStep.getInputs()");

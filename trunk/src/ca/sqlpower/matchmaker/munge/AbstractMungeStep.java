@@ -334,6 +334,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		return inputs.get(inputNumber).descriptor;
 	}
 	
+	public int getInputCount() {
+	    return inputs.size();
+	}
+	
 	/**
 	 * This is the pairing between a MungeStepOutput value and its InputDescriptor.
 	 * The reason for this class is to avoid maintaining two separate collections of

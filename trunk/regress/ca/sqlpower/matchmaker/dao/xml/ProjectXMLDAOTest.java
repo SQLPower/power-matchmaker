@@ -23,6 +23,7 @@ import java.beans.PropertyDescriptor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,53 +35,95 @@ import junit.framework.TestCase;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.FakeSQLDatabase;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.dao.AbstractDAOTestCase;
+import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
+import ca.sqlpower.matchmaker.munge.InputDescriptor;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SPDataSourceType;
+import ca.sqlpower.testutil.MockJDBCConnection;
+import ca.sqlpower.testutil.MockJDBCResultSet;
+import ca.sqlpower.testutil.MockJDBCResultSetMetaData;
 
 public class ProjectXMLDAOTest extends TestCase {
 
+    private static final Logger logger = Logger.getLogger(ProjectDAOXML.class);
+    
     private ProjectDAOXML daoOut;
     private ByteArrayOutputStream out;
 
     private MatchMakerSession session;
 
-    private SQLDatabase db;
+    private FakeSQLDatabase db;
     private TestingMatchMakerContext context;
+    private PlDotIni plIni;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         
-        PlDotIni plini = new PlDotIni();
-        SPDataSourceType mock = new SPDataSourceType();
-        mock.setName("Mock JDBC");
-        mock.setJdbcDriver("ca.sqlpower.testutil.MockJDBCDriver");
-        SPDataSource newDS = new SPDataSource(plini);
-        newDS.setParentType(mock);
-        newDS.setName("stub_ds");
-        newDS.setUser("mock");
-        newDS.setPass("mock");
-        newDS.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=cat&schemas.cat=schem&tables.cat.schem=match_table,result_table");
-        plini.addDataSource(newDS);
+        db = new FakeSQLDatabase(
+                "jdbc:mock:" +
+                "dbmd.catalogTerm=Catalog" +
+                "&dbmd.schemaTerm=Schema" +
+                "&catalogs=cat" +
+                "&schemas.cat=schem" +
+                "&tables.cat.schem=match_table,result_table" +
+                "&columns.cat.schem.match_table=pk,string_col,number_col,date_col,bool_col");
+
+        SQLTable matchTable = db.getTableByName("cat", "schem", "match_table");
+        matchTable.getColumnByName("pk").setType(Types.INTEGER);
+        matchTable.getColumnByName("string_col").setType(Types.VARCHAR);
+        matchTable.getColumnByName("number_col").setType(Types.NUMERIC);
+        matchTable.getColumnByName("date_col").setType(Types.TIMESTAMP);
+        matchTable.getColumnByName("bool_col").setType(Types.BOOLEAN);
         
-        db = new SQLDatabase(newDS);
+        MockJDBCConnection con = db.getConnection();
+        MockJDBCResultSet rs = new MockJDBCResultSet(5);
+        rs.addRow(new Object[] { 1, "string value", 100.0, new Timestamp(1234), false });
+        MockJDBCResultSetMetaData rsmd = rs.getMetaData();
+        rsmd.setColumnName(1, "pk");
+        rsmd.setColumnType(1, Types.INTEGER);
         
+        rsmd.setColumnName(2, "string_col");
+        rsmd.setColumnType(2, Types.VARCHAR);
+        
+        rsmd.setColumnName(3, "number_col");
+        rsmd.setColumnType(3, Types.NUMERIC);
+        
+        rsmd.setColumnName(4, "date_col");
+        rsmd.setColumnType(4, Types.TIMESTAMP);
+
+        rsmd.setColumnName(5, "bool_col");
+        rsmd.setColumnType(5, Types.BOOLEAN);
+
+        con.registerResultSet("SELECT.*FROM cat.schem.match_table.*", rs);
+        
+        plIni = new PlDotIni();
+        plIni.addDataSource(db.getDataSource());
         context = new TestingMatchMakerContext() {
             @Override
             public List<SPDataSource> getDataSources() {
                 return getPlDotIni().getConnections();
+            }
+            
+            @Override
+            public DataSourceCollection getPlDotIni() {
+                return plIni;
             }
         };
         session = new StubMatchMakerSession() {
@@ -98,23 +141,40 @@ public class ProjectXMLDAOTest extends TestCase {
             }
         };
 
-        context.setPlDotIni(plini);
-
         out = new ByteArrayOutputStream();
         daoOut = new ProjectDAOXML(out);
     }
-    
+
+    /**
+     * This is an absolutely HUGE test case that tries to create a project which
+     * exercises every feature of the MatchMaker. To do this, it uses Java
+     * reflection to discover all the read/write bean properties on all objects
+     * involved, and makes up new values for them. This ensures no properties
+     * are left at their default values.
+     * <p>
+     * Once a comprehensive project is set up, we save it to an XML document and
+     * immediately read that document back in. Then we proceed to compare all
+     * the readable bean properties between the original version we saved and
+     * the new copy we loaded back in.
+     * <p>
+     * The reason for all the reflective access is that we intend that this test
+     * case should fail whenever a new property is added to any
+     * MatchMakerObject, until the developer has either updated the XML
+     * persistence code to handle it, or has decided the property should be
+     * transient and adds it to the ignore list.
+     */
     public void testSaveAndLoad() throws Exception {
         Project p = new Project();
         p.setSession(session);
         AbstractDAOTestCase.setAllSetters(session, p, getPropertiesToIgnore());
 
-        p.setSourceTableSPDatasource("stub_ds");
+        
+        p.setSourceTableSPDatasource(db.getDataSource().getName());
         p.setSourceTableCatalog("cat");
         p.setSourceTableSchema("schem");
         p.setSourceTableName("match_table");
 
-        p.setResultTableSPDatasource("stub_ds");
+        p.setResultTableSPDatasource(db.getDataSource().getName());
         p.setResultTableCatalog("cat");
         p.setResultTableSchema("schem");
         p.setResultTableName("result_table");
@@ -122,10 +182,25 @@ public class ProjectXMLDAOTest extends TestCase {
         p.setXrefTable(null);
         
         SQLTable sourceTable = p.getSourceTable();
-        SQLColumn pkCol = new SQLColumn(sourceTable, "pk", Types.INTEGER, 10, 0);
-        sourceTable.addColumn(pkCol);
-        pkCol.setPrimaryKeySeq(0);
+        sourceTable.getColumn(0).setPrimaryKeySeq(0);
         p.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
+        
+        MungeProcess mp = new MungeProcess();
+        AbstractDAOTestCase.setAllSetters(session, mp, getPropertiesToIgnore());
+        p.addMungeProcess(mp);
+        
+        SQLInputStep inputStep = new SQLInputStep();
+        mp.addChild(inputStep);
+        inputStep.setParameter("my_boolean_value", true);
+        inputStep.setParameter("my_numeric_value", 1234);
+        inputStep.setParameter("my_string_value", "farnsworth");
+        inputStep.open(logger); // this allows the step to grab the column information from the source table
+        inputStep.rollback();
+        inputStep.close();
+        
+        MungeStep step = new ConcatMungeStep();
+        mp.addChild(step);
+        step.connectInput(0, inputStep.getChildren().get(1)); // string_col
         
         daoOut.save(p);
         System.out.println(out.toString("utf-8"));
@@ -136,7 +211,36 @@ public class ProjectXMLDAOTest extends TestCase {
         
         assertNotNull(readBack.getSession());
         assertPropertiesEqual(p, readBack, "parent", "view");
-        // TODO descend into child objects and check their properties too
+        
+        for (MungeProcess originalProcess : p.getMungeProcesses()) {
+            MungeProcess readBackProcess = readBack.getMungeProcessByName(originalProcess.getName());
+            assertNotNull(readBackProcess);
+            assertPropertiesEqual(originalProcess, readBackProcess);
+            
+            for (int i = 0; i < originalProcess.getChildCount(); i++) {
+                MungeStep originalStep = originalProcess.getChildren().get(i);
+                MungeStep readBackStep = readBackProcess.getChildren().get(i);
+                assertPropertiesEqual(originalStep, readBackStep, "project", "rolledBack", "inputs");
+                
+                for (int j = 0; j < originalStep.getChildCount(); j++) {
+                    MungeStepOutput originalOutput = originalStep.getChildren().get(j);
+                    MungeStepOutput readBackOutput = readBackStep.getChildren().get(j);
+                    assertPropertiesEqual(originalOutput, readBackOutput, "parent");
+                }
+
+                for (int j = 0; j < originalStep.getInputCount(); j++) {
+                    InputDescriptor originalInput = originalStep.getInputDescriptor(j);
+                    InputDescriptor readBackInput = readBackStep.getInputDescriptor(j);
+                    assertPropertiesEqual(originalInput, readBackInput);
+                }
+                
+                for (String paramName : originalStep.getParameterNames()) {
+                    assertEquals("Parameter \""+paramName+"\" differs after saving and loading back",
+                            originalStep.getParameter(paramName), readBackStep.getParameter(paramName));
+                }
+            }
+        }
+        // TODO descend into all child objects and check their properties too
     }
     
     /**
@@ -150,25 +254,28 @@ public class ProjectXMLDAOTest extends TestCase {
         ignore.add("undoing");
         ignore.add("children");
         ignore.add("lastUpdateDate");
-        ignore.add("session");
+        
+        // Project things
         ignore.add("mungeProcesses");
         ignore.add("tableMergeRules");
         ignore.add("cleansingEngine");
         ignore.add("matchingEngine");
         ignore.add("mergingEngine");
-        
-        // tested explicitly elsewhere
         ignore.add("sourceTable");
         ignore.add("resultTable");
         ignore.add("xrefTable");
-        
         ignore.add("engineRunning");
+        
+        // MungeProcess things
+        ignore.add("parentProject");
+        ignore.add("results");
+        
         return ignore;
     }
     
     private void assertPropertiesEqual(
-            MatchMakerObject expected,
-            MatchMakerObject actual,
+            Object expected,
+            Object actual,
             String ... additionalPropertiesToIgnore)
         throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         
@@ -192,7 +299,7 @@ public class ProjectXMLDAOTest extends TestCase {
                     Object old = BeanUtils.getSimpleProperty(expected, d.getName());
                     Object newItem = BeanUtils.getSimpleProperty(actual, d.getName());
                     assertEquals(
-                            "The property "+d.getName() +" was not persisted for object "+this.getClass(),
+                            "The property "+d.getName() +" was not persisted for type "+expected.getClass().getName(),
                             String.valueOf(old),
                             String.valueOf(newItem));
 
