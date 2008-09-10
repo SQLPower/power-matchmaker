@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -155,18 +157,23 @@ public class CachableTable {
     	if (cachedTable != null) {
     		return cachedTable.getParentDatabase().getDataSource();
     	}
-    	for (SPDataSource spd : mmo.getSession().getContext().getDataSources()) {
-			if (spd != null && spd.getName() != null && spd.getName().equals(dsName)) {
+
+    	// if no data source is specified, should default to repository data source
+        if (dsName == null || dsName.length() == 0) {
+            return null;
+        }
+    	
+    	MatchMakerSession session = mmo.getSession();
+        MatchMakerSessionContext context = session.getContext();
+        List<SPDataSource> dataSources = context.getDataSources();
+        for (SPDataSource spd : dataSources) {
+			if (spd != null && dsName.equals(spd.getName())) {
 				return spd;
 			}
 		}
-    	if (dsName == null || dsName.length() == 0) {
-    		//this will be handled as a default DS
-    		return null;
-    	}
-    	//The DS name does not exist this is an issue
+        
     	throw new IllegalArgumentException("Error: No database connection named " + dsName + 
-    			" please create a database connection named " + dsName + " and try again.");
+    			". Please create a database connection named " + dsName + " and try again.");
     }
 
     /**
