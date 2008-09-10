@@ -121,8 +121,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			try {
 				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
 				// check for a setter
-				if (property.getWriteMethod() != null)
-				{
+				if (property.getWriteMethod() != null && !property.getName().equals("children")) {
 					Object newVal = getNewDifferentValue(mmo, property, oldVal);
 					BeanUtils.copyProperty(mmo, property.getName(), newVal);
 				}
@@ -329,6 +328,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForEventGeneration.add("session");
         propertiesToIgnoreForEventGeneration.add("parentProject");
         propertiesToIgnoreForEventGeneration.add("undoing");
+        propertiesToIgnoreForEventGeneration.add("children");  // setChildren() doesn't generate events--it is only for the persistence layer
         
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForEventGeneration.contains(property.getName())) continue;
