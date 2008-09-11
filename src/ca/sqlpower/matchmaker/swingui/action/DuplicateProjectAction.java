@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -36,6 +38,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.dao.xml.ProjectDAOXML;
 import ca.sqlpower.matchmaker.swingui.MatchMakerObjectComboBoxCellRenderer;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
@@ -58,7 +61,7 @@ public class DuplicateProjectAction extends AbstractAction {
 	private FormValidationHandler handler;
 	
 	public DuplicateProjectAction(MatchMakerSwingSession swingSession, Project project) {
-		super("Duplicate Project");
+		super("Duplicate Project...");
 		this.swingSession = swingSession;
 		this.project = project;
 		handler = new FormValidationHandler(status);
@@ -90,13 +93,12 @@ public class DuplicateProjectAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 
 		String newName = null;
-		for ( int count=0; ; count++) {
-			newName = project.getName() +
-								"_DUP" +
-								(count==0?"":String.valueOf(count));
-			if ( swingSession.isThisProjectNameAcceptable(newName) )
-				break;
-		}
+        for (int count = 0;; count++) {
+            newName = "Copy" + (count == 0 ? "" : " " + count) + " of " + project.getName();
+            if (swingSession.isThisProjectNameAcceptable(newName)) {
+                break;
+            }
+        }
 		final JDialog dialog;
 
 		final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
@@ -109,9 +111,15 @@ public class DuplicateProjectAction extends AbstractAction {
 		okCall = new Callable<Boolean>() {
 			public Boolean call() {
 				String newName = archPanel.getDupName();
-				PlFolder<Project> folder = (PlFolder<Project>) folderComboBox
-				.getSelectedItem();
-				Project newProject = project.duplicate(folder,swingSession);
+				PlFolder<Project> folder = (PlFolder<Project>) folderComboBox.getSelectedItem();
+				
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				ProjectDAOXML outdao = new ProjectDAOXML(out);
+				outdao.save(project);
+				
+				ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+				ProjectDAOXML indao = new ProjectDAOXML(swingSession, in);
+				Project newProject = indao.findAll().get(0);
 				newProject.setName(newName);
 				folder.addChild(newProject);
 				swingSession.save(newProject);

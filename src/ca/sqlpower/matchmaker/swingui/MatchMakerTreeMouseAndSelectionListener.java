@@ -59,6 +59,9 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.ExportProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
@@ -283,17 +286,13 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		}));
 		
 		
-		// TODO: Implement the import and export functions
-//		m.addSeparator();
-//		m.add(new JMenuItem(new ProjectExportAction(swingSession,
-//						owningFrame)));
-//		m.add(new JMenuItem(new ProjectImportAction(swingSession,
-//						owningFrame)));
+		m.addSeparator();
+		m.add(new JMenuItem(new ExportProjectAction(swingSession, owningFrame)));
+		m.add(new JMenuItem(new ImportProjectAction(swingSession, owningFrame)));
 
 		m.addSeparator();
 		m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
-		// TODO: Implement Duplicate project and then re-enable here. Keep disabled until then
-//		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
+		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 
         if (logger.isDebugEnabled()) {
             m.addSeparator();
