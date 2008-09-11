@@ -212,6 +212,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	
 	private List<LabelPane> labelsList;
 	
+    /**
+     * Previewer for the process in this editor.
+     */
+    private final MungePreviewPanel preview;
+	
 	/**
 	 * Creates a new empty mungepen.
 	 * 
@@ -278,7 +283,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		});
 		
 		labelsList = new ArrayList<LabelPane>();
-			
+		
+		preview = new MungePreviewPanel(process, this);
+		add(preview.getPanel(), new Integer(1));
 	}
 	
 	/**
@@ -292,6 +299,14 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 */
 	public List<LabelPane> getLabels(){
 		return this.labelsList;
+	}
+	
+	/**
+	 * Calls cleanup methods on some of its children. Removing listeners is also
+	 * done here.
+	 */
+	public void cleanup() {
+		preview.cleanup();
 	}
 	
 	/**
@@ -487,6 +502,12 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		super.paint(g2);
 		paintPendingConnection(g2);
+		
+		MungeStep selectedStep = getSelectedStep();
+		if (selectedStep != null && selectedStep != preview.getLastModifiedOrSelectedStep()) {
+			preview.stepSelectedOrModified(selectedStep);
+		}
+
 	}
 	
 	private void paintPendingConnection(Graphics2D g) {
@@ -913,6 +934,10 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 		return sel;
 	}
+	
+	public AbstractMungeComponent getMungeComponent(MungeStep ms) {
+		return modelMap.get(ms);
+	}
 
 	/**
      * Returns the input position for the closest input to the given point.
@@ -976,6 +1001,19 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 */
 	public void setSelectedStep(MungeStep ms) {
 		modelMap.get(ms).requestFocusInWindow();
+	}
+	
+	/**
+	 * Returns the selected step in the munge pen. If no step is selected
+	 * a null value will be returned.
+	 */
+	public MungeStep getSelectedStep() {
+		for(Map.Entry<MungeStep, AbstractMungeComponent> entry : modelMap.entrySet()) {
+			if (entry.getValue().hasFocus()) {
+				return entry.getKey();
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -1172,5 +1210,13 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				process.endCompoundEdit();
 			}
 		}
+	}
+	
+	/**
+	 * Turns the preview mode on the munge pen on and off. True
+	 * will enable the preview panel.
+	 */
+	public boolean enablePreview(boolean enable) {
+		return preview.enablePreview(enable);
 	}
 }

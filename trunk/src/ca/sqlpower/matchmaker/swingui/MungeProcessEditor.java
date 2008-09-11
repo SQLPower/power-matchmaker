@@ -31,6 +31,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -45,6 +46,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -126,9 +128,16 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         this.mungePen = new MungePen(process, handler, parentProject);
         
+        for (MungeStep step : process.getChildren()) {
+			if (step instanceof AbstractMungeStep) {
+				((AbstractMungeStep) step).setPreviewMode(true);
+			}
+        }
+        
         buildUI();
         setDefaults();
         addListenerToComponents();
+        
 
     }
 
@@ -151,6 +160,9 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         color.setRenderer(renderer);
         subPanel.add(color, cc.xy(8, 6));
 		subPanel.add(new JButton(saveAction), cc.xy(2,8));
+		JCheckBox previewCheckbox = new JCheckBox(showPreview);
+		subPanel.add(previewCheckbox, cc.xy(4, 8));
+		mungePen.enablePreview(previewCheckbox.isSelected());
 		subPanel.add(new JButton(customColour), cc.xy(8,8));
         panel.add(subPanel,BorderLayout.NORTH);
         
@@ -226,6 +238,18 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		    }
 		}
 	};
+	
+	/**
+	 * An action that will toggle the preview feature on the munge pen on and off.
+	 */
+	Action showPreview = new AbstractAction("Show Preview") {
+		public void actionPerformed(ActionEvent arg0) {
+			if (arg0.getSource() instanceof JCheckBox) {
+				JCheckBox checkbox = (JCheckBox) arg0.getSource();
+				checkbox.setSelected(mungePen.enablePreview(checkbox.isSelected()));
+			}
+		}
+	};
     
     /**
      * Saves the process, possibly adding it to the parent project given in the
@@ -268,6 +292,17 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			return true;
 		}
         return super.hasUnsavedChanges();
+    }
+    
+    @Override
+    public void cleanup() {
+        for (MungeStep step : getCurrentEditingMMO().getChildren()) {
+			if (step instanceof AbstractMungeStep) {
+				((AbstractMungeStep) step).setPreviewMode(false);
+			}
+        }
+        mungePen.cleanup();
+        super.cleanup();
     }
     
 	private class MungeProcessNameValidator implements Validator {

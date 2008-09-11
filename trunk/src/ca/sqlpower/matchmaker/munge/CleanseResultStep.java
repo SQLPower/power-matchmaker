@@ -82,6 +82,10 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	@Override
 	public Boolean doCall() throws Exception {
 		
+		if (isPreviewMode()) {
+			return Boolean.TRUE;
+		}
+		
 		//This is the Updatable stuff
 		if (usePS && ps == null) {
 			ps = getUpdateStatment(getMSOInputs());
@@ -117,6 +121,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 				Object curr = readObjectAs(rs, typeClass(col.getColumn().getType()), pos+1);
 				updatePS(col.getColumn().getType(), count, curr);
 			}
+			
 			ps.execute();
 		}
 		super.logger.debug(out);
