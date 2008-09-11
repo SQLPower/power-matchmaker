@@ -1423,7 +1423,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void mmChildrenInserted(MatchMakerEvent evt) {
 			// selects the new child on the tree if one new child is added
-			if (selectNewChild && !evt.isUndoEvent() && evt.getChildren().size() == 1) {
+			if (selectNewChild && !evt.isUndoEvent() && !evt.isCompoundEvent() && evt.getChildren().size() == 1) {
 				final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
 				if (!(insertedMMO instanceof SQLInputStep
 						|| insertedMMO instanceof MungeResultStep

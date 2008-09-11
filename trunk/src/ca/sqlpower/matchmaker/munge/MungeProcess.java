@@ -64,7 +64,7 @@ public class MungeProcess
      * of 0-100, but this range is not enforced.
      * 
      */
-	private Short matchPriority = 0;
+	private Integer matchPriority = 0;
     
     /**
      * A SQL Where fragment that restricts this set of rules to a subset
@@ -152,12 +152,12 @@ public class MungeProcess
 		getEventSupport().firePropertyChange("desc", oldDesc, desc);
 	}
 
-	public Short getMatchPriority() {
+	public Integer getMatchPriority() {
 		return matchPriority;
 	}
 
-	public void setMatchPriority(Short matchPriority) {
-        Short oldValue = this.matchPriority;
+	public void setMatchPriority(Integer matchPriority) {
+        Integer oldValue = this.matchPriority;
 		this.matchPriority = matchPriority;
 		getEventSupport().firePropertyChange("matchPriority", oldValue, matchPriority);
 	}
@@ -243,7 +243,7 @@ public class MungeProcess
 		mungeProcess.setDesc(getDesc()==null?null:new String(getDesc()));
 		mungeProcess.setFilter(getFilter()==null?null:new String(getFilter()));
         mungeProcess.setColour(getColour() == null ? null : new Color(getColour().getRGB()));
-		mungeProcess.setMatchPriority(getMatchPriority()==null?null:new Short(getMatchPriority()));
+		mungeProcess.setMatchPriority(getMatchPriority()==null?null:new Integer(getMatchPriority()));
 		mungeProcess.setName(getName()==null?null:new String(getName()));
 		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());

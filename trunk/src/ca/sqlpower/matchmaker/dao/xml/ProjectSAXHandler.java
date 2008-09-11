@@ -386,7 +386,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("colour")) {
                         process.setColour(Color.decode(aval));
                     } else if (aname.equals("priority")) {
-                        process.setMatchPriority(Short.valueOf(aval));
+                        process.setMatchPriority(Integer.valueOf(aval));
                     } else {
                         logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locator);
                     }

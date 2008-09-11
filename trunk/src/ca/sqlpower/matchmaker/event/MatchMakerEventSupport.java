@@ -172,6 +172,29 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	 * list differ in length.
 	 */
 	public void fireChildrenInserted(String childPropertyName, int[] insertedIndices, List<C> insertedChildren) {
+		fireChildrenInserted(childPropertyName, insertedIndices, insertedChildren, false);
+	}
+
+	/**
+	 * Fires a mmChildrenInserted event to all listeners.
+	 * 
+	 * @param childPropertyName
+	 *            The name of the list property that has one or more new
+	 *            entries.
+	 * @param insertedIndices
+	 *            The indices of the new list entries
+	 * @param insertedChildren
+	 *            The actual items inserted into the list (the position of the
+	 *            objects in this list correspond with the indices specified in
+	 *            the <tt>insertedIndices</tt> array).
+	 * @param isCompound
+	 *            True if this childInserted event is part of a compound edit.
+	 *            False if it is not.
+	 * @throws IllegalArgumentException
+	 *             if the <tt>insertedIndices</tt> array and the
+	 *             <tt>insertedChildren</tt> list differ in length.
+	 */
+	public void fireChildrenInserted(String childPropertyName, int[] insertedIndices, List<C> insertedChildren, boolean isCompoundEvent) {
 		if (childPropertyName == null) throw new NullPointerException("Null property name is not allowed");
 		if (insertedIndices.length != insertedChildren.size()) {
 			throw new IllegalArgumentException(
@@ -185,6 +208,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setPropertyName(childPropertyName);
 		evt.setChildren(insertedChildren);
 		evt.setUndoEvent(source.isUndoing());
+		evt.setCompoundEvent(isCompoundEvent);
 		if (logger.isDebugEnabled()){
 		    logger.debug("Firing children inserted for object "+source);
 		}

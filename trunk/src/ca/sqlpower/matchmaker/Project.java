@@ -711,6 +711,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     public void addMungeProcess(MungeProcess mungeProcess) {
         // The folder will fire the child inserted event
         mungeProcessesFolder.addChild(mungeProcess);
+        mungeProcess.setMatchPriority(mungeProcessesFolder.getChildren().indexOf(mungeProcess));
     }
 
     /**
