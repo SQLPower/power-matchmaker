@@ -119,6 +119,7 @@ import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.JDefaultButton;
+import ca.sqlpower.swingui.MemoryMonitor;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
@@ -599,8 +600,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectBarPane.setLayout(new BorderLayout());
 		projectBarPane.add(toolBar, BorderLayout.NORTH);
 
-		JPanel cp = new JPanel(new BorderLayout());
-		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),getTranslateGroupParent(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
@@ -615,8 +614,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         treePane.setPreferredSize(new Dimension(1,1));
 		splitPane.setLeftComponent(treePane);
 		setCurrentEditorComponent(null);
-		cp.add(splitPane);
 
+		JPanel cp = new JPanel(new BorderLayout());
+		cp.add(splitPane, BorderLayout.CENTER);
+		MemoryMonitor memoryMonitor = new MemoryMonitor();
+		memoryMonitor.start();
+        cp.add(memoryMonitor.getLabel(), BorderLayout.SOUTH);
+
+		projectBarPane.add(cp, BorderLayout.CENTER);
+		
 		frame.setBounds(sessionContext.getFrameBounds());
 		frame.addWindowListener(new MatchMakerFrameWindowListener());
 	}
