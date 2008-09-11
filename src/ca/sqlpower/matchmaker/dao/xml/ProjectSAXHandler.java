@@ -40,11 +40,15 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -158,6 +162,15 @@ public class ProjectSAXHandler extends DefaultHandler {
 
     private SQLIndex currentIndex;
 
+    /**
+     * The current table merge rules object we're reading in.
+     */
+    private TableMergeRules tableMergeRules;
+    
+    private Map<String, TableMergeRules> tableMergeRulesIdMap = new HashMap<String, TableMergeRules>();
+
+    private ColumnMergeRules columnMergeRules;
+
     ProjectSAXHandler(MatchMakerSession session) {
         this.session = session;
     }
@@ -252,13 +265,17 @@ public class ProjectSAXHandler extends DefaultHandler {
                 }
 
             } else if (qName.equals("unique-index")) {
-                if (!parentIs("source-table")) {
-                    throw new SAXException("Found <unique-index> element in wrong place: " + locator);
-                }
                 currentIndex = new SQLIndex();
                 currentIndex.setName(attributes.getValue("name"));
                 checkMandatory("name", currentIndex.getName());
-                project.setSourceTableIndex(currentIndex);
+                
+                if (parentIs("source-table")) {
+                    project.setSourceTableIndex(currentIndex);
+                } else if (parentIs("table-merge-rule")) {
+                    tableMergeRules.setTableIndex(currentIndex);
+                } else {
+                    throw new SAXException("Found <unique-index> element in wrong place: " + locator);
+                }
                 // TODO verify column list against actual index in endElement()
 
             } else if (qName.equals("column")) {
@@ -519,10 +536,102 @@ public class ProjectSAXHandler extends DefaultHandler {
 
                 stepInputs.add(in);
 
-            }
+            } else if (qName.equals("table-merge-rule")) {
+                tableMergeRules = new TableMergeRules();
+                tableMergeRulesIdMap.put(attributes.getValue("id"), tableMergeRules);
+                project.addTableMergeRule(tableMergeRules);
+                
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    String aname = attributes.getQName(i);
+                    String aval = attributes.getValue(i);
 
+                    if (aname.equals("name")) {
+                        tableMergeRules.setName(aval);
+                    } else if (aname.equals("visible")) {
+                        tableMergeRules.setVisible(Boolean.valueOf(aval));
+                    } else if (aname.equals("datasource")) {
+                        DataSourceCollection plini = session.getContext().getPlDotIni();
+                        SPDataSource datasource = plini.getDataSource(aval);
+                        if (datasource == null) {
+                            throw new SAXException(
+                                    "Data Source \""+aval+"\" not found! Please create a " +
+                            "data source with this name and try the import again.");
+                        }
+                        tableMergeRules.setSpDataSource(aval);
+                    } else if (aname.equals("catalog")) {
+                        tableMergeRules.setCatalogName(aval);
+                    } else if (aname.equals("schema")) {
+                        tableMergeRules.setSchemaName(aval);
+                    } else if (aname.equals("table")) {
+                        tableMergeRules.setTableName(aval);
+                    } else if (aname.equals("child-merge-action")) {
+                        tableMergeRules.setChildMergeAction(ChildMergeActionType.valueOf(aval));
+                    } else {
+                        logger.warn("Unexpected attribute of <table-merge-rule>: " + aname + "=" + aval + " at " + locator);
+                    }
+                }
+                
+            } else if (qName.equals("column-merge-rule")) {
+                
+                columnMergeRules = new ColumnMergeRules();
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    String aname = attributes.getQName(i);
+                    String aval = attributes.getValue(i);
+                    
+                    if (aname.equals("column-name")) {
+                        columnMergeRules.setColumnName(aval);
+                    } else if (aname.equals("name")) {
+                        columnMergeRules.setName(aval);
+                    } else if (aname.equals("visible")) {
+                        columnMergeRules.setVisible(Boolean.parseBoolean(aval));
+                    } else if (aname.equals("action-type")) {
+                        columnMergeRules.setActionType(MergeActionType.valueOf(aval));
+                    } else if (aname.equals("in-pk")) {
+                        columnMergeRules.setInPrimaryKey(Boolean.parseBoolean(aval));
+                    } else if (aname.equals("imported-key-column-name")) {
+                        columnMergeRules.setImportedKeyColumnName(aval);
+                    }
+                }
+                
+                checkMandatory("column-name", columnMergeRules.getColumnName());
+                
+                tableMergeRules.addChild(columnMergeRules);
+
+            } else if (qName.equals("update-statement")) {
+                
+                if (attributes.getValue("null") != null && Boolean.valueOf(attributes.getValue("null"))) {
+                    text = null;
+                } else {
+                    text = new StringBuilder();
+                }
+
+            } else if (qName.equals("merge-rule-connection")) {
+                
+                String parentId = attributes.getValue("parent-ref");
+                String childId = attributes.getValue("child-ref");
+                checkMandatory("parent-ref", parentId);
+                checkMandatory("child-ref", childId);
+                
+                TableMergeRules parent = tableMergeRulesIdMap.get(parentId);
+                TableMergeRules child = tableMergeRulesIdMap.get(childId);
+                
+                if (parent == null) {
+                    throw new SAXException(
+                            "Parent table merge rules with id=\"" + parentId + "\" not found");
+                }
+                if (child == null) {
+                    throw new SAXException(
+                            "Child table merge rules with id=\"" + childId + "\" not found");
+                }
+
+                child.setParentMergeRule(parent);
+
+            }
+            
         } catch (Exception e) {
-            throw new SAXException("Project import failed at " + locator, e);
+            SAXException sex = new SAXException("Project import failed at " + locator, e);
+            sex.initCause(e);
+            throw sex;
         }
     }
 
@@ -590,6 +699,10 @@ public class ProjectSAXHandler extends DefaultHandler {
             } else if (qName.equals("parameter")) {
                 if (parentIs("munge-step")) {
                     step.setParameter(parameterName, text.toString());
+                }
+            } else if (qName.equals("update-statement")) {
+                if (parentIs("column-merge-rule")) {
+                    columnMergeRules.setUpdateStatement(text.toString());
                 }
             }
         }

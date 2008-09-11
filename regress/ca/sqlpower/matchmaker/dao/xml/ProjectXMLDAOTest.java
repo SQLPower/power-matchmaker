@@ -37,13 +37,18 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FakeSQLDatabase;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingMatchMakerContext;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.dao.AbstractDAOTestCase;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
@@ -202,6 +207,32 @@ public class ProjectXMLDAOTest extends TestCase {
         mp.addChild(step);
         step.connectInput(0, inputStep.getChildren().get(1)); // string_col
         
+        TableMergeRules tmr = new TableMergeRules();
+        tmr.setTable(p.getSourceTable());
+        tmr.setTableIndex(p.getSourceTableIndex());
+        int actionTypeIndex = 0;
+        for (SQLColumn col : sourceTable.getColumns()) {
+            ColumnMergeRules cmr = new ColumnMergeRules();
+            cmr.setColumn(col);
+            cmr.setActionType(MergeActionType.values()[actionTypeIndex % MergeActionType.values().length]);
+            actionTypeIndex++;
+            tmr.addChild(cmr);
+        }
+        tmr.getChildren().get(0).setUpdateStatement("test update statement");
+        AbstractDAOTestCase.setAllSetters(session, tmr.getChildren().get(1), getPropertiesToIgnore());
+        p.addTableMergeRule(tmr);
+        
+        tmr = new TableMergeRules();
+        AbstractDAOTestCase.setAllSetters(session, tmr, getPropertiesToIgnore());
+        tmr.setSpDataSource(db.getDataSource().getName());
+        tmr.setCatalogName("cat");
+        tmr.setSchemaName("schem");
+        tmr.setTableName("fake_table_to_merge");
+        tmr.setParentMergeRule(p.getTableMergeRules().get(0));
+        p.getChildren().get(1).addChild(0, tmr); // putting child before parent on purpose to test that ordering is not sensitive to this
+        
+        // ========================= Now the save and load =========================
+        
         daoOut.save(p);
         System.out.println(out.toString("utf-8"));
         
@@ -240,7 +271,20 @@ public class ProjectXMLDAOTest extends TestCase {
                 }
             }
         }
-        // TODO descend into all child objects and check their properties too
+        
+        MatchMakerFolder<TableMergeRules> originalMergeRulesFolder = p.getChildren().get(1);
+        MatchMakerFolder<TableMergeRules> readBackMergeRulesFolder = readBack.getChildren().get(1);
+        for (int i = 0; i < originalMergeRulesFolder.getChildCount(); i++) {
+            TableMergeRules originalTMR = originalMergeRulesFolder.getChildren().get(i);
+            TableMergeRules readBackTMR = readBackMergeRulesFolder.getChildren().get(i);
+            assertPropertiesEqual(originalTMR, readBackTMR);
+            
+            for (int j = 0; j < originalTMR.getChildCount(); j++) {
+                ColumnMergeRules originalCMR = originalTMR.getChildren().get(j);
+                ColumnMergeRules readBackCMR = readBackTMR.getChildren().get(j);
+                assertPropertiesEqual(originalCMR, readBackCMR);
+            }
+        }
     }
     
     /**
@@ -254,6 +298,7 @@ public class ProjectXMLDAOTest extends TestCase {
         ignore.add("undoing");
         ignore.add("children");
         ignore.add("lastUpdateDate");
+        ignore.add("parent");
         
         // Project things
         ignore.add("mungeProcesses");
@@ -269,6 +314,9 @@ public class ProjectXMLDAOTest extends TestCase {
         // MungeProcess things
         ignore.add("parentProject");
         ignore.add("results");
+        
+        // ColumnMergeRules things
+        ignore.add("importedKeyColumn");
         
         return ignore;
     }
