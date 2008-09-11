@@ -88,6 +88,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	private boolean canAddInputs;
 	
 	/**
+	 * Tracks if this step is in preview mode.
+	 */
+	private boolean previewMode;
+	
+	/**
 	 * The default object type of this Munge Step's input. The default value is {@link Object#class}.
 	 * This is used for Munge Steps with variable inputs as the default class to use when adding an new input
 	 * which now happens when connecting an input into the last empty input. 
@@ -708,5 +713,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	void setDefaultInputClass(Class defaultInputClass) {
 		this.defaultInputClass = defaultInputClass;
+	}
+
+	public boolean isPreviewMode() {
+		return previewMode;
+	}
+
+	public void setPreviewMode(boolean previewMode) {
+		this.previewMode = previewMode;
 	}
 }

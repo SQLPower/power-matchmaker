@@ -35,6 +35,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.sql.CachedRowSet;
 
 /**
  * The SQLInputStep class implements a munge step which provides data
@@ -80,6 +81,12 @@ public class SQLInputStep extends AbstractMungeStep {
      */
     private MungeResultStep outputStep;
     
+    /**
+     * This will contain the result set that is retrieved from the database for
+     * the preview mode on munge processes.
+     */
+    private CachedRowSet previewRS = null;
+    
     public SQLInputStep() {
     	super("Input Step", false);
     }
@@ -122,56 +129,74 @@ public class SQLInputStep extends AbstractMungeStep {
     @Override
     public void doOpen(Logger logger) throws Exception {
     	
-      	if (rs != null) {
-            throw new IllegalStateException("The input step is already open");
-        }
+    	if (isPreviewMode() && previewRS != null) {
+    		previewRS.beforeFirst();
+    		rs = previewRS;
+    	} else {
+    		if (isPreviewMode()) {
+    			previewRS = new CachedRowSet();
+    		}
+    	
+    		if (rs != null) {
+    			throw new IllegalStateException("The input step is already open");
+    		}
 
-      	this.table = getProject().getSourceTable();
-      	if (!getName().equals(table.getName())) {
-      		setName(table.getName());
-      	}
+    		this.table = getProject().getSourceTable();
+    		if (!getName().equals(table.getName())) {
+    			setName(table.getName());
+    		}
 
-        // TODO: Verify that outputs are the same with the table's columns.
-        if (getChildCount() == 0) {
-        	for (SQLColumn c : table.getColumns()) {
-        		MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), TypeMap.typeClass(c.getType()));
-        		addChild(newOutput);
-        	}
-        }
+    		// TODO: Verify that outputs are the same with the table's columns.
+    		if (getChildCount() == 0) {
+    			for (SQLColumn c : table.getColumns()) {
+    				MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), TypeMap.typeClass(c.getType()));
+    				addChild(newOutput);
+    			}
+    		}
 
-        SQLDatabase db = table.getParentDatabase();
-        if (db == null) {
-            throw new RuntimeException("The input table has no parent database defined.");
-        }
-        
-        con = db.getConnection();
-        if (con == null) {
-            throw new RuntimeException("Could not obtain a connection to the input table's database");
-        }
-        con.setAutoCommit(false);
-        
-        Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT");
-        boolean first = true;
-        for (SQLColumn c : table.getColumns()) {
-            if (!first) sql.append(",");
-            sql.append("\n ").append(c.getName());
-            first = false;
-        }
-        sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
-        if (getProject().getFilter() != null && getProject().getFilter().trim().length() > 0) {
-            sql.append("\nWHERE " + getProject().getFilter());
-        }
-        
-        logger.debug("Attempting to execute input query: " + sql);
-        rs = stmt.executeQuery(sql.toString());
-        
-        logger.debug("ResultSet fetch size is: " + rs.getFetchSize());
-        if (rs.getFetchSize() < DEFAULT_FETCH_SIZE) {
-        	rs.setFetchSize(DEFAULT_FETCH_SIZE);
-        }
+    		SQLDatabase db = table.getParentDatabase();
+    		if (db == null) {
+    			throw new RuntimeException("The input table has no parent database defined.");
+    		}
+
+    		con = db.getConnection();
+    		if (con == null) {
+    			throw new RuntimeException("Could not obtain a connection to the input table's database");
+    		}
+    		con.setAutoCommit(false);
+
+    		Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+    		StringBuilder sql = new StringBuilder();
+    		sql.append("SELECT");
+    		boolean first = true;
+    		for (SQLColumn c : table.getColumns()) {
+    			if (!first) sql.append(",");
+    			sql.append("\n ").append(c.getName());
+    			first = false;
+    		}
+    		sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
+    		if (getProject().getFilter() != null && getProject().getFilter().trim().length() > 0) {
+    			sql.append("\nWHERE " + getProject().getFilter());
+    		}
+
+    		if (isPreviewMode()) {
+//    			stmt.setFetchSize(MungePreviewer.MAX_ROWS_PREVIEWED);
+    		}
+    		logger.debug("Attempting to execute input query: " + sql);
+    		rs = stmt.executeQuery(sql.toString());
+
+    		logger.debug("ResultSet fetch size is: " + rs.getFetchSize());
+    		if (rs.getFetchSize() < DEFAULT_FETCH_SIZE) {
+    			rs.setFetchSize(DEFAULT_FETCH_SIZE);
+    		}
+    		
+    		if (isPreviewMode()) {
+    			previewRS.populate(rs);
+    			previewRS.beforeFirst();
+    			rs = previewRS;
+    		}
+    	}
     }
     
     @Override
@@ -183,16 +208,20 @@ public class SQLInputStep extends AbstractMungeStep {
     @Override
     public void doRollback() throws Exception {
         logger.debug("Rolling back " + getName());
-        con.rollback();
+        if (!isPreviewMode()) {
+        	con.rollback();
+        }
     }
 
     @Override
     public void doClose() throws Exception { 	
-        Statement stmt = rs.getStatement();
-        rs.close();
-        rs = null;
-        stmt.close();
-        con.close();
+    	if (!isPreviewMode()) {
+    		Statement stmt = rs.getStatement();
+    		rs.close();
+    		stmt.close();
+    		con.close();
+    	}
+    	rs = null;
     }
 
     /**
