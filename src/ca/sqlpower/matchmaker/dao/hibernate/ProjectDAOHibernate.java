@@ -20,6 +20,8 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Hibernate;
@@ -86,6 +88,27 @@ public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project>
 		return count;
 	}
 	
+    public Set<String> getProjectNamesUsingResultTable(String dataSourceName,
+            String catalogName, String schemaName, String tableName) {
+        Session session = getHibernateSession();
+        Query query = session.createQuery(
+                "SELECT name FROM Project p WHERE" +
+        		" p.resultTableSPDatasource = :dsname" +
+                " AND p.resultTableCatalog = :catname" +
+                " AND p.resultTableSchema = :schemaname" +
+                " AND p.resultTableName = :tablename");
+        query.setParameter("dsname", dataSourceName, Hibernate.STRING);
+        query.setParameter("catname", catalogName, Hibernate.STRING);
+        query.setParameter("schemaname", schemaName, Hibernate.STRING);
+        query.setParameter("tablename", tableName, Hibernate.STRING);
+        List projectNames = query.list();
+        Set<String> nameSet = new TreeSet<String>();
+        for (Object projectName : projectNames) {
+            nameSet.add((String) projectName);
+        }
+        return nameSet;
+    }
+	
 	@Override
 	public void save(Project saveMe) {
 		if (saveMe.getParent() == null) {
@@ -94,4 +117,5 @@ public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project>
 		super.save(saveMe);
 
 	}
+
 }

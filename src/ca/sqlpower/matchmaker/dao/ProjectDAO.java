@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import ca.sqlpower.matchmaker.Project;
 
@@ -62,7 +63,30 @@ public interface ProjectDAO extends MatchMakerDAO<Project> {
 	 * @return number of project entity by given name
 	 */
 	public long countProjectByName(String name);
-	
 
+    /**
+     * Returns the names of all projects using the specified result table. Note
+     * that sharing result tables is not allowed, so this method is mostly
+     * useful for validating a user's choice to ensure there are no result table
+     * collisions between projects.
+     * 
+     * @param dataSourceName
+     *            The name of the data source the table belongs to. This
+     *            argument must not be null.
+     * @param catalogName
+     *            The name of the catalog the table belongs to. This argument
+     *            should be null only if the corresponding data source doesn't
+     *            have catalogs.
+     * @param schemaName
+     *            The name of the schema the table belongs to. This argument
+     *            should be null only if the corresponding data source doesn't
+     *            have schemas.
+     * @param tableName
+     *            The table name.
+     * @return The names of all MatchMaker projects using the given result
+     *         table. If the result table is not in use, returns an empty set.
+     */
+    public Set<String> getProjectNamesUsingResultTable(
+            String dataSourceName, String catalogName, String schemaName, String tableName);
 	
 }

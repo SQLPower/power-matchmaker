@@ -178,7 +178,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     /**
      * The window that pops up to display warning messages for this session.
      */
-    private JFrame warningDialog;
+    private JDialog warningDialog;
 
     /**
      * The component in the warningDialog which actually contains the messages.
@@ -455,8 +455,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
         frame = new JFrame("Power*MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
 
-        warningDialog = new JFrame("Power*MatchMaker Warnings");
-        warningDialog.setIconImage(smallMMIcon.getImage());
+        warningDialog = new JDialog(frame, "Power*MatchMaker Warnings");
         warningTextArea = new JTextArea(6, 40);
         JComponent cp = (JComponent) warningDialog.getContentPane();
         cp.setLayout(new BorderLayout(0, 10));
