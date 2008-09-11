@@ -372,7 +372,6 @@ public class ProjectDAOXML implements ProjectDAO {
 
         int tmrID = 0;
         
-        // TODO topological sort to put parents before children
         for (TableMergeRules tmr : p.getTableMergeRules()) {
             print("<table-merge-rule");
             String tmrIDStr = "tmr." + projectID + "." + tmrID;
@@ -384,16 +383,6 @@ public class ProjectDAOXML implements ProjectDAO {
             printAttribute("schema", tmr.getSchemaName());
             printAttribute("table", tmr.getTableName());
             printAttribute("child-merge-action", tmr.getChildMergeAction());
-            if (tmr.getParentMergeRule() != null) {
-                String parentMergeRuleID = tableMergeRules.get(tmr.getParentMergeRule());
-                
-                // sanity check for the topological sort
-                if (parentMergeRuleID == null) {
-                    throw new IllegalStateException("Tried to write child merge rule before its parent!");
-                }
-                
-                printAttribute("parent-merge-rule-ref", parentMergeRuleID);
-            }
             niprintln(">");
             indent++;
             
@@ -415,6 +404,22 @@ public class ProjectDAOXML implements ProjectDAO {
             tmrID++;
             indent--;
             println("</table-merge-rule>");
+        }
+
+        /*
+         * Write out parent-child relations after all merge rules are written
+         * out so that there are no forward references in the file. The alternative
+         * would be to do a topological sort, but this would mean the order of
+         * the merge rules in the export file can be different from the order in
+         * the original project.
+         */
+        for (TableMergeRules tmr : p.getTableMergeRules()) {
+            if (tmr.getParentMergeRule() != null) {
+                print("<merge-rule-connection ");
+                printAttribute("parent-ref", tableMergeRules.get(tmr.getParentMergeRule()));
+                printAttribute("child-ref", tableMergeRules.get(tmr));
+                niprintln(" />");
+            }
         }
         
         indent--;
