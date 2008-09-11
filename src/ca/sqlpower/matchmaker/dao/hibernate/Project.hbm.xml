@@ -184,7 +184,7 @@
 			<one-to-many
 				class="ca.sqlpower.matchmaker.TableMergeRules" />
 		</list>
-		<bag name="mungeProcesses" inverse="true" lazy="true" fetch="subselect" cascade="all-delete-orphan">
+		<bag name="mungeProcesses" order-by="MATCH_PERCENT asc" inverse="true" lazy="true" fetch="subselect" cascade="all-delete-orphan">
 			<key>
 				<column name="project_oid" not-null="true" />
 			</key>

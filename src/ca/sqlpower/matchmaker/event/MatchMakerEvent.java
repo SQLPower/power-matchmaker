@@ -37,6 +37,7 @@ public class MatchMakerEvent<S extends MatchMakerObject,C extends MatchMakerObje
 	private Object newValue;
 	private S source;
 	private boolean isUndoEvent;
+	private boolean isCompoundEvent;
 	
 	public boolean isUndoEvent() {
 		return isUndoEvent;
@@ -46,6 +47,14 @@ public class MatchMakerEvent<S extends MatchMakerObject,C extends MatchMakerObje
 		this.isUndoEvent = isUndoEvent;
 	}
 
+	public boolean isCompoundEvent() {
+		return isCompoundEvent;
+	}
+
+	public void setCompoundEvent(boolean isCompoundEvent) {
+		this.isCompoundEvent = isCompoundEvent;
+	}
+	
 	public S getSource() {
 		return source;
 	}

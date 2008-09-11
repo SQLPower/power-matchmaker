@@ -25,7 +25,7 @@
 		<property name="desc" type="string">
 			<column name="description" length="2000" />
 		</property>
-		<property name="matchPriority" type="short">
+		<property name="matchPriority" type="int">
 			<column name="match_percent" precision="18" scale="0" />
 		</property>
 		<property name="lastUpdateDate" type="timestamp" access="field">

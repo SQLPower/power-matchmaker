@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -85,5 +88,51 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 	 */
 	public MatchMakerFolder duplicate(MatchMakerObject parent, MatchMakerSession s) {
 		throw new RuntimeException("The match maker folder should never be duplicated.  It should be managed by the Match object");
+	}
+	
+	/**
+	 * Inserts the given child object at the given position of this
+	 * MatchMakerObject's child list, then fires an event indicating the
+	 * insertion took place. It includes a flag which it adds
+	 * to the childInserted event to signal to event listeners as to
+	 * whether or not this addChild action is part of a compound edit
+	 * <p>
+
+	 * @param index
+	 *            The position to insert the child at. 0 inserts the child at
+	 *            the beginning of the list. The given index must be at least 0
+	 *            but not more than the current child count of this object.
+	 * @param child
+	 *            The child object to add. Must not be null.
+	 * @param isCompound
+	 *            True if this addChild call is part of a compound event. False
+	 *            if it is not.
+	 */
+	public final void addChild(int index, C child, boolean isCompound) {
+        addImpl(index, child, isCompound);
+	}
+	
+	protected void addImpl(int index, C child, boolean isCompound) {
+		logger.debug("addChild: children collection is a "+getChildren().getClass().getName());
+        if(child== null) throw new NullPointerException("Cannot add a null child");
+		getChildren().add(index, child);
+		child.setParent(this);
+		List<C> insertedChildren = new ArrayList<C>();
+		insertedChildren.add(child);
+		getEventSupport().fireChildrenInserted("children", new int[] {index}, insertedChildren, isCompound);
+	}
+	
+	@Override
+	public void moveChild(int from, int to) {
+		if (to == from) return;
+		final List<C> l = getChildren();
+		C child = l.get(from);
+		try {
+			startCompoundEdit();
+			removeChild(l.get(from));
+			addChild(to, child, true);
+		} finally {
+			endCompoundEdit();
+		}
 	}
 }

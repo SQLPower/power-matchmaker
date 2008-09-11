@@ -726,8 +726,8 @@ public class MatchPool extends MonitorableImpl {
     	PotentialMatchRecord existing = potentialMatches.get(pmr);
     	if (existing != null) { 
     		logger.debug("Found duplicate match of " + pmr);
-    		Short otherPriority = existing.getMungeProcess().getMatchPriority();
-			Short pmrPriority = pmr.getMungeProcess().getMatchPriority();
+    		Integer otherPriority = existing.getMungeProcess().getMatchPriority();
+    		Integer pmrPriority = pmr.getMungeProcess().getMatchPriority();
 			if (pmrPriority == null || otherPriority != null && otherPriority <= pmrPriority) { 
     			logger.debug("other's priority is equal or higher, so NOT replacing with pmr");
     			return;

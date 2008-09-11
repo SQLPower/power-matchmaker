@@ -30,6 +30,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -48,11 +49,13 @@ import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -61,9 +64,11 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * A panel to edit the munge process group
  */
-public class MungeProcessGroupEditor extends NoEditEditorPane {
+public class MungeProcessGroupEditor implements MatchMakerEditorPane<MatchMakerFolder<MungeProcess>> {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessGroupEditor.class);
+	
+	private JPanel panel;
 	
 	private JScrollPane scrollPane;
 	MungeProcessTableModel mungeProcessTableModel;
@@ -75,11 +80,10 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 	private final StatusComponent status = new StatusComponent();
 	
 	public MungeProcessGroupEditor(MatchMakerSwingSession swingSession, Project project) {
-		super();
 		this.project = project;
 		this.swingSession = swingSession;
 		setupTable();
-		super.setPanel(buildUI());
+		buildUI();
         handler = new FormValidationHandler(status);
         handler.resetHasValidated();
         deleteAction.setEnabled(false);
@@ -96,6 +100,17 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
         mungeProcessTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 			public void valueChanged(ListSelectionEvent e) {
 				int row = MungeProcessGroupEditor.this.mungeProcessTable.getSelectedRow();
+				
+				moveDown.setEnabled(false);
+				moveUp.setEnabled(false);
+				logger.debug("Row is "+ row);
+				if (row > 0) {
+					moveUp.setEnabled(true);
+				}
+				if (row >= 0 && row < MungeProcessGroupEditor.this.mungeProcessTable.getRowCount() - 1) {
+					moveDown.setEnabled(true);
+				}
+				
 				if (row == -1) {
 					deleteAction.setEnabled(false);
 				} else {
@@ -121,9 +136,9 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
         TableUtils.fitColumnWidths(mungeProcessTable, 15);
 	}
 	
-	private JPanel buildUI() {
+	private void buildUI() {
 		FormLayout layout = new FormLayout(
-				"4dlu,46dlu,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,4dlu,50dlu", // columns
+				"4dlu,46dlu,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,4dlu,pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,10dlu"); // rows
 			//	   1     2   3    4     5   6     7   8     9    10   11
 		
@@ -144,6 +159,12 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		scrollPane = new JScrollPane(mungeProcessTable);
 		pb.add(scrollPane, cc.xy(4,row,"f,f"));
 		
+		ButtonStackBuilder bsb = new ButtonStackBuilder();
+		bsb.addGridded(new JButton(moveUp));
+		bsb.addRelatedGap();
+		bsb.addGridded(new JButton(moveDown));
+		pb.add(bsb.getPanel(), cc.xy(6,row,"c,c"));
+		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
 		bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, project)));
@@ -153,9 +174,38 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		row+=2;
 		pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
 		
-		return pb.getPanel();
+		moveDown.setEnabled(false);
+		moveUp.setEnabled(false);
+		
+		panel = pb.getPanel();
 	}
 
+	private Action moveUp = new AbstractAction("", SPSUtils.createIcon("chevrons_up1", "Move Up")) {
+		public void actionPerformed(ActionEvent e) {
+			final int selectedRow = mungeProcessTable.getSelectedRow();
+			logger.debug("moving merge rule "+selectedRow+" up");
+			MatchMakerFolder<MungeProcess> mungeProcessesFolder = project.getMungeProcessesFolder();
+			mungeProcessesFolder.getChildren().get(selectedRow).setMatchPriority(selectedRow - 1);
+			mungeProcessesFolder.getChildren().get(selectedRow - 1).setMatchPriority(selectedRow);
+			mungeProcessesFolder.moveChild(selectedRow, selectedRow-1);
+			mungeProcessTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
+			applyChanges();
+		}
+	};
+
+	private Action moveDown = new AbstractAction("", SPSUtils.createIcon("chevrons_down1", "Move Down")) {
+		public void actionPerformed(ActionEvent e) {
+			final int selectedRow = mungeProcessTable.getSelectedRow();
+			logger.debug("moving merge rule "+selectedRow+" down");
+			MatchMakerFolder<MungeProcess> mungeProcessesFolder = project.getMungeProcessesFolder();
+			mungeProcessesFolder.getChildren().get(selectedRow).setMatchPriority(selectedRow + 1);
+			mungeProcessesFolder.getChildren().get(selectedRow + 1).setMatchPriority(selectedRow);
+			mungeProcessesFolder.moveChild(selectedRow, selectedRow+1);
+			mungeProcessTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
+			applyChanges();
+		}
+	};
+	
 	Action deleteAction = new AbstractAction("Delete Munge Process") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mungeProcessTable.getSelectedRow();
@@ -290,6 +340,28 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
             
 			return this;
 		}
+	}
+
+	public MatchMakerFolder<MungeProcess> getCurrentEditingMMO() {
+		return project.getMungeProcessesFolder();
+	}
+
+	public boolean applyChanges() {
+		swingSession.save(project.getMungeProcessesFolder());
+		return true;
+	}
+
+	public void discardChanges() {
+		logger.debug("MungeProgressGroupEditor panel does not discard changes");
+	}
+
+	public JComponent getPanel() {
+		return panel;
+	}
+
+	public boolean hasUnsavedChanges() {
+		logger.debug("MungeProgressGroupEditor panel automatically saves changes");
+		return false;
 	}
 
 }

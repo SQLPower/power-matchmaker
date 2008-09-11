@@ -307,8 +307,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		pool.findAll(null);
-		mungeProcessOne.setMatchPriority(Short.valueOf("2"));
-		mungeProcessTwo.setMatchPriority(Short.valueOf("1"));
+		mungeProcessOne.setMatchPriority(Integer.valueOf("2"));
+		mungeProcessTwo.setMatchPriority(Integer.valueOf("1"));
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("1");

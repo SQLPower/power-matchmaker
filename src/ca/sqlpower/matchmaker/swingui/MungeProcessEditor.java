@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -37,18 +36,14 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
@@ -85,7 +80,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
      * The actual GUI component that provides the editing interface.
      */
     private final JTextField name = new JTextField();
-    private final JSpinner priority = new JSpinner();
     private final JTextField desc = new JTextField();
     private final JComboBox color = new JComboBox(ColorScheme.BREWER_SET19);
 	
@@ -122,9 +116,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
         handler.addValidateObject(name, new MungeProcessNameValidator());
-        if (project.getType() == ProjectMode.CLEANSE) {
-        	handler.addValidateObject(priority, new CleanseProjectProcessPriorityValidator());
-        }
 
         //For some reason some process don't have sessions and this causes a null
         //pointer barrage when it tries to find the tree when it gets focus, then fails and 
@@ -150,16 +141,11 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		JPanel subPanel = new JPanel(layout);
         subPanel.add(status, cc.xyw(2, 2, 7));
         subPanel.add(new JLabel("Process Name: "), cc.xy(2, 4));
-        
         subPanel.add(name, cc.xy(4, 4));
-        subPanel.add(new JLabel("Priority: "), cc.xy(6, 4));
-        
-        priority.setPreferredSize(new Dimension(100, 20));
-        subPanel.add(priority, cc.xy(8, 4));
         
         subPanel.add(new JLabel("Description: "), cc.xy(2, 6));
-        
         subPanel.add(desc, cc.xy(4, 6));
+        
         subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
         ColorCellRenderer renderer = new ColorCellRenderer(85, 50);
         color.setRenderer(renderer);
@@ -190,10 +176,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			}
 			public void keyTyped(KeyEvent e) {
 			}});
-		priority.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				mmo.setMatchPriority(Short.valueOf(priority.getValue().toString()));
-			}});
 		desc.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 			}
@@ -210,11 +192,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	
 	private void setDefaults() {
 		name.setText(mmo.getName());
-		if (mmo.getMatchPriority() != null) {
-        	priority.setValue(mmo.getMatchPriority());
-        }else {
-        	mmo.setMatchPriority(new Short((short)0));
-        }
 		
 		desc.setText(mmo.getDesc());
 		boolean hasColour = false;
