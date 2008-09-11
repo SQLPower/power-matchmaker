@@ -1016,7 +1016,7 @@ public class BuildExampleTableDialog extends JDialog{
 						"Table name is required");
 			} else if (value.length() > MAX_CHAR_RESULT_TABLE){
 			    return ValidateResult.createValidateResult(Status.FAIL, "The table name " +
-                        "cannot be longer than " +  MAX_CHAR_RESULT_TABLE + " characters long");
+                        "cannot be more than " +  MAX_CHAR_RESULT_TABLE + " characters long");
             } else if (!sqlIdentifierPattern.matcher(value).matches()) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Table name is not a valid SQL identifier");

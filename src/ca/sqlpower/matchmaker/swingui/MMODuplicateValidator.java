@@ -117,7 +117,7 @@ public class MMODuplicateValidator implements Validator {
 
         if (maxCharacters > 0 && value.length() > maxCharacters){
         	setComponentsEnabled(false);
-        	return ValidateResult.createValidateResult(Status.FAIL, fieldName + " cannot be longer than "
+        	return ValidateResult.createValidateResult(Status.FAIL, fieldName + " cannot be more than "
         			+ maxCharacters + " characters long");
         }
         if (!parent.allowsChildren()){
