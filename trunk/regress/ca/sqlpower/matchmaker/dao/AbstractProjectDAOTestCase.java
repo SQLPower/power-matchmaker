@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.List;
+import java.util.Set;
 
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
@@ -403,6 +404,19 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
          assertEquals(loadedProject.getResultTableSPDatasource(), oldProject.getResultTableSPDatasource());
          assertEquals(loadedProject.getXrefTableSPDatasource(), oldProject.getXrefTableSPDatasource());
     	
+    }
+    
+    public void testFindProjectsUsingResultTable() throws Exception {
+        PlFolder f = new PlFolder();
+        f.setName("test folder");
+        PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+        plFolderDAO.save(f);
+
+        ProjectDAO dao = getDataAccessObject();
+        insertSampleProjectData("project", f.getOid());
+        
+        Set<String> projNames = dao.getProjectNamesUsingResultTable("fakeds", "fake_cat", "fake_schema", "fake_table");
+        assertEquals("[project]", projNames.toString());
     }
     
     /**

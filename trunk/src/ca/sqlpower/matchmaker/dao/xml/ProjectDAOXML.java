@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -386,7 +387,11 @@ public class ProjectDAOXML implements ProjectDAO {
             niprintln(">");
             indent++;
             
-            printIndex(tmr.getTableIndex());
+            // A properly-formed table merge rules object will have an index, but
+            // it's possible to export a project before specifying the index.
+            if (tmr.getTableIndex() != null) {
+                printIndex(tmr.getTableIndex());
+            }
             
             for (ColumnMergeRules cmr : tmr.getChildren()) {
                 print("<column-merge-rule");
@@ -590,5 +595,14 @@ public class ProjectDAOXML implements ProjectDAO {
      */
     private void niprint(String str) {
         out.print(str);
+    }
+
+    /**
+     * Currently just throws an exception. It is unlikely that we will ever need to do
+     * this lookup on an XML export file.
+     */
+    public Set<String> getProjectNamesUsingResultTable(String dataSourceName,
+            String catalogName, String schemaName, String tableName) {
+        throw new UnsupportedOperationException("This type of lookup is not supported by the XML DAO");
     }
 }

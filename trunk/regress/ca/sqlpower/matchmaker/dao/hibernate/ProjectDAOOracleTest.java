@@ -99,8 +99,10 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO mm_project (project_oid, project_name, project_type) " +
-                    "VALUES ("+time+", '"+projectName+"', '"+ProjectMode.FIND_DUPES+"')");
+                    "INSERT INTO mm_project (project_oid, project_name, project_type, " +
+                    "result_table_spdatasource, result_table_catalog, result_table_schema, result_table_name) " +
+                    "VALUES ("+time+", '"+projectName+"', '"+ProjectMode.FIND_DUPES+"', " +
+                    "'fakeds', 'fake_cat', 'fake_schema', 'fake_table')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it

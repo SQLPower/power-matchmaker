@@ -171,8 +171,12 @@ private Project project;
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO mm_project (project_name, project_type, folder_oid) " +
-                    "VALUES ('"+projectName+"', '"+ProjectMode.FIND_DUPES+"', " + folderOid.longValue() + ")");
+                    "INSERT INTO mm_project (" +
+                    " project_name, project_type, folder_oid," +
+                    " result_table_spdatasource, result_table_catalog, result_table_schema, result_table_name) " +
+                    "VALUES (" +
+                    "'"+projectName+"', '"+ProjectMode.FIND_DUPES+"', " + folderOid.longValue() +
+                    ", 'fakeds', 'fake_cat', 'fake_schema', 'fake_table')");
             
             keysRS = stmt.executeQuery("SELECT project_oid FROM mm_project WHERE project_name='"+projectName+"'");
             long projectOid;
