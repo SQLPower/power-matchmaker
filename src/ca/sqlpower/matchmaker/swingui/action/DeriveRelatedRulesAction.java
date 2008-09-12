@@ -23,6 +23,7 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JDialog;
 
 import org.apache.log4j.Logger;
@@ -55,13 +56,18 @@ public class DeriveRelatedRulesAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		DeriveRelatedRulesPanel panel = new DeriveRelatedRulesPanel(swingSession, project);
+		final DeriveRelatedRulesPanel panel = new DeriveRelatedRulesPanel(swingSession, project);
 		JDialog dialog = DataEntryPanelBuilder.createDataEntryPanelDialog(
 				panel, 
 				swingSession.getFrame(), 
 				"Related Table Deriver", 
 				"Derive Related Rules");
-		SPSUtils.makeJDialogCancellable(dialog, null, true);
+		Action cancelAction = new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				panel.discardChanges();
+			}
+		};
+		SPSUtils.makeJDialogCancellable(dialog, cancelAction, true);
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
