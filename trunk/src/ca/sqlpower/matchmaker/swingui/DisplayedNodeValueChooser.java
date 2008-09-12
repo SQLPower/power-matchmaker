@@ -136,18 +136,19 @@ public class DisplayedNodeValueChooser {
 		private List<CustomTableColumn> candidateColumns
 							= new ArrayList<CustomTableColumn>();
 		
-		public OrderedColumnChooserTableModel(SQLTable sqlTable) throws ArchitectException {
+		public OrderedColumnChooserTableModel(SQLTable sqlTable, List<SQLColumn> displayColumns) throws ArchitectException {
 			List<Integer> oldColumns = new ArrayList<Integer>();
-			for (Object col : sqlTable.getPrimaryKeyIndex().getChildren()) {
+			
+			for (SQLColumn col : displayColumns) {
 				oldColumns.add(sqlTable.getColumns().indexOf(col));
 			}
 			for (int i=0; i<sqlTable.getColumns().size(); i++) {
 				SQLColumn column = sqlTable.getColumn(i);
-				candidateColumns.add(
-						new CustomTableColumn(
-                                (oldColumns.contains(new Integer(i))),
-								(oldColumns.contains(new Integer(i)) ? oldColumns.indexOf(column) +1 : null),
-                                column));
+				CustomTableColumn newCustomTableColumn = new CustomTableColumn(
+				        (oldColumns.contains(new Integer(i))),
+						(oldColumns.contains(new Integer(i)) ? oldColumns.indexOf(i) + 1 : null),
+				        column);
+				candidateColumns.add(newCustomTableColumn);
 			}
 		}
 
@@ -201,6 +202,8 @@ public class DisplayedNodeValueChooser {
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (columnIndex == 0) {
+				// If the column is removed from the display list, record it's position
+				Integer removedPosition = candidateColumns.get(rowIndex).getPosition();
 				candidateColumns.get(rowIndex).setKey((Boolean) aValue);
 				if ((Boolean) aValue) {
 					int max = 0;
@@ -211,6 +214,14 @@ public class DisplayedNodeValueChooser {
 					}
 					candidateColumns.get(rowIndex).setPosition(new Integer(max+1));
 				} else {
+					// Use the 'removed position' to ensure other columns that were
+					// positioned at a higher index get shifted down.
+					for (CustomTableColumn column: candidateColumns) {
+						if (removedPosition != null && column.getPosition() != null && 
+								column.getPosition() > removedPosition) {
+							column.setPosition(column.getPosition() - 1);
+						}
+					}
 					candidateColumns.get(rowIndex).setPosition(null);
 				}
 			} else if (columnIndex == 1) {
@@ -250,13 +261,14 @@ public class DisplayedNodeValueChooser {
 		 */
 		public void setAllRowValues(Object val, int columnIndex) {
 			for (int i = 0; i < getRowCount(); i++) {
-				setValueAt(val, i, columnIndex);
+				Object oldVal = getValueAt(i, columnIndex);
+				if (!val.equals(oldVal)) {
+					setValueAt(val, i, columnIndex);
+				}
 			}
 		}
 	}
 
-	private Project project;
-	
 	/**
 	 * This is the list of the columns that the user has chosen in the
 	 * order that they have chosen them in.
@@ -282,12 +294,12 @@ public class DisplayedNodeValueChooser {
 	 * 						in the source table of the match
 	 */
 	public DisplayedNodeValueChooser(SourceTableNodeRenderer renderer,
-									Project project)
+									Project project,
+									List<SQLColumn> displayColumns)
 									throws ArchitectException {
 		super();
 		this.renderer = renderer;
-		this.project = project;
-		this.occtm = new OrderedColumnChooserTableModel(project.getSourceTable());
+		this.occtm = new OrderedColumnChooserTableModel(project.getSourceTable(), displayColumns);
 	}
 	
 	public JComponent makeGUI() throws ArchitectException {
@@ -306,6 +318,7 @@ public class DisplayedNodeValueChooser {
 	 * @return
 	 */
 	public List<SQLColumn> getChosenColumns() {
+		occtm.updateChosenColumns();
 		List<SQLColumn> chosen = new ArrayList<SQLColumn>();
 		Collections.sort(chosenColumns);
 		logger.debug("chosenColumns size = " + chosenColumns.size());

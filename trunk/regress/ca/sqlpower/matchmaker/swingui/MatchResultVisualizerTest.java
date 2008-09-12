@@ -107,6 +107,11 @@ public class MatchResultVisualizerTest extends TestCase {
 			}
 			
 			@Override
+			public SQLDatabase getDatabase() {
+				return db;
+			}
+			
+			@Override
 			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
 		        return new StubMatchMakerDAO<T>(businessClass);
 		    }
