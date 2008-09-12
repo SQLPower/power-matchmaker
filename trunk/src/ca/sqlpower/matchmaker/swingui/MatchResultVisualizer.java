@@ -153,14 +153,6 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	}
     };
     
-    private final Action viewerAutoLayoutAction = new AbstractAction("Auto layout") {
-        
-        public void actionPerformed(ActionEvent e) {
-            doAutoLayout();
-        }
-        
-    };
-
     /**
      * Warning! Will throw a ClassCastException if the node renderer in graph
      * is not a SourceTableRecordRenderer.
@@ -513,6 +505,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		@Override
 		public void cleanup() throws Exception {
 			if (getDoStuffException() != null) {
+				pool.clearRecords();
 				pool.findAll(displayColumns);
 				if (!(getDoStuffException() instanceof CancellationException)) {
 					MMSUtils.showExceptionDialog(getPanel(), "Error during auto-match", getDoStuffException());
