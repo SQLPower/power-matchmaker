@@ -71,6 +71,7 @@ import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.SourceTableRecordDisplayComparator;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
@@ -746,7 +747,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         final int targetHeight = graph.getPreferredGraphLayoutHeight();
         
         ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord> ccf =
-            new ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord>();
+            new ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord>(new SourceTableRecordDisplayComparator());
         Set<Set<SourceTableRecord>> components = ccf.findConnectedComponents(model);
         
         int y = 0;
@@ -780,6 +781,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
                 
                 currentAngle += angleStep;
             }
+            
+            logger.debug("Nodes of a graph and their bounds are " + componentNodeBounds);
+            logger.debug("Overall bounds on the above graph are " + componentBounds);
             
             // fit the laid out component under previous component, or in a
             // new column if nodes won't fit in current column
