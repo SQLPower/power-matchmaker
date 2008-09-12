@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -191,8 +192,12 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
             		deriveMergeRulesByColumnNames(con, dbMeta, primaryKeys, sourceTableMergeRule, mergeRules);
             	}
 			} catch (Exception e) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+				if (e instanceof CancellationException) {
+					logger.debug("User has cancelled merge rule derivation");
+				} else {
+					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 						"Failed to derive related table information.", e);
+				}
 			} finally {
 				project.endCompoundEdit();
 				DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_TYPE, CacheType.NO_CACHE);
@@ -224,6 +229,9 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		 * @throws ArchitectException
 		 */
 		private void deriveMergeRulesByFKConstraints(DatabaseMetaData dbmd, SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws ArchitectException {
+			if (isCancelled()) {
+				throw new CancellationException("Merge rule derivation cancelled by user");
+			}
 			
 			List<SQLRelationship> exportedKeys = table.getExportedKeys(dbmd);
 
@@ -331,6 +339,9 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				int count = 0;
 	
 				while (rs.next()) {
+					if (isCancelled()) {
+						throw new CancellationException("Merge rule derivation cancelled by user");
+					}
 					
 					String tableName = rs.getString("TABLE_NAME");
 					String columnName = rs.getString("COLUMN_NAME");
@@ -560,6 +571,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 	}
 
 	public void discardChanges() {
+		deriveAction.setCancelled(true);
 	}
 
 	public JComponent getPanel() {
