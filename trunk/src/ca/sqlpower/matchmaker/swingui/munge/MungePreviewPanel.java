@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -30,7 +31,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.border.LineBorder;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
@@ -206,6 +209,28 @@ public class MungePreviewPanel {
         outputTable.getTableHeader().setOpaque(false);
         outputTable.getTableHeader().setBackground(null);
         outputTable.getTableHeader().setForeground(null);
+        
+        inputTable.getTableHeader().setBorder(new LineBorder(null));
+        inputTable.setBorder(new LineBorder(null));
+        
+        inputTable.getTableHeader().setDefaultRenderer(new TableCellRenderer() {
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				return table.getCellRenderer(0, column).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			}
+		});
+        
+        outputTable.getTableHeader().setBorder(new LineBorder(null));
+        outputTable.setBorder(new LineBorder(null));
+        
+        outputTable.getTableHeader().setDefaultRenderer(new TableCellRenderer() {
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				return table.getCellRenderer(0, column).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			}
+		});
 	}
 	
 	public void cleanup() {
@@ -225,8 +250,12 @@ public class MungePreviewPanel {
 	 * If a step is selected or modified then the input and output tables in our
 	 * preview will likely change and need to be updated.
 	 */
-	public void stepSelectedOrModified(MungeStep lastModifiedOrSelectedStep) {
-		this.lastModifiedOrSelectedStep = lastModifiedOrSelectedStep;
+	public void stepSelectedOrModified(MungeStep lastStep) {
+		if (lastStep != null) {
+			this.lastModifiedOrSelectedStep = lastStep;
+		}
+		
+		logger.debug("Last step was " + lastModifiedOrSelectedStep);
 		
 		ArrayList<ArrayList> inputs = previewer.getPreviewInputForStep(lastModifiedOrSelectedStep);
 		int colCount = 0;
