@@ -32,6 +32,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -167,13 +170,23 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	private final AbstractAction okAction = new AbstractAction("OK") {
     		public void actionPerformed(ActionEvent e) {
     			try {
-    				MatchResultVisualizer.this.getPool().findAll(chooser.getChosenColumns());
+    				List<SQLColumn> chosenColumns = chooser.getChosenColumns();
+    				// Refresh the display column preferences with the newly chosen columns
+    				displayColumnPrefs.clear();
+    				for (int i = 0; i < chosenColumns.size(); i++) {
+    					SQLColumn column = chosenColumns.get(i);
+    					displayColumnPrefs.putInt(column.getName(), i);
+    				}
+    				MatchResultVisualizer.this.displayColumns = chosenColumns;
+					MatchResultVisualizer.this.getPool().findAll(chosenColumns);
     				MatchResultVisualizer.this.getPanel().repaint();
     				MatchResultVisualizer.this.doAutoLayout();
     			} catch (ArchitectException ex) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     			} catch (SQLException sqlEx) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), sqlEx.getMessage(), sqlEx);
+    			} catch (BackingStoreException bsEx) {
+    				logger.error("Exception while storing columns in Preferences", bsEx);
     			} finally {
     				dialog.dispose();
     			}
@@ -203,7 +216,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     		try {
     			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Graph Display Values");
 				if (chooser == null) {
-    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project);
+    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project, displayColumns);
     			}
 				
 				revertList = chooser.getChosenColumns();
@@ -276,7 +289,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Chart Display Values");
 				if (chooser == null) {
 					shownColumns = new ArrayList<SQLColumn>();
-    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project);
+    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project, displayColumns);
     				// Defaults the shown value to true
     				chooser.setAllDefaultChosen(true);
     				shownColumns = chooser.getChosenColumns();
@@ -642,6 +655,16 @@ public class MatchResultVisualizer extends NoEditEditorPane {
      */
     private List<SQLColumn> displayColumns = new ArrayList<SQLColumn>();
     
+    /**
+	 * A {@link Preferences} node containing user and project-specific
+	 * preferences for which columns to display in the match validation graph.
+	 * The pathname used to retrieve it from the user root preference node is as
+	 * follows:
+	 * 
+	 * /ca/sqlpower/matchmaker/projectSettings/$<repository connection name>/$<project oid>/matchValidation/displayColumns";
+	 */
+    private final Preferences displayColumnPrefs;
+    
     public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, ArchitectException {
     	super();
         this.project = project;
@@ -685,6 +708,33 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         
         buttonPanel.add(selectionButton);
         buttonPanel.add(new JButton(resetPoolAction));
+        
+        String prefNodePath = "ca/sqlpower/matchmaker/projectSettings/$" +
+        						project.getSession().getDatabase().getDataSource().getName() +
+        						"/$" + project.getOid() + "/matchValidation/displayColumns";
+        displayColumnPrefs = Preferences.userRoot().node(prefNodePath);
+
+        try {
+        	String[] keys = displayColumnPrefs.keys();
+			for (String key: keys) {
+				SQLColumn column = project.getSourceTable().getColumnByName(key);
+				displayColumns.add(column);
+			}
+			Collections.sort(displayColumns, new Comparator<SQLColumn>() {
+				public int compare(SQLColumn o1, SQLColumn o2) {
+					int o1Index = displayColumnPrefs.getInt(o1.getName(), -1);
+					int o2Index = displayColumnPrefs.getInt(o2.getName(), -1);
+					if (o1Index < o2Index) return -1;
+					if (o1Index > o2Index) return 1;
+					return 0;
+				}
+			});
+			
+		} catch (BackingStoreException e) {
+			logger.error("Error loading preferred display values for graph. Defaulting to primary key values", e);
+			displayColumns.clear();
+		}
+        
         pool = new MatchPool(project);
         pool.findAll(displayColumns);
         graphModel = new MatchPoolGraphModel(pool);
