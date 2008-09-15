@@ -146,7 +146,7 @@ implements MatchMakerListener<T,C> {
 	        }
         }
         if (!evt.isUndoEvent()) {
-			UndoableEdit ue = new MMOPropertyChangeUndoableEdit(evt, null);
+			UndoableEdit ue = new MMOPropertyChangeUndoableEdit(evt);
 			
         	if ("UNDOSTATE".equals(evt.getPropertyName())) {
             	boolean undoing = (Boolean) evt.getNewValue();
