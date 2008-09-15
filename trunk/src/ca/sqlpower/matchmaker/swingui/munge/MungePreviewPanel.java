@@ -150,7 +150,7 @@ public class MungePreviewPanel {
 
 		public void previewDisabled() {
 			panel.setVisible(false);
-			JOptionPane.showMessageDialog(mungePen, "Preview is disabled due to failing preconditions.", "Preview Disabled", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(mungePen, "Preview is disabled. Cannot connect to database or the process is incomplete.", "Preview Disabled", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 	};
