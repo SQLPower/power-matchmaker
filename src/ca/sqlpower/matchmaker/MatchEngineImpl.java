@@ -264,7 +264,7 @@ public class MatchEngineImpl extends AbstractEngine {
 				try {
 					emailAppender.close();
 				} catch (RuntimeException e) {
-					logger.info("Error while sending emails! " + e.getStackTrace().toString());
+					logger.info("Error while sending emails! ", e);
 				}
 				logger.removeAppender(emailAppender);
 			}
