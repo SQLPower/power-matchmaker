@@ -32,7 +32,6 @@ import javax.swing.undo.CannotUndoException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -43,12 +42,10 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 	private static final Logger logger = Logger.getLogger(MMOPropertyChangeUndoableEdit.class);
 	
 	private MatchMakerEvent undoEvent;
-	private MatchMakerObject mmo;
 
-	public MMOPropertyChangeUndoableEdit(MatchMakerEvent e, MatchMakerObject mmo){
+	public MMOPropertyChangeUndoableEdit(MatchMakerEvent e){
 		super();
 		undoEvent = e;
-		this.mmo = mmo;
 	}
 
 	public void undo(){
@@ -102,16 +99,22 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 		// messages were too vague.
 		BeanInfo info = Introspector.getBeanInfo(undoEvent.getSource().getClass());
 		
+		logger.debug("Modifying property " + undoEvent.getPropertyName() + " on object " + undoEvent.getSource() + " with value " + value);
+		for (int i : undoEvent.getChangeIndices()) {
+			logger.debug("Change on index " + i);
+		}
 		PropertyDescriptor[] props = info.getPropertyDescriptors();
 		for (PropertyDescriptor prop : Arrays.asList(props)) {
 		    if (prop.getName().equals(undoEvent.getPropertyName())) {
 		        Method writeMethod = prop.getWriteMethod();
-		        if (writeMethod != null) {
+		        if (writeMethod != null && !(undoEvent.getSource() instanceof MungeStep && undoEvent.getPropertyName().equals("inputs"))) {
+		        	logger.debug("writeMethod is not null");
 		            writeMethod.invoke(undoEvent.getSource(), new Object[] { value });
 		            return;
 		        }
 		    }
 		}
+		logger.debug("Undoing specific types");
 		if (undoEvent.getSource() instanceof MungeStep) {
 			if (undoEvent.getPropertyName().equals("inputs")) {
 				MungeStep step = (MungeStep)undoEvent.getSource();
