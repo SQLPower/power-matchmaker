@@ -3274,20 +3274,43 @@
 
 										<entry>
 											<para>
-												Repository Schema Owner
+												Repository Qualifier
 											</para>
 										</entry>
 
 										<entry>
 											<para>
-												If the database
-												connection is for a
-												repository, enter the
-												schema owner. This
-												information will
-												automatically be
-												prefixed to the
-												repository tables.
+												If the database connection is 
+												for a repository, enter 
+												the repository qualifier. This
+												information will automatically 
+												be prefixed to the repository tables.
+												
+												The value is dependent on the database 
+												platform. 
+											</para>
+											<itemizedlist mark='opencircle'>
+												<listitem>
+													In Oracle, this would be the schema owner.
+												</listitem>
+												<listitem>
+													In SQL Server 2000, this would be the database name,
+													followed by "." and then the owner.
+												</listitem>
+												<listitem>
+													In SQL Server 2000, this would be the database name,
+													followed by "." and then the schema name.
+												</listitem>
+												<listitem>
+													In MySQL, this would be the database name.
+												</listitem>
+												<listitem>
+													In PostgreSQL, this would be the database name,
+													followed by "." and then the schema name.
+												</listitem>
+											</itemizedlist>
+											<para>
+												
 											</para>
 										</entry>
 

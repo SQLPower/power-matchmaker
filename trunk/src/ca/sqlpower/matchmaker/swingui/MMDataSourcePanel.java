@@ -47,7 +47,7 @@ public class MMDataSourcePanel extends SPDataSourcePanel {
 	MMDataSourcePanel(SPDataSource ds) {
 		super(ds);
 		repositorySchemaOwnerField = new JTextField(ds.getPlSchema());
-		repositorySchemaOwnerField.putClientProperty(EXTRA_FIELD_LABEL_PROP, "Repository Schema Owner");
+		repositorySchemaOwnerField.putClientProperty(EXTRA_FIELD_LABEL_PROP, "Repository Qualifier");
 		addExtraField(repositorySchemaOwnerField);
 	}
 	
