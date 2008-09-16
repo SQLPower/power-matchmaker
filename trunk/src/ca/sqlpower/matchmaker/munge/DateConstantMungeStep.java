@@ -22,8 +22,11 @@ package ca.sqlpower.matchmaker.munge;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -61,7 +64,7 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     /**
      * The possible options for formating this date
      */
-    public static final String[] FORMAT = new String[]{"Date and Time", "Date Only", "Time Only"};
+    public static final List<String> FORMAT = Collections.unmodifiableList(Arrays.asList("Date and Time", "Date Only", "Time Only"));
     
     /**
      * The parameter name for the storage of the format type
@@ -72,7 +75,7 @@ public class DateConstantMungeStep extends AbstractMungeStep {
         super("Date Constant", false);
         setParameter(RETURN_NULL, "False");
         setParameter(USE_CURRENT_TIME, "False");
-        setParameter(FORMAT_PARAMETER_NAME, FORMAT[0]);
+        setParameter(FORMAT_PARAMETER_NAME, FORMAT.get(0));
         setValue(Calendar.getInstance().getTime());
         addChild(new MungeStepOutput<Date>("Value", Date.class));
     }
@@ -96,9 +99,9 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     		SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     		Date date = df.parse(getParameter(VALUE_PARAMETER_NAME));
 
-    		if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT[1])) {
+    		if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT.get(1))) {
     			return new java.sql.Date(date.getTime());
-    		} else if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT[2])) {
+    		} else if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT.get(2))) {
     			return new Time(date.getTime());
     		} else {
     			return date;
