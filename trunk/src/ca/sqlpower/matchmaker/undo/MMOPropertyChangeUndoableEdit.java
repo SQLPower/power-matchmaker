@@ -100,8 +100,10 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 		BeanInfo info = Introspector.getBeanInfo(undoEvent.getSource().getClass());
 		
 		logger.debug("Modifying property " + undoEvent.getPropertyName() + " on object " + undoEvent.getSource() + " with value " + value);
-		for (int i : undoEvent.getChangeIndices()) {
-			logger.debug("Change on index " + i);
+		if (logger.isDebugEnabled() && undoEvent.getChangeIndices() != null) {
+			for (int i : undoEvent.getChangeIndices()) {
+				logger.debug("Change on index " + i);
+			}
 		}
 		PropertyDescriptor[] props = info.getPropertyDescriptors();
 		for (PropertyDescriptor prop : Arrays.asList(props)) {
