@@ -49,7 +49,7 @@ public class MungeProcess
 	/**
 	 * The default color of a munge process is red
 	 */
-	public static final Color DEFAULT_COLOR = ColorScheme.BREWER_SET19[0];
+	public static final Color DEFAULT_COLOR = ColorScheme.BREWER_SET19.get(0);
 	
 	/**
 	 * Object ID needed by Hibernate 
