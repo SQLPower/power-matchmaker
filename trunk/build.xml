@@ -79,6 +79,7 @@
 				destdir="${build}" 
 				classpathref="compile.classpath"
 			    source="1.5"
+				debug="true"
 		/>
 	</target>
 
