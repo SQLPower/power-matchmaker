@@ -20,6 +20,10 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import ca.sqlpower.util.WebColour;
 
 /**
@@ -31,7 +35,7 @@ public class ColorScheme {
      * Brewer Colour Scheme "set19".  A nice collection of colours for colour coding
      * sets of information with up to 9 elements.
      */
-    public static final WebColour[] BREWER_SET19 = {
+    public static final List<WebColour> BREWER_SET19 = Collections.unmodifiableList(Arrays.asList(
         new WebColour("#e41a1c"),
         new WebColour("#377eb8"),
         new WebColour("#4daf4a"),
@@ -42,5 +46,5 @@ public class ColorScheme {
         new WebColour("#a65628"),
         new WebColour("#f781bf"),
         new WebColour("#999999")
-    };
+    ));
 }
