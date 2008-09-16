@@ -39,16 +39,14 @@ public class SourceTableRecordDisplayComparator implements Comparator<SourceTabl
 			Object str0Value = str0.getDisplayValues().get(i);
 			Object str1Value = str1.getDisplayValues().get(i);
 			
-			if (!str0Value.getClass().equals(str1Value.getClass())) {
-				continue;
-			}
-			
-			if (str0Value == null && str1Value == null) {
+			if (str1Value == null) {
 				return -1;
 			} else if (str0Value == null && str1Value != null) {
 				return 1;
-			} else if (str0Value != null && str1Value == null) {
-				return -1;
+			}
+			
+			if (!str0Value.getClass().equals(str1Value.getClass())) {
+				continue;
 			}
 			
 			if (str0Value instanceof Comparable) {
