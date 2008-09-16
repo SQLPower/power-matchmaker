@@ -492,7 +492,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				try {
 					MungeProcess selectedProcess = (MungeProcess) mungeProcessComboBox.getSelectedItem();
 					AutoMatchWorker worker = new AutoMatchWorker(pool, selectedProcess, session);
-					ProgressMonitor monitor = new ProgressMonitor(getPanel(), "Auto-matching...", null, 0, 100);
+					ProgressMonitor monitor = new ProgressMonitor(session.getFrame(), "Auto-matching...", null, 0, 100);
 					ProgressWatcher watcher = new ProgressWatcher(monitor, worker);
 		        	watcher.start();
 		            new Thread(worker).start();
@@ -569,7 +569,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
 
 		public boolean isFinished() {
-			return autoMatcher.isFinished() && pool.isFinished();
+			return (autoMatcher.isFinished() && pool.isFinished()) || isCancelled();
 		}
     	
 		@Override
