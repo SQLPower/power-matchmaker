@@ -195,6 +195,16 @@ public class IOConnector extends JComponent implements MouseListener {
 		return false;
 	}
 	
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 31 * result + parentCom.hashCode();
+		result = 31 * result + childCom.hashCode();
+		result = 31 * result + parentNumber;
+		result = 31 * result + childNumber;
+		return result;
+	}
+	
 	/**
 	 * Passes a key event to the IOC, this is only passed if this
 	 * IOC is selected.
