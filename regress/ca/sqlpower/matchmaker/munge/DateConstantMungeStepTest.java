@@ -37,7 +37,7 @@ public class DateConstantMungeStepTest extends AbstractMungeStepTest {
     }
     
     private void setFormat(int x){
-    	step.setParameter(DateConstantMungeStep.DATE_FORMAT, DateConstantMungeStep.FORMAT[x]);
+    	step.setParameter(DateConstantMungeStep.DATE_FORMAT, DateConstantMungeStep.FORMAT.get(x));
     }
     
     private void setRetNull(boolean b) {

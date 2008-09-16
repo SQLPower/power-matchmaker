@@ -131,7 +131,7 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 
 
 
-		opts = new JComboBox(DateConstantMungeStep.FORMAT);
+		opts = new JComboBox(DateConstantMungeStep.FORMAT.toArray());
 		opts.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {
 				getStep().setParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME,(String) opts.getSelectedItem());
@@ -160,9 +160,9 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 
 	private String getFormateString() {
 		if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME) != null) {
-			if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME).equals(DateConstantMungeStep.FORMAT[1])) {
+			if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME).equals(DateConstantMungeStep.FORMAT.get(1))) {
 				return "yyyy/MM/dd";
-			} else if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME).equals(DateConstantMungeStep.FORMAT[2])) { 
+			} else if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME).equals(DateConstantMungeStep.FORMAT.get(2))) { 
 				return "HH:mm:ss";
 			}
 		}
