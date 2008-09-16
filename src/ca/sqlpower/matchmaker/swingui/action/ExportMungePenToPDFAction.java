@@ -87,28 +87,6 @@ public class ExportMungePenToPDFAction extends ProgressAction {
     
     public ExportMungePenToPDFAction(MatchMakerSwingSession session) {
         super(session, "Export Munge Pen to PDF", "Export Munge Pen to PDF");
-
-        try {
-        	paintComponent = JComponent.class.getDeclaredMethod("paintComponent", Graphics.class);
-        	paintComponent.setAccessible(true);
-        } catch (SecurityException e) {
-        	e.printStackTrace();
-        	throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-        	e.printStackTrace();
-        	throw new RuntimeException(e);
-        }
-
-        try {
-        	paintBorder = JComponent.class.getDeclaredMethod("paintBorder", Graphics.class);
-        	paintBorder.setAccessible(true);
-        } catch (SecurityException e) {
-        	e.printStackTrace();
-        	throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-        	e.printStackTrace();
-        	throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -291,7 +269,10 @@ public class ExportMungePenToPDFAction extends ProgressAction {
      * locally.
      */
     public static void paintComponent(JComponent jc, Graphics g) {
+    	
     	try {
+    		paintComponent = JComponent.class.getDeclaredMethod("paintComponent", Graphics.class);
+    		paintComponent.setAccessible(true);
 			paintComponent.invoke(jc, g);
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
@@ -302,7 +283,13 @@ public class ExportMungePenToPDFAction extends ProgressAction {
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
-		}
+        } catch (SecurityException e) {
+        	e.printStackTrace();
+        	throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+        	e.printStackTrace();
+        	throw new RuntimeException(e);
+        }
     }
     
     /**
@@ -314,6 +301,8 @@ public class ExportMungePenToPDFAction extends ProgressAction {
      */
     public static void paintBorder(JComponent jc, Graphics g) {
     	try {
+    		paintBorder = JComponent.class.getDeclaredMethod("paintBorder", Graphics.class);
+    		paintBorder.setAccessible(true);
 			paintBorder.invoke(jc, g);
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
@@ -322,6 +311,12 @@ public class ExportMungePenToPDFAction extends ProgressAction {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
