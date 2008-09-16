@@ -43,7 +43,7 @@ public class DateFormatPatternValidator implements Validator {
     public ValidateResult validate(Object contents) {
     	try {
     		String pattern = (String) contents;
-    		SimpleDateFormat dfs = new SimpleDateFormat(pattern);
+    		new SimpleDateFormat(pattern);
     	} catch (IllegalArgumentException e) {
     		return ValidateResult.createValidateResult(Status.FAIL, 
     				"The given date format pattern is invalid.");
