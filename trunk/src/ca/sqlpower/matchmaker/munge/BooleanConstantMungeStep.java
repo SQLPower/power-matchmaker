@@ -26,10 +26,10 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class BooleanConstantMungeStep extends AbstractMungeStep {
 
-	public static String BOOLEAN_VALUE = "value";
-	public static String TRUE = "True";
-	public static String FALSE = "False";
-	public static String NULL = "Null";
+	public static final String BOOLEAN_VALUE = "value";
+	public static final String TRUE = "True";
+	public static final String FALSE = "False";
+	public static final String NULL = "Null";
 	
 	
 	public BooleanConstantMungeStep() {
