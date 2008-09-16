@@ -47,53 +47,57 @@ public class AutoMatcher extends MonitorableImpl {
 	}
 	
 	public void doAutoMatch(MungeProcess mungeProcess, Aborter aborter) throws SQLException, ArchitectException {
-		setStarted(true);
-		if (mungeProcess == null) {
-			throw new IllegalArgumentException("Auto-Match invoked with an " +
-					"invalid munge process");
-		}
-		
-		Collection<SourceTableRecord> records = pool.getSourceTableRecords();
-		
-		logger.debug("Auto-Matching with " + records.size() + " records.");
-		
-		visited = new HashSet<SourceTableRecord>();
-		SourceTableRecord selected = null;
-		for (SourceTableRecord record : records) {
-			boolean addToVisited = true;
-			for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
-				if (pmr.getMatchStatus() != MatchType.NOMATCH
-						&& pmr.getMungeProcess() == mungeProcess) {
-					addToVisited = false;
-				}
+		try {
+			setStarted(true);
+			setFinished(false);
+			if (mungeProcess == null) {
+				throw new IllegalArgumentException("Auto-Match invoked with an " +
+						"invalid munge process");
 			}
-			if (addToVisited) {
-				visited.add(record);
-			} else {
-				// rather than iterating through all the records again, looking
-				// for one that isn't in visited...
-				selected = record;
-			}
-		}
-		
-		logger.debug("The size of visited is " + visited.size());
-
-		Set<SourceTableRecord> neighbours = findAutoMatchNeighbours(mungeProcess, selected, visited);
-		makeAutoMatches(mungeProcess, selected, neighbours, visited);
-		//If we haven't visited all the nodes, we are not done!
-		while (visited.size() != records.size()) {
-			aborter.checkCancelled();
-			SourceTableRecord temp = null;
+			
+			Collection<SourceTableRecord> records = pool.getSourceTableRecords();
+			
+			logger.debug("Auto-Matching with " + records.size() + " records.");
+			
+			visited = new HashSet<SourceTableRecord>();
+			SourceTableRecord selected = null;
 			for (SourceTableRecord record : records) {
-				if (!visited.contains(record)) {
-					temp = record;
-					break;
+				boolean addToVisited = true;
+				for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
+					if (pmr.getMatchStatus() != MatchType.NOMATCH
+							&& pmr.getMungeProcess() == mungeProcess) {
+						addToVisited = false;
+					}
+				}
+				if (addToVisited) {
+					visited.add(record);
+				} else {
+					// rather than iterating through all the records again, looking
+					// for one that isn't in visited...
+					selected = record;
 				}
 			}
-			neighbours = findAutoMatchNeighbours(mungeProcess, temp, visited);
-			makeAutoMatches(mungeProcess, temp, neighbours, visited);
+			
+			logger.debug("The size of visited is " + visited.size());
+
+			Set<SourceTableRecord> neighbours = findAutoMatchNeighbours(mungeProcess, selected, visited);
+			makeAutoMatches(mungeProcess, selected, neighbours, visited);
+			//If we haven't visited all the nodes, we are not done!
+			while (visited.size() != records.size()) {
+				aborter.checkCancelled();
+				SourceTableRecord temp = null;
+				for (SourceTableRecord record : records) {
+					if (!visited.contains(record)) {
+						temp = record;
+						break;
+					}
+				}
+				neighbours = findAutoMatchNeighbours(mungeProcess, temp, visited);
+				makeAutoMatches(mungeProcess, temp, neighbours, visited);
+			}
+		} finally {
+			setFinished(true);
 		}
-		setFinished(true);
 	}
 	
 	/**
