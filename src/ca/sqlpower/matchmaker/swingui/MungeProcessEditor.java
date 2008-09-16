@@ -83,7 +83,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
      */
     private final JTextField name = new JTextField();
     private final JTextField desc = new JTextField();
-    private final JComboBox color = new JComboBox(ColorScheme.BREWER_SET19);
+    private final JComboBox color = new JComboBox(ColorScheme.BREWER_SET19.toArray());
 	
     private final MungePen mungePen;
     
