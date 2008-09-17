@@ -45,9 +45,9 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex;
+	private JCheckBox useRegex = new JCheckBox();
 	private JCheckBox caseSensitive;
-	private JTextField from;
+	private JTextField from = new JTextField();
 	private JTextField to;
 	
 	public StringSubstitutionMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
