@@ -20,6 +20,7 @@ Stuff that would need to be handled includes, but is not limited to:
     -result table will have to be structurally modified to work with new PK
 
 
+
 August 5, 2008 Meeting Notes:
   * Suggestion is to segregate the source table change adaption code into classes separate from the normal merge engine logic so that all the adaption logic is in one place, rather than being 'baked into' the regular logic.
 
