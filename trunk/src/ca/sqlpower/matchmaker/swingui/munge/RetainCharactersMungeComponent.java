@@ -43,9 +43,9 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex;
+	private JCheckBox useRegex = new JCheckBox();
 	private JCheckBox caseSensitive;
-	private JTextField delimiters;
+	private JTextField delimiters = new JTextField();
 
 	public RetainCharactersMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
