@@ -45,3 +45,11 @@ Places that still need Source Table change checks
   * Project Editor Screen:
     # Check if source table still exists
     # Check if source table index still exists or was changed
+  * Munge Process Editor
+    # Check if SQL Input Step's columns are still correct (columns added? columns removed?)
+  * Source Table Merge Rule Editor
+    # Check if any columns were added or removed
+    # Check if source table index still exists
+  * Match Validation Screen
+    # Check if any columns were removed from the source table. This particularly affects the 'Display Values' and 'Display Columns' preferences (especially now that they get saved) 
+    # Check if the unique index was changed
