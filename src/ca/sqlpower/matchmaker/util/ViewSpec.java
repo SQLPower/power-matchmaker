@@ -65,9 +65,7 @@ public class ViewSpec extends SQLQuery {
 	}
 
 	public void setCatalog(String catalog) {
-		if (this.catalog != catalog) {
-			this.catalog = catalog;
-		}
+		this.catalog = catalog;
 	}
 
 	public String getName() {
@@ -75,9 +73,7 @@ public class ViewSpec extends SQLQuery {
 	}
 
 	public void setName(String name) {
-		if (this.name != name) {
-			this.name = name;
-		}
+		this.name = name;		
 	}
 
 	public String getSchema() {
@@ -85,9 +81,7 @@ public class ViewSpec extends SQLQuery {
 	}
 
 	public void setSchema(String schema) {
-		if (this.schema != schema) {
-			this.schema = schema;
-		}
+		this.schema = schema;
 	}
 
 	/**
