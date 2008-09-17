@@ -169,14 +169,22 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     	
     	private final AbstractAction okAction = new AbstractAction("OK") {
     		public void actionPerformed(ActionEvent e) {
+    			
+    			List<SQLColumn> chosenColumns = chooser.getChosenColumns();
+    			
+    			try{
+	    			// Refresh the display column preferences with the newly chosen columns
+	    			Preferences displayColumnPrefs = matchValidationPrefs.node("displayColumns");
+	    			displayColumnPrefs.clear();
+	    			for (int i = 0; i < chosenColumns.size(); i++) {
+	    				SQLColumn column = chosenColumns.get(i);
+	    				displayColumnPrefs.putInt(column.getName(), i);
+	    			}
+    			} catch (BackingStoreException bsEx) {
+    				logger.error("Exception while storing columns in Preferences", bsEx);
+    			}
+    			
     			try {
-    				List<SQLColumn> chosenColumns = chooser.getChosenColumns();
-    				// Refresh the display column preferences with the newly chosen columns
-    				displayColumnPrefs.clear();
-    				for (int i = 0; i < chosenColumns.size(); i++) {
-    					SQLColumn column = chosenColumns.get(i);
-    					displayColumnPrefs.putInt(column.getName(), i);
-    				}
     				MatchResultVisualizer.this.displayColumns = chosenColumns;
 					MatchResultVisualizer.this.getPool().findAll(chosenColumns);
     				MatchResultVisualizer.this.getPanel().repaint();
@@ -185,8 +193,6 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     			} catch (SQLException sqlEx) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), sqlEx.getMessage(), sqlEx);
-    			} catch (BackingStoreException bsEx) {
-    				logger.error("Exception while storing columns in Preferences", bsEx);
     			} finally {
     				dialog.dispose();
     			}
@@ -258,7 +264,21 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     				JOptionPane.showMessageDialog(dialog, "Please select at least one column!", 
     						"No columns selected", JOptionPane.INFORMATION_MESSAGE);
     			} else {
-    				shownColumns = chooser.getChosenColumns();
+    				List<SQLColumn> chosenColumns = chooser.getChosenColumns();
+    				
+    				try {
+						// Refresh the display column preferences with the newly chosen columns
+						Preferences shownColumnPrefs = matchValidationPrefs.node("shownColumns");
+						shownColumnPrefs.clear();
+						for (int i = 0; i < chosenColumns.size(); i++) {
+							SQLColumn column = chosenColumns.get(i);
+							shownColumnPrefs.putInt(column.getName(), i);
+						}
+					} catch (BackingStoreException ex) {
+						logger.error("Exception while storing columns in Preferences", ex);
+					}
+    				
+    				shownColumns = chosenColumns;
     				updateMatchTable();
     				dialog.dispose();
     			}
@@ -288,11 +308,15 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     		try {
     			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Chart Display Values");
 				if (chooser == null) {
-					shownColumns = new ArrayList<SQLColumn>();
-    				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project, displayColumns);
-    				// Defaults the shown value to true
-    				chooser.setAllDefaultChosen(true);
-    				shownColumns = chooser.getChosenColumns();
+					if (shownColumns == null) {
+						shownColumns = new ArrayList<SQLColumn>();
+						chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project, shownColumns);
+						// Defaults the shown value to true
+						chooser.setAllDefaultChosen(true);
+						shownColumns = chooser.getChosenColumns();
+					} else {
+						chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer) graph.getNodeRenderer(), project, shownColumns);
+					}
 				}
 
 				revertList = chooser.getChosenColumns();
@@ -642,11 +666,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
      * The node on the graph that is currently selected.
      */
     private SourceTableRecord selectedNode;
-    
-    /**
-     * A list of the SQLColumns that we want to display in each SourceTableRecord
-     * node in the match validation chart.
-     */
+
+	/**
+	 * A list of the SQLColumns that we want to display for each
+	 * SourceTableRecord in the match validation table.
+	 */
     private List<SQLColumn> shownColumns;
     
     /**
@@ -657,13 +681,13 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     
     /**
 	 * A {@link Preferences} node containing user and project-specific
-	 * preferences for which columns to display in the match validation graph.
+	 * preferences for the match validation screen.
 	 * The pathname used to retrieve it from the user root preference node is as
 	 * follows:
 	 * 
-	 * /ca/sqlpower/matchmaker/projectSettings/$<repository connection name>/$<project oid>/matchValidation/displayColumns";
+	 * /ca/sqlpower/matchmaker/projectSettings/$<repository connection name>/$<project oid>/matchValidation";
 	 */
-    private final Preferences displayColumnPrefs;
+    private final Preferences matchValidationPrefs;
     
     public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, ArchitectException {
     	super();
@@ -711,10 +735,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         
         String prefNodePath = "ca/sqlpower/matchmaker/projectSettings/$" +
         						project.getSession().getDatabase().getDataSource().getName() +
-        						"/$" + project.getOid() + "/matchValidation/displayColumns";
-        displayColumnPrefs = Preferences.userRoot().node(prefNodePath);
+        						"/$" + project.getOid() + "/matchValidation";
+        matchValidationPrefs = Preferences.userRoot().node(prefNodePath);
 
         try {
+        	final Preferences displayColumnPrefs = matchValidationPrefs.node("displayColumns");
         	String[] keys = displayColumnPrefs.keys();
 			for (String key: keys) {
 				SQLColumn column = project.getSourceTable().getColumnByName(key);
@@ -729,10 +754,36 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 					return 0;
 				}
 			});
-			
 		} catch (BackingStoreException e) {
 			logger.error("Error loading preferred display values for graph. Defaulting to primary key values", e);
 			displayColumns.clear();
+		}
+		
+		try {
+			shownColumns = new ArrayList<SQLColumn>();
+			final Preferences shownColumnPrefs = matchValidationPrefs.node("shownColumns");
+	    	String[] keys = shownColumnPrefs.keys();
+	    	
+	    	if (keys.length == 0) {
+	    		shownColumns = null;
+	    	} else {
+				for (String key: keys) {
+					SQLColumn column = project.getSourceTable().getColumnByName(key);
+					shownColumns.add(column);
+				}
+				Collections.sort(shownColumns, new Comparator<SQLColumn>() {
+					public int compare(SQLColumn o1, SQLColumn o2) {
+						int o1Index = shownColumnPrefs.getInt(o1.getName(), -1);
+						int o2Index = shownColumnPrefs.getInt(o2.getName(), -1);
+						if (o1Index < o2Index) return -1;
+						if (o1Index > o2Index) return 1;
+						return 0;
+					}
+				});
+	    	}
+		} catch (BackingStoreException e) {
+			logger.error("Error loading preferred display columns for table. Defaulting to all columns", e);
+			shownColumns = null;
 		}
         
         pool = new MatchPool(project);
