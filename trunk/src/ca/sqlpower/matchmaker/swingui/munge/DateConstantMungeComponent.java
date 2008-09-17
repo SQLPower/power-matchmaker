@@ -52,7 +52,7 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 	JCheckBox useCurrent;
 	JCheckBox retNull;
 	SpinnerDateModel dc;
-	JSpinner date;
+	JSpinner date = new JSpinner();
 	JComboBox opts;
 	JSpinner.DateEditor editor;
 
