@@ -75,8 +75,8 @@ public class TranslateWordsTableModel extends AbstractMatchMakerTableModel<Match
 		switch(columnIndex) {
 		case 0:
 			for (MatchMakerTranslateWord t: mmo.getChildren()){
-				if ((t.getFrom().equals(null) ? t.getFrom().equals(aValue) : t.getFrom().equals(aValue)) &&
-						(t.getTo().equals(null) ? t.getTo().equals(trans.getTo()) : t.getTo().equals(trans.getTo()))) {
+				if (((t.getFrom()!= null && t.getFrom().equals(aValue)) || t.getFrom() == aValue) &&
+						((t.getTo() != null && t.getTo().equals(trans.getTo())) || t.getTo() == trans.getTo())) {
 					// We would have a collision.
 					return;
 				}
@@ -85,8 +85,8 @@ public class TranslateWordsTableModel extends AbstractMatchMakerTableModel<Match
 			break;
 		case 1:
 			for (MatchMakerTranslateWord t: mmo.getChildren()){
-				if ((t.getTo().equals(null) ? t.getTo().equals(aValue) : t.getTo().equals(aValue)) &&
-						(t.getFrom().equals(null) ? t.getFrom().equals(trans.getFrom()) : t.getFrom().equals(trans.getFrom()))) {
+				if (((t.getTo() != null && t.getTo().equals(aValue)) || t.getTo()== aValue) &&
+						((t.getFrom() != null && t.getFrom().equals(trans.getFrom())) || t.getFrom() == trans.getFrom())) {
 					// We would have a collision.
 					return;
 				}
