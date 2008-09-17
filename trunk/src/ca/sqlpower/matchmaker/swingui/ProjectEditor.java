@@ -445,7 +445,18 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     	}
 
         refreshIndexComboBoxAndAction(project.getSourceTable());
-        indexComboBox.setSelectedItem(project.getSourceTableIndex());
+        
+        int sourceTableIndexIndex = 0;
+        List<SQLIndex> uniqueIndices = project.getSourceTable().getUniqueIndices();
+        SQLIndex sourceTableIndex = project.getSourceTableIndex();
+		for (int i = 0; i < uniqueIndices.size(); i++) {
+			SQLIndex index = uniqueIndices.get(i);
+			if (index.getName().equals(sourceTableIndex.getName())) {
+				sourceTableIndexIndex = i;
+				break;
+			}
+		}
+        indexComboBox.setSelectedIndex(sourceTableIndexIndex);
         
         //sets the resultChooser defaults
         resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
@@ -485,9 +496,14 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				List<SQLIndex> uniqueIndices = newTable.getUniqueIndices();
 				SQLIndex sourceTableIndex = project.getSourceTableIndex();
 				
-				if (!uniqueIndices.contains(sourceTableIndex)) {
-					indexComboBox.addItem(sourceTableIndex);
+				boolean contains = false;
+				for (SQLIndex index: uniqueIndices) {
+					if (index.getName().equals(sourceTableIndex.getName())) {
+						contains = true;
+						break;
+					}
 				}
+				if (!contains) indexComboBox.addItem(sourceTableIndex);
 				
 				for ( SQLIndex index : uniqueIndices ) {
 					indexComboBox.addItem(index);
