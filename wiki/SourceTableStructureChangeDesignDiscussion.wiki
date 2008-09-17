@@ -2,6 +2,29 @@
 
 = Details =
 
+From Bugzilla report:
+
+Stuff that would need to be handled includes, but is not limited to:
+
+1. Source table column(s) added
+    -have to change input step in all munge processes
+
+2. Source table column(s) removed
+    -have to change input step in all munge processes, dealing with the case
+where the removed column was connected to some other munge steps
+
+3. Source table column(s) renamed
+    -this will look like an removal and addition; no easy way to detect the
+rename. Will have to ask user for help. This could look like a matching game
+from a children's colouring book (also like the PK mapping interface in
+Architect)
+
+4. Primary key changed
+    -All munge results will have to be thrown out or updated to new PK if
+possible
+    -result table will have to be structurally modified to work with new PK
+
+
 August 5, 2008 Meeting Notes:
   * Suggestion is to segregate the source table change adaption code into classes separate from the normal merge engine logic so that all the adaption logic is in one place, rather than being 'baked into' the regular logic.
 
