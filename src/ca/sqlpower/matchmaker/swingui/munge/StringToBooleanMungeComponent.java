@@ -45,10 +45,10 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class StringToBooleanMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex;
+	private JCheckBox useRegex = new JCheckBox();
 	private JCheckBox caseSensitive;
-	private JTextField trueList;
-	private JTextField falseList;
+	private JTextField trueList = new JTextField();
+	private JTextField falseList = new JTextField();
 	private JComboBox defaultOption;
 
 	public StringToBooleanMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
