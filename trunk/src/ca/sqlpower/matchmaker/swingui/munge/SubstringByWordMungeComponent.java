@@ -52,9 +52,9 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 
 	private JSpinner begin;
 	private JSpinner end;
-	private JCheckBox useRegex;
+	private JCheckBox useRegex = new JCheckBox();
 	private JCheckBox caseSensitive;
-	private JTextField delimiter;
+	private JTextField delimiter = new JTextField();
 	private JTextField resultDelimiter;
 	
 	public SubstringByWordMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
