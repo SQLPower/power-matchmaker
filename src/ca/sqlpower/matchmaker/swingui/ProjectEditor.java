@@ -482,7 +482,14 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		indexComboBox.removeAllItems();
 		if ( newTable != null ) {
 			try {
-				for ( SQLIndex index : newTable.getUniqueIndices() ) {
+				List<SQLIndex> uniqueIndices = newTable.getUniqueIndices();
+				SQLIndex sourceTableIndex = project.getSourceTableIndex();
+				
+				if (!uniqueIndices.contains(sourceTableIndex)) {
+					indexComboBox.addItem(sourceTableIndex);
+				}
+				
+				for ( SQLIndex index : uniqueIndices ) {
 					indexComboBox.addItem(index);
 				}
 			} catch (ArchitectException e) {
