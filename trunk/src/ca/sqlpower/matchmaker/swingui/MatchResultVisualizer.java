@@ -769,7 +769,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 	    	} else {
 				for (String key: keys) {
 					SQLColumn column = project.getSourceTable().getColumnByName(key);
-					shownColumns.add(column);
+					if (column != null) {
+						shownColumns.add(column);
+					}
 				}
 				Collections.sort(shownColumns, new Comparator<SQLColumn>() {
 					public int compare(SQLColumn o1, SQLColumn o2) {
