@@ -30,7 +30,7 @@ public class SQLQuery {
 
 	/** The columns in the select statement as in SQL with no SELECT */
 	private String select;
-	/** the from clause of a SQL statment without FROM */
+	/** the from clause of a SQL statement without FROM */
 	private String from;
 	/** A SQL where clause without where */
 	private String where;
@@ -64,19 +64,16 @@ public class SQLQuery {
 	}
 
 	public void setFrom(String from) {
-		if (this.from != from) {
-			this.from = from;
-		}
-	}
-
+		this.from = from;
+	}  
+	
+	
 	public String getSelect() {
 		return select;
 	}
 
 	public void setSelect(String select) {
-		if (this.select != select) {
-			this.select = select;
-		}
+		this.select = select;
 	}
 
 	public String getWhere() {
@@ -84,9 +81,7 @@ public class SQLQuery {
 	}
 
 	public void setWhere(String where) {
-		if (this.where != where) {
-			this.where = where;
-		}
+		this.where = where;
 	}
 
 	@Override
