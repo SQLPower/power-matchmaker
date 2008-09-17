@@ -42,8 +42,8 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class WordCountMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex;
-	private JTextField delimiters;
+	private JCheckBox useRegex = new JCheckBox();
+	private JTextField delimiters = new JTextField();
 	private JCheckBox caseSensitive;
 
 	public WordCountMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
