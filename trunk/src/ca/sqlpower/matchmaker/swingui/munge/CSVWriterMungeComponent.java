@@ -54,11 +54,11 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
 	
 	private JButton addInputButton;
 	private JButton removeInputsButton;
-	private JTextField separatorField;
-	private JTextField quoteField;
-	private JTextField escapeField;
+	private JTextField separatorField = new JTextField();
+	private JTextField quoteField = new JTextField();
+	private JTextField escapeField = new JTextField();
 	private JFileChooser fileChooser;
-	private JTextField filePathField;
+	private JTextField filePathField = new JTextField();
 	private JButton fileButton;
 	private JCheckBox clrFileCheckBox;
     
