@@ -39,3 +39,9 @@ August 8, 2008 Group Discussion:
   * We've taken a first attempt at the issue and submitted an implementation of a feature that checks and fixes the project in the case of a source table change.
   * However, we've discovered a severe issue with this implementation. Changes made to the source table would only be identified if the change was made while the Power*MatchMaker was running. This is because the business object within the Project that holds the reference to the source table is loaded in from the database at each startup of the application. The feature's check will then compare that business object to the table on the database. So, changes made after the last startup of the app would be identified and changes made before would not.
   * A better approach to the problem would be creating a new project on the physical table and making the necessary changes from there. However, one problem with this approach is that the new project would not have any child merge rules. A crude solution to this would be to keep the original merge rules if the unique key index has not been changed, and to drop them if it has changed.
+
+September 17, 2008 Notes:
+Places that still need Source Table change checks
+  * Project Editor Screen:
+    # Check if source table still exists
+    # Check if source table index still exists or was changed
