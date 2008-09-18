@@ -39,6 +39,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -66,7 +67,8 @@ import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.Refresh;
+import ca.sqlpower.matchmaker.swingui.action.RefreshAction;
+import ca.sqlpower.matchmaker.swingui.action.ScriptAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 
@@ -130,7 +132,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 			JPopupMenu m = new JPopupMenu();
 			int row = t.getRowForLocation(e.getX(), e.getY());
 			TreePath tp = t.getPathForRow(row);
-			m.add(new JMenuItem(new Refresh(swingSession)));
 			if (tp != null) {
 				Object o = tp.getLastPathComponent();
 				if (o instanceof FolderParent) {
@@ -163,6 +164,11 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					addTranslateMenuItems(m, (TranslateGroupParent) o);
 				} else if (o instanceof MatchMakerTranslateGroup) {
 					addTranslateGroupMenuItems(m, (MatchMakerTranslateGroup) o);
+				}
+				
+				if (o instanceof MatchMakerObject) {
+		            m.add(new JMenuItem(new RefreshAction(swingSession)));
+		            m.add(new ScriptAction(swingSession, (MatchMakerObject) o));
 				}
 			}
 			m.show(t, e.getX(), e.getY());
