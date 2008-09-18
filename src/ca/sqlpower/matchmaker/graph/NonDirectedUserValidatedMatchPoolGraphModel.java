@@ -68,7 +68,9 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
      */
     public Collection<SourceTableRecord> getAdjacentNodes(SourceTableRecord node) {
     	Collection<SourceTableRecord> adjacentNodes = new ArrayList<SourceTableRecord>();
-    	logger.debug("The number of edges for this node is " + getEdges().size());
+    	if (logger.isDebugEnabled()) {
+    	    logger.debug("The number of edges for this node is " + getEdges().size());
+    	}
     	for (PotentialMatchRecord pmr : getEdges()){
     		if (pmr.getMaster() == node){
     			adjacentNodes.add(pmr.getDuplicate());
@@ -89,13 +91,7 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
      * Returns a list of PotentialMatchRecord where the master has been decided
      */
     public Collection<PotentialMatchRecord> getEdges() {
-        Collection<PotentialMatchRecord> edges = new ArrayList<PotentialMatchRecord>();
-        for (PotentialMatchRecord record : pool.getPotentialMatches()){
-            if (!record.isMasterUndecided()){
-                edges.add(record);
-            }
-        }
-        return edges;
+        return pool.getDecidedRecordsCache();
     }
 
     

@@ -745,6 +745,7 @@ public class MatchPool extends MonitorableImpl {
             throw new IllegalStateException("Potential match is already in pool (it should not be)");
         }
     	potentialMatches.put(pmr, pmr);
+    	recordChangedState(pmr);          // bootstraps the "decided record" cache entry
     	logger.debug("added " + pmr + " to MatchPool");
     	pmr.setPool(this);
     	pmr.getOriginalLhs().addPotentialMatch(pmr);
@@ -1275,6 +1276,7 @@ public class MatchPool extends MonitorableImpl {
 			pmr.getOriginalLhs().removePotentialMatch(pmr);
 			pmr.getOriginalRhs().removePotentialMatch(pmr);
 		}
+		decidedRecordsCache.remove(pmr);
 		deletedMatches.add(pmr);
 	}
 
@@ -1497,6 +1499,7 @@ public class MatchPool extends MonitorableImpl {
 	public void clearRecords(){
 		sourceTableRecords.clear();
 		potentialMatches.clear();
+		decidedRecordsCache.clear();
 		orphanedMatches.clear();
 	}
 	
@@ -1520,4 +1523,24 @@ public class MatchPool extends MonitorableImpl {
 	public synchronized Integer getJobSize() {
 		return new Integer(deletedMatches.size() + potentialMatches.size() * 2);
 	}
+
+	/**
+	 * A cache of potential match records that have been decided as matching.
+	 * This is an optimization to graph algorithms such as auto-match which
+	 * need to treat the match pool as a graph where the edges are the decided
+	 * PMR's.
+	 */
+	private final Set<PotentialMatchRecord> decidedRecordsCache = new HashSet<PotentialMatchRecord>();
+	
+    public void recordChangedState(PotentialMatchRecord potentialMatchRecord) {
+        if (potentialMatchRecord.isMasterUndecided()) {
+            decidedRecordsCache.remove(potentialMatchRecord);
+        } else {
+            decidedRecordsCache.add(potentialMatchRecord);
+        }
+    }
+    
+    public Set<PotentialMatchRecord> getDecidedRecordsCache() {
+        return decidedRecordsCache;
+    }
 }
