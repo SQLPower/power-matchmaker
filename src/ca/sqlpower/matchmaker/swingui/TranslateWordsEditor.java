@@ -180,12 +180,14 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerT
         translateWordsTable.setModel (tm);
         translateWordsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 			public void valueChanged(ListSelectionEvent e) {
+				if (e.getValueIsAdjusting()) return;
 				int row = translateWordsTable.getSelectedRow();
 				if (row >= 0) {
 					MatchMakerTranslateWord translateWord = mmo.getChildren().get(row); 
 					MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 					TreePath menuPath = treeModel.getPathForNode(translateWord);
 					swingSession.getTree().setSelectionPath(menuPath);
+					logger.debug("tree selection path is " + swingSession.getTree().getSelectionPath());
 				}
 			}
 		});
@@ -342,7 +344,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerT
 	 */
 	public void setSelectedWord(MatchMakerTranslateWord selectedWord) {
 		if (selectedWord != null) {
-			int selected = mmo.getChildren().indexOf(selectedWord);			
+			int selected = mmo.getChildren().indexOf(selectedWord);		
 			if (selected >= 0 && selected<translateWordsTable.getRowCount()) {
 				translateWordsTable.setRowSelectionInterval(selected, selected);
 			}
