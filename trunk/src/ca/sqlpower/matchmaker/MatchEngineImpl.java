@@ -221,7 +221,7 @@ public class MatchEngineImpl extends AbstractEngine {
 				progressMessage = "Clearing Match Pool";
 				logger.info(progressMessage);
 				setCurrentProcessor(pool);
-				pool.clear(new MatchEngineAborter());
+				pool.clear();
 				progress += clearJobSize;
 				setCurrentProcessor(null);
 			}
@@ -236,7 +236,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Storing matches";
 			setCurrentProcessor(pool);
 			logger.info(progressMessage);
-			pool.store(new MatchEngineAborter(), inDebugMode);
+			pool.store(inDebugMode);
             checkCancelled();
             progress += rowCount;
             setCurrentProcessor(null);
