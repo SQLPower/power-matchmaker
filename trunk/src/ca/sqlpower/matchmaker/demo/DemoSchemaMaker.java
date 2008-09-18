@@ -713,7 +713,8 @@ public class DemoSchemaMaker {
 					" VALUES (999999, NULL, NULL, 'Russill', 'Patricia', NULL, NULL, NULL, " +
 					" NULL, NULL, NULL, NULL, NULL, NULL, NULL)");
 		} finally {
-			if (con != null) con.close();
+			//if (con != null) 
+			con.close();
 		}
 		
 	}
