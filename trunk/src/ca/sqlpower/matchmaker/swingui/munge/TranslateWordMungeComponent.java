@@ -30,7 +30,6 @@ import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -80,17 +79,20 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 		if(temp.getSession()!= null) {
 			
 			// Fills the combo box with the translate groups only if the session exists
-			MatchMakerTranslateGroupDAO groupDAO = 
-				(MatchMakerTranslateGroupDAO) (temp.getSession().getDAO(MatchMakerTranslateGroup.class));
-			translateGroup = new JComboBox(groupDAO.findAll().toArray());
+			MatchMakerTranslateGroup[] translateGroups =
+			    temp.getSession().getTranslations().getChildren().toArray(new MatchMakerTranslateGroup[0]);
+			translateGroup = new JComboBox(translateGroups);
 			
 			// Sets the combo box to select the translate group in the parameter
 			if (temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME) != null) {
-				String oid = temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
-				if (groupDAO.findByOID(Long.valueOf(oid)) != null) {
-					translateGroup.setSelectedItem(groupDAO.findByOID(Long.valueOf(oid)));
-				}
-				
+			    String oid = temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
+			    long searchForOid = Long.valueOf(oid);
+			    for (MatchMakerTranslateGroup group : translateGroups) {
+			        if (group.getOid().longValue() == searchForOid) {
+			            translateGroup.setSelectedItem(group);
+			        }
+			    }
+			    
 			// Sets the parameter to the first translate group in the list if the step
 			// did not specific a translate group.
 			} else if (translateGroup.getSelectedItem() != null) {
