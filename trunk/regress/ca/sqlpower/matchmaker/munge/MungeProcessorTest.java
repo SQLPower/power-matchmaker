@@ -38,6 +38,9 @@ import junit.framework.TestCase;
  *         |   |   |   |             Output 0 is connected to F
  *         v   v   |   v             Output 1 is connected to G
  *         E   F&lt;--+   G
+ *         |   |
+ *         v   |					 R is the Result Step
+ *         R&lt;--+					 with Inputs from E and F
  * </pre>
  * <p>
  * Note, this setup was originally identical to the setup in the
@@ -91,6 +94,11 @@ public class MungeProcessorTest extends TestCase {
      */
     private TestingMungeStep g;
     
+    /**
+	 * Step R as shown in the diagram in the class comment.
+	 */
+    private TestingResultMungeStep r;
+    
     private final Logger logger = Logger.getLogger("testLogger");
     
     @Override
@@ -109,10 +117,10 @@ public class MungeProcessorTest extends TestCase {
 
         d = new TestingMungeStep("D", 1, 1);
 
-        e = new TestingMungeStep("E", 1, 0);
+        e = new TestingMungeStep("E", 1, 1);
         e.connectInput(0, b.getChildren().get(0));
 
-        f = new TestingMungeStep("F", 3, 0);
+        f = new TestingMungeStep("F", 3, 1);
         f.connectInput(0, a.getChildren().get(0));
         // purposely leaving input 1 not connected (for testing)
         f.connectInput(2, c.getChildren().get(0));
@@ -120,7 +128,10 @@ public class MungeProcessorTest extends TestCase {
         g = new TestingMungeStep("G", 1, 1);
         g.connectInput(0, c.getChildren().get(1));
         
-
+        r = new TestingResultMungeStep("R", 2);
+        r.connectInput(0, e.getChildren().get(0));
+        r.connectInput(1, f.getChildren().get(0));
+        
         // The order in which MungeSteps are added should be
         // randomized to ensure the processor isn't just processing
         // the steps in the order in which it was given.
@@ -131,7 +142,8 @@ public class MungeProcessorTest extends TestCase {
         mungeProcess.addChild(c);
         mungeProcess.addChild(e);
         mungeProcess.addChild(d);
-
+        mungeProcess.addChild(r);
+        
         mp = new MungeProcessor(mungeProcess, logger);
     }
     
@@ -173,6 +185,7 @@ public class MungeProcessorTest extends TestCase {
         assertTrue(e.isRolledBack());
         assertTrue(f.isRolledBack());
         assertTrue(g.isRolledBack());
+        assertTrue(r.isRolledBack());
     }
 
     public void testNoCommitOnError() throws Exception {
@@ -190,6 +203,7 @@ public class MungeProcessorTest extends TestCase {
         assertFalse(e.isCommitted());
         assertFalse(f.isCommitted());
         assertFalse(g.isCommitted());
+        assertFalse(r.isCommitted());
     }
 
     public void testCommitOnSuccess() throws Exception {
@@ -201,6 +215,7 @@ public class MungeProcessorTest extends TestCase {
         assertTrue(e.isCommitted());
         assertTrue(f.isCommitted());
         assertTrue(g.isCommitted());
+        assertTrue(r.isCommitted());
     }
 
     public void testNoRollbackOnSuccess() throws Exception {
@@ -212,6 +227,7 @@ public class MungeProcessorTest extends TestCase {
         assertFalse(e.isRolledBack());
         assertFalse(f.isRolledBack());
         assertFalse(g.isRolledBack());
+        assertFalse(r.isRolledBack());
     }
 
     public void testCloseOnSuccess() throws Exception {
@@ -223,6 +239,7 @@ public class MungeProcessorTest extends TestCase {
         assertFalse(e.isOpen());
         assertFalse(f.isOpen());
         assertFalse(g.isOpen());
+        assertFalse(r.isOpen());
     }
     
     public void testCloseOnFailure() throws Exception {
@@ -240,5 +257,6 @@ public class MungeProcessorTest extends TestCase {
         assertFalse(e.isOpen());
         assertFalse(f.isOpen());
         assertFalse(g.isOpen());
+        assertFalse(r.isOpen());
     }
 }

@@ -64,6 +64,12 @@ public class MungeProcessor extends AbstractProcessor {
     		logger.setLevel(Level.DEBUG);
     	}
     	
+    	MungeResultStep resultStep = mungeProcess.getResultStep();
+    	if (!resultStep.hasConnectedInputs()) {
+    		throw new IllegalStateException("Munge Process '" + mungeProcess.getName() + 
+    				"' has a result step with no inputs connected!");
+    	}
+    	
     	determineProcessOrder();
         
     	try {

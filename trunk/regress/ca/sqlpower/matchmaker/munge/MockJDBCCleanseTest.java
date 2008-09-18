@@ -46,7 +46,11 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
         assertSame(ProjectMode.CLEANSE, ((Project) (step.getParent().getParent().getParent())).getType());
 
 	    MungeProcessor mp = new MungeProcessor(process, logger);
-	    mp.call();
+	    try {
+	    	mp.call();
+	    } catch (IllegalStateException ex) {
+	    	// Expecting ex to be thrown since result step is not connected
+	    }
 
 	    Connection con = db.getConnection();
 	    Statement stmt = con.createStatement();

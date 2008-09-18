@@ -344,4 +344,8 @@ public class MungeProcess
 			includeMungeStep(ms);
 		}
 	}
+	
+	MungeResultStep getResultStep() {
+		return resultStep;
+	}
 }
