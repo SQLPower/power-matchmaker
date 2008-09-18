@@ -68,7 +68,6 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.ConnectedComponentFinder;
 import ca.sqlpower.graph.GraphModel;
-import ca.sqlpower.matchmaker.Aborter;
 import ca.sqlpower.matchmaker.AutoMatcher;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -556,21 +555,8 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 
 		@Override
 		public void doStuff() throws Exception {
-			autoMatcher.doAutoMatch(mungeProcess, new Aborter() {
-				public void checkCancelled() throws CancellationException {
-					if (autoMatcher.isCancelled()) {
-						throw new CancellationException();
-					}
-				}
-			});
-			
-			pool.store(new Aborter() {
-				public void checkCancelled() throws CancellationException {
-					if (pool.isCancelled()) {
-						throw new CancellationException();
-					}
-				}
-			});
+			autoMatcher.doAutoMatch(mungeProcess);
+			pool.store();
 		}
 
 		public Integer getJobSize() {
@@ -582,10 +568,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
 
 		public int getProgress() {
-			if (!autoMatcher.isFinished()) {
-				return autoMatcher.getProgress();
+			int amProgress = autoMatcher.getProgress();
+            if (!autoMatcher.isFinished()) {
+				return amProgress;
 			} else {
-				return autoMatcher.getProgress() + pool.getProgress();
+				return amProgress + pool.getProgress();
 			}
 		}
 
