@@ -41,7 +41,7 @@ import ca.sqlpower.matchmaker.SourceTableRecord;
 public class GraphConsideringOnlyGivenNodes implements
 	GraphModel<SourceTableRecord, PotentialMatchRecord> {
 
-	Logger logger = Logger.getLogger(GraphConsideringOnlyGivenNodes.class);
+	private static final Logger logger = Logger.getLogger(GraphConsideringOnlyGivenNodes.class);
 	
 	/**
 	 * This pool should contain the nodes that are given in this graph as well as 
@@ -74,7 +74,9 @@ public class GraphConsideringOnlyGivenNodes implements
 				adjacentNodes.add(pmr.getOriginalLhs());
 			}
 		}
-		logger.debug("Adjacent nodes to " + node + " are " + adjacentNodes);
+		if (logger.isDebugEnabled()) {
+		    logger.debug("Adjacent nodes to " + node + " are " + adjacentNodes);
+		}
 		return adjacentNodes;
 	}
 

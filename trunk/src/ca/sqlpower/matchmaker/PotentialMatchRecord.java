@@ -246,6 +246,9 @@ public class PotentialMatchRecord {
      * new or deleted, it will be left alone.
      */
     private void markDirty() {
+        if (pool != null) {
+            pool.recordChangedState(this);
+        }
     	if (storeState == StoreState.CLEAN) {
     		setStoreState(StoreState.DIRTY);
     	}
