@@ -85,6 +85,7 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.DefaultGraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
+import ca.sqlpower.matchmaker.util.SourceTableUtil;
 import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -692,6 +693,24 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, ArchitectException {
     	super();
         this.project = project;
+        
+		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
+        	String errorText = "The MatchMaker has detected changes in the " +
+			"source table structure.\nYour project will require modifications before the engines can run properly.\n" +
+			"The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
+			"Would you like the MatchMaker to modify the project now?";
+			int response = JOptionPane.showOptionDialog(session.getFrame(), errorText,
+					"Source Table Changed", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
+					new String[] {"Fix Now", "Not Now"}, "Modify Now");
+			if (response == JOptionPane.YES_OPTION) {
+				try {
+					SourceTableUtil.checkAndfixProject(session, project);
+				} catch (Exception ex1) {
+					MMSUtils.showExceptionDialog(getPanel(), "Failed to fix project!", ex1);
+				}
+			}
+        }
+        
         FormLayout topLayout = new FormLayout("pref", "pref, pref");
         JPanel topPanel = new JPanel (topLayout);
         PanelBuilder pb = new PanelBuilder(topLayout, topPanel);
@@ -743,7 +762,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         	String[] keys = displayColumnPrefs.keys();
 			for (String key: keys) {
 				SQLColumn column = project.getSourceTable().getColumnByName(key);
-				displayColumns.add(column);
+				if (column != null) {
+					displayColumns.add(column);
+				}
 			}
 			Collections.sort(displayColumns, new Comparator<SQLColumn>() {
 				public int compare(SQLColumn o1, SQLColumn o2) {

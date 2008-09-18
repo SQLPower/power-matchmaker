@@ -78,7 +78,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		SQLSchema plSchema = db.getSchemaByName("pl");
 
 		SQLTable resultTable = db.getTableByName(null, "pl", "match_results");
-		SQLTable sourceTable = db.getTableByName(null, "pl", "source_table");
+		final SQLTable sourceTable = db.getTableByName(null, "pl", "source_table");
 		
 //		SQLTable sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
 //				true);
@@ -115,6 +115,19 @@ public class MatchResultVisualizerTest extends TestCase {
 			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
 		        return new StubMatchMakerDAO<T>(businessClass);
 		    }
+			
+			@Override
+			public boolean tableExists(String spDataSourceName, String catalog,
+					String schema, String tableName) throws ArchitectException {
+				return true;
+			}
+			
+			@Override
+			public SQLTable findPhysicalTableByName(String spDataSourceName,
+					String catalog, String schema, String tableName)
+					throws ArchitectException {
+				return sourceTable;
+			}
 		};
 
 		project = new Project();
