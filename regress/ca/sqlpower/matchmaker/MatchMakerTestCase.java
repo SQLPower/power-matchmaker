@@ -108,6 +108,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("matchingEngine");
         propertiesToIgnoreForDuplication.add("cleansingEngine");
         propertiesToIgnoreForDuplication.add("undoing");
+        propertiesToIgnoreForDuplication.add("runningEngine");
         
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");

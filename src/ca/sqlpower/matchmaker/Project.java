@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
 
@@ -41,6 +42,7 @@ import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
+import ca.sqlpower.util.Monitorable;
 
 /**
  * folder is the parent of project. should be not null.
@@ -157,11 +159,14 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * The Matching engine this will be created lazyily, because we only need one instance per project.
      */
 	private MergeEngineImpl mergingEngine = null;
-	
-	/**
-	 * Keeps track of whether or not an engine is running.
-	 */
-	private boolean engineRunning;
+
+    /**
+     * The process that holds the engine lock. If no process has an engine lock
+     * on this project, the reference will be null. The Monitorable instance
+     * itself should provide real information about its progress so that others
+     * who are waiting for this lock can see how much longer it will be.
+     */
+    private final AtomicReference<Monitorable> runningEngine = new AtomicReference<Monitorable>();
     
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
@@ -962,15 +967,77 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		} 
 		return null;
 	}
-	
-	public void setEngineRunning(boolean b){
-		if (b == engineRunning) return;
-		boolean oldVal = engineRunning;
-		this.engineRunning = b;
-		getEventSupport().firePropertyChange("engineRunning", oldVal, b);
+
+    /**
+     * Acquires the engine lock when it becomes available. If the lock is not
+     * currently available, this method will block until the lock is acquired.
+     * The monitor passed in must be the same monitor that will later be used to
+     * release the lock. The monitor should be able to be used to track the
+     * progress of the engine that has acquired the lock. All engines (match,
+     * merge, cleanse and even the auto-matcher) that operate on the match pool
+     * must acquire this lock before manipulating the pool in any way.
+     * <p>
+     * To acquire the lock, use code like this:
+     * 
+     * <pre>
+     *   try {
+     *      project.acquireEngineLock();
+     *      
+     *      (do various pooley things)
+     *      
+     *   } finally {
+     *      project.releaseEngineLock();
+     *   }
+     * </pre>
+     * <p>
+     * Note that this lock is local to this JVM. In the future, we hope to
+     * expand the scope of the lock to cover all users of this project in the
+     * session's repository database.
+     * 
+     * @throws InterruptedException
+     */
+	public void acquireEngineLock(Monitorable monitor) throws InterruptedException {
+	    boolean acquired = false;
+	    while (!acquired) {
+	        acquired = runningEngine.compareAndSet(null, monitor);
+	        synchronized (runningEngine) {
+	            if (!acquired) {
+	                runningEngine.wait();
+	            }
+            }
+	    }
 	}
 	
-	public boolean isEngineRunning(){
-		return engineRunning;
+	/**
+	 * Releases the engine lock if the monitor passed in is the same monitor that
+	 * was used to acquire the lock. Returns true if the lock is successfully released,
+	 * returns false otherwise.
+	 */
+	public void releaseEngineLock(Monitorable monitor) {
+	    if (!runningEngine.compareAndSet(monitor, null)) {
+	        throw new IllegalMonitorStateException("Can't release lock because you don't own it");
+	    }
+	    synchronized (runningEngine) {
+	        runningEngine.notify();
+        }
+	}
+
+    /**
+     * A reference to monitor the progress of the engine that is currently
+     * running in this project. Only one engine may run at any given time in a
+     * project.
+     * <p>
+     * In the future (when we have time), this API is likely to change so that you
+     * would have to acquire a shared or "read only" lock instead of polling for
+     * the currently-running engine. This will let us properly support multi-user
+     * (on different client machines) better. For now, this API assumes that nothing
+     * will try to acquire the engine lock except some explicit user action in the
+     * local JVM.
+     * 
+     * @return A way of monitoring the progress of something that holds the engine
+     * lock on this project; null if the engine lock is free.
+     */
+	public Monitorable getRunningEngine() {
+	    return runningEngine.get();
 	}
 }

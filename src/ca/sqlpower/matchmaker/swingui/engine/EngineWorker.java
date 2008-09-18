@@ -99,11 +99,16 @@ class EngineWorker extends SPSwingWorker {
 	}
 	
 	@Override
-	public void doStuff() throws EngineSettingException, IOException, SQLException, SourceTableException {
-		project.setEngineRunning(true);
-		appender = new DocumentAppender(engineOutputDoc);
-		engine.getLogger().addAppender(appender);
-		engine.call();
+	public void doStuff() throws EngineSettingException, IOException, SQLException, SourceTableException, InterruptedException {
+	    project.acquireEngineLock(engine);
+	    try {
+	        appender = new DocumentAppender(engineOutputDoc);
+	        engine.getLogger().addAppender(appender);
+	        engine.call();
+	    } finally {
+	        project.releaseEngineLock(engine);
+	    }
+
 	}
 
 	@Override
@@ -113,8 +118,6 @@ class EngineWorker extends SPSwingWorker {
 			engine.getLogger().error("Error during engine run", getDoStuffException());
 		}
 		engine.getLogger().removeAppender(appender);
-		
-		project.setEngineRunning(false);
 	}
 	
 }

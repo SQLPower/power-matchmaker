@@ -256,7 +256,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 */
 	private void refreshRunActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
-		boolean valid = !(worst.getStatus() == Status.FAIL || project.isEngineRunning());
+		boolean valid = !(worst.getStatus() == Status.FAIL || project.getRunningEngine() != null);
 		runEngineAction.setEnabled(valid);
 	}
 	
