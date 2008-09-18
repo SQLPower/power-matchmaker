@@ -416,6 +416,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				if (link != null) {
 					MungeStep parent = (MungeStep)link.getParent();
 					int parNum = parent.getChildren().indexOf(link);
+					if (parNum < 0) {
+					    throw new IllegalStateException("Unable to find munge step output \"" + link + "\" of \"" + parent + "\"");
+					}
 					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
 					add(ioc);
 					modelMap.get(parent).setConnectOutput(parNum, true);
