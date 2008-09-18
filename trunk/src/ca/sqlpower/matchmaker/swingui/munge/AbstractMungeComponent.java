@@ -1253,7 +1253,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param con True iff the component is in use.
 	 */
 	public void setConnectOutput(int index, boolean con) {
-		logger.debug("index: " + index + " -> " + con);
+		logger.debug("connect "+getStep().getName()+"'s output index: " + index + " -> " + con);
 		if (con) {
 			connected[index]++;
 		} else {
