@@ -400,12 +400,11 @@ public class RepositoryUtil {
     				logger.error("Couldn't close statement! Squishing this exception:", ex);
     			}
     		}
-    		if (con != null) {
-    			try {
-    				con.close();
-    			} catch (SQLException ex) {
-    				logger.error("Couldn't close database! Squishing this exception:", ex);
-    			}
+    		
+    		try {
+    			con.close();
+    		} catch (SQLException ex) {
+    			logger.error("Couldn't close database! Squishing this exception:", ex);
     		}
     	}
     }
