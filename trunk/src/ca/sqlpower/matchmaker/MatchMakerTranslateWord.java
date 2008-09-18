@@ -22,9 +22,9 @@ package ca.sqlpower.matchmaker;
 public class MatchMakerTranslateWord
 	extends AbstractMatchMakerObject<MatchMakerTranslateWord,MatchMakerObject> {
 
-	private Long oid;
-	private String from ="";
-	private String to="";
+	private Long oid = 0L;
+	private String from = "";
+	private String to = "";
 
 	public MatchMakerTranslateWord() {
 	}
