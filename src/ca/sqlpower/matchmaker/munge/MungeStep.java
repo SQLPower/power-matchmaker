@@ -275,4 +275,13 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * recent call to open().
      */
     boolean isOpen();
+
+	/**
+	 * Intended to check if at least one of the Inputs in this MungeStep have
+	 * a MungeStepOutput connected to it.
+	 * 
+	 * @return True if at least one Input has a MungeStepOutput associated with
+	 *         it. False if otherwise.
+	 */
+    boolean hasConnectedInputs();
 }

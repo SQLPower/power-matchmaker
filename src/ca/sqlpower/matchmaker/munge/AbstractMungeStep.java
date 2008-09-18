@@ -722,4 +722,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public void setPreviewMode(boolean previewMode) {
 		this.previewMode = previewMode;
 	}
+	
+	public boolean hasConnectedInputs() {
+		boolean result = false;
+		for (Input in: inputs) {
+			result |= (in.current != null);
+			if (result) break;
+		}
+		return result;
+	}
 }

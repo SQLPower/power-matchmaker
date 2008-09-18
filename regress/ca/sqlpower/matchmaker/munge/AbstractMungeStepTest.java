@@ -209,4 +209,28 @@ public class AbstractMungeStepTest extends TestCase {
             // expected
         }
     }
+    
+    public void testHasConnectedInputs() {
+    	mungeStep.addInput(new InputDescriptor("A", Object.class));
+    	mungeStep.addInput(new InputDescriptor("B", Object.class));
+    	mungeStep.addInput(new InputDescriptor("C", Object.class));
+    	
+    	assertFalse(mungeStep.hasConnectedInputs());
+    	
+    	mungeStep.connectInput(0, new MungeStepOutput<Object>("A", Object.class));
+    	assertTrue(mungeStep.hasConnectedInputs());
+    	
+    	mungeStep.disconnectInput(0);
+    	assertFalse(mungeStep.hasConnectedInputs());
+    	
+    	mungeStep.connectInput(1, new MungeStepOutput<Object>("A", Object.class));
+    	mungeStep.connectInput(2, new MungeStepOutput<Object>("B", Object.class));
+    	assertTrue(mungeStep.hasConnectedInputs());
+    	
+    	mungeStep.disconnectInput(1);
+    	assertTrue(mungeStep.hasConnectedInputs());
+    	
+    	mungeStep.disconnectInput(2);
+    	assertFalse(mungeStep.hasConnectedInputs());
+    }
 }

@@ -273,4 +273,8 @@ public class StubMungeStep implements MungeStep {
 	public void startCompoundEdit() {
 		logger.debug("Stub call: StubMungeStep.startCompoundEdit()");
 	}
+	
+	public boolean hasConnectedInputs() {
+		return false;
+	}
 }
