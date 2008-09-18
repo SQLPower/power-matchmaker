@@ -471,7 +471,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         MatchMakerUtils.listenToHierarchy(removeEditorListener, getTranslateGroupParent());
 	}
 
-	void showGUI() {
+	public void showGUI() {
 	    buildGUI();
         frame.setVisible(true);
 		splitPane.setDividerLocation(0.2);
