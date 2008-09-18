@@ -73,7 +73,6 @@ public class TableQueryFrame extends JFrame {
     private final MatchMakerSwingSession swingSession;
 
 	private JProgressBar progressBar;
-	private JPanel buttonPanel;
 	private JComboBox dbDropdown;
 	private JComboBox tableDropdown;
 	private JSpinner rowLimit;
@@ -306,10 +305,6 @@ public class TableQueryFrame extends JFrame {
 			dispose();
 		}
 	};
-
-	public JPanel getButtonPanel() {
-		return buttonPanel;
-	}
 
 	public TableQueryFrame(MatchMakerSwingSession swingSession) {
 		super();
