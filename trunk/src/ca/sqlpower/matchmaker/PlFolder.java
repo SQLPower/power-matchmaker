@@ -33,7 +33,7 @@ public class PlFolder<C extends MatchMakerObject>
 	/**
 	 * The object id
 	 */
-	private Long oid;
+	private Long oid = 0L;
 	
 	/**
 	 * This folder's description.
