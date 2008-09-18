@@ -752,9 +752,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             		}
             		if (save) {
             			doit = oldPane.applyChanges();
+            			logger.debug("Last tree path was " + lastTreePath);
+            			logger.debug("Apply changes() in setCurrentEditorComponenet()! save is " + save + " and doit is " + doit);
             			if (!doit){
             				tree.setSelectionPath(lastTreePath);
             			}
+            			logger.debug("Tree has selection path " + tree.getSelectionPath());
             		} else if (doit) {
             			oldPane.discardChanges();
             			doit = true;
@@ -793,7 +796,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 // forced to its minimum size. This sets the divider to remain
                 // at the location that has been set before the editor change.
     			splitPane.setDividerLocation(splitPane.getDividerLocation());
-            }
+            } 
+            
         } finally {
             editorComponentUpdateInProgress = false;
         }
@@ -1212,61 +1216,65 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 				}
 				if (save) {
 					doit = oldPane.applyChanges();
+        			logger.debug("Doit boolean is " + doit + " and save boolean is " + save);
 				} else if (doit) {
 					oldPane.discardChanges();
 					doit = true;
 				}
 			}
 		}
-		if (doit) {
+		if (!doit) {  //don't close, as there are unsaved changes with errors			
+			return false;
+		} else {
         	// clears the undo stack and the listeners to the match
         	// maker object
         	if (oldPane instanceof CleanupModel) {
         		((CleanupModel) oldPane).cleanup();
         	}
-        }
-		
-		// If we still have SwingWorker threads running, 
-        // tell them to cancel, and then ask the user to try again later.
-		// Note that it is not safe to force threads to stop, so we will
-		// have to wait until the threads stop themselves.
-		if (swingWorkers.size() > 0) {
-			for (SPSwingWorker currentWorker : swingWorkers) {
-				currentWorker.setCancelled(true);
-			}
-
-			Object[] options = {"Wait", "Force Quit"};
-			int n = JOptionPane.showOptionDialog(frame, 
-					"There are still unfinished tasks running in the MatchMaker.\n" +
-					"You can either wait for them to finish and try closing again later" +
-					", or force the application to close. Quitting will leave these tasks unfinished.", 
-					"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
-					null, options, options[0]);
-			if (n == 0) {
-				return false;
-			} else {
+        	
+			
+			// If we still have SwingWorker threads running, 
+		    // tell them to cancel, and then ask the user to try again later.
+			// Note that it is not safe to force threads to stop, so we will
+			// have to wait until the threads stop themselves.
+			if (swingWorkers.size() > 0) {
 				for (SPSwingWorker currentWorker : swingWorkers) {
-					currentWorker.kill();
+					currentWorker.setCancelled(true);
+				}
+		
+				Object[] options = {"Wait", "Force Quit"};
+				int n = JOptionPane.showOptionDialog(frame, 
+						"There are still unfinished tasks running in the MatchMaker.\n" +
+						"You can either wait for them to finish and try closing again later" +
+						", or force the application to close. Quitting will leave these tasks unfinished.", 
+						"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
+						null, options, options[0]);
+				if (n == 0) {
+					return false;
+				} else {
+					for (SPSwingWorker currentWorker : swingWorkers) {
+						currentWorker.kill();
+					}
 				}
 			}
-		}
-
-		saveSettings();
-
-		// It is possible this method will be called again via indirect recursion
-		// because the frame has a windowClosing listener that calls session.close().
-		// It should be harmless to have this close() method invoked a second time.
-		if (frame != null) {
-			// XXX this could/should be done by the frame with a session closing listener
-			frame.dispose();
-		}
-
-		if (!sessionImpl.close()) {
-			return false;
-		}
-		fireSessionClosing();
 		
-		return true;
+			saveSettings();
+		
+			// It is possible this method will be called again via indirect recursion
+			// because the frame has a windowClosing listener that calls session.close().
+			// It should be harmless to have this close() method invoked a second time.
+			if (frame != null) {
+				// XXX this could/should be done by the frame with a session closing listener
+				frame.dispose();
+			}
+		
+			if (!sessionImpl.close()) {
+				return false;
+			}
+			fireSessionClosing();
+			
+			return true;			
+	    }
 	}
 	
 	/**
