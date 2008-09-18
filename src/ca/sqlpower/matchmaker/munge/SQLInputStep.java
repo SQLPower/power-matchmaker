@@ -165,7 +165,10 @@ public class SQLInputStep extends AbstractMungeStep {
     		}
     		con.setAutoCommit(false);
 
-    		Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            
+            // Some platforms (definitely PostgreSQL) require a non-zero fetch size to enable streaming
+            stmt.setFetchSize(100);
 
     		StringBuilder sql = new StringBuilder();
     		sql.append("SELECT");
@@ -194,6 +197,9 @@ public class SQLInputStep extends AbstractMungeStep {
     		if (isPreviewMode()) {
     			previewRS.populate(rs);
     			previewRS.beforeFirst();
+    			rs.close();
+    			stmt.close();
+    			con.close();
     			rs = previewRS;
     		}
     	}
