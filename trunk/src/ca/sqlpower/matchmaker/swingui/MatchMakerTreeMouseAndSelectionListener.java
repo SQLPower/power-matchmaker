@@ -86,6 +86,13 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 	private final JFrame owningFrame;
 
+	/**
+	 * Tracks whether or not this selection listener is in the middle of handling
+	 * a selection change. Some changes can result in a recursive call to the
+	 * valueChanged() method, and this flag helps break cyclical changes.
+	 */
+	private boolean alreadyHandlingEvent;
+	
 	public MatchMakerTreeMouseAndSelectionListener(
 			MatchMakerSwingSession swingSession) {
 		this.swingSession = swingSession;
@@ -384,6 +391,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	public void valueChanged(TreeSelectionEvent e) {
 
 		JTree tree = (JTree) e.getSource();
+		if (alreadyHandlingEvent) {
+			logger.debug("Already handling an event. Returning with no effect.", new Exception());
+			tree.setSelectionPath(null);
+			return;
+		}
+		
 		if (tree.getSelectionPath() == null) {
 			logger.debug("Nothing selected, so return.");
 			return;
@@ -392,6 +405,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		if (tp != null) {
 			Object o = tp.getLastPathComponent();
 			try {
+				alreadyHandlingEvent = true;
 				if (o instanceof PlFolder) {
 					FolderEditor editor = new FolderEditor(swingSession,
 							(PlFolder) o);
@@ -553,6 +567,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 			} catch (Exception ex) {
 				MMSUtils.showExceptionDialog(owningFrame,
 						"Couldn't create editor for selected component", ex);
+			} finally {
+				alreadyHandlingEvent = false;
 			}
 		}
 	}
