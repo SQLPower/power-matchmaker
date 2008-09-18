@@ -24,6 +24,10 @@
 	<!-- Base directory for the izpack (Windows) installer output -->
 	<property name="installer.dir" value="installer"/>
 	
+	<!-- findbugs code checking tool -->
+	<property name="findbugs.home" value="ext-tools/findbugs"/>
+	<property name="findbugs-ant.jar" value="${findbugs.home}/lib/findbugs-ant.jar"/>
+	
 	<!-- When the build runs on a Mac, we can create the .dmg disk image
 	     using the native hdiutil program.  Otherwise, we just make a .tar.gz.
 	-->
@@ -58,6 +62,9 @@
 		</fileset>
 		<fileset dir="${buildlib}">
 			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${findbugs.home}/lib">
+			<include name="annotations.jar"/>
 		</fileset>
 	</path>
 	
@@ -865,9 +872,7 @@
 		<echo message="CPD completed, output is in ${reports}/cpd-ant-results.html."/>
 	</target>
 	
-	<!-- findbugs code checking tool -->
-	<property name="findbugs.home" value="ext-tools/findbugs"/>
-	<property name="findbugs-ant.jar" value="${findbugs.home}/lib/findbugs-ant.jar"/>
+
 
 	<target name="findbugs"
 		description="Runs the FindBugs tool, outputs results to a text file"

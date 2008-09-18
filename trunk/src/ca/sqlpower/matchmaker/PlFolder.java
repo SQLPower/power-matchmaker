@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * A container class desigend to hold match maker objects (for now),
  * we need to make it generic to hold other sqlPower database objects like Power Loader
@@ -33,7 +35,8 @@ public class PlFolder<C extends MatchMakerObject>
 	/**
 	 * The object id
 	 */
-	private Long oid = 0L;
+	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
+	private Long oid;
 	
 	/**
 	 * This folder's description.

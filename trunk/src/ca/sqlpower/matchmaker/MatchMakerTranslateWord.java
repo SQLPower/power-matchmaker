@@ -19,10 +19,13 @@
 
 package ca.sqlpower.matchmaker;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 public class MatchMakerTranslateWord
 	extends AbstractMatchMakerObject<MatchMakerTranslateWord,MatchMakerObject> {
 
-	private Long oid = 0L;
+	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
+	private Long oid;
 	private String from = "";
 	private String to = "";
 
