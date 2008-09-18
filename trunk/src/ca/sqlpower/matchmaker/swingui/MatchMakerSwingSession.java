@@ -540,8 +540,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		// TODO: Match statistics has been disabled until re-implementation
 //		projectMenu.addSeparator();
 //		projectMenu.add(showMatchStatisticInfoAction);
-//		projectMenu.addSeparator();
-		
+		projectMenu.addSeparator();
 		projectMenu.add(new ImportProjectAction(this, frame));
 		projectMenu.add(new ExportProjectAction(this, frame));
 		
