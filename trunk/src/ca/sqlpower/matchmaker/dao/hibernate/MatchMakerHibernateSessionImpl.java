@@ -586,7 +586,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     	try {
     		sql.append("select * from ");
     		sql.append(DDLUtils.toQualifiedName(table));
+    		
+    		conn.setAutoCommit(false);
     		stmt = conn.createStatement();
+    		stmt.setMaxRows(1);
+    		stmt.setFetchSize(1);
     		stmt.executeQuery(sql.toString());
 	    	try {
 	    		stmt.close();
