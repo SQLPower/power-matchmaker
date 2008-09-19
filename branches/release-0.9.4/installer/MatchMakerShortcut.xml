@@ -1,0 +1,19 @@
+<shortcuts>
+	<programGroup defaultName="SQL Power Suite"
+		location="applications"/>
+	<shortcut name="Power MatchMaker" target="javaw.exe"
+		programGroup="yes"
+		commandLine="-Xmx600m -jar matchmaker.jar"
+		workingDirectory="$INSTALL_PATH"
+		description="Power MatchMaker Data Tool"
+		iconFile="$INSTALL_PATH/matchmaker.ico" desktop="yes"
+		startMenu="yes">
+	</shortcut>
+
+	<shortcut name="Uninstall Power MatchMaker"
+		target="$INSTALL_PATH/uninstaller/uninstaller.jar"
+		programGroup="yes"
+		description="Remove the Power MatchMaker Data Tool"
+		iconFile="$INSTALL_PATH/uninstall.ico" desktop="no" >
+	</shortcut>
+</shortcuts>
