@@ -22,12 +22,12 @@ package ca.sqlpower.matchmaker;
 import java.util.Comparator;
 
 /**
- * This comparator will compare {@link SourceTableRecord} based on their display values.
- * If a display value cannot be compared then it will be skipped. If no display values
- * are comparable then the first value will be less than the second so both values will 
- * be placed in a set. If the records are deemed to be the same the first will always
- * be said to be less than the other. If one source table record has fewer display values 
- * then it will be less than the other if their set of display values are the same.
+ * This comparator compares {@link SourceTableRecord}s based on each of their
+ * display values in turn. If a display value component cannot be compared
+ * between the two records (because of a type mismatch) then it will be skipped.
+ * If no display values are comparable then the two records will be considered
+ * equal. If one source table record has fewer display values then it will be
+ * less than the other if their set of display values are the same.
  */
 public class SourceTableRecordDisplayComparator implements Comparator<SourceTableRecord> {
 
@@ -39,9 +39,11 @@ public class SourceTableRecordDisplayComparator implements Comparator<SourceTabl
 			Object str0Value = str0.getDisplayValues().get(i);
 			Object str1Value = str1.getDisplayValues().get(i);
 			
-			if (str1Value == null) {
+			if (str0Value == null && str1Value == null) {
+			    continue;
+			} else if (str1Value == null) {
 				return -1;
-			} else if (str0Value == null && str1Value != null) {
+			} else if (str0Value == null) {
 				return 1;
 			}
 			
@@ -52,7 +54,7 @@ public class SourceTableRecordDisplayComparator implements Comparator<SourceTabl
 			if (str0Value instanceof Comparable) {
 				int retVal = ((Comparable) str0Value).compareTo(str1Value);
 				if (retVal == 0) {
-					retVal = -1;
+					continue;
 				}
 				return retVal;
 			}
@@ -60,7 +62,7 @@ public class SourceTableRecordDisplayComparator implements Comparator<SourceTabl
 		if (str0.getDisplayValues().size() < str1.getDisplayValues().size()) {
 			return -1;
 		}
-		return -1;
+		return 0;
 	}
 
 }
