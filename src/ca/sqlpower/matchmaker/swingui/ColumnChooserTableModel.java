@@ -94,19 +94,27 @@ public class ColumnChooserTableModel extends AbstractTableModel{
 		CustomTableColumn column = candidateColumns.get(rowIndex);
 		modified = true;
 		if (columnIndex == 0) {
+			Integer removedPosition = candidateColumns.get(rowIndex).getPosition();
 			boolean value = (Boolean) aValue;
 			if (column.isKey() != value) {
 				column.setKey(value);
 				if (value && showPosition) {
-					int max = -1;
+					int max = 0;
 					for ( CustomTableColumn ctc : candidateColumns ) {
 						if (ctc.getPosition() != null && max < ctc.getPosition().intValue()) {
 							max = ctc.getPosition();
 						}
 					}
-					column.setPosition(new Integer(max+1));
+					candidateColumns.get(rowIndex).setPosition(new Integer(max+1));
 				} else {
-					column.setPosition(null);
+					//use removedPosition to shift all columns positioned at a higher index down by one
+					for (CustomTableColumn ctc : candidateColumns ) {
+						if (removedPosition != null && ctc.getPosition() != null && 
+								removedPosition.intValue() < ctc.getPosition().intValue()) {
+							ctc.setPosition(ctc.getPosition() - 1);
+						}
+					}
+					candidateColumns.get(rowIndex).setPosition(null);
 				}
 				fireTableDataChanged();
 			}
