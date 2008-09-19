@@ -241,7 +241,6 @@ public class FontSelector extends JDialog {
 	protected void previewFont() {
 		resultName = (String) fontNameChoice.getSelectedValue();
 		String resultSizeName = (String) fontSizeChoice.getSelectedValue();
-		int resultSize = Integer.parseInt(resultSizeName);
 		isBold = bold.isSelected();
 		isItalic = italic.isSelected();
 		int attrs = Font.PLAIN;
@@ -249,7 +248,7 @@ public class FontSelector extends JDialog {
 			attrs = Font.BOLD;
 		if (isItalic)
 			attrs |= Font.ITALIC;
-		resultFont = new Font(resultName, attrs, resultSize);
+		resultFont = new Font(resultName, attrs, Integer.parseInt(resultSizeName));
 		previewArea.setFont(resultFont);
 		setSize(getPreferredSize());
 		repaint();
