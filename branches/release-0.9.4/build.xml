@@ -77,7 +77,7 @@
 	</path>
 	
 	<!-- Compiles the MatchMaker and places the .class files into build-->
-	<target name="compile" depends="sqlpower.library, copyfiles">
+	<target name="compile" depends="copyfiles">
 		<mkdir dir="${build}"/>
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
@@ -173,10 +173,6 @@
 
 	<!-- Compiles the regression test suite -->
 	<target name="compile-tests" depends="compile">
-		<ant dir="${sqlpower.library.home}" target="compile-tests">
-			<property name="build" value="${sqlpower.library.home}/build"/>
-			<property name="build.tests" value="${sqlpower.library.home}/build/tests"/>
-		</ant>
 		<mkdir dir="${build.tests}"/>
 		<javac srcdir="regress" destdir="${build.tests}"
 			classpathref="test.classpath"
