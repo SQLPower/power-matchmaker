@@ -155,7 +155,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         subPanel.add(new JLabel("Description: "), cc.xy(2, 6));
         subPanel.add(desc, cc.xy(4, 6));
         
-        subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
+        subPanel.add(new JLabel("Colour: "), cc.xy(6, 6));
         ColorCellRenderer renderer = new ColorCellRenderer(85, 50);
         color.setRenderer(renderer);
         subPanel.add(color, cc.xy(8, 6));
@@ -229,7 +229,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
             applyChanges();
 		}
 	};
-	Action customColour = new AbstractAction("Custom Colour") {
+	Action customColour = new AbstractAction("Custom Colour...") {
 		public void actionPerformed(ActionEvent arg0) {
 			Color colour = swingSession.getCustomColour(mmo.getColour());
 		    if (colour != null) {
