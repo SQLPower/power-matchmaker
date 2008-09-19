@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * The abstract class of MatchMakerObject, it has a listener listens to the change
@@ -51,6 +52,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	private String lastUpdateAppUser;
 	private String lastUpdateOsUser;
 	private Date lastUpdateDate;
+	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
 	private Date createDate;
 	private MatchMakerSession matchMakerSession;
 	private String name;
