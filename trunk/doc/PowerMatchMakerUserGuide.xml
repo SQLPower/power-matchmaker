@@ -3294,11 +3294,14 @@
 													In Oracle, this would be the schema owner.
 												</listitem>
 												<listitem>
+													In DB2, this would be the schema name.
+												</listitem>
+												<listitem>
 													In SQL Server 2000, this would be the database name,
 													followed by "." and then the owner.
 												</listitem>
 												<listitem>
-													In SQL Server 2000, this would be the database name,
+													In SQL Server 2005, this would be the database name,
 													followed by "." and then the schema name.
 												</listitem>
 												<listitem>
