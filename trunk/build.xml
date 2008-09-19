@@ -63,9 +63,6 @@
 		<fileset dir="${buildlib}">
 			<include name="*.jar"/>
 		</fileset>
-		<fileset dir="${findbugs.home}/lib">
-			<include name="annotations.jar"/>
-		</fileset>
 	</path>
 	
 	<path id="test.classpath">
