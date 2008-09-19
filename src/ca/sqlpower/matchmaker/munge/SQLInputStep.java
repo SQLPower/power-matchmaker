@@ -35,6 +35,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.munge.MungePreviewer;
 import ca.sqlpower.sql.CachedRowSet;
 
 /**
@@ -184,7 +185,7 @@ public class SQLInputStep extends AbstractMungeStep {
     		}
 
     		if (isPreviewMode()) {
-//    			stmt.setFetchSize(MungePreviewer.MAX_ROWS_PREVIEWED);
+    		    stmt.setMaxRows(MungePreviewer.MAX_ROWS_PREVIEWED);
     		}
     		logger.debug("Attempting to execute input query: " + sql);
     		rs = stmt.executeQuery(sql.toString());
