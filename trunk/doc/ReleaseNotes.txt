@@ -1,3 +1,21 @@
+0.9.4
+* The Match Engine log reports how many matches each munge process found, and the total number of matches found by the engine
+* Added Munge Step icons in the Munge Pen
+* Improved Match Pool storing, updating, and clearing performance with batch updates
+* The Example Table builder can now specify the number of rows to populate the table with
+* Improved match validation screen layout to more efficiently utilize space
+* Added merge rule derivation by foreign key constraints, and improved merge rule derivation performance
+* The Power*MatchMaker will not attempt to rebuild the HSQLDB repository if it was deleted
+* Project Exporting and Importing using an XML file format
+* Ability to copy projects with the new project duplication feature
+* Ability to change merge actions in the merge rule list editor
+* Munge process priority is now specified by their order in the munge process list editor
+* Munge step previewer allows you to preview how each munge step is munging your data
+* Powerful Beanshell scripting environment allows you to modify your project at the lowest level
+* Match validation 'Display Values' and 'Display Columns' preferences are now saved as a user preference
+* Several bug fixes.
+* Now with 0% transfat!
+
 0.9.3
 * GUI Enhancements:
   - 'Choose Displayed Column' dialog now resizes properly
