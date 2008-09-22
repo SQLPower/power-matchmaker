@@ -56,7 +56,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class StringToDateMungeComponent extends AbstractMungeComponent {
 
 	private JTextField sample;
-	private JTextField inputFormat = new JTextField();
+	private JTextField inputFormat;
 	
 	private JComboBox dateFormat;
 	private JComboBox timeFormat;
