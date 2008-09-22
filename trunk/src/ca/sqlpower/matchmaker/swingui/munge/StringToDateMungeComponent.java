@@ -69,7 +69,6 @@ public class StringToDateMungeComponent extends AbstractMungeComponent {
 	
 	public StringToDateMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler, session);
-		handler.addValidateObject(inputFormat, new DateFormatPatternValidator());
 	}
 
 	@Override
@@ -141,6 +140,7 @@ public class StringToDateMungeComponent extends AbstractMungeComponent {
 				}
             }
         });
+		getHandler().addValidateObject(inputFormat, new DateFormatPatternValidator());
 		
 		outputFormat = new JComboBox(outputFormats);
 		outputFormat.setSelectedItem(temp.getOutputFormat());
