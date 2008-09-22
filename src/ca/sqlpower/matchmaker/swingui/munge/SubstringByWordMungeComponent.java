@@ -52,15 +52,14 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 
 	private JSpinner begin;
 	private JSpinner end;
-	private JCheckBox useRegex = new JCheckBox();
+	private JCheckBox useRegex;
 	private JCheckBox caseSensitive;
-	private JTextField delimiter = new JTextField();
+	private JTextField delimiter;
 	private JTextField resultDelimiter;
 	
 	public SubstringByWordMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
-		RegexValidator validator = new RegexValidator();
-		handler.addValidateObject(delimiter, useRegex, validator);
+
 	}
 
 	@Override
@@ -103,6 +102,8 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 				step.setParameter(step.DELIMITER_PARAMETER_NAME, delimiter.getText());
             }
         });
+		RegexValidator validator = new RegexValidator();
+		getHandler().addValidateObject(delimiter, useRegex, validator);
 		
 		resultDelimiter = new JTextField(step.getParameter(step.RESULT_DELIM_PARAMETER_NAME));
 		resultDelimiter.getDocument().addDocumentListener(new DocumentListener(){
