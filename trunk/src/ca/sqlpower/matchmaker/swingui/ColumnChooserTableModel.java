@@ -40,7 +40,10 @@ public class ColumnChooserTableModel extends AbstractTableModel{
 	public ColumnChooserTableModel(SQLTable sqlTable, SQLIndex oldIndex, boolean showPosition) throws ArchitectException {
 		this.showPosition = showPosition;
 		for ( SQLColumn column : sqlTable.getColumns()) {
-			int positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
+			int positionInIndex = -1;
+			if (oldIndex != null){
+				positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
+			}
 			candidateColumns.add(new CustomTableColumn(
 							(positionInIndex >= 0),
 							(positionInIndex >= 0 ? positionInIndex +1 : null),
