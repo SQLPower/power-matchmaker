@@ -175,7 +175,7 @@
 	</target>
 	
 	
-	<target name="copyfiles">
+	<target name="copyfiles" depends="matchmaker.version.properties">
 		<mkdir dir="${build}/icons"/>
 	    <copy todir="${build}/icons">
 			<fileset dir="src/icons/">
@@ -192,6 +192,8 @@
 				<include name="*.architect"/>
 			</fileset>
 		</copy>
+		
+		<copy file="${dist.dir}/matchmaker.version.properties" todir="${build}/ca/sqlpower/matchmaker"/>
 		
 		<!-- copies the template log4j config file into the build dir -->
 		<copy tofile="${build}/log4j.properties"
@@ -850,7 +852,7 @@
 	</target>
 	
 	<target name="copy.sqlpower.library" depends="check.sqlpower.library.dir">
-		<copy file="${sqlpower.library.home}/dist/sqlpower_library.jar" todir="${lib}"/>
+		<copy file="${sqlpower.library.home}/build/sqlpower_library.jar" todir="${lib}"/>
 	</target>
 	
 	
@@ -920,5 +922,14 @@
 			<auxClasspath path="${pmd.jar}" />
 			<systemProperty name="findbugs.maskedfields.locals" value='true'/>
 		</findbugs>
+	</target>
+	
+	<target name="matchmaker.version.properties" depends="getAppVersion">
+		<mkdir dir="${dist.dir}"/>
+		<propertyfile
+		    file="${dist.dir}/matchmaker.version.properties"
+		    comment="Power*MatchMaker Version">
+		  <entry key="app.version" value="${app.version}"/>
+		</propertyfile>
 	</target>
 </project>
