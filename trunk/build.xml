@@ -480,7 +480,7 @@
 			        classpath="${build}"/>
 		<genVersion/>
 		<tstamp>
-			<format property="date" pattern="yyyyMMdd"/>
+			<format property="date" pattern="yyyyMMddHHmmss"/>
 		</tstamp>
 		<condition property="app.ver.suffix" value="-${date}">
 			<isset property="nightly"/>
