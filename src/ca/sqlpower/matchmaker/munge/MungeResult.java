@@ -86,12 +86,28 @@ public class MungeResult implements Comparable<MungeResult> {
 			} else if (thisData.getClass().equals(Boolean.class)) {
 				logger.debug("comparing Booleans " + thisData + " and " + otherData);
 				compareValue = ((Boolean) thisData).compareTo((Boolean)otherData);
-			} else if (thisData.getClass().equals(Date.class)) {
+            } else if (thisData instanceof Date) {
+			    // had to use instanceof because MatchMaker uses all java.util.Date subclasses internally
 				logger.debug("comparing Dates " + thisData + " and " + otherData);
-				compareValue = ((Date) thisData).compareTo((Date)otherData);
+				
+				// but it is still meaningless to compare across types, so we need a check:
+				if (thisData.getClass() != otherData.getClass()) {
+				    throw new IllegalArgumentException(
+				            "Found mixed date representations in same column: " +
+				            thisData.getClass().getName() + " and " +
+				            otherData.getClass().getName());
+				}
+
+				compareValue = ((Date) thisData).compareTo((Date) otherData);
 			} else {
-				throw new IllegalStateException("MungeStepOutput" +
-						"contain an unsupported data type:" + thisData);
+			    String detailMessage;
+			    if (thisData == null) {
+			        detailMessage = "(the value was null)";
+			    } else {
+			        detailMessage = String.valueOf(thisData) + " (" + thisData.getClass().getName() + ")";
+			    }
+				throw new IllegalStateException(
+						"Unexpected data type encountered during comparison: " + detailMessage);
 			}
 			logger.debug("compareValue is " + compareValue);
 			
