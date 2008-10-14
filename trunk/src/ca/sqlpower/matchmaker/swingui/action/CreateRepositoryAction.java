@@ -87,7 +87,10 @@ public class CreateRepositoryAction extends AbstractAction {
                     session, session.getFrame(), "New Repository", "Create...");
             
             // check if user cancelled
-            if (target == null) return;
+            if (target == null) {
+                logger.debug("User cancelled the create action--aborting.");
+                return;
+            }
             
             SQLDatabase targetDB = ArchitectUtils.getAncestor(target, SQLDatabase.class);
             SQLCatalog targetCatalog = ArchitectUtils.getAncestor(target, SQLCatalog.class);
