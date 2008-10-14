@@ -33,6 +33,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLCatalog;
@@ -60,6 +62,8 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class SQLObjectChooser {
 
+    private static final Logger logger = Logger.getLogger(SQLObjectChooser.class);
+    
     /**
      * Presents a modal dialog with combo boxes for database connections,
      * catalogs, and schemas. Initially, there is no selection in the database
@@ -127,12 +131,14 @@ public class SQLObjectChooser {
                 return null;
             }
 
+            logger.debug("User submitted a selection. Chooser state: " + soc);
+            
             // post-mortem: figure out if we're returning a database, catalog, or schema
             if (soc.schema != null) {
                 return soc.schema;
-            } else if (soc.catalog != null && !soc.catalog.isSchemaContainer()) {
+            } else if (soc.catalog != null && !soc.schemaComboBox.isEnabled()) {
                 return soc.catalog;
-            } else if (soc.db != null && (! (soc.db.isSchemaContainer() || soc.db.isCatalogContainer()))) {
+            } else if (soc.db != null && (! (soc.schemaComboBox.isEnabled() || soc.catalogComboBox.isEnabled()))) {
                 return soc.db;
             } else {
                 return null;
@@ -476,4 +482,8 @@ public class SQLObjectChooser {
 		return db;
 	}
 
+	@Override
+	public String toString() {
+	    return "db="+db+" catalog="+catalog+" schema="+schema+" table="+table;
+	}
 }
