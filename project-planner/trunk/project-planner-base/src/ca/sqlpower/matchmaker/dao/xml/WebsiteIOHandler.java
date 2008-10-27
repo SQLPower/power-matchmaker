@@ -150,8 +150,9 @@ public class WebsiteIOHandler implements IOHandler {
             Reader in = new InputStreamReader(urlc.getInputStream());
             StringBuilder responseString = new StringBuilder();
             char[] buf = new char[2000];
-            while (in.read(buf) > 0) {
-                responseString.append(buf);
+            int readSize;
+            while ((readSize = in.read(buf)) > 0) {
+                responseString.append(buf, 0, readSize);
             }
             in.close();
             urlc.disconnect();
@@ -261,8 +262,9 @@ public class WebsiteIOHandler implements IOHandler {
                 Reader in = new InputStreamReader(urlc.getInputStream());
                 StringBuilder responseString = new StringBuilder();
                 char[] buf = new char[2000];
-                while (in.read(buf) > 0) {
-                    responseString.append(buf);
+                int readSize;
+                while ((readSize = in.read(buf)) > 0) {
+                    responseString.append(buf, 0, readSize);
                 }
                 in.close();
                 urlc.disconnect();
@@ -550,8 +552,9 @@ public class WebsiteIOHandler implements IOHandler {
             Reader in = new InputStreamReader(urlc.getInputStream());
             StringBuilder responseString = new StringBuilder();
             char[] buf = new char[2000];
-            while (in.read(buf) > 0) {
-                responseString.append(buf);
+            int readSize;
+            while ((readSize = in.read(buf)) > 0) {
+                responseString.append(buf, 0, readSize);
             }
             in.close();
             urlc.disconnect();
@@ -614,8 +617,9 @@ public class WebsiteIOHandler implements IOHandler {
             Reader in = new InputStreamReader(urlc.getInputStream());
             StringBuilder responseString = new StringBuilder();
             char[] buf = new char[2000];
-            while (in.read(buf) > 0) {
-                responseString.append(buf);
+            int readSize;
+            while ((readSize = in.read(buf)) > 0) {
+                responseString.append(buf, 0, readSize);
             }
             in.close();
             urlc.disconnect();
@@ -672,8 +676,9 @@ public class WebsiteIOHandler implements IOHandler {
             Reader in = new InputStreamReader(urlc.getInputStream());
             StringBuilder responseString = new StringBuilder();
             char[] buf = new char[2000];
-            while (in.read(buf) > 0) {
-                responseString.append(buf);
+            int readSize;
+            while ((readSize = in.read(buf)) > 0) {
+                responseString.append(buf, 0, readSize);
             }
             in.close();
             urlc.disconnect();
@@ -753,8 +758,9 @@ public class WebsiteIOHandler implements IOHandler {
 			Reader in = new InputStreamReader(urlc.getInputStream());
 			StringBuilder responseString = new StringBuilder();
 			char[] buf = new char[2000];
-			while (in.read(buf) > 0) {
-				responseString.append(buf);
+			int readSize;
+			while ((readSize = in.read(buf)) > 0) {
+				responseString.append(buf, 0, readSize);
 			}
 			in.close();
 			urlc.disconnect();
