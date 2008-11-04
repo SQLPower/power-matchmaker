@@ -1,7 +1,6 @@
 #summary A list of potential things to fix for Power*MatchMaker 0.9.4 RC 2.
 
 ==Notable Power*MatchMaker Commits since RC 1==
-  * r2018 - Update to the commons libraries, namely commons-collections to support the new JDBC metadata caching functionality.
   * r2026 - Fixed date comparison to work with java.sql.Date/Time/Timestamp in addition to java.util.Date. Added tests to ensure this behaviour doesn't break over time
   * 2027 - Fixed bug that made it impossible to create a repository in MySQL
 
@@ -9,4 +8,14 @@
 ==Notable Not-marked-as-fixed Power*MatchMaker bugs in BugZilla since RC 1==
   * Bug 1649 - User-defined custom unique keys on the match table doesn't get saved with the project. If you load the project, only the existing unique keys get loaded. The user-defined key is saved in the repository, but is not loaded
   * Bug 1650 - Power*MatchMaker throws NPE if clicking on 'Pick Columns' button on a match table with no unique key (this may have been fixed already)
-Haven't reproduced this error yet but: http://www.sqlpower.ca/forum/posts/list/2089.page
+  * Haven't reproduced this error yet but: http://www.sqlpower.ca/forum/posts/list/2089.page
+
+
+Notable Commits to SQL Power Library since RC 1 that may affect MatchMaker
+  * 636 - Removed check for missing username in attempt to get SQL Server integrated security logins working
+  * 696 - Split up DBMD wrappers for SQL Server 2000 and 2005 because optimal way of listing schemas is different between the two platforms. See http://www.sqlpower.ca/forum/posts/list/0/1788.page for details.
+
+==Notable Not-marked-as-fixed Bugs in SQL Power Library since RC 1==
+
+  * Bug 1680 - JDBC URL gets reset to default when template has changed.
+  * Bug 1693 - Need SQL Server driver to strips parentheses from default value
