@@ -2,7 +2,7 @@
 
 ==Notable Power*MatchMaker Commits since RC 1==
   * r2026 - Fixed date comparison to work with java.sql.Date/Time/Timestamp in addition to java.util.Date. Added tests to ensure this behaviour doesn't break over time
-  * 2027 - Fixed bug that made it impossible to create a repository in MySQL
+  * r2027 - Fixed bug that made it impossible to create a repository in MySQL
 
 
 ==Notable Not-marked-as-fixed Power*MatchMaker bugs in BugZilla since RC 1==
