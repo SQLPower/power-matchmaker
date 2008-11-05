@@ -1,13 +1,13 @@
 #summary A list of potential things to fix for Power*MatchMaker 0.9.4 RC 2.
 
 ==Notable Power*MatchMaker Commits since RC 1==
-  * (Commited) r2026 - Fixed date comparison to work with java.sql.Date/Time/Timestamp in addition to java.util.Date. Added tests to ensure this behaviour doesn't break over time
-  * r2027 - Fixed bug that made it impossible to create a repository in MySQL
+  * (Committed) r2026 - Fixed date comparison to work with java.sql.Date/Time/Timestamp in addition to java.util.Date. Added tests to ensure this behaviour doesn't break over time
+  * (Committed) r2027 - Fixed bug that made it impossible to create a repository in MySQL
 
 
 ==Notable Not-marked-as-fixed Power*MatchMaker bugs in BugZilla since RC 1==
   * Bug 1649 - User-defined custom unique keys on the match table doesn't get saved with the project. If you load the project, only the existing unique keys get loaded. The user-defined key is saved in the repository, but is not loaded
-  * Bug 1650 - Power*MatchMaker throws NPE if clicking on 'Pick Columns' button on a match table with no unique key (this may have been fixed already)
+  * (Fixed in 2020 in the trunk, and then backported to 0.9.4 in 2021) Bug 1650 - Power*MatchMaker throws NPE if clicking on 'Pick Columns' button on a match table with no unique key (this may have been fixed already)
   * Haven't reproduced this error yet but: http://www.sqlpower.ca/forum/posts/list/2089.page
 
 
