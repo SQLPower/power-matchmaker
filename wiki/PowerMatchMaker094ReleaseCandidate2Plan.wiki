@@ -1,7 +1,7 @@
 #summary A list of potential things to fix for Power*MatchMaker 0.9.4 RC 2.
 
 ==Notable Power*MatchMaker Commits since RC 1==
-  * r2026 - Fixed date comparison to work with java.sql.Date/Time/Timestamp in addition to java.util.Date. Added tests to ensure this behaviour doesn't break over time
+  * (Commited) r2026 - Fixed date comparison to work with java.sql.Date/Time/Timestamp in addition to java.util.Date. Added tests to ensure this behaviour doesn't break over time
   * r2027 - Fixed bug that made it impossible to create a repository in MySQL
 
 
