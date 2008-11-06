@@ -280,7 +280,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 	
 		
-	private Action createIndexAction = new AbstractAction("Pick Columns"){
+	private Action createIndexAction = new AbstractAction("Pick Columns..."){
 		public void actionPerformed(ActionEvent e) {
 			SQLTable sourceTable = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
 			if (sourceTable == null) {
