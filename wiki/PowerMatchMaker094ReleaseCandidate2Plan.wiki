@@ -16,4 +16,4 @@
   * 696 - Split up DBMD wrappers for SQL Server 2000 and 2005 because optimal way of listing schemas is different between the two platforms. See http://www.sqlpower.ca/forum/posts/list/0/1788.page for details.
 
 ==Notable Not-marked-as-fixed Bugs in SQL Power Library since RC 1==
-  * Bug 1693 - Need SQL Server driver to strips parentheses from default value
+  * Bug 1693 - Need SQL Server driver to strips parentheses from default value. WONTFIX because there is no foreseeable benefit for the MatchMaker.
