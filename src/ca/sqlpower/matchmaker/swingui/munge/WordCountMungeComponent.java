@@ -42,15 +42,14 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class WordCountMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex;
-	private JTextField delimiters;
+	private JCheckBox useRegex = new JCheckBox();
+	private JTextField delimiters = new JTextField();
 	private JCheckBox caseSensitive;
-	FormValidationHandler validHandler;
 
 	public WordCountMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
-		validHandler = handler;
-		
+		RegexValidator validator = new RegexValidator();
+		handler.addValidateObject(delimiters, useRegex, validator);
 	}
 	
 	@Override
@@ -59,11 +58,6 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 		WordCountMungeStep step = (WordCountMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		delimiters = new JTextField(step.getParameter(step.DELIMITER_PARAMETER_NAME));
-		
-		RegexValidator validator = new RegexValidator();
-		validHandler.addValidateObject(delimiters, useRegex, validator);
-		
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				WordCountMungeStep step = (WordCountMungeStep) getStep();
@@ -83,7 +77,7 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 			
 		});
 		
-		
+		delimiters = new JTextField(step.getParameter(step.DELIMITER_PARAMETER_NAME));
 		delimiters.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -99,7 +93,7 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 				step.setParameter(step.DELIMITER_PARAMETER_NAME, delimiters.getText());
             }
         });
-
+		
 		content.setLayout(new GridLayout(4,1));
 		content.add(new JLabel("Enter the delimiters"));
 		content.add(delimiters);

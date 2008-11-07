@@ -83,7 +83,6 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
-import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -109,14 +108,13 @@ import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
-import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.swingui.AboutPanel;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
@@ -242,10 +240,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 										  "About Power*MatchMaker");
 			JPanel cp = new JPanel(new BorderLayout(12,12));
 			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
-			
-			ImageIcon icon = SPSUtils.createIcon("matchmaker_128", "MatchMaker Logo");
-			
-			final AboutPanel aboutPanel = new AboutPanel(icon, "Power*MatchMaker", "ca/sqlpower/matchmaker/matchmaker.version.properties", MatchMakerVersion.APP_VERSION);
+			final AboutPanel aboutPanel = new AboutPanel();
 			cp.add(aboutPanel, BorderLayout.CENTER);
 
 			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));

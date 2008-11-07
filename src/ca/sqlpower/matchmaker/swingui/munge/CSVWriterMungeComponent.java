@@ -54,16 +54,21 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
 	
 	private JButton addInputButton;
 	private JButton removeInputsButton;
-	private JTextField separatorField;
-	private JTextField quoteField;
-	private JTextField escapeField;
+	private JTextField separatorField = new JTextField();
+	private JTextField quoteField = new JTextField();
+	private JTextField escapeField = new JTextField();
 	private JFileChooser fileChooser;
-	private JTextField filePathField;
+	private JTextField filePathField = new JTextField();
 	private JButton fileButton;
 	private JCheckBox clrFileCheckBox;
     
 	public CSVWriterMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
-		super(ms, handler,session);    
+		super(ms, handler,session);
+		
+        handler.addValidateObject(filePathField, new FileNameValidator("Output"));
+        handler.addValidateObject(separatorField, new CharacterValidator("separator"));
+        handler.addValidateObject(quoteField, new CharacterValidator("quote"));
+        handler.addValidateObject(escapeField, new CharacterValidator("escape"));
 	}
 	
 	@Override
@@ -73,7 +78,6 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
 		addInputButton = new JButton(new AddInputAction("Add Input"));
 		removeInputsButton = new JButton(new RemoveUnusedInputAction("Clean Up"));
         separatorField = new JTextField(step.getSeparator() + "", 1);
-        getHandler().addValidateObject(separatorField, new CharacterValidator("separator"));
         separatorField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				doStuff();
@@ -95,7 +99,6 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
         });
         
         quoteField = new JTextField(step.getQuoteChar() + "", 1);
-        getHandler().addValidateObject(quoteField, new CharacterValidator("quote"));
         quoteField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				doStuff();
@@ -117,7 +120,6 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
         });
         
         escapeField = new JTextField(step.getEscapeChar() + "", 1);
-        getHandler().addValidateObject(escapeField, new CharacterValidator("escape"));
         escapeField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				doStuff();
@@ -139,7 +141,6 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
         });
         
         filePathField = new JTextField(step.getFilePath(), 20);
-        getHandler().addValidateObject(filePathField, new FileNameValidator("Output"));
         filePathField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				doStuff();

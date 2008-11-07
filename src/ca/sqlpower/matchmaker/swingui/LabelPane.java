@@ -62,7 +62,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
-import ca.sqlpower.swingui.FontSelector;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;

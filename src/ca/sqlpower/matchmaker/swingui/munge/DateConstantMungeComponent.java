@@ -52,12 +52,13 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 	JCheckBox useCurrent;
 	JCheckBox retNull;
 	SpinnerDateModel dc;
-	JSpinner date;
+	JSpinner date = new JSpinner();
 	JComboBox opts;
 	JSpinner.DateEditor editor;
 
 	public DateConstantMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
-		super(step, handler, session);		
+		super(step, handler, session);
+		handler.addValidateObject(date, new DateValidator());
 	}
 
 	@Override
@@ -72,7 +73,6 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 		}
 		dc = new SpinnerDateModel(value, null, null, Calendar.SECOND);
 		date = new JSpinner(dc);
-		getHandler().addValidateObject(date, new DateValidator());
 		editor = new JSpinner.DateEditor(date, getFormateString());
 		date.setEditor(editor);
 

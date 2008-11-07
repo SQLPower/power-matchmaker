@@ -55,38 +55,6 @@
 		</not>
 	</condition>
 	
-	<!-- 
-		Sets if we want to actually run a build on the SQL Power Library.
-		It may be useful to set it to copy only if we already know that the
-		library has been built. For example, when running the builds on a 
-		continuous integration engine like Hudson, where the library can be
-		built separately.
-	-->
-	<condition property="buildSQLPowerLibrary">
-		<not>
-			<isset property="only.copy.sqlpower.library"/>
-		</not>
-	</condition>
-	
-	<!--
-		Set the format of the findbugs report to html by default
-	-->
-	<condition property="findbugs.report.format" value="html">
-		<not>
-			<isset property="findbugs.report.format"/>
-		</not>
-	</condition>
-	
-	<!--
-		Set the format of the pmd report to html by default
-	-->
-	<condition property="pmd.report.format" value="html">
-		<not>
-			<isset property="pmd.report.format"/>
-		</not>
-	</condition>
-	
-	
 	<!-- A path that will include all jars in the lib and buildlib folders -->
 	<path id="compile.classpath">
 		<fileset dir="${lib}">
@@ -109,7 +77,7 @@
 	</path>
 	
 	<!-- Compiles the MatchMaker and places the .class files into build-->
-	<target name="compile" depends="build.sqlpower.library, copy.sqlpower.library, copyfiles">
+	<target name="compile" depends="copyfiles">
 		<mkdir dir="${build}"/>
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
@@ -175,7 +143,7 @@
 	</target>
 	
 	
-	<target name="copyfiles" depends="matchmaker.version.properties">
+	<target name="copyfiles">
 		<mkdir dir="${build}/icons"/>
 	    <copy todir="${build}/icons">
 			<fileset dir="src/icons/">
@@ -193,8 +161,6 @@
 			</fileset>
 		</copy>
 		
-		<copy file="${dist.dir}/matchmaker.version.properties" todir="${build}/ca/sqlpower/matchmaker"/>
-		
 		<!-- copies the template log4j config file into the build dir -->
 		<copy tofile="${build}/log4j.properties"
 			file="src/log4j.properties.example"/>
@@ -207,10 +173,6 @@
 
 	<!-- Compiles the regression test suite -->
 	<target name="compile-tests" depends="compile">
-		<ant dir="${sqlpower.library.home}" target="compile-tests">
-			<property name="build" value="${sqlpower.library.home}/build"/>
-			<property name="build.tests" value="${sqlpower.library.home}/build/tests"/>
-		</ant>
 		<mkdir dir="${build.tests}"/>
 		<javac srcdir="regress" destdir="${build.tests}"
 			classpathref="test.classpath"
@@ -480,7 +442,7 @@
 			        classpath="${build}"/>
 		<genVersion/>
 		<tstamp>
-			<format property="date" pattern="yyyyMMddHHmmss"/>
+			<format property="date" pattern="yyyyMMdd"/>
 		</tstamp>
 		<condition property="app.ver.suffix" value="-${date}">
 			<isset property="nightly"/>
@@ -829,30 +791,24 @@
 		This build target checks for the sqlpower-library project, which is
 		required by the MatchMaker to build. 
 	-->
-	<target name="check.sqlpower.library.dir">
+	<target name="sqlpower.library">
 		<echo message="Checking for sqlpower-library project..."/>
-		<fail message="Can't find sqlpower-library project! Set the property 'sqlpower.library.home' to point to the sqlpower-library project directory">
+		<fail message="Can't find sqlpower-library project! Please read the DEVELOPERS file to see how to get and set up the sqlpower-library project">
 			<condition>
 				<not>
 					<isset property="sqlpower.library.home"/>
 				</not>
 			</condition>
 		</fail>
-	</target>
-	
-	<target name="build.sqlpower.library" depends="check.sqlpower.library.dir" if="buildSQLPowerLibrary">
 		<echo message="Attempting to build sqlpower-library project..."/>
 		<ant dir="${sqlpower.library.home}" target="clean">
 			<property name="build" value="${sqlpower.library.home}/build"/>
 		</ant>
-		<ant dir="${sqlpower.library.home}" target="jar">
+		<ant dir="${sqlpower.library.home}">
 			<property name="build" value="${sqlpower.library.home}/build"/>
 			<property name="dist.dir" value="${sqlpower.library.home}/dist"/>
 		</ant>
-	</target>
-	
-	<target name="copy.sqlpower.library" depends="check.sqlpower.library.dir">
-		<copy file="${sqlpower.library.home}/build/sqlpower_library.jar" todir="${lib}"/>
+		<copy file="${sqlpower.library.home}/dist/sqlpower_library.jar" todir="${lib}"/>
 	</target>
 	
 	
@@ -876,10 +832,10 @@
 	 	<mkdir dir="${reports}"/>
 		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"
 			classpath="${pmd.jar}"/>
-		<property name="pmd-results" value="${reports}/pmd-ant-results.${pmd.report.format}"/>
+		<property name="pmd-results" value="${reports}/pmd-ant-results.html"/>
 		<pmd shortFilenames="true" targetjdk="1.5">
 			<ruleset>basic,imports</ruleset>
-			<formatter type="${pmd.report.format}" toFile="${pmd-results}"/>
+			<formatter type="html" toFile="${pmd-results}"/>
 			<fileset dir="${src}">
 				<include name="ca/sqlpower/**/*.java"/>
 			</fileset>
@@ -912,8 +868,8 @@
 		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
 			classpath="${findbugs-ant.jar}"/>
 		<findbugs home="${findbugs.home}"
-			output="${findbugs.report.format}"
-			outputFile="${reports}/findbugs-ant-results.${findbugs.report.format}"
+			output="html"
+			outputFile="${reports}/findbugs-ant-results.html"
 			reportLevel="low"
 			jvmargs="-Xmx512m">  <!-- FindBugs can use up a lot of memory, so adjust the JVM memory here-->
 			<class location="${build}" />
@@ -922,14 +878,5 @@
 			<auxClasspath path="${pmd.jar}" />
 			<systemProperty name="findbugs.maskedfields.locals" value='true'/>
 		</findbugs>
-	</target>
-	
-	<target name="matchmaker.version.properties" depends="getAppVersion">
-		<mkdir dir="${dist.dir}"/>
-		<propertyfile
-		    file="${dist.dir}/matchmaker.version.properties"
-		    comment="Power*MatchMaker Version">
-		  <entry key="app.version" value="${app.version}"/>
-		</propertyfile>
 	</target>
 </project>
