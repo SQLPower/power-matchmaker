@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+	<class
+		name="ca.sqlpower.matchmaker.munge.MungeStepOutput"
+		table="mm_munge_step_output">
+		<id name="oid" type="long" access="field">
+			<column name="munge_step_output_oid" />
+			<generator class="native">
+				<param name="sequence">MUNGE_STEP_OUTPUT_OID_SEQ</param>
+			</generator>
+		</id>
+
+		<many-to-one name="parent"
+			class="ca.sqlpower.matchmaker.munge.AbstractMungeStep" fetch="select" >
+			<column name="munge_step_oid" not-null="true" />
+		</many-to-one>
+
+		<property name="name" type="string">
+			<column name="OUTPUT_NAME" length="100" />
+		</property>
+		
+		<property name="type" type="java.lang.Class">
+			<column name="OUTPUT_TYPE" length="1000" />
+		</property>
+		
+		<property name="visible"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="visible_ind" length="1" />
+		</property>
+
+		<property name="lastUpdateDate" type="timestamp" access="field">
+			<column name="LAST_update_DATE" length="23" />
+		</property>
+		<property name="lastUpdateAppUser" type="string" access="field">
+			<column name="LAST_update_USER" length="30" />
+		</property>
+		<property name="lastUpdateOsUser" type="string" access="field">
+			<column name="LAST_update_OS_USER" length="30" />
+		</property>
+
+	</class>
+</hibernate-mapping>
