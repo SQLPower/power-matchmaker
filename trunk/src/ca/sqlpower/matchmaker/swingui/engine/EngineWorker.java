@@ -37,6 +37,7 @@ import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSwingWorker;
+import ca.sqlpower.swingui.DocumentAppender;
 
 /**
  * A SPSwingWorker implementation that runs a MatchMakerEngine.
