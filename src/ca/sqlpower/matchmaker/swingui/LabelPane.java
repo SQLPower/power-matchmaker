@@ -40,6 +40,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -62,6 +63,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.FontSelector;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -618,25 +620,25 @@ public class LabelPane extends JPanel {
 
 					font.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							final FontSelector fontSelector = new FontSelector(
-									(JFrame) mp.getTopLevelAncestor()
-											.getParent(), area.getFont());
-							fontSelector.getApplyButton().addActionListener(
-									new ActionListener() {
-										public void actionPerformed(
-												ActionEvent e) {
-											logger
-													.debug("We have changed the font to: "
-															+ fontSelector
-																	.getFont());
-											area.setFont(fontSelector
-													.getSelectedFont());
-											area.setSize(area
-													.getPreferredSize());
-											revalidateComp(area, false);
-										}
-									});
-							fontSelector.setVisible(true);
+							final FontSelector fontSelector = new FontSelector(area.getFont());
+							Callable<Boolean> okCall = new Callable<Boolean>() {
+							    public Boolean call() {
+							        logger.debug("We have changed the font to: " + fontSelector.getSelectedFont());
+							        area.setFont(fontSelector.getSelectedFont());
+							        area.setSize(area.getPreferredSize());
+							        revalidateComp(area, false);
+							        return true;
+							    }
+							};
+							Callable<Boolean> cancelCall = new Callable<Boolean>() {
+							    public Boolean call() { return true; }
+							};
+							
+							JDialog d = DataEntryPanelBuilder.createDataEntryPanelDialog(
+							        fontSelector,
+							        (JFrame) mp.getTopLevelAncestor().getParent(),
+							        "Choose a font", "OK", okCall, cancelCall);
+							d.setVisible(true);
 						}
 					});
 
