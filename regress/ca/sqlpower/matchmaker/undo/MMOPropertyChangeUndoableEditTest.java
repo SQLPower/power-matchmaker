@@ -19,11 +19,11 @@
 
 package ca.sqlpower.matchmaker.undo;
 
+import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.StringConstantMungeStep;
-import junit.framework.TestCase;
 
 public class MMOPropertyChangeUndoableEditTest extends TestCase {
 

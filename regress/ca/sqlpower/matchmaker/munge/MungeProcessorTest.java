@@ -21,11 +21,11 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
-
-import junit.framework.TestCase;
 
 /**
  * Test for the Munge Processor itself.  Here's the setup:

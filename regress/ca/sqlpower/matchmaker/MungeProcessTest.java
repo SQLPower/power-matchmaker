@@ -21,8 +21,8 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 
 

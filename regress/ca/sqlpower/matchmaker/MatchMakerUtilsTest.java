@@ -20,9 +20,9 @@
 
 package ca.sqlpower.matchmaker;
 
+import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import junit.framework.TestCase;
 
 public class MatchMakerUtilsTest extends TestCase {
 

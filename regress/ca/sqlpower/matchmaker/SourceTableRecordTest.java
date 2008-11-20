@@ -23,8 +23,8 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 
 public class SourceTableRecordTest extends TestCase {
 
