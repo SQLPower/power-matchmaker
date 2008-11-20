@@ -23,10 +23,9 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
-
-import junit.framework.TestCase;
 
 public class TranslateGroupParentTest extends TestCase {
     PlFolder<MatchMakerObject> folder;

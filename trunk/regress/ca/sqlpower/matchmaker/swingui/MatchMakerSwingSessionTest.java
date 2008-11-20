@@ -28,7 +28,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -36,6 +35,7 @@ import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.sql.SPDataSource;
 
 public class MatchMakerSwingSessionTest extends TestCase {
     

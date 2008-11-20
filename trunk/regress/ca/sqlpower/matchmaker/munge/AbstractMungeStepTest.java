@@ -19,9 +19,10 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 public class AbstractMungeStepTest extends TestCase {

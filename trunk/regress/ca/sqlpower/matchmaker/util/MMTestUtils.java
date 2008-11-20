@@ -26,11 +26,11 @@ import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MatchPoolTest;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.munge.MungeProcess;

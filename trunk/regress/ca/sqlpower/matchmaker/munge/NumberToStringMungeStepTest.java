@@ -21,9 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
-import org.apache.log4j.Logger;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 public class NumberToStringMungeStepTest extends TestCase {
 	MungeStep step;

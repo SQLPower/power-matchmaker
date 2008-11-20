@@ -21,13 +21,13 @@ package ca.sqlpower.matchmaker;
 
 import java.util.Collections;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-
-import junit.framework.TestCase;
 
 public class PotentialMatchRecordTest extends TestCase {
 
