@@ -507,12 +507,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
             }
             int choice = JOptionPane.showOptionDialog(null,   // blocking wait
-                    "The MatchMaker keeps its list of database connections" +
+                    "The Power*MatchMaker keeps its list of database connections" +
                     "\nin a file called PL.INI.  Your PL.INI "+message+"." +
                     "\n\nYou can browse for an existing PL.INI file on your system" +
-                    "\nor allow the Architect to create a new one in your home directory." +
-                    "\n\nHint: If you are a Power*Loader Suite user, you should browse for" +
-                    "\nan existing PL.INI in your Power*Loader installation directory.",
+                    "\nor allow the Power*MatchMaker to create a new one in your home directory.",
                     "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 
             if (choice == JOptionPane.CLOSED_OPTION) {
