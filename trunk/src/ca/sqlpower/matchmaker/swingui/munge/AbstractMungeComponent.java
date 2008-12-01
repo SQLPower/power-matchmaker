@@ -158,7 +158,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public static final int DROP_AMOUNT = 5;
 	
-	private MatchMakerSwingSession session;
+	private final MatchMakerSwingSession session;
 	
 	private MungeComponentKeyListener mungeComKeyListener;
 
@@ -233,8 +233,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param border The colour for the border around the rectangle
 	 * @param bg The background colour to the rectangle
 	 */
-	private AbstractMungeComponent(MungeStep step) {
+	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession s) {
         if (step == null) throw new NullPointerException("Null step");
+		this.session = (MatchMakerSwingSession) s;
+		this.handler = handler;
+
 		this.step = step;
 		setVisible(true);
 		setBackground(normalBackground);
@@ -391,6 +394,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		// stuff added here in the constructor (most importantly, the +/- button)
 		deOpaquify(this);
 		deOpaquify(inputNames);
+		setDefaults();
 	}
 	
 	private void buildInputNamesPanel() {
@@ -592,19 +596,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return The option panel or null
 	 */
 	protected abstract JPanel buildUI();
-	
-	/**
-	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen, 
-	 * setting default colours
-	 * 
-	 * @param step The step connecting to the UI
-	 */
-	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
-		this(step);
-		this.session = (MatchMakerSwingSession)session;
-		this.handler = handler;
-		setDefaults();
-	}
 	
 	protected FormValidationHandler getHandler() {
 		return handler;
