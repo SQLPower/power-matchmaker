@@ -91,6 +91,8 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
     }
 
     @Override
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
+			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     protected long insertSampleProjectData(String projectName, Long folderOid) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;

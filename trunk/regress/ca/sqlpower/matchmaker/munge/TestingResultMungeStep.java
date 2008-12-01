@@ -28,6 +28,8 @@ import org.apache.log4j.Logger;
  */
 public class TestingResultMungeStep extends TestingMungeStep implements MungeResultStep {
 
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "MF_CLASS_MASKS_FIELD" }, 
+			justification = "We will always want to use this logger, not the superclass logger")
 	Logger logger = Logger.getLogger(TestingResultMungeStep.class);
 	
 	public TestingResultMungeStep(String name, int inputs) {
