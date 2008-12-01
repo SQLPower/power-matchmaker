@@ -51,7 +51,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class DateToStringMungeComponent extends AbstractMungeComponent {
 
 	private JTextField sample;
-	private JTextField format = new JTextField();
+	private JTextField format;
 	private JComboBox dateFormat;
 	private JComboBox timeFormat;
 	
@@ -59,7 +59,6 @@ public class DateToStringMungeComponent extends AbstractMungeComponent {
 	
 	public DateToStringMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler, session);
-		handler.addValidateObject(format, new DateFormatPatternValidator());
 	}
 
 	@Override
@@ -111,6 +110,7 @@ public class DateToStringMungeComponent extends AbstractMungeComponent {
 		SimpleDateFormat sdf = new SimpleDateFormat(temp.getFormat());
 		sample = new JTextField(sdf.format(DateToStringMungeComponent.SAMPLE_DATE));
 		sample.setEditable(false);
+		getHandler().addValidateObject(format, new DateFormatPatternValidator());
 		
 		CellConstraints cc = new CellConstraints();
 		int row = 2;
