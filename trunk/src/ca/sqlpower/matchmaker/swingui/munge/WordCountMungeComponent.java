@@ -49,8 +49,6 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 
 	public WordCountMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
-		validHandler = handler;
-		
 	}
 	
 	@Override
@@ -62,7 +60,7 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 		delimiters = new JTextField(step.getParameter(step.DELIMITER_PARAMETER_NAME));
 		
 		RegexValidator validator = new RegexValidator();
-		validHandler.addValidateObject(delimiters, useRegex, validator);
+		getHandler().addValidateObject(delimiters, useRegex, validator);
 		
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {

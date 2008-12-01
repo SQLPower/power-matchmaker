@@ -72,9 +72,9 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 		}
 		dc = new SpinnerDateModel(value, null, null, Calendar.SECOND);
 		date = new JSpinner(dc);
-		getHandler().addValidateObject(date, new DateValidator());
 		editor = new JSpinner.DateEditor(date, getFormateString());
 		date.setEditor(editor);
+		getHandler().addValidateObject(date, new DateValidator());
 
 
 		dc.addChangeListener(new ChangeListener(){

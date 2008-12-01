@@ -45,18 +45,14 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class StringToBooleanMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex = new JCheckBox();
+	private JCheckBox useRegex;
 	private JCheckBox caseSensitive;
-	private JTextField trueList = new JTextField();
-	private JTextField falseList = new JTextField();
+	private JTextField trueList;
+	private JTextField falseList;
 	private JComboBox defaultOption;
 
 	public StringToBooleanMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
-
-		RegexValidator validator = new RegexValidator();
-		handler.addValidateObject(trueList, useRegex, validator);
-		handler.addValidateObject(falseList, useRegex, validator);
 	}
 
 	@Override
@@ -126,6 +122,10 @@ public class StringToBooleanMungeComponent extends AbstractMungeComponent {
 			}
 			
 		});
+		
+		RegexValidator validator = new RegexValidator();
+		getHandler().addValidateObject(trueList, useRegex, validator);
+		getHandler().addValidateObject(falseList, useRegex, validator);
 		
 		content.setLayout(new GridLayout(8,1));
 		content.add(new JLabel("True List (regex or comma seperated values):"));

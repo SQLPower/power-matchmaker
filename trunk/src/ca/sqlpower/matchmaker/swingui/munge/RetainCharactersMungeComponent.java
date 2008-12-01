@@ -43,15 +43,12 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex = new JCheckBox();
+	private JCheckBox useRegex;
 	private JCheckBox caseSensitive;
-	private JTextField delimiters = new JTextField();
+	private JTextField delimiters;
 
 	public RetainCharactersMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
-
-		RegexValidator validator = new RegexValidator();
-		handler.addValidateObject(delimiters, useRegex, validator);
 	}
 
 	@Override
@@ -97,6 +94,8 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 				temp.setParameter(temp.RETAIN_CHARACTERS_PARAMETER_NAME, delimiters.getText());
             }
         });
+		RegexValidator validator = new RegexValidator();
+		getHandler().addValidateObject(delimiters, useRegex, validator);
 		
 		content.setLayout(new GridLayout(4,1));
 		content.add(new JLabel("Retain Characters:"));

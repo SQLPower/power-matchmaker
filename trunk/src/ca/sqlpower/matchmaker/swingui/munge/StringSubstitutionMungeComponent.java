@@ -45,16 +45,13 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex = new JCheckBox();
+	private JCheckBox useRegex;
 	private JCheckBox caseSensitive;
-	private JTextField from = new JTextField();
+	private JTextField from;
 	private JTextField to;
 	
 	public StringSubstitutionMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
-
-		RegexValidator validator = new RegexValidator();
-		handler.addValidateObject(from, useRegex, validator);
 	}
 	
 	@Override
@@ -114,6 +111,8 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 				step.setParameter(step.TO_PARAMETER_NAME, to.getText());
             }
         });
+		RegexValidator validator = new RegexValidator();
+		getHandler().addValidateObject(from, useRegex, validator);
 		
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow,4dlu", // columns
