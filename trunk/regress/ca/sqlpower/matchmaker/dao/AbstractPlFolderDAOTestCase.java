@@ -77,6 +77,8 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
     /**
      * Test if you can properly move a project.
      */
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
+			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     public void testProjectMove() throws Exception {
         Project m = new Project();
         m.setName("project");

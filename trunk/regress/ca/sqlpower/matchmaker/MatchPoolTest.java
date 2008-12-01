@@ -132,14 +132,16 @@ public class MatchPoolTest extends TestCase {
 	 */
 	private static void insertResultTableRecord(Connection con,
 			String originalLhsKey, String originalRhsKey, int matchPercent,
-			String mungeProcessName, PotentialMatchRecord.MatchType type) throws SQLException {
+			String mungeProcessName, PotentialMatchRecord.MatchType type)
+			throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("INSERT into pl.match_results VALUES ("
-				+ SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey)
-				+ "," + SQL.quote(originalRhsKey) + "," + "null," + "null," + "null,"
-				+ "null," + matchPercent + "," + SQL.quote(mungeProcessName) + ","
-				+ "{ts '2006-11-30 17:01:06.0'}," + "'" + type.getCode() + "',"
-				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
+				+ SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey)
+				+ "," + SQL.quote(originalLhsKey) + ","
+				+ SQL.quote(originalRhsKey) + "," + "null," + "null," + "null,"
+				+ "null," + matchPercent + "," + SQL.quote(mungeProcessName)
+				+ "," + "{ts '2006-11-30 17:01:06.0'}," + "'" + type.getCode()
+				+ "'," + "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
 		stmt.close();
 
 	}
