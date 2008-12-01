@@ -59,9 +59,6 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		TableMergeRules m1 = getTarget();
 		TableMergeRules m2 = getTarget();
 		
-		SQLTable t1 = new SQLTable();
-		SQLTable t2 = new SQLTable();
-		
 		Project parent1 = new Project();
 		parent1.setSession(new TestingMatchMakerSession());
 		parent1.setName("project1");
