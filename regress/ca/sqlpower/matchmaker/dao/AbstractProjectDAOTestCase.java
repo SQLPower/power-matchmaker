@@ -118,6 +118,8 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		}
 	}
 
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
+			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
 	public void testIndexSave() throws Exception {
 		Project m = createNewObjectUnderTest();
 		
@@ -285,6 +287,8 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     			15, project.getResultTable().getColumns().size());
     }
     
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
+			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     public void testMungeProcessMove() throws Exception {
         MungeProcess process = new MungeProcess();
         process.setName("munge process");

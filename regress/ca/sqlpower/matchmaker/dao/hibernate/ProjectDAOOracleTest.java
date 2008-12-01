@@ -110,6 +110,8 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
         return time;
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
+			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     @Override
     protected long insertSampleMungeStepData(long parentProcessOid, String lastUpdateUser) throws Exception {
         final long time = System.currentTimeMillis();
@@ -128,6 +130,8 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
         return time;
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
+			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     @Override
     protected long insertSampleMungeProcessData(long parentProjectOid, String processName) throws Exception {
         final long time = System.currentTimeMillis();

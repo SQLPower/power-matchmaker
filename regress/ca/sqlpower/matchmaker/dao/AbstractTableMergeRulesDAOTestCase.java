@@ -128,6 +128,8 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",project.getTableMergeRulesFolder(),mergeRules.getParent());
 	}
 	
+	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
+			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     public void testDelete() throws Exception {
         Connection con = getSession().getConnection();
         Statement stmt = null;
