@@ -346,4 +346,16 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 			listener.sessionClosing(evt);
 		}
 	}
+
+	public void addStatusMessage(String message) {
+		// no-op
+		logger.debug("Stub call: TestingMatchMakerSession.addStatusMessage()");
+		
+	}
+
+	public void removeStatusMessage() {
+		// np-op
+		logger.debug("Stub call: TestingMatchMakerSession.removeStatusMessage()");
+		
+	}
 }
