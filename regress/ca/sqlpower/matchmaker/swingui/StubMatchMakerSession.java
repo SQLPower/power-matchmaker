@@ -203,4 +203,14 @@ public class StubMatchMakerSession implements MatchMakerSession{
 			SessionLifecycleListener<MatchMakerSession> listener) {
 		logger.debug("Stub call: StubMatchMakerSession.removeSessionLifecycleListener()");
 	}
+
+	public void addStatusMessage(String message) {
+		logger.debug("Stub call: StubMatchMakerSession.addStatusMessage()");
+		
+	}
+
+	public void removeStatusMessage() {
+		logger.debug("Stub call: StubMatchMakerSession.removeStatusMessage()");
+		
+	}
 }

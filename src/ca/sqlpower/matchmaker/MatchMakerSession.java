@@ -257,4 +257,17 @@ public interface MatchMakerSession {
      * this method has no effect.
      */
 	public void removeSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener);
+	
+	/**
+	 * Adds a message onto the status label on the bottom frame of the Match Maker
+	 * 
+	 */
+	public void addStatusMessage(String message);
+	
+	/**
+	 * Removes the message from the status label on the bottom frame of the Match Maker
+	 * 
+	 */
+	public void removeStatusMessage();
 }
+

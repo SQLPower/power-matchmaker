@@ -372,4 +372,16 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 			listener.sessionClosing(evt);
 		}
 	}
+
+	public void addStatusMessage(String message) {
+		// no-op
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.addStatusMessage()");
+		
+	}
+
+	public void removeStatusMessage() {
+		// no-op
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.removeStatusMessage()");
+		
+	}
 }

@@ -51,6 +51,7 @@ import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
@@ -62,6 +63,7 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.undo.CannotRedoException;
@@ -187,6 +189,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * The component in the warningDialog which actually contains the messages.
      */
     private JTextArea warningTextArea;
+    
+    /**
+     * The status message which will contain what the swingSession is doing.
+     */
+    private JLabel statusLabel;
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
@@ -460,7 +467,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		});
 
         frame = new JFrame("Power*MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
-
+        statusLabel = new JLabel();
         warningDialog = new JDialog(frame, "Power*MatchMaker Warnings");
         warningTextArea = new JTextArea(6, 40);
         JComponent cp = (JComponent) warningDialog.getContentPane();
@@ -623,8 +630,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		cp.add(splitPane, BorderLayout.CENTER);
 		MemoryMonitor memoryMonitor = new MemoryMonitor();
 		memoryMonitor.start();
-        cp.add(memoryMonitor.getLabel(), BorderLayout.SOUTH);
-
+		
+		JPanel statusBarPanel = new JPanel(new BorderLayout());
+		JLabel memoryLabel = memoryMonitor.getLabel();
+		memoryLabel.setBorder(new EmptyBorder(0, 20, 0, 20));
+		statusBarPanel.add(statusLabel, BorderLayout.CENTER);
+		statusBarPanel.add(memoryLabel, BorderLayout.EAST);
+        cp.add(statusBarPanel, BorderLayout.SOUTH);
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		
 		frame.setBounds(sessionContext.getFrameBounds());
@@ -1067,7 +1079,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
 		    MatchMakerDAO dao = getDAO(mmo.getClass());
+		    logger.debug("dao is:"+ dao+ "mmo is"+ mmo);
 		    dao.delete(mmo);
+		    System.out.println("The size is!!!! " + matchEnginePanels.size());
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
@@ -1505,5 +1519,17 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
 			listener.sessionClosing(evt);
 		}
+	}
+
+	public void addStatusMessage(String message) {
+		statusLabel.setText(message);
+		logger.debug("Stub call: MatchMakerSwingSession.addStatusMessage()");
+		
+	}
+
+	public void removeStatusMessage() {
+		statusLabel.setText("");
+		logger.debug("Stub call: MatchMakerSwingSession.removeStatusMessage()");
+		
 	}
 }
