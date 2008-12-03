@@ -45,6 +45,7 @@
 	<classpathentry kind="lib" path="lib/bsh.jar"/>
 	<classpathentry kind="lib" path="lib/forms-1.2.1.jar" sourcepath="libsrc/forms-1.2.1-src.zip"/>
 	<classpathentry kind="lib" path="lib/architect_test_util_lib.jar"/>
+	<classpathentry kind="lib" path="lib/architect_dbtree_lib.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

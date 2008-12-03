@@ -343,15 +343,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action buildExampleTableAction;
 	private Action supportOnTheWebAction;
 	
-	private Action tableQueryAction = new AbstractAction("Table Explorer") {
+	private Action sqlQueryAction = new AbstractAction("SQL Query...") {
 		public void actionPerformed(ActionEvent e) {
-			TableQueryFrame f = new TableQueryFrame(MatchMakerSwingSession.this);
-			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
-			f.pack();
-			f.setVisible(true);
+			QueryDialog d = new QueryDialog(MatchMakerSwingSession.this, frame, "SQL Query");
+			d.pack();
+			d.setVisible(true);
 		}
 	};
-
 
 	private Action databaseConnectionAction = new AbstractAction("Manage Database Connections...") {
 
@@ -560,7 +558,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
-		toolsMenu.add(tableQueryAction);
+		toolsMenu.add(sqlQueryAction);
 		toolsMenu.add(new EditTranslateAction(this));
 		// We will add this back in if we need the SQLRunner later
         //toolsMenu.add(new SQLRunnerAction(frame));
