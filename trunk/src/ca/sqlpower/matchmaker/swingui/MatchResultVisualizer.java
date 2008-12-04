@@ -158,6 +158,31 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     };
     
     /**
+	 * An action that calls
+	 * {@link MatchPoolGraphModel#resetCluster(SourceTableRecord)} on
+	 * {@link #selectedNode}, and then saves the changes into the database.
+	 */
+    private final Action resetClusterAction = new AbstractAction("Reset Cluster") {
+		public void actionPerformed(ActionEvent e) {
+			graphModel.resetCluster(selectedNode);
+			try {
+				pool.store();
+			} catch (SQLException ex) {
+	        	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
+	        			"store changes to the database.", ex);
+	        }
+			graph.repaint();
+		}
+    };
+
+    /**
+	 * A button associated with {@link #resetClusterAction}. It's made into a
+	 * field so that we can enable/disable it according to whether or not a node
+	 * has been selected.
+	 */
+    private JButton resetClusterButton;
+    
+    /**
      * Warning! Will throw a ClassCastException if the node renderer in graph
      * is not a SourceTableRecordRenderer.
      */
@@ -481,11 +506,13 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             recordViewerRowHeader.revalidate();
             recordViewerCornerPanel.removeAll();
             recordViewerCornerPanel.revalidate();
+            resetClusterButton.setEnabled(false);
         }
 
         public void nodeSelected(final SourceTableRecord node) {
         	selectedNode = node;
         	updateMatchTable();
+        	resetClusterButton.setEnabled(true);
         }     
     }
     
@@ -642,7 +669,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 
     private final MatchPool pool;
 
-    private GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
+    private MatchPoolGraphModel graphModel;
     
     private JComboBox mungeProcessComboBox;
     
@@ -702,7 +729,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         JPanel topPanel = new JPanel (topLayout);
         PanelBuilder pb = new PanelBuilder(topLayout, topPanel);
         CellConstraints cc = new CellConstraints();
-        JPanel buttonPanel = new JPanel(new GridLayout(3,1));
+        JPanel buttonPanel = new JPanel(new GridLayout(4,1));
         buttonPanel.add(new JButton(chooseDisplayedValueAction));
         
         selectionButton = new MungeProcessSelectionList(project) {
@@ -738,6 +765,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         
         buttonPanel.add(selectionButton);
         buttonPanel.add(new JButton(resetPoolAction));
+        resetClusterButton = new JButton(resetClusterAction);
+        resetClusterButton.setEnabled(selectedNode != null);
+        buttonPanel.add(resetClusterButton);
         
         String prefNodePath = "ca/sqlpower/matchmaker/projectSettings/$" +
         						project.getSession().getDatabase().getDataSource().getName() +
