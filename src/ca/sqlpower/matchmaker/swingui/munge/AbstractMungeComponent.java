@@ -1132,6 +1132,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 			p.translate(getX(), getY());
 			int selected = getClosestIOIndex(p, CLICK_TOLERANCE, false);			
 			
+			if (selected != -1 && step.isInputStep()) {
+				MungeStepOutput<?> out = step.getChildren().get(selected);
+				setToolTipText(out.getName() + " ("	+ shortClassName(out.getType()) + ")");
+			}
 			if (dropNibIndex != selected && selected != -1 && isOutputConnected(selected)) {
 				if (dropNibTimer != null) {
 					dropNibTimer.stop();
