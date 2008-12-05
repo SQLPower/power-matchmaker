@@ -176,27 +176,37 @@ public class MergeProcessor extends AbstractProcessor {
 				// Starts the recursive merging
 				mergeChildTables(dupKeyValues, masterKeyValues, sourceTableMergeRule);
 	
-				if (needsToCheckDup) {
-					engineLogger.debug("Updating source table columns according the merge actions...");
-					ResultRow dupRow = findRowByUniqueKey(sourceTableMergeRule, dupKeyValues);
-					ResultRow masterRow = findRowByUniqueKey(sourceTableMergeRule, masterKeyValues);
-					int rows = mergeRows(dupRow, masterRow, sourceTableMergeRule);
-					
+				if (!sourceTableMergeRule.getSourceTable().getObjectType().equals("VIEW")) {
+					if (needsToCheckDup) {
+						engineLogger
+								.debug("Updating source table columns according the merge actions...");
+						ResultRow dupRow = findRowByUniqueKey(
+								sourceTableMergeRule, dupKeyValues);
+						ResultRow masterRow = findRowByUniqueKey(
+								sourceTableMergeRule, masterKeyValues);
+						int rows = mergeRows(dupRow, masterRow,
+								sourceTableMergeRule);
+
+						if (rows != 1) {
+							throw new IllegalStateException(
+									"The update did not affect the correct "
+											+ "number of rows: expected 1 but got "
+											+ rows);
+						}
+					}
+					//delete the duplicate record
+					engineLogger.debug("Deleting duplicate record: "
+							+ dupKeyValues + " on table: "
+							+ sourceTableMergeRule.getSourceTable());
+					int rows = deleteRowByUniqueKey(sourceTableMergeRule
+							.getSourceTable(), dupKeyValues);
 					if (rows != 1) {
-						throw new IllegalStateException("The update did not affect the correct " +
-								"number of rows: expected 1 but got " + rows); 
+						throw new IllegalStateException(
+								"The delete did not affect the correct "
+										+ "number of rows: expected 1 but got "
+										+ rows);
 					}
 				}
-				
-				//delete the duplicate record
-				engineLogger.debug("Deleting duplicate record: " + dupKeyValues + 
-						" on table: " + sourceTableMergeRule.getSourceTable());
-				int rows = deleteRowByUniqueKey(sourceTableMergeRule.getSourceTable(), dupKeyValues);
-				if (rows != 1) {
-					throw new IllegalStateException("The delete did not affect the correct " +
-							"number of rows: expected 1 but got " + rows); 
-				}
-				
 				//clean up match pool
 				pm.setMatchStatus(MatchType.MERGED);
 				
@@ -710,6 +720,7 @@ public class MergeProcessor extends AbstractProcessor {
 				if (!first) {
 					sql.append(", ");
 				}
+				sql.append("\n");
 				sql.append(row.getColumnName(i));
 				sql.append("=");
 				sql.append(formatObjectToSQL(row.getValue(i)));
@@ -717,6 +728,7 @@ public class MergeProcessor extends AbstractProcessor {
 			}
 		}
 		sql.append(generatePKWhereStatement(row));
+		engineLogger.debug("MergeProcessor.updateRow is executing the SQL statement:\n" + sql);
 		int count = stmt.executeUpdate(sql.toString());
 		
 		logUpdate(sourceTable, count);
@@ -965,6 +977,7 @@ public class MergeProcessor extends AbstractProcessor {
 				} 
 			}
 		}
+		engineLogger.debug("generatePKWhereStatement returns: " + sql);
 		return sql.toString();
 	}
 	
@@ -983,14 +996,14 @@ public class MergeProcessor extends AbstractProcessor {
 	private String generateUKWhereStatement(ResultRow row) throws SQLException, ArchitectException {
 		boolean first = true;
 		StringBuilder sql = new StringBuilder();
-		for (SQLIndex.Column col : row.getIndex().getChildren()) {
+		for (SQLColumn col : row.tableMergeRule.getUniqueKeyColumns()) {
 			if (!first) {
 				sql.append(" AND ");
 			} else {
 				sql.append("\n WHERE ");
 				first = false;
 			}
-			String colName = col.getColumn().getName();
+			String colName = col.getName();
 			sql.append(colName);
 			Object ival = row.getValue(colName);
 			if (ival == null) {
@@ -1140,6 +1153,8 @@ public class MergeProcessor extends AbstractProcessor {
 		sql.append(DDLUtils.toQualifiedName(tableMergeRules.getSourceTable()));
 		sql.append("\n SET ");
 		for (ColumnMergeRules cmr : tableMergeRules.getChildren()) {
+			engineLogger.debug("dupRowValues: " + dupRowValues);
+			engineLogger.debug("cmr: " + cmr);
 			Object dupVal = dupRowValues.getValue(cmr.getColumnName());
 			Object masterVal = masterRowValues.getValue(cmr.getColumnName());
 			Object resultVal = null;
