@@ -138,13 +138,17 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 								boolean found = false;
 								
 								// TODO: This check needs to be redone because it doesn't account
-								// for the possibility of a table importing keys from more than one table 
-								for (SQLColumn column : parentMergeRule.getUniqueKeyColumns()) {
-									if (column.equals(cmr.getImportedKeyColumn())) {
-										count++;
-										found = true;
-										break;
+								// for the possibility of a table importing keys from more than one table
+								try {
+									for (SQLColumn column : parentMergeRule.getSourceTable().getColumns()) {
+										if (column.equals(cmr.getImportedKeyColumn())) {
+											count++;
+											found = true;
+											break;
+										}
 									}
+								} catch (ArchitectException ex) {
+									throw new RuntimeException("An exception occured while listing table columns from the source table", ex);
 								}
 								if (!found) {
 									return ValidateResult.createValidateResult(Status.FAIL, 
@@ -247,7 +251,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				JComboBox importedKeyColumns = new JComboBox();
 				if (getParentTableComboBox().getSelectedItem() != null) {
 					try {
-						List<SQLColumn> tableColumns = getParentTableUniqueKeyColumns();
+						List<SQLColumn> tableColumns = mergeRules.get(parentMergeRule.getSelectedIndex()).getSourceTable().getColumns();//getParentTableUniqueKeyColumns();
 						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
 						importedKeyColumns.insertItemAt(null, 0);
 					} catch (ArchitectException e) {
