@@ -1155,6 +1155,9 @@ public class MergeProcessor extends AbstractProcessor {
 		for (ColumnMergeRules cmr : tableMergeRules.getChildren()) {
 			engineLogger.debug("dupRowValues: " + dupRowValues);
 			engineLogger.debug("cmr: " + cmr);
+			if (cmr == null) {
+				throw new IllegalStateException("Column merge rule cannot be null");
+			}
 			Object dupVal = dupRowValues.getValue(cmr.getColumnName());
 			Object masterVal = masterRowValues.getValue(cmr.getColumnName());
 			Object resultVal = null;
