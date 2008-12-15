@@ -61,7 +61,6 @@ public class DeleteFolderDialog {
         this.folder = folder;
         this.parent = parent;
         this.session = session;
-        buildUI();
     }
     
     public void buildUI() {
@@ -101,9 +100,17 @@ public class DeleteFolderDialog {
         dialog = new JDialog(parent,"Delete " + folder.getName() + " folder");
         pb.setBorder(new EmptyBorder(10,10,10,10));
         dialog.setContentPane(pb.getPanel());
-        dialog.pack();
-        dialog.setLocationRelativeTo(parent);
-        dialog.setVisible(true);
+        
+    }
+    
+    public void setVisible(boolean isVisible) {
+    	if (isVisible){
+    		dialog.pack();
+    		dialog.setLocationRelativeTo(parent);
+    		dialog.setVisible(true);
+    	} else {
+    		dialog.setVisible(false);
+    	}
     }
     
     private Action okAction = new AbstractAction("Ok"){
