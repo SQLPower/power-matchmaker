@@ -29,17 +29,18 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class DeletePlFolderAction extends AbstractAction {
 
-	MatchMakerSwingSession session;
-	PlFolder folder;
+	private MatchMakerSwingSession session;
+	private DeleteFolderDialog dialog;
+	
 	public DeletePlFolderAction(MatchMakerSwingSession swingSession, String name, PlFolder folder) {
 		super(name);
 		session = swingSession;
-		this.folder = folder;
+		this.dialog = new DeleteFolderDialog(folder,session.getFrame(),session);
+		this.dialog.buildUI();
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		new DeleteFolderDialog(folder,session.getFrame(),session);
+		dialog.setVisible(true);
 		session.setCurrentEditorComponent(null);
 	}
-
 }
