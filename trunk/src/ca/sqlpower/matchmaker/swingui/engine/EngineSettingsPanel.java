@@ -210,9 +210,17 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	private final EngineType type;
 	
 	/**
-	 * 
+	 * Contains the saved user settings for this engine panel.
 	 */
 	private final MatchMakerSettings engineSettings;
+
+	/**
+	 * A set of event listeners that were converted into fields so that they can
+	 * be removed later via the {@link #cleanup()} method.
+	 */
+	private PropertyChangeListener propertyChangeListener;
+	private ItemListener itemListener;
+	private AbstractAction messageLevelActionListener;
 	
 	public EngineSettingsPanel(MatchMakerSwingSession swingSession, Project project, JFrame parentFrame, 
 			EngineType engineType) {
@@ -221,11 +229,12 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		this.project = project;
 		this.type = engineType;
 		handler = new FormValidationHandler(status);
-		handler.addPropertyChangeListener(new PropertyChangeListener() {
+		propertyChangeListener = new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshRunActionStatus();
 			}
-		});
+		};
+		handler.addPropertyChangeListener(propertyChangeListener);
 		this.engineOutputPanel = new EngineOutputPanel(parentFrame);
 		
 		if (type == EngineType.MATCH_ENGINE) {
@@ -311,7 +320,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		}
 
 		debugMode = new JCheckBox("Debug Mode? (Changes will be rolled back)", engineSettings.getDebug());
-		debugMode.addItemListener(new ItemListener() {
+		itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (((JCheckBox) e.getSource()).isSelected()) {
 					if (type == EngineType.MATCH_ENGINE) {
@@ -334,7 +343,8 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 					recordsToProcess.setValue(new Integer(0));
 				}
 			}
-		});
+		};
+		debugMode.addItemListener(itemListener);
 
 		if (type == EngineType.MATCH_ENGINE) {
 			clearMatchPool = new JCheckBox("Clear match pool?", ((MungeSettings)engineSettings).isClearMatchPool());
@@ -358,12 +368,13 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			}
 		});
 
-		messageLevel.addActionListener(new AbstractAction(){
+		messageLevelActionListener = new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
 				Level sel = (Level)messageLevel.getSelectedItem();
 				engine.setMessageLevel(sel);
 			}
-		});
+		};
+		messageLevel.addActionListener(messageLevelActionListener);
 
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
@@ -514,5 +525,14 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	public void mmStructureChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
 		// do nothing		
 	}
-	
+
+	/**
+	 * Clean up all resources being held up by the EngineSettingsPanel.
+	 * including removing all event listeners.
+	 */
+	public void cleanup() {
+		handler.removePropertyChangeListener(propertyChangeListener);
+		debugMode.removeItemListener(itemListener);
+		messageLevel.removeActionListener(messageLevelActionListener);
+	}
 }
