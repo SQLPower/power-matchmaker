@@ -421,7 +421,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<MergeEngineImpl, EngineSettingsPanel> mergeEnginPanels;
+	private Map<MergeEngineImpl, EngineSettingsPanel> mergeEnginePanels;
 	
 	 /**
      * A map that links an engine to a panel. This is used so that only
@@ -433,7 +433,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<CleanseEngineImpl, EngineSettingsPanel> cleanseEnginPanels;
+	private Map<CleanseEngineImpl, EngineSettingsPanel> cleanseEnginePanels;
 
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
@@ -452,8 +452,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
         
         matchEnginePanels = new HashMap<MatchEngineImpl, EngineSettingsPanel>();
-        mergeEnginPanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
-        cleanseEnginPanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
+        mergeEnginePanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
+        cleanseEnginePanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
         
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         
@@ -1079,11 +1079,34 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    MatchMakerDAO dao = getDAO(mmo.getClass());
 		    logger.debug("dao is:"+ dao+ "mmo is"+ mmo);
 		    dao.delete(mmo);
-		    System.out.println("The size is!!!! " + matchEnginePanels.size());
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
+		
+		// If mmo is a project, clean up and remove its engine panels
+		if (mmo instanceof Project) {
+			EngineSettingsPanel panel;
+			
+			panel = matchEnginePanels.remove(((Project) mmo).getMatchingEngine());
+			if (panel != null) {
+				panel.cleanup();
+			}
+			logger.debug("matchEnginePanels.size() returns: " + matchEnginePanels.size());
+
+			panel = mergeEnginePanels.remove(((Project) mmo).getMergingEngine());
+			if (panel != null) {
+				panel.cleanup();
+			}
+			logger.debug("mergeEnginePanels.size() returns: " + mergeEnginePanels.size());
+			
+			panel = cleanseEnginePanels.remove(((Project) mmo).getCleansingEngine());
+			if (panel != null) {
+				panel.cleanup();
+			};
+			logger.debug("cleanseEnginePanels.size() returns: " + cleanseEnginePanels.size());
+		}
 	}
+	
 	/**
 	 * Move a match maker object from one parent ( can be null) to a new match maker object.
 	 * The destination object must support children.  This function persists the
@@ -1307,10 +1330,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param project The current project
 	 */
 	public EngineSettingsPanel getMergeEnginePanel(MergeEngineImpl mei, Project project) {
-		EngineSettingsPanel ep = mergeEnginPanels.get(mei);
-		if (mergeEnginPanels.get(mei) == null) {
+		EngineSettingsPanel ep = mergeEnginePanels.get(mei);
+		if (mergeEnginePanels.get(mei) == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.MERGE_ENGINE);
-			mergeEnginPanels.put(mei,ep); 
+			mergeEnginePanels.put(mei,ep); 
 		}
 		return ep;
 	}
@@ -1337,10 +1360,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param project The current project
 	 */
 	public EngineSettingsPanel getCleanseEnginePanel(CleanseEngineImpl mei, Project project) {
-		EngineSettingsPanel ep = cleanseEnginPanels.get(mei);
+		EngineSettingsPanel ep = cleanseEnginePanels.get(mei);
 		if (ep == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.CLEANSE_ENGINE);
-			cleanseEnginPanels.put(mei,ep);
+			cleanseEnginePanels.put(mei,ep);
 		}
 		return ep;
 	}
