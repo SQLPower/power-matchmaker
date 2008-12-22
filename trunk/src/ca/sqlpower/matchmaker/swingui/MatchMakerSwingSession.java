@@ -618,7 +618,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
 
-        JScrollPane treePane = new JScrollPane(tree);
+        JScrollPane treePane = new JScrollPane(SPSUtils.getBrandedTreePanel(tree));
         treePane.setMinimumSize(new Dimension(5,5));
         treePane.setPreferredSize(new Dimension(1,1));
 		splitPane.setLeftComponent(treePane);
