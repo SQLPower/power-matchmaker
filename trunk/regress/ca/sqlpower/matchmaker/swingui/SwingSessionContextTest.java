@@ -29,6 +29,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import javax.swing.event.UndoableEditListener;
+
+import org.apache.log4j.Logger;
+
 import junit.framework.TestCase;
 import prefs.PreferencesFactory;
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -44,128 +48,140 @@ import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class SwingSessionContextTest extends TestCase {
 
-    SwingSessionContextImpl context;
+    private static final Logger logger = Logger.getLogger(SwingSessionContextTest.class);
+	
+	SwingSessionContextImpl context;
     
     protected void setUp() throws Exception {
         super.setUp();
         final DataSourceCollection dsCollection = new DataSourceCollection() {
 
             public void addDataSource(SPDataSource spds) {
-                System.out.println("Stub DSCollection.addDataSource("+spds+")");
+                logger.debug("Stub DSCollection.addDataSource("+spds+")");
             }
 
 			public void addDataSourceType(SPDataSourceType spdst) {
-                System.out.println("Stub DSCollection.addDataSourceType("+spdst+")");
+                logger.debug("Stub DSCollection.addDataSourceType("+spdst+")");
 			}
 
             public void addDatabaseListChangeListener(DatabaseListChangeListener l) {
-                System.out.println("Stub DSCollection.addDatabaseListChangeListener("+l+")");
+                logger.debug("Stub DSCollection.addDatabaseListChangeListener("+l+")");
             }
 
             public List<SPDataSource> getConnections() {
-                System.out.println("Stub DSCollection.getConnections()");
+                logger.debug("Stub DSCollection.getConnections()");
                 List<SPDataSource> connections = new ArrayList<SPDataSource>();
                 connections.add(DBTestUtil.getOracleDS());
                 return connections;
             }
 
 			public List<SPDataSourceType> getDataSourceTypes() {
-                System.out.println("Stub DSCollection.getConnections()");
+                logger.debug("Stub DSCollection.getConnections()");
                 List<SPDataSourceType> connectionTypes = new ArrayList<SPDataSourceType>();
                 connectionTypes.add(DBTestUtil.getOracleDS().getParentType());
                 return connectionTypes;
 			}
 
             public SPDataSource getDataSource(String name) {
-                System.out.println("Stub DSCollection.getDataSource("+name+")");
+                logger.debug("Stub DSCollection.getDataSource("+name+")");
                 return null;
             }
 
             public void mergeDataSource(SPDataSource spds) {
-                System.out.println("Stub DSCollection.mergeDataSource("+spds+")");
+                logger.debug("Stub DSCollection.mergeDataSource("+spds+")");
             }
 
             public void mergeDataSourceType(SPDataSourceType spdst) {
-                System.out.println("Stub DSCollection.mergeDataSourceType("+spdst+")");
+                logger.debug("Stub DSCollection.mergeDataSourceType("+spdst+")");
             }
 
             public void read(File location) throws IOException {
-                System.out.println("Stub DSCollection.read("+location+")");
+                logger.debug("Stub DSCollection.read("+location+")");
             }
 
             public void read(InputStream in) throws IOException {
-                System.out.println("Stub DSCollection.read("+in+")");
+                logger.debug("Stub DSCollection.read("+in+")");
             }
             
             public void removeDataSource(SPDataSource spds) {
-                System.out.println("Stub DSCollection.removeDataSource("+spds+")");
+                logger.debug("Stub DSCollection.removeDataSource("+spds+")");
             }
             
             public boolean removeDataSourceType(SPDataSourceType spdst) {
-                System.out.println("Stub DSCollection.removeDataSourceType("+spdst+")");
+                logger.debug("Stub DSCollection.removeDataSourceType("+spdst+")");
                 return false;
             }
 
             public void removeDatabaseListChangeListener(DatabaseListChangeListener l) {
-                System.out.println("Stub DSCollection.removeDatabaseListChangeListener("+l+")");
+                logger.debug("Stub DSCollection.removeDatabaseListChangeListener("+l+")");
             }
 
             public void write(File location) throws IOException {
-                System.out.println("Stub DSCollection.write("+location+")");
+                logger.debug("Stub DSCollection.write("+location+")");
             }
 
             public void write() throws IOException {
-                System.out.println("Stub DSCollection.write()");
+                logger.debug("Stub DSCollection.write()");
             }
+
+			public void addUndoableEditListener(UndoableEditListener l) {
+				logger.debug("Stub call: DataSourceCollection.addUndoableEditListener()");
+				
+			}
+
+			public void removeUndoableEditListener(UndoableEditListener l) {
+				logger.debug("Stub call: DataSourceCollection.removeUndoableEditListener()");
+				
+			}
 
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
             public MatchMakerSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
-                System.out.println("Stub MMSContext.createSession()");
+                logger.debug("Stub MMSContext.createSession()");
                 return null;
             }
 
             public MatchMakerSession createDefaultSession() {
-                System.out.println("Stub MMSContext.createDefaultSession()");
+                logger.debug("Stub MMSContext.createDefaultSession()");
                 return null;
             }
 
             public List<SPDataSource> getDataSources() {
-                System.out.println("Stub MMSContext.getDataSources()");
+                logger.debug("Stub MMSContext.getDataSources()");
                 return dsCollection.getConnections();
             }
 
             public DataSourceCollection getPlDotIni() {
-                System.out.println("Stub MMSContext.getPlDotIni()");
+                logger.debug("Stub MMSContext.getPlDotIni()");
                 return dsCollection;
             }
 
 			public String getEmailSmtpHost() {
-				System.out.println("Stub call: MMSContext.getEmailHost()");
+				logger.debug("Stub call: MMSContext.getEmailHost()");
 				return null;
 			}
 
 			public void setEmailSmtpHost(String host) {
-				System.out.println("Stub call: MMSContext.setEmailHost()");
+				logger.debug("Stub call: MMSContext.setEmailHost()");
 			}
 
 			public Collection<MatchMakerSession> getSessions() {
-				System.out.println("Stub call: .getSessions()");
+				logger.debug("Stub call: .getSessions()");
 				return null;
 			}
 
 			public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
-				System.out.println("Stub call: .getSessionLifecycleListener()");
+				logger.debug("Stub call: .getSessionLifecycleListener()");
 				return null;
 			}
 
 			public void closeAll() {
-				System.out.println("Stub call: .closeAll()");
+				logger.debug("Stub call: .closeAll()");
 			}
 			
 			public void ensureDefaultRepositoryDefined() {
-				System.out.println("Stub call: .ensureDefaultRepositoryDefined()");
+				logger.debug("Stub call: .ensureDefaultRepositoryDefined()");
 			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
