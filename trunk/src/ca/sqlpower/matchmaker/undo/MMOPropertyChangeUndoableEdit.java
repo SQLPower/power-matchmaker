@@ -110,7 +110,8 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 		    if (prop.getName().equals(undoEvent.getPropertyName())) {
 		        Method writeMethod = prop.getWriteMethod();
 		        if (writeMethod != null && !(undoEvent.getSource() instanceof MungeStep && undoEvent.getPropertyName().equals("inputs"))) {
-		        	logger.debug("writeMethod is not null");
+                    logger.debug("writeMethod is: " + writeMethod);
+                    logger.debug("value is: " + (value != null ? value.getClass().getName() : "") + value);
 		            writeMethod.invoke(undoEvent.getSource(), new Object[] { value });
 		            return;
 		        }
