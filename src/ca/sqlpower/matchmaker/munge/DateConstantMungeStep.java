@@ -89,7 +89,7 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     public void setValue(Date newValue) {
     	SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     	String date = df.format(newValue);
-	    setParameter(VALUE_PARAMETER_NAME, date);
+	    setParameter(VALUE_PARAMETER_NAME, date); // FIXME this causes a property change event with a String value -- need reflective tests for every setter and getter of every munge component
     }
     
     public Date getValue() throws ParseException {
