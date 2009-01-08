@@ -62,13 +62,16 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 
 	@Override
 	protected JPanel buildUI() {
-		Date value = null;
+		Date value;
 		try {
 			value = ((DateConstantMungeStep) getStep()).getValue();
 		} catch (ParseException e) {
 			SPSUtils.showExceptionDialogNoReport(getPen(), "Error Loading munge step", e);
-			value = Calendar.getInstance().getTime();
-			((DateConstantMungeStep) getStep()).setValue(value);
+			value = null;
+		}
+		if (value == null) {
+		    value = new Date();
+		    ((DateConstantMungeStep) getStep()).setValue(value);
 		}
 		dc = new SpinnerDateModel(value, null, null, Calendar.SECOND);
 		date = new JSpinner(dc);
