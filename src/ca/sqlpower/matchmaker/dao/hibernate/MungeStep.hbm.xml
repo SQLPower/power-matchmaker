@@ -95,6 +95,7 @@
 		<subclass name="DeDupeResultStep" />
 		<subclass name="RefinedSoundexMungeStep" />
 		<subclass name="RetainCharactersMungeStep" />
+		<subclass name="SortWordsMungeStep" />
 		<subclass name="SoundexMungeStep" />
 		<subclass name="SQLInputStep" />
 		<subclass name="StringConstantMungeStep" />
