@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
@@ -183,12 +184,20 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 			// the chosen schema and table.
 			} else if (chooser.getTableComboBox().isEnabled()){
 				List<TableMergeRules> mergeRules = project.getTableMergeRules();
-				String schemaName = ((SQLSchema)chooser.getSchemaComboBox().getSelectedItem()).getName();
+				String catalogName = null;
+				if (chooser.getCatalogComboBox().getSelectedItem() != null) {
+					catalogName = ((SQLCatalog) chooser.getCatalogComboBox().getSelectedItem()).getName();
+				}
+				String schemaName = null;
+				if (chooser.getSchemaComboBox().getSelectedItem() != null) {
+					schemaName = ((SQLSchema)chooser.getSchemaComboBox().getSelectedItem()).getName();
+				}
 				String tableName = ((SQLTable)chooser.getTableComboBox().getSelectedItem()).getName();
 				SQLTable parentTable = ((SQLTable) parentMergeRule.getSelectedItem());
 
 				for (TableMergeRules rule: mergeRules) {
-					if (rule.getSchemaName().equals(schemaName) &&
+					if (((rule.getCatalogName() == null && catalogName == null) || (rule.getCatalogName() != null && rule.getCatalogName().equals(catalogName))) &&
+							((rule.getSchemaName() == null && schemaName == null) || (rule.getSchemaName() != null && rule.getSchemaName().equals(schemaName))) &&
 							rule.getTableName().equals(tableName)) {
 						if (rule.isSourceMergeRule()) {
 							return ValidateResult.createValidateResult(Status.FAIL, 
