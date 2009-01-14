@@ -51,8 +51,17 @@ public class GoogleAddressLookupTest extends TestCase {
         step.open(logger);
         testInput.setData("4950 Yonge St, Toronto");  // SQLP WWHQ!
         step.call();
+        assertEquals(BigDecimal.valueOf(200), step.getOutputByName("Lookup Status").getData());
+        assertEquals("CA", step.getOutputByName("Country Code").getData());
+        assertEquals("ON", step.getOutputByName("Administrative Area").getData());
+        assertEquals(null, step.getOutputByName("Sub-Administrative Area").getData());
+        assertEquals("Toronto", step.getOutputByName("Locality").getData());
+        assertEquals("4950 Yonge St", step.getOutputByName("Street Address").getData());
+        assertEquals("M2N", step.getOutputByName("Postal Code").getData());
         assertEquals(BigDecimal.valueOf(43.7650726), step.getOutputByName("Latitude").getData());
         assertEquals(BigDecimal.valueOf(-79.4119089), step.getOutputByName("Longitude").getData());
+        assertEquals(BigDecimal.valueOf(8), step.getOutputByName("Accuracy Code").getData());
+
         step.commit();
         step.close();
     }

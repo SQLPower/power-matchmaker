@@ -30,6 +30,7 @@ import java.net.URLEncoder;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class GoogleAddressLookup extends AbstractMungeStep {
@@ -146,20 +147,22 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         JSONObject adminArea = country.getJSONObject("AdministrativeArea");
         this.adminArea.setData(adminArea.getString("AdministrativeAreaName"));
 
+        // The topology of Canadian lookup requests changed some time in 2008:
+        // The SubAdministrativeArea section vanished, and Locality moved up
+        // to be a direct child of AdministrativeArea. The following code is
+        // designed to cope with both situations, in case lookups in other
+        // countries still return a SubAdministrativeArea.
         if (adminArea.has("SubAdministrativeArea")) {
             JSONObject subAdminArea = adminArea.getJSONObject("SubAdministrativeArea");
             this.subAdminArea.setData(subAdminArea.getString("SubAdministrativeAreaName"));
 
             if (subAdminArea.has("Locality")) {
                 JSONObject locality = subAdminArea.getJSONObject("Locality");
-                this.locality.setData(locality.getString("LocalityName"));
-
-                JSONObject thoroughfare = locality.getJSONObject("Thoroughfare");
-                this.street.setData(thoroughfare.getString("ThoroughfareName"));
-
-                JSONObject postalCode = locality.getJSONObject("PostalCode");
-                this.postCode.setData(postalCode.getString("PostalCodeNumber"));
+                updateLocalityOutputs(locality);
             }
+        } else if (adminArea.has("Locality")) {
+            JSONObject locality = adminArea.getJSONObject("Locality");
+            updateLocalityOutputs(locality);
         }
         
         this.accuracy.setData(BigDecimal.valueOf(addressDetails.getInt("Accuracy")));
@@ -170,6 +173,17 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         this.latitude.setData(BigDecimal.valueOf(coordinates.getDouble(1)));
         
         return Boolean.TRUE;
+    }
+
+    private void updateLocalityOutputs(JSONObject locality)
+            throws JSONException {
+        this.locality.setData(locality.getString("LocalityName"));
+
+        JSONObject thoroughfare = locality.getJSONObject("Thoroughfare");
+        this.street.setData(thoroughfare.getString("ThoroughfareName"));
+
+        JSONObject postalCode = locality.getJSONObject("PostalCode");
+        this.postCode.setData(postalCode.getString("PostalCodeNumber"));
     }
 
     /**
