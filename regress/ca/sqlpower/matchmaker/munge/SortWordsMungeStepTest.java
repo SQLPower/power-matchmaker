@@ -29,7 +29,7 @@ public class SortWordsMungeStepTest extends TestCase {
 
 	private SortWordsMungeStep step;
 	
-	private MungeStepOutput testInput;
+	private MungeStepOutput<String> testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
@@ -50,11 +50,12 @@ public class SortWordsMungeStepTest extends TestCase {
 		assertNull(result);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void testCallOnInteger() throws Exception {
-		testInput = new MungeStepOutput<Integer>("test", Integer.class);
-		testInput.setData(new Integer(1));
+		MungeStepOutput wrongTypeInput = new MungeStepOutput<Integer>("test", Integer.class);
+		wrongTypeInput.setData(Integer.valueOf(1));
 		try {
-			step.connectInput(0, testInput);
+			step.connectInput(0, wrongTypeInput);
 			fail("UnexpectedDataTypeException was not thrown as expected");
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
