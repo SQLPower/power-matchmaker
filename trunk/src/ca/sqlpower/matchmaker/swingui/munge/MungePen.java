@@ -61,6 +61,7 @@ import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
@@ -1216,10 +1217,10 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 	/**
-	 * Turns the preview mode on the munge pen on and off. True
-	 * will enable the preview panel.
+	 * Returns the check box that allows users to enable and disable the preview feature.
+	 * @return
 	 */
-	public boolean enablePreview(boolean enable) {
-		return preview.enablePreview(enable);
+	public JCheckBox getEnablePreviewCheckBox() {
+		return preview.getEnablePreviewCheckBox();
 	}
 }

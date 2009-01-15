@@ -68,12 +68,12 @@ public class MungePreviewer extends MungeProcessor {
 		 * in the process.
 		 */
 		public void previewRefreshed(PreviewEvent evt);
-		
+
 		/**
-		 * Fired if the preview becomes disabled. This normally happens
-		 * when the check on the preconditions fails.
+		 * Fired if the preview becomes disabled because it cannot refresh. This
+		 * normally happens when the check on the preconditions fails.
 		 */
-		public void previewDisabled();
+		public void previewDisabled(String reason);
 	}
 	
 	/**
@@ -216,7 +216,7 @@ public class MungePreviewer extends MungeProcessor {
 		} catch (Exception e) {
 			refreshEnabled = false;
 			for (PreviewListener l : listeners) {
-				l.previewDisabled();
+				l.previewDisabled("Could not refresh preview : " + e.getMessage());
 			}
 		} finally {
 			
@@ -283,9 +283,9 @@ public class MungePreviewer extends MungeProcessor {
 				process.getParentProject().getMatchingEngine().checkPreconditions();
 			} catch (Exception e1) {
 				logger.debug("Preview disabled");
-				refreshEnabled = false;
+				this.refreshEnabled = false;
 				for (PreviewListener l : listeners) {
-					l.previewDisabled();
+					l.previewDisabled("Match engine precondition failed : " + e1.getMessage());
 				}
 				return;
 			}
