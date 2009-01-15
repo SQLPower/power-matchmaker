@@ -24,10 +24,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -148,12 +151,18 @@ public class MungePreviewPanel {
 			stepSelectedOrModified(evt.getMungeStep());
 		}
 
-		public void previewDisabled() {
+		public void previewDisabled(String reason) {
 			panel.setVisible(false);
-			JOptionPane.showMessageDialog(mungePen, "Preview is disabled. Cannot connect to database or the process is incomplete.", "Preview Disabled", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(mungePen, "Preview is disabled. " + reason, "Preview Disabled", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 	};
+
+	/**
+	 * This check box is used to enable and disable this preview panel. The checkbox
+	 * should be placed somewhere the user can access it.
+	 */
+	private final JCheckBox enablePreviewCheckBox;
 	
 	public MungePreviewPanel(MungeProcess process, MungePen pen) {
 		this.mungePen = pen;
@@ -231,6 +240,14 @@ public class MungePreviewPanel {
 				return table.getCellRenderer(0, column).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}
 		});
+        
+        enablePreviewCheckBox = new JCheckBox(new AbstractAction("Show Preview") {
+			public void actionPerformed(ActionEvent e) {
+				enablePreview(enablePreviewCheckBox.isSelected());
+				logger.debug("Show preview selected " + enablePreviewCheckBox.isSelected() + " is the preview enabled " + previewer.isRefreshEnabled());
+				enablePreviewCheckBox.setSelected(previewer.isRefreshEnabled());
+			}
+		});
 	}
 	
 	public void cleanup() {
@@ -240,6 +257,10 @@ public class MungePreviewPanel {
 	
 	public JPanel getPanel() {
 		return panel;
+	}
+	
+	public JCheckBox getEnablePreviewCheckBox() {
+		return enablePreviewCheckBox;
 	}
 	
 	public MungeStep getLastModifiedOrSelectedStep() {
@@ -308,10 +329,10 @@ public class MungePreviewPanel {
 		panel.repaint();
 	}
 
-	public boolean enablePreview(boolean enable) {
+	private boolean enablePreview(boolean enable) {
 		previewer.setRefreshEnabled(enable);
-		panel.setVisible(enable);
-		if (enable) {
+		panel.setVisible(previewer.isRefreshEnabled());
+		if (previewer.isRefreshEnabled()) {
 			previewer.refreshPreview();
 		}
 		return previewer.isRefreshEnabled();
