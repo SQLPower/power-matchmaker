@@ -244,10 +244,9 @@ public class MungePreviewPanel {
         enablePreviewCheckBox = new JCheckBox(new AbstractAction("Show Preview") {
 			public void actionPerformed(ActionEvent e) {
 				enablePreview(enablePreviewCheckBox.isSelected());
-				logger.debug("Show preview selected " + enablePreviewCheckBox.isSelected() + " is the preview enabled " + previewer.isRefreshEnabled());
-				enablePreviewCheckBox.setSelected(previewer.isRefreshEnabled());
 			}
 		});
+        enablePreview(false);
 	}
 	
 	public void cleanup() {
@@ -335,6 +334,8 @@ public class MungePreviewPanel {
 		if (previewer.isRefreshEnabled()) {
 			previewer.refreshPreview();
 		}
+		logger.debug("Show preview selected " + enablePreviewCheckBox.isSelected() + " is the preview enabled " + previewer.isRefreshEnabled());
+		enablePreviewCheckBox.setSelected(previewer.isRefreshEnabled());
 		return previewer.isRefreshEnabled();
 	}
 
