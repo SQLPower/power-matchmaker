@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.AlphaComposite;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -80,14 +79,14 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
+
 public abstract class AbstractMungeComponent extends JPanel {
 	
 	private static  final Logger logger = org.apache.log4j.Logger.getLogger(AbstractMungeComponent.class); 
 		
 	protected JPanel content;
-	protected JPanel contentPlusNames;
-	
-	private JPanel root;
 	
 	private final MungeStep step;
 	
@@ -197,10 +196,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * A panel that goes on top and labels the inputs
 	 */
-	private JPanel inputNames;
-	
+	private final JPanel inputNames;
+
 	/**
-	 * True iff a top panel is wanted displaying the names
+	 * Classes extending this component should set this value to true through
+	 * the setter if they want the names of the inputs to be visible when the
+	 * component is expanded. If this value is false then the input names will
+	 * not be visible. The default is false.
 	 */
 	private boolean showInputNames;
 	
@@ -213,10 +215,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * A panel that goes on bottom and labels the outputs
 	 */
-	private JPanel outputNames;
-	
+	private final JPanel outputNames;
+
 	/**
-	 * True iff a bottom panel is wanted displaying the names
+	 * Classes extending this component should set this value to true through
+	 * the setter if they want the names of the outputs to be visible when the
+	 * component is expanded. If this value is false then the output names will
+	 * not be visible. The default is false.
 	 */
 	private boolean showOutputNames;
 	
@@ -290,16 +295,51 @@ public abstract class AbstractMungeComponent extends JPanel {
 		Dimension ps = getPreferredSize();
 		setBounds(0, 0, ps.width, ps.height);
 
+		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("pref", "pref, pref, fill:pref, pref"), this);
+		setBackground(Color.GREEN);
 		
-		root = new JPanel();
-		root.setBackground(Color.GREEN);
-		root.setLayout(new BorderLayout());
+		inputNames = new JPanel();
+		inputNames.setOpaque(false);
+		inputNames.setLayout(new FlowLayout());
 		
+		inputLabels = new CoolJLabel[step.getMSOInputs().size()];
+		
+		for (int x = 0; x < inputLabels.length; x++) {
+			InputDescriptor id = step.getInputDescriptor(x);
+			inputLabels[x] = new CoolJLabel(id.getName(), id.getType());
+			inputLabels[x].collapse();
+			inputNames.add(inputLabels[x]);
+			inputLabels[x].setOpaque(false);
+		}
+		setInputShowNames(false);
+		
+		builder.append(inputNames);
+		builder.nextLine();
+		if (isExpanded() && inputNames.isVisible()) {
+			inputNames.setVisible(true);
+		} else {
+			inputNames.setVisible(false);
+		}
+		revalidate();
+		
+		outputNames = new JPanel();
+		outputNames.setOpaque(false);
+		outputNames.setLayout(new FlowLayout());
+		
+		outputLabels = new CoolJLabel[step.getChildCount()];
+		
+		for (int x = 0; x < outputLabels.length; x++) {
+			MungeStepOutput out = step.getChildren().get(x);
+			outputLabels[x] = new CoolJLabel(out.getName(), out.getType());
+			outputLabels[x].collapse();
+			outputNames.add(outputLabels[x]);
+			outputLabels[x].setOpaque(false);
+		}
+		setOutputShowNames(false);
 		
 		JPanel tmp = new JPanel( new FlowLayout());
 		tmp.setBackground(Color.BLUE);
 		tmp.add(new JLabel(step.getName()));
-		
 		
 		hideShow = new JButton(new HideShowAction());
 		hideShow.setIcon(EXPOSE_OFF);
@@ -329,13 +369,18 @@ public abstract class AbstractMungeComponent extends JPanel {
 			tmp.add(tb);
 		}
 		
-		root.add(tmp,BorderLayout.CENTER);
-		add(root);
+		builder.append(tmp);
+		builder.nextLine();
+		if (content != null) {
+			builder.append(content);
+		}
+		builder.nextLine();
+		builder.append(outputNames);
 		
 		addMouseListener(new MungeComponentMouseListener());
 		addMouseMotionListener(new MungeComponentMouseMoveListener());
 		
-		root.addComponentListener(new ComponentListener(){
+		addComponentListener(new ComponentListener(){
 
 			public void componentHidden(ComponentEvent e) {
 			}
@@ -374,21 +419,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		});
 		
 		
-		root.setOpaque(false);
+		setOpaque(false);
 		tmp.setOpaque(false);
-		
-		buildInputNamesPanel();
-		buildOutputNamesPanel();
-		
-		if (content != null) {
-			contentPlusNames = new JPanel(new BorderLayout());
-			contentPlusNames.add(content, BorderLayout.CENTER);
-			contentPlusNames.add(outputNames,BorderLayout.SOUTH);
-			contentPlusNames.setOpaque(false);
-			content.setOpaque(false);
-		} else {
-			contentPlusNames = null;
-		}
 		
 		// Note, this does not take care of the content panel; only the basic
 		// stuff added here in the constructor (most importantly, the +/- button)
@@ -397,46 +429,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		setDefaults();
 	}
 	
-	private void buildInputNamesPanel() {
-		if (isExpanded() && showInputNames) {
-			root.remove(inputNames);
-		}
-		inputNames = new JPanel();
-		inputNames.setOpaque(false);
-		inputNames.setLayout(new FlowLayout());
-
-		inputLabels = new CoolJLabel[step.getMSOInputs().size()];
-		
-		for (int x = 0; x < inputLabels.length; x++) {
-			InputDescriptor id = step.getInputDescriptor(x);
-            inputLabels[x] = new CoolJLabel(id.getName(), id.getType());
-			inputLabels[x].collapse();
-			inputNames.add(inputLabels[x]);
-			inputLabels[x].setOpaque(false);
-		}
-		
-		if (isExpanded() && showInputNames) {
-			root.add(inputNames, BorderLayout.NORTH);
-			revalidate();
-		}	
-	}
-	
-    private void buildOutputNamesPanel() {
-		outputNames = new JPanel();
-		outputNames.setOpaque(false);
-		outputNames.setLayout(new FlowLayout());
-
-		outputLabels = new CoolJLabel[step.getChildCount()];
-		
-		for (int x = 0; x < outputLabels.length; x++) {
-			MungeStepOutput out = step.getChildren().get(x);
-            outputLabels[x] = new CoolJLabel(out.getName(), out.getType());
-			outputLabels[x].collapse();
-			outputNames.add(outputLabels[x]);
-			outputLabels[x].setOpaque(false);
-		}
-	}
-
     /**
      * Returns the unqualified name of the given class (no package name prefix).
      */
@@ -504,9 +496,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		return lab;
 	}
 	
-	
-
-
 	/**
 	 * Adds the default set of component types that should not be made non-opaque
 	 * to the {@link #opaqueComponents} set.  If your munge component uses other component
@@ -612,7 +601,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public Point getInputPosition(int inputNum) {
 		int inputs = step.getMSOInputs().size();
 		
-		if (!isExpanded() || !showInputNames) {
+		if (!inputNames.isVisible()) {
 			int xPos = (int) (((double)(inputNum+1)/((double)inputs+1))*getWidth());
 			return new Point(xPos,0);
 		}
@@ -634,9 +623,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		int xPos = (int) (((double)(outputNum+1)/((double)outputs+1))*getWidth());
 		Point orig =  new Point(xPos,getHeight() - getBorder().getBorderInsets(this).bottom);
 		
-		if (isExpanded() && showOutputNames) {
+		if (outputNames.isVisible()) {
 			orig.x = outputLabels[outputNum].getX() + outputLabels[outputNum].getWidth()/2;
 		}
+		logger.debug("Output of step " + getName() + " output " + outputNum + " is at x position " + orig.x);
 		return orig;
 	}
 	
@@ -734,6 +724,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 				}
 					
 				if (!getPen().isConnectingOutput(this,i)) {
+					logger.debug("Painting nib at x position " + xPos);
 					nib.paintIcon(this, g, xPos, getHeight() - border.bottom - ConnectorIcon.NIB_OVERLAP - droppingOffset);
 				}
 			}
@@ -831,29 +822,20 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Hides or expands the component.
 	 */
 	protected void setExpanded(boolean expanded) {
-		if (expanded) {
-			if (showInputNames) {
-				root.add(inputNames, BorderLayout.NORTH);
-			}
-			if (showOutputNames) {
-				root.add(contentPlusNames,BorderLayout.SOUTH);
-			} else {
-				if (content != null ) {
-				root.add(content,BorderLayout.SOUTH);
-				}
-			}
-		} else {
-			if (content != null) {
-				root.remove(content);
-				root.remove(inputNames);
-				root.remove(contentPlusNames);
-			}
+		if (showInputNames) {
+			inputNames.setVisible(expanded);
+		}
+		if (content != null) {
+			content.setVisible(expanded);
+		}
+		if (showOutputNames) {
+			outputNames.setVisible(expanded);
 		}
 		if (getPen() != null) {
 			getPen().normalize();
 		}
 		validate();
-		root.updateUI();
+		updateUI();
 	}
 	
 	/**
@@ -1300,6 +1282,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	protected void setInputShowNames(Boolean b) {
 		showInputNames = b;
+		if (!b) {
+			inputNames.setVisible(false);
+		} else {
+			inputNames.setVisible(isExpanded());
+		}
 	}
 	
 	/**
@@ -1309,6 +1296,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	protected void setOutputShowNames(Boolean b) {
 		showOutputNames = b;
+		if (!b) {
+			outputNames.setVisible(false);
+		} else {
+			outputNames.setVisible(isExpanded());
+		}
 	}
 	
 	/**
@@ -1319,7 +1311,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 			setExpanded(false);
 		}
 		content = buildUI();
-		content.setOpaque(false);
+		if (content != null) {
+			content.setOpaque(false);
+		}
 		deOpaquify(content);
 		if (isExpanded()) {
 			setExpanded(true);
