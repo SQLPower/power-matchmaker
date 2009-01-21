@@ -61,6 +61,7 @@ public class CommonWordsFinder {
             
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT ").append(column.getName()).append(" FROM ").append(ArchitectUtils.toQualifiedName(column.getParentTable(), SQLDatabase.class));
+            rs = stmt.executeQuery(sql.toString());
             
             Pattern wordSep = Pattern.compile(wordSeparator);
             
