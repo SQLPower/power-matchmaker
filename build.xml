@@ -764,8 +764,7 @@
 	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
 		<tar destfile="${dist.dir}/MatchMaker-OSX-${app.version}.tar.gz"
 					compression="gzip">
-			<tarfileset dir="${staging.dir}" includes="Power MatchMaker.app/**"/>
-			<tarfileset dir="${staging.dir}" includes="jdbc/*"/>
+			<tarfileset dir="${staging.dir}" includes="Power*MatchMaker.app/**"/>
 		</tar>
 	</target>
 	
