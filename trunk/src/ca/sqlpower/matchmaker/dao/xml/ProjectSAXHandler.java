@@ -215,7 +215,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("type")) {
                         project.setType(Project.ProjectMode.valueOf(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <project>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <project>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
@@ -245,7 +245,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("table")) {
                         project.setSourceTableName(aval);
                     } else {
-                        logger.warn("Unexpected attribute of <source-table>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <source-table>: " + aname + "=" + aval + " at " + locationAsString());
                     }
                 }
 
@@ -274,13 +274,13 @@ public class ProjectSAXHandler extends DefaultHandler {
                 } else if (parentIs("table-merge-rule")) {
                     tableMergeRules.setTableIndex(currentIndex);
                 } else {
-                    throw new SAXException("Found <unique-index> element in wrong place: " + locator);
+                    throw new SAXException("Found <unique-index> element in wrong place: " + locationAsString());
                 }
                 // TODO verify column list against actual index in endElement()
 
             } else if (qName.equals("column")) {
                 if (!parentIs("unique-index")) {
-                    throw new SAXException("Found <column> element in wrong place: " + locator);
+                    throw new SAXException("Found <column> element in wrong place: " + locationAsString());
                 }
                 String colName = attributes.getValue("name");
                 checkMandatory("name", colName);
@@ -288,7 +288,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                 if (col == null) {
                     throw new SAXException(
                             "Source table unique index column \""+colName+"\"" +
-                            " is not in the source table (at " + locator + ")");
+                            " is not in the source table (at " + locationAsString() + ")");
                 }
                 currentIndex.addIndexColumn(col, SQLIndex.AscendDescend.UNSPECIFIED);
 
@@ -314,7 +314,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("table")) {
                         project.setResultTableName(aval);
                     } else {
-                        logger.warn("Unexpected attribute of <result-table>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <result-table>: " + aname + "=" + aval + " at " + locationAsString());
                     }
                 }
 
@@ -337,7 +337,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("last-backup-number")) {
                         ms.setLastBackupNo(Long.parseLong(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <munge-settings>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <munge-settings>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
@@ -356,7 +356,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("backup")) {
                         ms.setBackUp(Boolean.valueOf(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <merge-settings>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <merge-settings>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
@@ -388,7 +388,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("priority")) {
                         process.setMatchPriority(Integer.valueOf(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
@@ -424,7 +424,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("visible")) {
                         step.setVisible(Boolean.valueOf(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
@@ -463,7 +463,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                         checkAcceptableOutputType(aval);
                         mso.setType(Class.forName(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
@@ -485,7 +485,7 @@ public class ProjectSAXHandler extends DefaultHandler {
 
                 step = mungeStepIdMap.get(stepId);
                 if (step == null) {
-                    throw new SAXException("Bad munge step reference \"" + stepId + "\" at " + locator);
+                    throw new SAXException("Bad munge step reference \"" + stepId + "\" at " + locationAsString());
                 }
 
                 stepInputs = new ArrayList<Input>();
@@ -511,10 +511,10 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("from-ref")) {
                         fromOutput = mungeStepOutputIdMap.get(aval);
                         if (fromOutput == null) {
-                            throw new SAXException("Bad munge step output reference \""+aval+"\" at " + locator);
+                            throw new SAXException("Bad munge step output reference \""+aval+"\" at " + locationAsString());
                         }
                     } else {
-                        logger.warn("Unexpected attribute of <input>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <input>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
@@ -525,7 +525,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     checkMandatory("from-ref", fromOutput);
                 } else {
                     if (fromOutput != null) {
-                        throw new SAXException("Found an input connection on an unconnected input! at " + locator);
+                        throw new SAXException("Found an input connection on an unconnected input! at " + locationAsString());
                     }
                 }
                 InputDescriptor inDesc = new InputDescriptor(name, type);
@@ -567,7 +567,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     } else if (aname.equals("child-merge-action")) {
                         tableMergeRules.setChildMergeAction(ChildMergeActionType.valueOf(aval));
                     } else {
-                        logger.warn("Unexpected attribute of <table-merge-rule>: " + aname + "=" + aval + " at " + locator);
+                        logger.warn("Unexpected attribute of <table-merge-rule>: " + aname + "=" + aval + " at " + locationAsString());
                     }
                 }
                 
@@ -629,7 +629,7 @@ public class ProjectSAXHandler extends DefaultHandler {
             }
             
         } catch (Exception e) {
-            SAXException sex = new SAXException("Project import failed at " + locator, e);
+            SAXException sex = new SAXException("Project import failed at " + locationAsString(), e);
             sex.initCause(e);
             throw sex;
         }
@@ -678,7 +678,7 @@ public class ProjectSAXHandler extends DefaultHandler {
      */
     private void checkAcceptableOutputType(String className) throws SAXException {
         if (!acceptableMungeStepOutputTypes.contains(className)) {
-            throw new SAXException("Illegal munge step output type \"" + className + "\" at " + locator);
+            throw new SAXException("Illegal munge step output type \"" + className + "\" at " + locationAsString());
         }
     }
 
@@ -751,7 +751,7 @@ public class ProjectSAXHandler extends DefaultHandler {
      */
     private void checkMandatory(String attName, Object value) throws SAXException {
         if (value == null) {
-            throw new SAXException("Missing mandatory attribute \""+attName+"\" of element \""+xmlContext.peek()+"\" at " + locator);
+            throw new SAXException("Missing mandatory attribute \""+attName+"\" of element \""+xmlContext.peek()+"\" at " + locationAsString());
         }
     }
 
@@ -771,5 +771,9 @@ public class ProjectSAXHandler extends DefaultHandler {
      */
     public List<Project> getProjects() {
         return projects;
+    }
+    
+    private String locationAsString() {
+        return "line " + locator.getLineNumber() + " col " + locator.getColumnNumber();
     }
 }
