@@ -11,8 +11,8 @@
 
 		<mediaobject>
 			<imageobject id="matchmaker_logo">
-				<imagedata fileref="doc/images/matchmaker_logo.png"
-					format="PNG" width="4in" />
+				<imagedata fileref="doc/images/matchmaker_logo_i.png"
+					format="PNG" width="5in" />
 			</imageobject>
 		</mediaobject>
 
@@ -31,7 +31,7 @@
 		</copyright>
 	</bookinfo>
 
-	<chapter id="intro">
+	<chapter id="Chapter 1-intro">
 
 		<title>Introduction</title>
 
@@ -182,7 +182,7 @@
 
 	</chapter>
 
-	<chapter id="getting_started">
+	<chapter id="Chapter 2-getting_started">
 
 		<title>Getting Started</title>
 
@@ -202,8 +202,8 @@
 			<mediaobject>
 
 				<imageobject>
-					<imagedata fileref="doc/images/MatchMakerUI.png"
-						format="PNG" width="2.5in" />
+					<imagedata fileref="doc/images/MatchMakerUI_i.png"
+						format="PNG" width="5in" />
 				</imageobject>
 
 			</mediaobject>
@@ -328,33 +328,27 @@
 				<itemizedlist>
 
 					<listitem>
-						<para>
-							Find Duplicates - Use to identify and merge
+						<para>De-duping project - Use to identify and merge
 							duplicate records found within the same
-							table.
-						</para>
+							table.</para>
 					</listitem>
 
 
 					<listitem>
-						<para>
-							Cleanse - Use to reformat data to create a
-							more uniform and professional appearance.
-						</para>
+						<para>Cleansing Project - Use to reformat data to create a
+							more uniform and professional appearance.</para>
 					</listitem>
 
 
 					<listitem>
-						<para>
-							Cross-reference - Use to create a
+						<para>X-refining Project - Use to create a
 							cross-referencing table that links two
 							different tables together. The
 							cross-referencing table relates the primary
 							key from one table to the primary key of the
 							other table to show the relationship between
 							the two records. Cross-reference projects
-							will be implemented in a future release.
-						</para>
+							will be implemented in a future release.</para>
 					</listitem>
 
 				</itemizedlist>
@@ -648,7 +642,7 @@
 
 	</chapter>
 
-	<chapter id="working_with">
+	<chapter id="Chapter 3-working_with">
 
 		<title>Working with Power*MatchMaker</title>
 
@@ -686,7 +680,7 @@
 							Note: You can use the Power*MatchMaker
 							default repository or create your own
 							repository. For more information, see
-							<xref linkend="repositories" />
+							<xref linkend="Chapter 5-repositories" />
 							.
 
 						</para>
@@ -758,7 +752,7 @@
 
 							Run the appropriate engine to apply the
 							processes and rules you've defined. For
-							example, in a Find Duplicates project, you
+							example, in a De-duping project, you
 							would run the Match engine to process the
 							munge rules you've defined. After validating
 							the results, you would run the Merge engine
@@ -777,11 +771,11 @@
 				<section id="working_with.guidelines.find_duplicates">
 
 					<title>
-						General Steps for a Find Duplicates Project
+						General Steps for a De-duping Project
 					</title>
 
 					<para>
-						In a Find Duplicates project, you would
+						In a De-duping project, you would
 						typically do the following:
 					</para>
 
@@ -846,10 +840,10 @@
 
 				<section id="working_with.guidelines.cleanse">
 
-					<title>General Steps for a Cleanse Project</title>
+					<title>General Steps for a Cleansing Project</title>
 
 					<para>
-						In a Cleanse project, you would typically do the
+						In a Cleansing project, you would typically do the
 						following:
 					</para>
 
@@ -892,7 +886,7 @@
 					preferences, see
 					<xref linkend="repositories.preferences" />
 					. For information on creating a new repository, see
-					<xref linkend="repositories" />
+					<xref linkend="Chapter 5-repositories" />
 					.
 
 				</para>
@@ -1084,9 +1078,7 @@
 
 							To import an active project, select a
 							subfolder in the Current Projects folder in
-							the Power*MatchMaker Tree. Or to import a
-							backup copy of a project, select the Backup
-							Projects folder.
+							the Power*MatchMaker Tree.
 
 						</para>
 
@@ -1145,7 +1137,7 @@
 
 						<para>
 
-							Click New Group.
+							Click New Translate Group.
 
 						</para>
 
@@ -1153,8 +1145,8 @@
 
 							Note: To modify an existing group, click the
 							group in the Translation Groups folder in
-							the Power*MatchMaker Tree. You can also
-							expand the group to view the translation
+							the Power*MatchMaker Tree. By expanding the
+							you can view the translation
 							words in the group.
 
 						</para>
@@ -1222,6 +1214,18 @@
 						</para>
 
 					</listitem>
+					
+					<listitem>
+
+						<para>
+
+							You can obtain a standard translation group
+							of words from Google if you click on
+							Get Online List.
+
+						</para>
+
+					</listitem>
 
 				</orderedlist>
 
@@ -1281,32 +1285,8 @@
 
 						<para>
 
-							Enter a priority, based on how likely it is
-							that the munge process will find a match.
-							When you run the Match engine, if several
-							munge processes declare the same two rows of
-							data to be a match, the match will be
-							attributed to the munge process with the
-							highest priority. For example, assume you're
-							running a match on a customer table. You
-							have a munge process that matches on full
-							name and another that matches on telephone
-							number. If you believe that a match based on
-							full name will be more accurate than a match
-							based on telephone number, you would give
-							the full name munge process a higher
-							priority.
-
-						</para>
-
-					</listitem>
-
-					<listitem>
-
-						<para>
-
 							Select a colour. When you view the project
-							results for a Find Duplicates project, the
+							results for a De-duping project, the
 							results from each munge process will be
 							identified by colour.
 
@@ -1327,7 +1307,7 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/MungePen.png" format="PNG" width="4.5in" />
+									fileref="doc/images/MungePen_i.png" format="PNG" width="5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -1393,7 +1373,7 @@
 
 						<para>
 
-							To add a munge step to the process, drag and
+							 To add a munge step to the process, drag and
 							drop a step into the Munge Pen. You can also
 							right-click in the Munge Pen, click Add
 							Munge Step, then select the step.
@@ -1402,7 +1382,7 @@
 
 						<para>
 
-							Note: You can combine a Translate Word step
+ 							 Note: You can combine a Translate Word step
 							with another munge step. For example, you
 							may want to concatenate first and last names
 							using a Concatenation step, then strip out
@@ -1422,7 +1402,7 @@
 
 						<para>
 
-							To set the options for a step, click the
+							 To set the options for a step, click the
 							expand button on the step and enter the
 							options.
 
@@ -1434,7 +1414,7 @@
 
 						<para>
 
-							Connect the steps to the source and result
+							 Connect the steps to the source and result
 							tables by dragging the connectors from the
 							top and bottom of the step to the
 							appropriate tables.
@@ -1447,7 +1427,7 @@
 
 						<para>
 
-							Continue adding munge steps as required.
+							 Continue adding munge steps as required.
 
 						</para>
 
@@ -1457,7 +1437,22 @@
 
 						<para>
 
-							Click Save Munge Process.
+							 Click Save Munge Process.
+
+						</para>
+
+					</listitem>
+					
+					<listitem>
+
+						<para>
+
+							 The checkbox Show Preview gives the user an idea on
+							 the effect each munge step will have on the data going through
+							 it. With the checkbox selected, clicking on any one of the 
+							 munge steps will show a small preview on how that particular
+							 munge process will affect the first 5 rows of the column(s)
+							 attached to it.
 
 						</para>
 
@@ -1533,7 +1528,7 @@
 
 				<para>
 
-					Within a Find Duplicates project, you can create the
+					Within a De-duping project, you can create the
 					merge rules you want to use to transform your data.
 					Merge rules define how you want to deal with
 					duplicate data and with the "child data" that
@@ -1655,18 +1650,18 @@
 
 		<section id="working_with.example_duplicate_project">
 
-			<title>Example - Creating a Find Duplicates Project</title>
+			<title>Example - Creating a De-duping Project</title>
 
 			<para>
 				This section walks you through a step-by-step example to
-				create a small Find Duplicates project. For more
+				create a small De-duping project. For more
 				information on creating projects, see
 				<xref linkend="working_with.overview_project" />
 				.
 			</para>
 
 			<para>
-				Note: To view a demo of creating a Find Duplicates
+				Note: To view a demo of creating a De-duping
 				project, go to
 				<ulink url="http://www.sqlpower.ca/page/MatchMaker">
 					www.sqlpower.ca/page/MatchMaker
@@ -1689,7 +1684,7 @@
 				<para>
 					Note: For more information on creating your own
 					repository, see
-					<xref linkend="repositories" />
+					<xref linkend="Chapter 5-repositories" />
 					.
 				</para>
 			</section>
@@ -1760,7 +1755,7 @@
 				<title>Step 3: Create a New Project</title>
 
 				<para>
-					Next, you will create a new Find Duplicates project.
+					Next, you will create a new De-duping project.
 				</para>
 
 				<orderedlist>
@@ -1878,8 +1873,8 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/MungePenExample.png" format="PNG"
-									width="2.5in" />
+									fileref="doc/images/MungePenExample_i.png" format="PNG"
+									width="5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -2037,10 +2032,8 @@
 
 
 					<listitem>
-						<para>
-							You can ignore the Description, Priority,
-							and Colour options for this example.
-						</para>
+						<para>You can ignore the Description
+							 and Colour options for this example.</para>
 					</listitem>
 
 
@@ -2179,8 +2172,8 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/ValidateMatches01.png" format="PNG"
-									width="2.5in" />
+									fileref="doc/images/ValidateMatches_i.png" format="PNG"
+									width="5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -2270,16 +2263,14 @@
 
 						</itemizedlist>
 
-						<para>
-							Note that there is an Auto-Match button at
-							the bottom of the window. Clicking this
+						<para>Note that there is an Auto-Match button at
+							the top of the window. Clicking this
 							button will declare all undecided
 							relationships as matches and a master record
 							will be chosen at random. Using this option
 							is not recommended in most cases, since
 							serious data loss could occur if the matches
-							are not manually checked.
-						</para>
+							are not manually checked.</para>
 
 					</listitem>
 
@@ -2403,75 +2394,157 @@
 
 		</section>
 
-		<section id="table_explorer">
+		<section id="SQL Query">
 
-			<title>Using Table Explorer</title>
+        <title>SQL Query</title>
 
-			<para>
-				You can use Power*MatchMaker's Table Explorer to explore
-				the structure of a database - you can explore catalogs,
-				schemas, owners, tables, columns and so on. You can also
-				use Table Explorer to execute SQL statements on a
-				database.
-			</para>
+        <para>
+            SQL Query is a "fall-back" tool that lets you work at the
+            raw SQL command level. This is an advanced topic and should
+            only be used by those familiar with the intricacies of SQL
+            commands and the details of your database.
+        </para>
 
-			<orderedlist>
+        <para>
+            SQL Query is started from the menu entry under the Tools
+            menu, and begins with the GUI window shown below. The first
+            thing you should do is select which database connection you
+            wish to use. The list of Connections is the same as the main
+            program uses, as set up in the JDBC Connections window.
+        </para>
 
-				<listitem>
-					<para>
-						Select Tools » Table Explorer. The Display
-						Database Tables dialog box appears.
-					</para>
-				</listitem>
+        <para>
+            The basic steps to using SQL Query are to type a command in
+            the top (SQL Command) window and click the Execute button; the
+            results are displayed in the bottom (SQL Results) window. To
+            save you some typing, you can just drag the databases, tables
+            and columns shown in the DB tree of the SQL Query and drop on
+            the top (SQL Command) window.
+        </para>
 
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="doc/images/sqlquery.png"
+                    format="PNG" width="5in" />
+            </imageobject>
+        </mediaobject>
+       
+        <para>
+            SQL Statements can be entered multiple at a time, can be more than
+            one line long, but be careful! if you have multiple commands, do
+            end the previous ones with a semicolon, which is unnecessary if there
+            is only one command. These statements are not interpreted by SQL Query
+            itself, so anything that the given database and driver accepts can be
+            used. For example, with Oracle, you can use PL*SQL statements. With
+            most drivers you should be able to use stored procedures. Each SQL
+            statement is executed in its own transaction context if you turn the
+            Auto Commit on, that is, changes are committed immediately (so be careful!).
+            If you turn the Auto Commit off, you can decide to Commit or Rollback later.
+        </para>
 
-				<listitem>
-					<para>
-						In the Database Connection field, select the
-						database you want to connect to. For more
-						information on connecting to databases, see
-						<xref linkend="setup_database" />
-						.
-					</para>
-				</listitem>
+        <section id="SQL Query.results">
 
+            <title>Output (Results) Window</title>
 
-				<listitem>
-					<para>In the Table field, select a table.</para>
-				</listitem>
+            <para>
+                Command Output appears in the SQL Output window.
+                A scrollbar will appear if the information cannot
+                all be seen at once.
+            </para>
 
+            <para>
+                A visual indication of the success or failure of the
+                command is displayed below the output: green for
+                success, red for failure. As well, failures will be
+                accompanied by a pop-up window containing details on the
+                failure.
+            </para>
 
-				<listitem>
-					<para>
-						If desired, modify the SQL command and row
-						limit.
-					</para>
-				</listitem>
+            <para>
+                The Clear Output button clears the contents of the
+                output window.
+            </para>
 
+        </section>
 
-				<listitem>
-					<para>
-						Click Execute. The results are shown at the
-						bottom of the dialog box.
-					</para>
-				</listitem>
+        <section id="SQL Query.output_format">
 
+            <title>Output Formats</title>
 
-				<listitem>
-					<para>
-						To export the results in XML or CSV format,
-						click Export Grid. Enter a filename and choose a
-						file type, then click Save.
-					</para>
-				</listitem>
+            <para>
+                The output format in the result window is always Table
+                mode, which provides a friendlier interface which ensures
+                all of the columns are lined up properly. If you right-click
+                on a table or multiple tables,you can generate a HTML file
+                or CSV file. HTML mode generates an HTML table to display the
+                results    of a Select. CSV mode generates a CSV file, which is
+                a specially formatted plain text file which stores spreadsheet
+                or basic database-style information in a very format.
+            </para>
 
-			</orderedlist>
+            <para>
+                CSV files are often used as a simple way to transfer a large
+                volume of spreadsheet or database information between programs,
+                without worrying about special file types. For example, transferring
+                a home-made address book from power*architect into a database
+                program such as    Filemaker Pro could be done by exporting the file as
+                a CSV from Excel, then importing that CSV into Filemaker.
+            </para>
+           
+            <para>
+                For example, a "select * from art_logs" looked like this:
+            </para>
 
-		</section>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="doc/images/sqlquery_output.png"
+                        format="PNG" width="5in" />
+                </imageobject>
+            </mediaobject>
 
-	</chapter>
+            <para>
+                You can view this same data in HTML just by right-click
+                the selected table and choose "Exported selected to
+                HTML..". When tried to open this file just by text editor,
+                it looked like this:
+            </para>
 
-	<chapter id="setup_database">
+            <mediaobject>
+                <imageobject>
+                    <imagedata
+                        fileref="doc/images/sqlquery_html_file.png" format="PNG"
+                        width="4in" />
+                </imageobject>
+            </mediaobject>
+            <para>
+                when used a web browser to open this file, the output liked this:
+            </para>
+
+            <mediaobject>
+                <imageobject>
+                    <imagedata
+                        fileref="doc/images/sqlquery_html_output.png" format="PNG"
+                        width="5in" />
+                </imageobject>
+            </mediaobject>
+            
+            <para>
+                With a bit of formatting, or even a CSS style sheet,
+                this HTML page could be made quite usable.
+            </para>
+
+            <para>
+                SQL Query is not perfect, but it is adequate for many
+                purposes involving direct use of SQL (We will add more
+                useful features to it later).
+            </para>
+            
+
+        </section>
+	</section>
+    </chapter>
+
+	<chapter id="Chapter 4-setup_database">
 
 		<title>Setting up Database Support</title>
 
@@ -2582,7 +2655,7 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/JDBCDrivers.png" format="PNG" width="4in" />
+									fileref="doc/images/JDBCDrivers_i.png" format="PNG" width="5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -3035,7 +3108,7 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/DBConnection.png" format="PNG" width="4in" />
+									fileref="doc/images/DBConnection_i.png" format="PNG" width="5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -3190,68 +3263,21 @@
 													</para>
 												</listitem>
 
+					
 												<listitem>
-													<para>
-														The PostgreSQL
-														driver is being
-														used.
-													</para>
+														<para>
+															The PostgreSQL 
+															driver is being
+															used.          
+														</para>
+														<para>								               
+														</para>
 												</listitem>
-
 											</itemizedlist>
-
-
-
 										</entry>
-
+									
 									</row>
-
-
-
-
-								</tbody>
-
-							</tgroup>
-
-						</informaltable>
-
-						<mediaobject>
-							<imageobject>
-								<imagedata
-									fileref="doc/images/database_conn_window_setup.png"
-									format="PNG" width="4in" />
-							</imageobject>
-						</mediaobject>
-
-						<informaltable frame="all">
-
-							<tgroup cols="2">
-
-								<colspec colname="c1" />
-								<colspec colname="c2" />
-								<spanspec spanname="horiz_span"
-									namest="c1" nameend="c2" />
-
-								<thead>
-									<row>
-
-										<entry>
-											<para>
-												In this field ...
-											</para>
-										</entry>
-
-
-										<entry>
-											<para>Do this ...</para>
-										</entry>
-
-									</row>
-
-								</thead>
-
-								<tbody>
-
+									
 									<row>
 
 										<entry>
@@ -3406,7 +3432,7 @@
 
 	</chapter>
 
-	<chapter id="repositories">
+	<chapter id="Chapter 5-repositories">
 
 		<title>Working with Repositories</title>
 
@@ -3442,7 +3468,7 @@
 				and it's already been set up for you. However, there are
 				times you may want to save your work in a remote, shared
 				repository. For instance, if you are working on a large
-				Find Duplicates project as part of a team, you may want
+				De-duping project as part of a team, you may want
 				to divide up the work and tackle it in parallel. Or if
 				your cleansing process is part of a nightly maintenance
 				routine that runs on a server, you may want to point the
@@ -3621,7 +3647,7 @@
 
 								<imagedata
 									fileref="doc/images/repositories.script_dialog.png"
-									format="PNG" width="4in" />
+									format="PNG" width="5in" />
 							</imageobject>
 
 						</mediaobject>
@@ -3726,7 +3752,7 @@
 
 							<imagedata
 								fileref="doc/images/repositories.login_dialog.png" format="PNG"
-								width="4in" />
+								width="5in" />
 						</imageobject>
 
 					</mediaobject>
