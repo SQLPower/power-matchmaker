@@ -120,7 +120,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * dialog. It hides that dialog, then shows the login dialog, where the connection
      * that was selected in the connection manager is made into the current selection.
      */
-    private final Action loginDatabaseConnectionAction = new AbstractAction("Login") {
+    private final Action loginDatabaseConnectionAction = new AbstractAction("Use as Repository") {
 
 		public void actionPerformed(ActionEvent e) {
 			SPDataSource dbcs = dbConnectionManager.getSelectedConnection();
