@@ -82,6 +82,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         nonPersistingProperties.add("cleansingEngine");
         nonPersistingProperties.add("matchingEngine");
         nonPersistingProperties.add("mergingEngine");
+        nonPersistingProperties.add("addressCorrectionEngine");
         
         // tested explicitly elsewhere
         nonPersistingProperties.add("sourceTable");
@@ -241,6 +242,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     	
     	project.setResultTableName("my_COOL_result_table");
     	project.setResultTableSPDatasource(getDS().getName());
+    	project.setType(ProjectMode.FIND_DUPES);
     	SQLTable resultTable = project.createResultTable();
     	
     	// Sets up the sql statements needed for the result table

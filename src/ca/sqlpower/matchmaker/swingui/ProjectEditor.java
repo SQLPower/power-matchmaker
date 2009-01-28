@@ -618,8 +618,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					if (resultTable == null) return false;
 					project.setResultTable(resultTable);
 	        	}
-	        	if (!project.doesResultTableExist() ||
-	        			!project.verifyResultTableStructure()) {
+	        	if (!project.doesResultTableExist() || !project.verifyResultTableStructure()) {
 	        		return false;
 	        	}
 			} catch (Exception e) {

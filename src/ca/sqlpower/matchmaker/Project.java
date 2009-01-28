@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
@@ -52,7 +51,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     static final Logger logger = Logger.getLogger(Project.class);
     
 	public enum ProjectMode {
-		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference"), CLEANSE("Cleanse");
+		FIND_DUPES("Find Duplicates"), 
+		BUILD_XREF("Build Cross-Reference"), 
+		CLEANSE("Cleanse"),
+		ADDRESS_CORRECTION("Address Correction");
 
 		String displayName;
 
@@ -160,6 +162,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
 	private MergeEngineImpl mergingEngine = null;
 
+	/**
+	 * The Address Correction Engine will be created lazily, because we only need one instance per project.
+	 */
+	private AddressCorrectionEngineImpl addressCorrectionEngine = null; 
+	
     /**
      * The process that holds the engine lock. If no process has an engine lock
      * on this project, the reference will be null. The Monitorable instance
@@ -181,22 +188,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
-	/**
-	 * FIXME Implement me
-	 *
-	 */
-	public void execute() {
-		throw new NotImplementedException();
-	}
-
-	/**
-	 * FIXME Implement me
-	 *
-	 */
-	public boolean checkValid() {
-		throw new NotImplementedException();
-	}
-
     /**
      * Returns true if the current resultTable of this project exists
      * in the session's database; false otherwise.
@@ -272,7 +263,16 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 				"]");
 		logger.debug("createResultTable: si="+si+" si.children.size="+si.getChildCount());
 		
-		SQLTable t = buildResultTable(oldResultTable, si);
+		SQLTable t;
+		
+		if (type == ProjectMode.FIND_DUPES){
+			t = buildDedupeResultTable(oldResultTable, si);
+		} else if (getType() == ProjectMode.ADDRESS_CORRECTION) {
+			t = buildAddressCorrectionResultTable(oldResultTable, si);
+		} else {
+			throw new IllegalStateException("Building result table on a project type that does not use result tables! " +
+					"Project Name: " + this.getName() + " Project Type: " + this.getType());
+		}
         
         // Now replace the in-memory cached version of the result table
         SQLObject resultTableParent = oldResultTable.getParent();
@@ -285,13 +285,36 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
+	 * Builds a result table specifically configured for Address Correction projects. 
+	 * 
+	 * @param resultTable
+	 * @param si
+	 * @return
+	 */
+	private SQLTable buildAddressCorrectionResultTable(SQLTable resultTable, SQLIndex si) throws ArchitectException {
+		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
+		addResultTableColumns(t, si, "src_addr_key_col_");
+		
+		SQLColumn col = new SQLColumn(t, "status", Types.VARCHAR, 15, 0);
+		t.addColumn(col);
+		
+		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
+		for (int i = 0; i < si.getChildCount(); i++) {
+			newidx.addChild(newidx.new Column(t.getColumn(i), AscendDescend.ASCENDING));
+		}
+		t.addIndex(newidx);
+		
+		return t;
+	}
+
+	/**
 	 * This builds the result table according to given setup information. 
 	 *  
 	 * @param resultTable This contains the setup information for the result table to be generated.
 	 * @param si The unique index upon which the result table should reflect on
 	 * @throws ArchitectException
 	 */
-	public SQLTable buildResultTable(SQLTable resultTable, SQLIndex si) 
+	public SQLTable buildDedupeResultTable(SQLTable resultTable, SQLIndex si) 
 		throws ArchitectException {
 		
 		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
@@ -450,7 +473,14 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		}
 
 		List<SQLTable> inMemory = new ArrayList<SQLTable>();
-		inMemory.add(buildResultTable(resultTable, si));
+		if (type == ProjectMode.FIND_DUPES) {
+			inMemory.add(buildDedupeResultTable(resultTable, si));
+		} else if (type == ProjectMode.ADDRESS_CORRECTION){
+			inMemory.add(buildAddressCorrectionResultTable(resultTable, si));
+		} else {
+			throw new IllegalStateException("Checking result table on a project type that does not use result tables! " +
+					"Project Name: " + this.getName() + " Project Type: " + this.getType());
+		}
 		List<SQLTable> physical = new ArrayList<SQLTable>();
 		physical.add(table);
 		CompareSQL compare = new CompareSQL(inMemory,physical);
@@ -528,15 +558,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		
 		return diffCount == 0;
 	}
-	
-	
-	/**
-	 * FIXME Implement me
-	 *
-	 */
-	public void createViewTable() {
-		throw new NotImplementedException();
-	}
 
 	public String getFilter() {
 		return filter;
@@ -571,9 +592,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 				this.mergeSettings);
 	}
 
-
-
-
 	public ProjectMode getType() {
 		return type;
 	}
@@ -581,7 +599,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	public void setType(ProjectMode type) {
 		ProjectMode oldValue = this.type;
 		this.type = type;
-		if (type == ProjectMode.CLEANSE) {
+		if (type == ProjectMode.CLEANSE || type == ProjectMode.ADDRESS_CORRECTION) {
 			getTableMergeRulesFolder().setVisible(false);
 		}
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
@@ -944,6 +962,20 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			mergingEngine = new MergeEngineImpl(getSession(), this); 
 		}
 		return mergingEngine;
+	}
+	
+	/**
+	 * Returns the contained {@link AddressCorrectionEngineImpl}.
+	 * If there isn't one, one will get created. This helps to ensure
+	 * only one instance is created per project. 
+	 * 
+	 * @return The Address Correction Engine contained
+	 */
+	public AddressCorrectionEngineImpl getAddressCorrectionEngine() {
+		if (addressCorrectionEngine == null) {
+			addressCorrectionEngine = new AddressCorrectionEngineImpl();
+		}
+		return addressCorrectionEngine;
 	}
 	
 	/**
