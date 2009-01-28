@@ -348,12 +348,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		JMenu mm = new JMenu("New Project");
 		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New De-duping Project", Project.ProjectMode.FIND_DUPES)));
 		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New Cleansing Project",Project.ProjectMode.CLEANSE)));
-		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New X-ref Project", Project.ProjectMode.BUILD_XREF)));
+// 		TODO: Implement Cross-referencing projects first before re-enabling this menu item
+//		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New X-ref Project", Project.ProjectMode.BUILD_XREF)));
+		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New Address Correction Project", Project.ProjectMode.ADDRESS_CORRECTION)));
 		m.add(mm);
-		
-		// TODO: Implement the import and export functions and
-		// replace this dummy action.
-//		m.add(new JMenuItem(new ProjectImportAction(swingSession, owningFrame)));
 		
 		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
 				"Delete Folder", folder)));

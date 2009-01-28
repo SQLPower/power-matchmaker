@@ -501,7 +501,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
 		newDeDupeAction = new NewProjectAction(this, "New De-duping Project", Project.ProjectMode.FIND_DUPES);
-		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
+//		TODO: Implement Cross-referencing projects first before re-enabling this action
+//		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
 		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
 		
         JMenuBar menuBar = new JMenuBar();
