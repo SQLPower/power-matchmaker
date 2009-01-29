@@ -37,10 +37,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -69,6 +65,10 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.UnknownFreqCodeException;
@@ -152,13 +152,13 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
      *  
-     * @throws ArchitectException if there was a problem connecting to the database
+     * @throws SQLObjectException if there was a problem connecting to the database
      * @throws MatchMakerConfigurationException If there are some user settings that are
      * not set up properly. 
      */
 	public MatchMakerHibernateSessionImpl(MatchMakerSessionContext context,
 			SPDataSource ds) throws PLSecurityException,
-			UnknownFreqCodeException, SQLException, ArchitectException,
+			UnknownFreqCodeException, SQLException, SQLObjectException,
 			MatchMakerConfigurationException, RepositoryVersionException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
@@ -332,7 +332,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * The returned connection will be in Auto-Commit mode, but you can turn
      * auto-commit off if you like (almost always a good idea).
      * 
-     * @throws ArchitectRuntimeException If it fails to connect to the database
+     * @throws SQLObjectRuntimeException If it fails to connect to the database
      */
     public Connection getConnection() {
     	try {
@@ -341,8 +341,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return con;
     	} catch (SQLException ex) {
     	    throw new RuntimeException(ex);
-        } catch (ArchitectException ex) {
-            throw new ArchitectRuntimeException(ex);
+        } catch (SQLObjectException ex) {
+            throw new SQLObjectRuntimeException(ex);
         }
     }
 
@@ -480,7 +480,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * If you change this method, you must also change the methods in TestingMatchMakerSession and 
      * TestingMatchMakerSession because they are actually the same method......
      */
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
     	logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
     			catalog + "." + schema + "." + tableName);
     	
@@ -516,17 +516,17 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     	}
     }
     
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
     	return findPhysicalTableByName(getDatabase().getDataSource().getName(), catalog, schema, tableName);
     }
 
     public boolean tableExists(String catalog, String schema,
-    		String tableName) throws ArchitectException {
+    		String tableName) throws SQLObjectException {
     	return tableExists(null, catalog, schema, tableName);
     }
     
     public boolean tableExists(String spDataSourceName, String catalog, String schema,
-    		String tableName) throws ArchitectException {
+    		String tableName) throws SQLObjectException {
         logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
                 catalog + "." + schema + "." + tableName);
         
@@ -559,7 +559,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         }
     }
 
-    public boolean tableExists(SQLTable table) throws ArchitectException {
+    public boolean tableExists(SQLTable table) throws SQLObjectException {
     	if ( table == null ) return false;
     	return tableExists(table.getParentDatabase().getDataSource().getName(),
     			table.getCatalogName(),

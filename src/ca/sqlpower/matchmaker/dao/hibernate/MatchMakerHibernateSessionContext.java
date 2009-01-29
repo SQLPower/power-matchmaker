@@ -30,7 +30,6 @@ import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -39,6 +38,7 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SPDataSourceType;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.UnknownFreqCodeException;
@@ -129,7 +129,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      */
     public MatchMakerSession createSession(SPDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
-			ArchitectException, MatchMakerConfigurationException,
+			SQLObjectException, MatchMakerConfigurationException,
 			RepositoryVersionException {
 
         // We create a copy of the data source and change the userID and

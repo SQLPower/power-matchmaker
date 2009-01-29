@@ -28,16 +28,16 @@ import javax.swing.text.Document;
 
 import org.apache.log4j.Appender;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableException;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.swingui.DocumentAppender;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSwingWorker;
-import ca.sqlpower.swingui.DocumentAppender;
 
 /**
  * A SPSwingWorker implementation that runs a MatchMakerEngine.
@@ -83,11 +83,11 @@ class EngineWorker extends SPSwingWorker {
 	 * including the log output and progress bar
 	 * @param registry The SwingWorkerRegistry that this worker will register itself with
 	 * @throws EngineSettingException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 * @throws SourceTableException 
 	 */
 	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel,
-			MatchMakerSwingSession session, Project project, Action action) throws EngineSettingException, ArchitectException, SourceTableException {
+			MatchMakerSwingSession session, Project project, Action action) throws EngineSettingException, SQLObjectException, SourceTableException {
 		super(session);
 		this.session = session;
 		this.project = project;

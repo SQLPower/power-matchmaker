@@ -28,8 +28,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.EmailAppender;
 
 /**
@@ -51,7 +51,7 @@ public class MergeEngineImpl extends AbstractEngine {
 		this.setProject(project);
 	}
 	
-	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException {
+	public void checkPreconditions() throws EngineSettingException, SQLObjectException, SourceTableException {
 		
 		MatchMakerSession session = getSession();
         Project project = getProject();
@@ -143,7 +143,7 @@ public class MergeEngineImpl extends AbstractEngine {
 			progressMessage = "Checking Merge Engine Preconditions";
 			logger.info(progressMessage);
 			checkPreconditions();
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			throw new RuntimeException(e);
 		}
 

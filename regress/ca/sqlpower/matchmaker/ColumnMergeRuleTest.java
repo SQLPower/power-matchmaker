@@ -20,10 +20,10 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 
@@ -45,7 +45,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		propertiesThatHaveSideEffects.add("parent");
 	}
 	@Override
-	protected ColumnMergeRules getTarget() throws ArchitectException {
+	protected ColumnMergeRules getTarget() throws SQLObjectException {
 		
 		TableMergeRules tmr = new TableMergeRules();
 		tmr.setSession(testingMatchMakerSession);
@@ -56,7 +56,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		return cmr;
 	}
 
-	public void testEquals() throws ArchitectException {
+	public void testEquals() throws SQLObjectException {
 		ColumnMergeRules m1 = getTarget();
 		ColumnMergeRules m2 = getTarget();
 		m1.setParent(null);

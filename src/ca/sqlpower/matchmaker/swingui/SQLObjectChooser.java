@@ -35,16 +35,16 @@ import javax.swing.JProgressBar;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObject;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.SPSUtils;
 
@@ -84,9 +84,9 @@ public class SQLObjectChooser {
      * @param okButtonLabel The text that should appear on the OK button
      * @return The selected "table container" object, or <tt>null</tt> if the user cancels or
      * closes the dialog.
-     * @throws ArchitectException If there are problems connecting to or populating the chosen databases
+     * @throws SQLObjectException If there are problems connecting to or populating the chosen databases
      */
-    public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String dialogTitle, String okButtonLabel) throws ArchitectException {
+    public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String dialogTitle, String okButtonLabel) throws SQLObjectException {
         // single boolean in final array so the buttons can modify its value
         final boolean[] dialogAccepted = new boolean[1];
         final JDialog d = SPSUtils.makeOwnedDialog(owner, dialogTitle);
@@ -241,8 +241,8 @@ public class SQLObjectChooser {
                 List<SQLTable> tables = db.getChildren();
                 setComboBoxStateAndItem(tableComboBox, tables, -1);
             }
-        } catch (ArchitectException ex) {
-            throw new ArchitectRuntimeException(ex);
+        } catch (SQLObjectException ex) {
+            throw new SQLObjectRuntimeException(ex);
         }
         
 		ItemListener itemListener = new ItemListener() {
@@ -266,10 +266,10 @@ public class SQLObjectChooser {
      * selection change. This method is really a subroutine of the anonymous
      * ItemListener implementation defined in the constructor.
      * 
-     * @throws ArchitectException
+     * @throws SQLObjectException
      *             When any of the database access fails.
      */
-	private void validate() throws ArchitectException {
+	private void validate() throws SQLObjectException {
 
 		if (dataSourceComboBox.getSelectedItem() == null) {
 			dataSource = null;

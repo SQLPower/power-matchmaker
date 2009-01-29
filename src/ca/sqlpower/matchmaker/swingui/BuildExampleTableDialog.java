@@ -60,18 +60,18 @@ import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObject;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -274,7 +274,7 @@ public class BuildExampleTableDialog extends JDialog{
 	 */
 	public void generateTableSQL()
 		throws InstantiationException, IllegalAccessException,
-		HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
+		HeadlessException, SQLException, SQLObjectException, ClassNotFoundException {
 
 		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(getDataSource());
 		if (ddlg == null) {
@@ -436,7 +436,7 @@ public class BuildExampleTableDialog extends JDialog{
 				} catch (SQLException ex) {
 					SPSUtils.showExceptionDialogNoReport(editor,
 							"Create Script Failure", ex);
-				} catch (ArchitectException ex) {
+				} catch (SQLObjectException ex) {
 					SPSUtils.showExceptionDialogNoReport(editor, 
 							"Error Generating Example table", ex);
 				} finally {

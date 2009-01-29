@@ -32,11 +32,11 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLObjectUtils;
 
 /**
  * Simple utility class for finding frequently-used words in a column of a table.
@@ -60,7 +60,7 @@ public class CommonWordsFinder {
             con = column.getParentTable().getParentDatabase().getConnection();
             
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT ").append(column.getName()).append(" FROM ").append(ArchitectUtils.toQualifiedName(column.getParentTable(), SQLDatabase.class));
+            sql.append("SELECT ").append(column.getName()).append(" FROM ").append(SQLObjectUtils.toQualifiedName(column.getParentTable(), SQLDatabase.class));
             rs = stmt.executeQuery(sql.toString());
             
             Pattern wordSep = Pattern.compile(wordSeparator);
@@ -92,8 +92,8 @@ public class CommonWordsFinder {
             Collections.sort(sortedCounts);
             return sortedCounts;
             
-        } catch (ArchitectException e) {
-            throw new ArchitectRuntimeException(e);
+        } catch (SQLObjectException e) {
+            throw new SQLObjectRuntimeException(e);
         } finally {
             if (rs != null) {
                 try {

@@ -23,12 +23,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * Provides the ability to maintain the SQLTable properties of the Project via
@@ -231,8 +231,8 @@ public class CachableTable {
 				"The table selection has been reset to nothing");
 				return null;
 			}
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
+		} catch (SQLObjectException e) {
+			throw new SQLObjectRuntimeException(e);
 		}
     }
 

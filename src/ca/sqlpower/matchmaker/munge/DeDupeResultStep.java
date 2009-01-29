@@ -24,9 +24,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.sqlobject.SQLIndex;
 
 /**
  * This is a specific result step for a deduping project. Note that any inputs

@@ -31,14 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -48,6 +40,14 @@ import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 
 public class MatchPoolTest extends TestCase {
 
@@ -92,8 +92,8 @@ public class MatchPoolTest extends TestCase {
 			public Connection getConnection() {
 				try {
 					return db.getConnection();
-				} catch (ArchitectException e) {
-					throw new ArchitectRuntimeException(e);
+				} catch (SQLObjectException e) {
+					throw new SQLObjectRuntimeException(e);
 				}
 			}
 			
@@ -3856,10 +3856,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graph 'a' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-     * @throws ArchitectException 
+     * @throws SQLObjectException 
      * @throws SQLException 
      */
-	public void testAutoMatchBasic() throws SQLException, ArchitectException {
+	public void testAutoMatchBasic() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a1");
 		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
@@ -3890,10 +3890,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graph 'o' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-	 * @throws ArchitectException 
+	 * @throws SQLObjectException 
 	 * @throws SQLException 
      */
-	public void testAutoMatchNoMatchLeftAlone() throws SQLException, ArchitectException {
+	public void testAutoMatchNoMatchLeftAlone() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("o1");
 		SourceTableRecord o1 = pool.getSourceTableRecord(keyList);
@@ -3922,10 +3922,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graph 'u' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-	 * @throws ArchitectException 
+	 * @throws SQLObjectException 
 	 * @throws SQLException 
 	 */
-	public void testAutoMatchRespected() throws SQLException, ArchitectException {
+	public void testAutoMatchRespected() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("u1");
 		SourceTableRecord u1 = pool.getSourceTableRecord(keyList);
@@ -3957,10 +3957,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graph 'cycle' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-	 * @throws ArchitectException 
+	 * @throws SQLObjectException 
 	 * @throws SQLException 
 	 */
-	public void testAutoMatchOnCycle() throws SQLException, ArchitectException {
+	public void testAutoMatchOnCycle() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("cycle1");
 		SourceTableRecord cycle1 = pool.getSourceTableRecord(keyList);
@@ -4002,10 +4002,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graph 'f' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-	 * @throws ArchitectException 
+	 * @throws SQLObjectException 
 	 * @throws SQLException 
 	 */
-	public void testAutoMatchOnTwoMasters() throws SQLException, ArchitectException {
+	public void testAutoMatchOnTwoMasters() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("f1");
 		SourceTableRecord f1 = pool.getSourceTableRecord(keyList);
@@ -4035,10 +4035,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graph 'w' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-	 * @throws ArchitectException 
+	 * @throws SQLObjectException 
 	 * @throws SQLException 
 	 */
-	public void testAutoMatchBasicTwoRules() throws SQLException, ArchitectException {
+	public void testAutoMatchBasicTwoRules() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("w1");
 		SourceTableRecord w1 = pool.getSourceTableRecord(keyList);
@@ -4068,10 +4068,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graphs 'x' and 'y' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-	 * @throws ArchitectException 
+	 * @throws SQLObjectException 
 	 * @throws SQLException 
 	 */
-	public void testAutoMatchPropogation() throws SQLException, ArchitectException {
+	public void testAutoMatchPropogation() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("x1");
 		SourceTableRecord x1 = pool.getSourceTableRecord(keyList);
@@ -4138,10 +4138,10 @@ public class MatchPoolTest extends TestCase {
 	 * See graph 'z' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
-	 * @throws ArchitectException 
+	 * @throws SQLObjectException 
 	 * @throws SQLException 
 	 */
-	public void testAutoMatchPreservesLegalState() throws SQLException, ArchitectException {
+	public void testAutoMatchPreservesLegalState() throws SQLException, SQLObjectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("z1");
 		SourceTableRecord z1 = pool.getSourceTableRecord(keyList);

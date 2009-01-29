@@ -27,16 +27,15 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.munge.MungePreviewer;
 import ca.sqlpower.sql.CachedRowSet;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * The SQLInputStep class implements a munge step which provides data
@@ -235,11 +234,11 @@ public class SQLInputStep extends AbstractMungeStep {
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
-    public MungeResultStep getOutputStep() throws ArchitectException {
+    public MungeResultStep getOutputStep() throws SQLObjectException {
         return getOutputStep(getProject());
     }
     
-    public MungeResultStep getOutputStep(Project project) throws ArchitectException {
+    public MungeResultStep getOutputStep(Project project) throws SQLObjectException {
         if (outputStep != null) {
             return outputStep;
         } else if (project.getType() == ProjectMode.CLEANSE) {

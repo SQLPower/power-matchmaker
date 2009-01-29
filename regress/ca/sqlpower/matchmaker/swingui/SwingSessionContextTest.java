@@ -31,9 +31,10 @@ import java.util.prefs.Preferences;
 
 import javax.swing.event.UndoableEditListener;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import junit.framework.TestCase;
 import prefs.PreferencesFactory;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;

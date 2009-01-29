@@ -22,12 +22,12 @@ package ca.sqlpower.matchmaker;
 import java.sql.Types;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * A collection of tests for the Project class that concentrate on testing the helper
@@ -60,7 +60,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
 
 
     /** Creates a table directly under the session's database. */
-    private SQLTable setUpScenario1() throws ArchitectException {
+    private SQLTable setUpScenario1() throws SQLObjectException {
         SQLDatabase db = session.getDatabase();
         SQLTable table = new SQLTable(db, "table1", null, "TABLE", true);
         db.addChild(table);
@@ -70,7 +70,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
     }
     
     /** Creates a schema with a table in it directly under the session's database. */
-    private SQLTable setUpScenario2() throws ArchitectException {
+    private SQLTable setUpScenario2() throws SQLObjectException {
         SQLDatabase db = session.getDatabase();
         SQLSchema sch = new SQLSchema(db, "schema2", true);
         db.addChild(sch);
@@ -82,7 +82,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
     }
     
     /** Creates a catalog with a table in it directly under the session's database. */
-    private SQLTable setUpScenario3() throws ArchitectException {
+    private SQLTable setUpScenario3() throws SQLObjectException {
         SQLDatabase db = session.getDatabase();
         SQLCatalog cat = new SQLCatalog(db, "catalog3", true);
         db.addChild(cat);
@@ -94,7 +94,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
     }
     
     /** Creates a catalog containing a schema containing a table under the session's database. */
-    private SQLTable setUpScenario4() throws ArchitectException {
+    private SQLTable setUpScenario4() throws SQLObjectException {
         SQLDatabase db = session.getDatabase();
         SQLCatalog cat = new SQLCatalog(db, "catalog4", true);
         db.addChild(cat);

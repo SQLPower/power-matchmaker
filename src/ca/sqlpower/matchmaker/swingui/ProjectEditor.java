@@ -46,14 +46,6 @@ import javax.swing.MutableComboBoxModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -63,6 +55,14 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObject;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -128,7 +128,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * @param project the project Object to be edited
 	 * @param folder the project's parent folder
 	 */
-    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws ArchitectException {
+    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws SQLObjectException {
         if (project == null) throw new IllegalArgumentException("You can't edit a null project");
         if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
         
@@ -270,7 +270,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					d.pack();
 					d.setSize(800, d.getPreferredSize().height);
 					d.setVisible(true);
-				} catch (ArchitectException ex) {
+				} catch (SQLObjectException ex) {
                     SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
                     		"Couldn't create view builder", ex);
                 }
@@ -410,7 +410,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     }
 
 
-    private void setDefaultSelections() throws ArchitectException {
+    private void setDefaultSelections() throws SQLObjectException {
 
     	final SQLDatabase loginDB = swingSession.getDatabase();
 
@@ -514,7 +514,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				for ( SQLIndex index : uniqueIndices ) {
 					indexComboBox.addItem(index);
 				}
-			} catch (ArchitectException e) {
+			} catch (SQLObjectException e) {
 				throw new RuntimeException(e);
 			}
 			if ( indexComboBox.getItemCount() > 0 ) {
@@ -534,7 +534,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
      * Copies all the values from the GUI components into the PlMatch
      * object this component is editing, then persists it to the database.
      * @return true if save OK
-     * @throws ArchitectRuntimeException if we cannot set the result table on a project
+     * @throws SQLObjectRuntimeException if we cannot set the result table on a project
      */
     public boolean applyChanges() {
     	List<String> fail = handler.getFailResults();
@@ -701,8 +701,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			else {
 				try {
 					value.populate();
-				} catch (ArchitectException e) {
-					throw new ArchitectRuntimeException(e);
+				} catch (SQLObjectException e) {
+					throw new SQLObjectRuntimeException(e);
 				}
 				enableAction(true);
 
@@ -721,8 +721,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					try {
 						resultTable = swingSession.getDatabase().getTableByName(
 								catalogName, schemaName, tableName);
-					} catch (ArchitectException e) {
-						throw new ArchitectRuntimeException(e);
+					} catch (SQLObjectException e) {
+						throw new SQLObjectRuntimeException(e);
 					}
 					if ( value == resultTable ) {
 						return ValidateResult.createValidateResult(
@@ -802,8 +802,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				try {
 					resultTable = swingSession.getDatabase().getTableByName(
 							catalogName, schemaName, value);
-				} catch (ArchitectException e) {
-					throw new ArchitectRuntimeException(e);
+				} catch (SQLObjectException e) {
+					throw new SQLObjectRuntimeException(e);
 				}
 				if ( sourceTable == resultTable ) {
 					return ValidateResult.createValidateResult(Status.FAIL,

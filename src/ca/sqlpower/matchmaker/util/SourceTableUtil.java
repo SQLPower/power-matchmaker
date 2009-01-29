@@ -27,10 +27,6 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
@@ -49,6 +45,10 @@ import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel.Edge;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObject;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * A utility class with methods used to fix a project if any changes has been
@@ -255,10 +255,10 @@ public class SourceTableUtil {
 	 * @param sourceTableIndexChanged
 	 *            Whether the source table index has been changed. If true, all
 	 *            merge rules except the source merge rule will be removed.
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 *             If getting the project's source table index causes problems.
 	 */
-	private static void fixMergeRules(Project project, TableMergeRules sourceTmr, boolean sourceTableIndexChanged) throws ArchitectException {
+	private static void fixMergeRules(Project project, TableMergeRules sourceTmr, boolean sourceTableIndexChanged) throws SQLObjectException {
 		// removed all the old column merge rules.
 		List<ColumnMergeRules> sourceCmrs = new ArrayList<ColumnMergeRules>(sourceTmr.getChildren());
 		for (ColumnMergeRules cmr : sourceCmrs) {
@@ -298,10 +298,10 @@ public class SourceTableUtil {
 	 *            The brand new source table.
 	 * @param oldIndex
 	 *            The previous source table index.
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private static void fixSourceTableIndex(Project project, SQLTable newSourceTable,
-			SQLIndex oldIndex) throws ArchitectException {
+			SQLIndex oldIndex) throws SQLObjectException {
 		SQLIndex newIndex = null;
 		
 		// no unique index in the new source table ... not good!

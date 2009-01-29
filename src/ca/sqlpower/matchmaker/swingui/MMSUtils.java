@@ -56,14 +56,14 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectVersion;
-import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
@@ -221,7 +221,7 @@ public class MMSUtils {
 	public static void createResultTable(final Frame frame,
 			SPDataSource dataSource, final Project project) throws InstantiationException,
 			IllegalAccessException, HeadlessException, SQLException,
-			ArchitectException, ClassNotFoundException {
+			SQLObjectException, ClassNotFoundException {
 
 		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(dataSource);
 

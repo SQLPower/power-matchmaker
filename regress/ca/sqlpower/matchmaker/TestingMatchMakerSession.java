@@ -31,12 +31,12 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
@@ -216,7 +216,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
 
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
 
     	SPDataSource ds = null;
     	
@@ -250,21 +250,21 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     	}
     }
     
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
     	return findPhysicalTableByName(getDatabase().getDataSource().getName(), catalog, schema, tableName);
     }
 
     public boolean tableExists(String catalog, String schema, 
-    		String tableName) throws ArchitectException {
+    		String tableName) throws SQLObjectException {
     	return (findPhysicalTableByName(catalog,schema,tableName) != null);
     }
     
     public boolean tableExists(String spDataSourceName, String catalog, String schema, 
-    		String tableName) throws ArchitectException {
+    		String tableName) throws SQLObjectException {
     	return (findPhysicalTableByName(spDataSourceName, catalog,schema,tableName) != null);
     }
 
-    public boolean tableExists(SQLTable table) throws ArchitectException {
+    public boolean tableExists(SQLTable table) throws SQLObjectException {
     	if ( table == null ) return false;
     	return tableExists(table.getParentDatabase().getDataSource().getName(),
     			table.getCatalogName(),

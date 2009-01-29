@@ -30,10 +30,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
@@ -43,6 +39,10 @@ import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public abstract class AbstractCleanseEngineImplTest extends TestCase{
     Project project;
@@ -66,8 +66,8 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 			public Connection getConnection() {
 				try {
 					return db.getConnection();
-				} catch (ArchitectException e) {
-					throw new ArchitectRuntimeException(e);
+				} catch (SQLObjectException e) {
+					throw new SQLObjectRuntimeException(e);
 				}
 			}
 

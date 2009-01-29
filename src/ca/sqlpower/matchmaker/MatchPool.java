@@ -40,10 +40,6 @@ import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.DijkstrasAlgorithm;
@@ -55,6 +51,10 @@ import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.util.MonitorableImpl;
 
 /**
@@ -181,9 +181,9 @@ public class MatchPool extends MonitorableImpl {
      * primary key.
      * 
      * @throws SQLException if an unexpected error occurred running the SQL statements
-     * @throws ArchitectException if SQLObjects fail to populate its children
+     * @throws SQLObjectException if SQLObjects fail to populate its children
      */
-    public void findAll(List<SQLColumn> displayColumns) throws SQLException, ArchitectException {
+    public void findAll(List<SQLColumn> displayColumns) throws SQLException, SQLObjectException {
         SQLTable resultTable = project.getResultTable();
         Connection con = null;
         Statement stmt = null;
@@ -839,7 +839,7 @@ public class MatchPool extends MonitorableImpl {
 	 * @param duplicate The SourceTableRecord that we are defining as a duplicate of the master
 	 * @param isAutoMatch Indicate that this method is being used by the AutoMatch feature
 	 */
-    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate, boolean isAutoMatch) throws ArchitectException {
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate, boolean isAutoMatch) throws SQLObjectException {
     	if (duplicate == master) {
     		defineMasterOfAll(master);
     		return;
@@ -889,9 +889,9 @@ public class MatchPool extends MonitorableImpl {
     /**
      * Similar to {@link #defineMaster(SourceTableRecord, SourceTableRecord, boolean)} except the isAutoMatch
      * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
-     * @throws ArchitectException
+     * @throws SQLObjectException
      */
-    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) throws ArchitectException {
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) throws SQLObjectException {
     	defineMaster(master, duplicate, false);
     }
 
@@ -943,7 +943,7 @@ public class MatchPool extends MonitorableImpl {
 	 * algorithm to find the shortest path to the nodes and to make sure
 	 * that we have no cycles.
 	 */
-	public void defineMasterOfAll(SourceTableRecord master) throws ArchitectException {
+	public void defineMasterOfAll(SourceTableRecord master) throws SQLObjectException {
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
     		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
 		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
@@ -1019,7 +1019,7 @@ public class MatchPool extends MonitorableImpl {
 	 * somehow the lhs and rhs will be separated as in the
 	 * {@link #defineUnmatched(SourceTableRecord, SourceTableRecord)} method.
 	 */
-    public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) throws ArchitectException {
+    public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) throws SQLObjectException {
     	if (lhs == rhs) {
     		defineNoMatchOfAny(lhs);
     		return;
@@ -1041,7 +1041,7 @@ public class MatchPool extends MonitorableImpl {
 	 * This method sets all of the potential match records connecting the given
 	 * source table record to any other source table record to be no match.
 	 */
-	public void defineNoMatchOfAny(SourceTableRecord record1) throws ArchitectException {
+	public void defineNoMatchOfAny(SourceTableRecord record1) throws SQLObjectException {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
 			if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
 			logger.debug("Setting no match between " + pmr.getOriginalLhs() + " and " + pmr.getOriginalRhs());
@@ -1079,7 +1079,7 @@ public class MatchPool extends MonitorableImpl {
 	 * edges to be undecided.</li>
 	 * </ol>
 	 */
-	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) throws ArchitectException {
+	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) throws SQLObjectException {
 		logger.debug("Unmatching " + rhs + " from " + lhs);
 		if (lhs == rhs) {
     		defineUnmatchAll(lhs);
@@ -1157,7 +1157,7 @@ public class MatchPool extends MonitorableImpl {
 	private void defineMatchEdges(
 			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
 			Map<SourceTableRecord, SourceTableRecord> masterMapping,
-			boolean isAutoMatch) throws ArchitectException {
+			boolean isAutoMatch) throws SQLObjectException {
 		logger.debug("Removing all decided edges from the given graph");
     	for (PotentialMatchRecord pmr : graph.getEdges()) {
    			pmr.setMaster(null);
@@ -1175,11 +1175,11 @@ public class MatchPool extends MonitorableImpl {
 	/**
 	 * Similar to {@link #defineMatchEdges(GraphModel, Map, boolean)} except the isAutoMatch
 	 * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private void defineMatchEdges(
 			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
-			Map<SourceTableRecord, SourceTableRecord> masterMapping) throws ArchitectException {
+			Map<SourceTableRecord, SourceTableRecord> masterMapping) throws SQLObjectException {
 		defineMatchEdges(graph, masterMapping, false);
 	}
 
@@ -1234,7 +1234,7 @@ public class MatchPool extends MonitorableImpl {
 	 * Sets all potential match records connected to the given source table record
 	 * to be undefined matches.
 	 */
-	public void defineUnmatchAll(SourceTableRecord record1) throws ArchitectException {
+	public void defineUnmatchAll(SourceTableRecord record1) throws SQLObjectException {
 		logger.debug("unmatching " + record1 + " from everything");
         for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
         	if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
@@ -1318,10 +1318,10 @@ public class MatchPool extends MonitorableImpl {
 	 * 
 	 * @param rule
 	 *            The name of the rule along which to make matches
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 * @throws SQLException
 	 */
-	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, ArchitectException {
+	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException {
 		if (mungeProcess == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
 					"invalid munge process");
@@ -1375,7 +1375,7 @@ public class MatchPool extends MonitorableImpl {
 	private void makeAutoMatches(MungeProcess mungeProcess,
 			SourceTableRecord selected,
 			Set<SourceTableRecord> neighbours,
-			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
+			Set<SourceTableRecord> visited) throws SQLException, SQLObjectException {
 		logger.debug("makeAutoMatches called, selected's key values = " + selected.getKeyValues());
 		visited.add(selected);
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =

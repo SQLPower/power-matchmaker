@@ -29,11 +29,11 @@ import java.util.concurrent.CancellationException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.security.EmailNotification;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.EmailNotification.EmailRecipient;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Email;
 import ca.sqlpower.util.UnknownFreqCodeException;
 /**
@@ -115,7 +115,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		try {
 			try {
 				checkPreconditions();
-			} catch (ArchitectException e) {
+			} catch (SQLObjectException e) {
 				throw new RuntimeException(e);
 			}
 			

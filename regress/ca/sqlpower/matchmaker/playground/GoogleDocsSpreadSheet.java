@@ -23,9 +23,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.sqlobject.SQLObjectException;
 
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.spreadsheet.CellEntry;
@@ -39,9 +39,9 @@ public class GoogleDocsSpreadSheet {
 	 * The sheet is owned by matchmaker@sqlpower.ca called TranslationWords.
 	 * 
 	 * @return The MatchMakerTranslateWord group from the spread sheet 
-	 * @throws ArchitectException If something goes wrong
+	 * @throws SQLObjectException If something goes wrong
 	 */
-	public MatchMakerTranslateGroup getOnlineTranslateGroup() throws ArchitectException {
+	public MatchMakerTranslateGroup getOnlineTranslateGroup() throws SQLObjectException {
 		SpreadsheetService sss = new SpreadsheetService("SQLPower-Power*MatchMaker-0.9.1");
 		CellFeed cf;
 		
@@ -49,7 +49,7 @@ public class GoogleDocsSpreadSheet {
 			URL url = new URL("http://spreadsheets.google.com/feeds/cells/pIOfRi4wZwIh1eNPmWCRhPQ/1/public/values");
 			cf = sss.getFeed(url, CellFeed.class);
 		} catch (Exception e) {
-			throw new ArchitectException("Error could not generate translation words from google spreadsheet!",e);
+			throw new SQLObjectException("Error could not generate translation words from google spreadsheet!",e);
 		}
 
 		

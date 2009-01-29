@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.security.MessageDigest;
+
 import sun.misc.BASE64Encoder;
 
 /**

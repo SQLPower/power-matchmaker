@@ -26,10 +26,10 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * A combo box data model that treats the columns of a SQLTable as
@@ -51,7 +51,7 @@ public class ColumnComboBoxModel implements ComboBoxModel {
      * model will only work with this one table for its whole life.
      * 
      * @param table The table to use
-     * @throws ArchitectRuntimeException If the table column populate fails
+     * @throws SQLObjectRuntimeException If the table column populate fails
      */
 	public ColumnComboBoxModel(SQLTable table) {
 		super();
@@ -61,8 +61,8 @@ public class ColumnComboBoxModel implements ComboBoxModel {
             for (SQLColumn c : table.getColumns()) {
                 columns.add(c);
             }
-        } catch (ArchitectException ex) {
-            throw new ArchitectRuntimeException(ex);
+        } catch (SQLObjectException ex) {
+            throw new SQLObjectRuntimeException(ex);
         }
 	}
 

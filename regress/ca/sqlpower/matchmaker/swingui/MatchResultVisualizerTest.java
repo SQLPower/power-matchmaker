@@ -29,13 +29,6 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -53,6 +46,13 @@ import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetNoMatchAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetUnmatchAction;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 
 public class MatchResultVisualizerTest extends TestCase {
 	
@@ -101,8 +101,8 @@ public class MatchResultVisualizerTest extends TestCase {
 			public Connection getConnection() {
 				try {
 					return db.getConnection();
-				} catch (ArchitectException e) {
-					throw new ArchitectRuntimeException(e);
+				} catch (SQLObjectException e) {
+					throw new SQLObjectRuntimeException(e);
 				}
 			}
 			
@@ -118,14 +118,14 @@ public class MatchResultVisualizerTest extends TestCase {
 			
 			@Override
 			public boolean tableExists(String spDataSourceName, String catalog,
-					String schema, String tableName) throws ArchitectException {
+					String schema, String tableName) throws SQLObjectException {
 				return true;
 			}
 			
 			@Override
 			public SQLTable findPhysicalTableByName(String spDataSourceName,
 					String catalog, String schema, String tableName)
-					throws ArchitectException {
+					throws SQLObjectException {
 				return sourceTable;
 			}
 		};

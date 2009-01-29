@@ -72,10 +72,7 @@ import javax.swing.undo.UndoManager;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
@@ -118,6 +115,9 @@ import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.AboutPanel;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -1177,25 +1177,25 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         }
     }
     
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
     	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
 
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
     	return sessionImpl.findPhysicalTableByName(spDataSourceName, catalog, schema, tableName);
 	}
     
     public boolean tableExists(String catalog, String schema,
-    		String tableName) throws ArchitectException {
+    		String tableName) throws SQLObjectException {
     	return sessionImpl.tableExists(catalog, schema, tableName);
 	}
     
     public boolean tableExists(String spDataSourceName, String catalog, String schema,
-    		String tableName) throws ArchitectException {
+    		String tableName) throws SQLObjectException {
     	return sessionImpl.tableExists(spDataSourceName, catalog, schema, tableName);
 	}
 
-     public boolean tableExists(SQLTable table) throws ArchitectException {
+     public boolean tableExists(SQLTable table) throws SQLObjectException {
          return sessionImpl.tableExists(table);
 	}
 

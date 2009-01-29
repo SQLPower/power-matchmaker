@@ -28,19 +28,19 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.AscendDescend;
-import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObject;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -191,9 +191,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     /**
      * Returns true if the current resultTable of this project exists
      * in the session's database; false otherwise.
-     * @throws ArchitectException If there are problems accessing the session's database
+     * @throws SQLObjectException If there are problems accessing the session's database
      */
-	public boolean doesResultTableExist() throws ArchitectException {
+	public boolean doesResultTableExist() throws SQLObjectException {
 		MatchMakerSession session = getSession();
 		if (session == null) {
 			throw new IllegalStateException("Session has not been setup " +
@@ -208,7 +208,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * Returns true if the source table of this project exists in the session's
 	 * database; false otherwise.
 	 */
-	public boolean doesSourceTableExist() throws ArchitectException {
+	public boolean doesSourceTableExist() throws SQLObjectException {
 		MatchMakerSession session = getSession();
 		if (session == null) {
 			throw new IllegalStateException("Session has not been setup " +
@@ -237,10 +237,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 *             <b>or</b>
 	 *             <p>
 	 *             If the source table property of this project is not set yet.
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 *             If there is trouble working with the source table.
 	 */
-	public SQLTable createResultTable() throws ArchitectException {
+	public SQLTable createResultTable() throws SQLObjectException {
 		SQLIndex si = getSourceTableIndex();
 
 		if (si == null) {
@@ -291,7 +291,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * @param si
 	 * @return
 	 */
-	private SQLTable buildAddressCorrectionResultTable(SQLTable resultTable, SQLIndex si) throws ArchitectException {
+	private SQLTable buildAddressCorrectionResultTable(SQLTable resultTable, SQLIndex si) throws SQLObjectException {
 		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
 		addResultTableColumns(t, si, "src_addr_key_col_");
 		
@@ -312,10 +312,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 *  
 	 * @param resultTable This contains the setup information for the result table to be generated.
 	 * @param si The unique index upon which the result table should reflect on
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	public SQLTable buildDedupeResultTable(SQLTable resultTable, SQLIndex si) 
-		throws ArchitectException {
+		throws SQLObjectException {
 		
 		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
 
@@ -376,9 +376,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * @param si The index to iterate over for type, precision, scale of the
 	 * new columns.
 	 * @param baseName The base name of the new columns.
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
-	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws ArchitectException {
+	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws SQLObjectException {
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
@@ -427,7 +427,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * <b>or</b>
 	 * <p>session and sql database have not been setup for the match
 	 */
-	public boolean verifyResultTableStructure() throws ArchitectException {
+	public boolean verifyResultTableStructure() throws SQLObjectException {
 
 		MatchMakerSession session = getSession();
 		if (session == null) {
@@ -513,7 +513,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 *             If the source table has not been setup session and sql
 	 *             database have not been setup for the match
 	 */
-	public boolean verifySourceTableStructure() throws ArchitectException {
+	public boolean verifySourceTableStructure() throws SQLObjectException {
 		MatchMakerSession session = getSession();
 		if (session == null) {
 			throw new IllegalStateException("Session has not been setup " +
@@ -902,7 +902,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * function properly if this set of columns doesn't have the uniqueness
      * property.
      */
-	public SQLIndex getSourceTableIndex() throws ArchitectException {
+	public SQLIndex getSourceTableIndex() throws SQLObjectException {
 		return sourceTableIndex.getTableIndex();
 	}
 	

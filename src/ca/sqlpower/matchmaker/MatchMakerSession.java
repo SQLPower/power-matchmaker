@@ -22,12 +22,12 @@ package ca.sqlpower.matchmaker;
 import java.sql.Connection;
 import java.util.Date;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
@@ -187,7 +187,7 @@ public interface MatchMakerSession {
      * @return SQLTable if found or null if not
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException;
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException;
     
     /**
      * find the sql table that exists in the given spDataSource
@@ -201,14 +201,14 @@ public interface MatchMakerSession {
      * @return SQLTable if found or null if not
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException;
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;
 
     
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
      */
-    public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException;
+    public boolean tableExists(String catalog, String schema, String tableName) throws SQLObjectException;
     
     
     /**
@@ -216,13 +216,13 @@ public interface MatchMakerSession {
      * of the given spDataSource, throws an error if the dsName is not empty 
      * and not found.
      */
-    public boolean tableExists(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException;
+    public boolean tableExists(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;
     
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
      */
-    public boolean tableExists(SQLTable table) throws ArchitectException;
+    public boolean tableExists(SQLTable table) throws SQLObjectException;
     
     /**
      * return true if the current user of session can select the sql table

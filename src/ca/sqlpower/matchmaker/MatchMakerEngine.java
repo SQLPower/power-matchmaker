@@ -24,8 +24,8 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.sql.DatabaseObject;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -57,13 +57,13 @@ public interface MatchMakerEngine extends Monitorable,
      * 
 	 * @throws EngineSettingException If there is a precondition to running
      * the engine which is not currently met.
-	 * @throws ArchitectException If there are errors encountered while attempting
+	 * @throws SQLObjectException If there are errors encountered while attempting
      * to check the preconditions (this is a more severe case than a precondition
      * failure, because it means there's something wrong with the MatchMaker too).
      * @throws SourceTableException If there was a change in the source table that 
      * could cause problems for running the engine.
 	 */
-	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException;
+	public void checkPreconditions() throws EngineSettingException, SQLObjectException, SourceTableException;
 	
 	/**
 	 * Creates the command line to run the match engine, based on the

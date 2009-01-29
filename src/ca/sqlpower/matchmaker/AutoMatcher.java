@@ -26,12 +26,12 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.MonitorableImpl;
 
 /**
@@ -59,7 +59,7 @@ public class AutoMatcher extends MonitorableImpl {
 	 * on a potential match record of the given munge process is either a master or
 	 * a duplicate. When this operation is over, the engine lock will be released.
 	 */
-	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, ArchitectException, InterruptedException {
+	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException, InterruptedException {
 	    final Project project = mungeProcess.getParentProject();
 	    project.acquireEngineLock(this);
 	    try {
@@ -79,7 +79,7 @@ public class AutoMatcher extends MonitorableImpl {
      * @param mungeProcess
      *            The munge process of this project to auto-match
      */
-	private void actuallyDoAutoMatch(MungeProcess mungeProcess) throws SQLException, ArchitectException {
+	private void actuallyDoAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException {
 	    Set<SourceTableRecord> visited = new HashSet<SourceTableRecord>();
 	    try {
 	        setStarted(true);
@@ -150,7 +150,7 @@ public class AutoMatcher extends MonitorableImpl {
 	private void makeAutoMatches(MungeProcess mungeProcess,
 			SourceTableRecord selected,
 			Set<SourceTableRecord> neighbours,
-			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
+			Set<SourceTableRecord> visited) throws SQLException, SQLObjectException {
 		logger.debug("makeAutoMatches called, selected's key values = " + selected.getKeyValues());
 		visited.add(selected);
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =

@@ -26,9 +26,9 @@ SOFTWARE.
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

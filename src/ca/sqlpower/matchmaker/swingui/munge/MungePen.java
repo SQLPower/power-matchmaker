@@ -74,7 +74,6 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -84,6 +83,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.LabelPane;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.matchmaker.swingui.action.AddLabelAction;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
@@ -222,7 +222,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws ArchitectException {
+	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws SQLObjectException {
 		this.handler = handler;
 		this.process = process;
 		
