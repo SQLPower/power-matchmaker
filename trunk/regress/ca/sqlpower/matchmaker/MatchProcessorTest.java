@@ -31,12 +31,12 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResult;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public class MatchProcessorTest extends TestCase {
 

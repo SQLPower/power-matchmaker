@@ -41,7 +41,6 @@ import javax.swing.JToolBar;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -53,6 +52,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.ColorCellRenderer;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -102,7 +102,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
      * @param process The process to edit
      */
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
-            Project project, MungeProcess process) throws ArchitectException {
+            Project project, MungeProcess process) throws SQLObjectException {
         super(swingSession, process);
         logger.debug("Creating a new munge process editor");
         
@@ -140,7 +140,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 
     }
 
-	private void buildUI() throws ArchitectException {
+	private void buildUI() throws SQLObjectException {
 		panel = new JPanel(new BorderLayout());
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu", // columns

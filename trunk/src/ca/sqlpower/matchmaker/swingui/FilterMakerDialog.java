@@ -46,12 +46,12 @@ import javax.swing.text.BadLocationException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -341,8 +341,8 @@ public class FilterMakerDialog extends JDialog {
             try {
                 try {
 					con = projectSourceTable.getParentDatabase().getConnection();
-				} catch (ArchitectException e1) {
-					throw new ArchitectRuntimeException(e1);
+				} catch (SQLObjectException e1) {
+					throw new SQLObjectRuntimeException(e1);
 				}
                 stmt = con.createStatement();
                 rs = stmt.executeQuery(sql.toString());

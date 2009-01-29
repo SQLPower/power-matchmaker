@@ -29,12 +29,12 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.Resizable;
 import ca.sqlpower.validation.Status;

@@ -32,15 +32,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLObjectRoot;
 import ca.sqlpower.architect.swingui.dbtree.DBTreeModel;
 import ca.sqlpower.matchmaker.data.CommonWordsFinder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRoot;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.JDefaultButton;
 
@@ -81,7 +81,7 @@ public class CommonWordsFinderPanel {
                     root.addChild(db);
                     DBTreeModel model = new DBTreeModel(root);
                     columnPicker.setModel(model);
-                } catch (ArchitectException ex) {
+                } catch (SQLObjectException ex) {
                     throw new RuntimeException(ex);
                 }
             }

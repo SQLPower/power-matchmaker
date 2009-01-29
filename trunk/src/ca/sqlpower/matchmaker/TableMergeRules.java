@@ -25,13 +25,13 @@ import java.util.List;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  *
@@ -228,8 +228,8 @@ public class TableMergeRules
 			} else {
 				newMergeStrategy.setTableIndex(getTableIndex());
 			}
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
+		} catch (SQLObjectException e) {
+			throw new SQLObjectRuntimeException(e);
 		}
 
 		for (ColumnMergeRules c : getChildren()) {
@@ -292,7 +292,7 @@ public class TableMergeRules
 	public SQLIndex getTableIndex() {
 		try {
 			return tableIndex.getTableIndex();
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			throw new RuntimeException("Error getting index from table.", e);
 		}
 	}
@@ -326,7 +326,7 @@ public class TableMergeRules
 				newRules.setActionType(MergeActionType.AUGMENT);
 				addChild(newRules);
 			}
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			throw new RuntimeException("Error deriving column merge rules.", e);
 		}
     }
@@ -444,7 +444,7 @@ public class TableMergeRules
 			    }
 				columns.add(column.getColumn()); 
 			}
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			throw new RuntimeException("Error getting primary key from index.", e);
 		}
 		return columns;
@@ -487,7 +487,7 @@ public class TableMergeRules
 	/**
 	 * Finds the imported key for the current table merge rule.
 	 */
-	public List<ColumnMergeRules> getImportedKey() throws ArchitectException {
+	public List<ColumnMergeRules> getImportedKey() throws SQLObjectException {
 		List<ColumnMergeRules> columns = new ArrayList<ColumnMergeRules>();
 		
 		if (isSourceMergeRule()) {

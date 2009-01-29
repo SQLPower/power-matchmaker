@@ -38,9 +38,6 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -53,6 +50,9 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.util.SQLPowerUtils;
 
 /**
@@ -239,8 +239,8 @@ public class ProjectDAOXML implements ProjectDAO {
                     SQLIndex idx = p.getSourceTableIndex();
                     printIndex(idx);
                 }
-            } catch (ArchitectException ex) {
-                throw new ArchitectRuntimeException(ex);
+            } catch (SQLObjectException ex) {
+                throw new SQLObjectRuntimeException(ex);
             }
             
             indent--;
@@ -449,8 +449,8 @@ public class ProjectDAOXML implements ProjectDAO {
             }
             indent--;
             println("</unique-index>");
-        } catch (ArchitectException ex) {
-            throw new ArchitectRuntimeException(ex);
+        } catch (SQLObjectException ex) {
+            throw new SQLObjectRuntimeException(ex);
         }
     }
     

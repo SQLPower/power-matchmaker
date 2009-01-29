@@ -23,11 +23,11 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 /**
@@ -81,12 +81,12 @@ public interface MatchMakerSessionContext {
      * @throws SQLException If there are general database errors (can't connect, database
      * permission denied, the PL Schema is missing, etc).
      * @throws RepositoryVersionException If the repository version is incorrect, invalid, or missing.
-     * @throws ArchitectException If some SQLObject operations fail
+     * @throws SQLObjectException If some SQLObject operations fail
      * @throws MatchMakerConfigurationException  If there is a user-fixable configuration problem.
      */
     public MatchMakerSession createSession(SPDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
-			ArchitectException, MatchMakerConfigurationException, RepositoryVersionException;
+			SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException;
 
     /**
      * Creates a session using some default repository data source. If the

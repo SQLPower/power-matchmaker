@@ -36,11 +36,11 @@ import javax.swing.ToolTipManager;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObjectException;
 
 public class SourceTableRecordViewer {
 
@@ -103,7 +103,7 @@ public class SourceTableRecordViewer {
 
 	public SourceTableRecordViewer(SourceTableRecord view,
 			SourceTableRecord master, List<Action> buttonActions,
-			List<SQLColumn> shownColumns, int buffer) throws ArchitectException,
+			List<SQLColumn> shownColumns, int buffer) throws SQLObjectException,
 			SQLException {
 		panel = new RecordViewerPanel();
 		panel.setLayout(new GridLayout(0, 1));
@@ -217,7 +217,7 @@ public class SourceTableRecordViewer {
      * the given list.  If the list is null, then all the columns will
      * appear.
 	 */
-    public static JPanel headerPanel(Project project, List<SQLColumn> shownColumns) throws ArchitectException {
+    public static JPanel headerPanel(Project project, List<SQLColumn> shownColumns) throws SQLObjectException {
 		JPanel panel = new JPanel(new GridLayout(0, 1));
 		panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
 

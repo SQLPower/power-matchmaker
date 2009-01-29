@@ -21,10 +21,10 @@ package ca.sqlpower.matchmaker;
 
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public class TableIndex {
 	
@@ -44,7 +44,7 @@ public class TableIndex {
      * column names to actual SQLColumn references on the source table,
      * and then returns it!
      */
-    public SQLIndex getTableIndex() throws ArchitectException {
+    public SQLIndex getTableIndex() throws SQLObjectException {
     	if (table.getSourceTable() != null && sourceTableIndex != null) {
     		sourceTableIndex.setParent(table.getSourceTable().getIndicesFolder());
     		resolveTableIndexColumns(sourceTableIndex);
@@ -57,7 +57,7 @@ public class TableIndex {
      * sourceTableColumns.  The UserType for SQLIndex can't do this because
      * the source table isn't populated yet when it's invoked.
      */
-    private void resolveTableIndexColumns(SQLIndex si) throws ArchitectException {
+    private void resolveTableIndexColumns(SQLIndex si) throws SQLObjectException {
     	SQLTable st = table.getSourceTable();
     	for (SQLIndex.Column col : (List<SQLIndex.Column>) si.getChildren()) {
     		SQLColumn actualColumn = st.getColumnByName(col.getName());
@@ -77,7 +77,7 @@ public class TableIndex {
 	 * we check if the index is user created by if the parent
 	 * is null or dosn't contain the sql index.
 	 */
-	public boolean isUserCreated() throws ArchitectException {
+	public boolean isUserCreated() throws SQLObjectException {
 		if (getTableIndex() == null) return false;
 		if (getTableIndex().getParent() == null ){ 
 			return true;

@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sqlobject.SQLDatabase;
 
 public class MatchMakerEngineImplTest extends TestCase {
 

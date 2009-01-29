@@ -39,10 +39,6 @@ import junit.framework.TestCase;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -51,6 +47,10 @@ import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * A base test that all test cases of MatchMakerObject implementations should extend.
@@ -86,7 +86,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		super.tearDown();
 	}
 
-	protected abstract C getTarget() throws ArchitectException;
+	protected abstract C getTarget() throws SQLObjectException;
 
 	public void testDuplicate() throws Exception {
 		MatchMakerObject mmo = getTarget();
@@ -317,7 +317,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException,
 	InvocationTargetException, NoSuchMethodException, IOException,
-	ArchitectException {
+	SQLObjectException {
 
 		MatchMakerObject mmo = getTarget();
 
@@ -587,14 +587,14 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
      * The child list should never be null for any Match Maker Object, even if
      * that object's type is childless.
      */
-    public void testChildrenNotNull() throws ArchitectException {
+    public void testChildrenNotNull() throws SQLObjectException {
         assertNotNull(getTarget().getChildren());
     }
 
     /**
      * All objects should return false for .equals(null), not true or throw an exception.
      */
-    public void testNullEquality() throws ArchitectException {
+    public void testNullEquality() throws SQLObjectException {
         assertFalse("equals(null) has to work, and return false",getTarget().equals(null));
     }
 

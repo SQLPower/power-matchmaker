@@ -21,10 +21,10 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.event.TableModelEvent;
 
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.sqlobject.SQLColumn;
 
 /**
  * Implementation of {@link AbstractMergeColumnRuleTableModel}, table model for column 

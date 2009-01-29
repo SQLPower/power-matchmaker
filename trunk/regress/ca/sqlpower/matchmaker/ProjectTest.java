@@ -28,15 +28,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -44,6 +36,14 @@ import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 import ca.sqlpower.testutil.MockJDBCDriver;
 
 public class ProjectTest extends MatchMakerTestCase<Project> {
@@ -129,7 +129,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }
     
-    public void testCreateResultTable() throws ArchitectException {
+    public void testCreateResultTable() throws SQLObjectException {
     	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -208,7 +208,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	assertEquals(i, idx.getChildCount()*8 + 7); // sanity check for the test
     }
     
-    public void testCreateResultTableIndex() throws ArchitectException {
+    public void testCreateResultTableIndex() throws SQLObjectException {
     	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -391,7 +391,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	}
 	
 	public void testVerifyResultTableSS() throws SQLException, InstantiationException,
-											IllegalAccessException, ArchitectException {
+											IllegalAccessException, SQLObjectException {
 		
 		SPDataSource ds = DBTestUtil.getSqlServerDS();
 		SQLDatabase db = new SQLDatabase(ds);
@@ -502,7 +502,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     }
 	
 	public void testVerifyResultTableORA() throws SQLException, InstantiationException,
-											IllegalAccessException, ArchitectException {
+											IllegalAccessException, SQLObjectException {
 		
 		SPDataSource ds = DBTestUtil.getOracleDS();
 		SQLDatabase db = new SQLDatabase(ds);

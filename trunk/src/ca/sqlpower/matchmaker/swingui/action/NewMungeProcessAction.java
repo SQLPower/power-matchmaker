@@ -28,7 +28,6 @@ import javax.swing.AbstractAction;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -37,6 +36,7 @@ import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
+import ca.sqlpower.sqlobject.SQLObjectException;
 
 /**
  * A simple action to adds a new munge process to the swing session and
@@ -94,7 +94,7 @@ public class NewMungeProcessAction extends AbstractAction {
 		MungeStep mungeResultStep;
 		try {
 			mungeResultStep = inputStep.getOutputStep(project);
-		} catch (ArchitectException ex) {
+		} catch (SQLObjectException ex) {
 			throw new RuntimeException("Could not find or set up the result munge step!", ex);
 		}
 		

@@ -31,9 +31,6 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -46,6 +43,9 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
@@ -255,7 +255,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		return false;
 	}
 
-	 public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+	 public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
 	    	logger.debug("Session.findSQLTableByName:" + spDataSourceName + " " + 
 	    			catalog + "." + schema + "." + tableName);
 	    	
@@ -296,7 +296,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    }
 	    
 	 	//Right now the other findPhicialTableByName uses this method, don't call it from here using an empty data source.
-	    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+	    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
 	    	if (tableName == null || tableName.length() == 0) return null;
 	    	SQLDatabase tempDB = new SQLDatabase(dataSource);
 	    	try {
@@ -314,16 +314,16 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    }
 
 	    public boolean tableExists(String catalog, String schema,
-	    		String tableName) throws ArchitectException {
+	    		String tableName) throws SQLObjectException {
 	    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
 	    }
 	    
 	    public boolean tableExists(String spDataSourceName, String catalog, String schema,
-	    		String tableName) throws ArchitectException {
+	    		String tableName) throws SQLObjectException {
 	    	return (findPhysicalTableByName(spDataSourceName, catalog,schema,tableName) != null);
 	    }
 
-	    public boolean tableExists(SQLTable table) throws ArchitectException {
+	    public boolean tableExists(SQLTable table) throws SQLObjectException {
 	    	if ( table == null ) return false;
 	    	return tableExists(table.getParentDatabase().getDataSource().getName(),
 	    			table.getCatalogName(),

@@ -21,9 +21,9 @@
 package ca.sqlpower.matchmaker.util;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLIndex.AscendDescend;
-import ca.sqlpower.architect.SQLIndex.Column;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.testutil.MockJDBCPreparedStatement;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 

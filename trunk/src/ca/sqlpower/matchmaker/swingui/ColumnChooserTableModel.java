@@ -25,10 +25,10 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public class ColumnChooserTableModel extends AbstractTableModel{
 
@@ -37,7 +37,7 @@ public class ColumnChooserTableModel extends AbstractTableModel{
 	private boolean modified = false;
 	private final boolean showPosition;
 	
-	public ColumnChooserTableModel(SQLTable sqlTable, SQLIndex oldIndex, boolean showPosition) throws ArchitectException {
+	public ColumnChooserTableModel(SQLTable sqlTable, SQLIndex oldIndex, boolean showPosition) throws SQLObjectException {
 		this.showPosition = showPosition;
 		for ( SQLColumn column : sqlTable.getColumns()) {
 			int positionInIndex = -1;

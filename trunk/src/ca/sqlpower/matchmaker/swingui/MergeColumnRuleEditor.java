@@ -48,8 +48,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -58,6 +56,8 @@ import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
@@ -147,7 +147,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 											break;
 										}
 									}
-								} catch (ArchitectException ex) {
+								} catch (SQLObjectException ex) {
 									throw new RuntimeException("An exception occured while listing table columns from the source table", ex);
 								}
 								if (!found) {
@@ -254,7 +254,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 						List<SQLColumn> tableColumns = mergeRules.get(parentMergeRule.getSelectedIndex()).getSourceTable().getColumns();//getParentTableUniqueKeyColumns();
 						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
 						importedKeyColumns.insertItemAt(null, 0);
-					} catch (ArchitectException e) {
+					} catch (SQLObjectException e) {
 						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 								"Failed to load list of columns from parent table.", e);
 					}
@@ -509,7 +509,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		return parentMergeRule;
 	}
 	
-	private List<SQLColumn> getParentTableUniqueKeyColumns() throws ArchitectException{
+	private List<SQLColumn> getParentTableUniqueKeyColumns() throws SQLObjectException{
 		List<SQLColumn> uniqueKeys = null;
 		if (parentMergeRule.getSelectedItem() != null) {
 			TableMergeRules tmr = mergeRules.get(parentMergeRule.getSelectedIndex());

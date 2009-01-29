@@ -49,14 +49,14 @@ import javax.swing.text.DefaultStyledDocument;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryUtil;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SQLObjectChooser;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObject;
+import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 

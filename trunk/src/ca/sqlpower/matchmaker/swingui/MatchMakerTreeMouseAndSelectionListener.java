@@ -35,7 +35,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
@@ -71,6 +70,7 @@ import ca.sqlpower.matchmaker.swingui.action.RefreshAction;
 import ca.sqlpower.matchmaker.swingui.action.ScriptAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component

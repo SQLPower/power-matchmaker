@@ -32,14 +32,14 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLType;
-import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLType;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 /**
  * The Cleanse Result Step is the ultimate destination for munge data in a data
@@ -62,11 +62,11 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	private boolean usePS = false; 
 	
 	
-	public CleanseResultStep() throws ArchitectException {
+	public CleanseResultStep() throws SQLObjectException {
 		super("Table!", false);
 	}
 
-	private void addInitialInputs() throws ArchitectException {
+	private void addInitialInputs() throws SQLObjectException {
 		if (getMSOInputs().size() == 0) {
 			for (SQLColumn c : table.getColumns()) {
 				InputDescriptor id = new InputDescriptor(c.getName(), typeClass(c.getType()));
@@ -331,7 +331,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
     public void doCommit() throws Exception {
     }
     
-    private PreparedStatement getUpdateStatment(List<MungeStepOutput> inputs) throws ArchitectException, SQLException{
+    private PreparedStatement getUpdateStatment(List<MungeStepOutput> inputs) throws SQLObjectException, SQLException{
 		boolean first = true;
 		String sql = "UPDATE " + DDLUtils.toQualifiedName(getProject().getSourceTable()) + " SET ";
 		for (int x = 0; x<inputs.size(); x++) {

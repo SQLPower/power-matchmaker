@@ -33,16 +33,16 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.MatchPoolDirectedGraphModel;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * Implements the merge behaviour of the MatchMaker product.  The behaviour of
@@ -134,11 +134,11 @@ public class MergeProcessor extends AbstractProcessor {
      *            The logger that we should log end-user-visible messages to.
      * @throws SQLException
      *             If there are any problems with the database
-     * @throws ArchitectException
+     * @throws SQLObjectException
      *             If any of the SQLObjects in play cannot populate.
      */
 	public MergeProcessor(Project project, Connection con, Logger logger) 
-			throws SQLException, ArchitectException {
+			throws SQLException, SQLObjectException {
 		this.project = project;
 		this.engineLogger = logger;
 		this.con = con;
@@ -241,7 +241,7 @@ public class MergeProcessor extends AbstractProcessor {
 		
 	}
 	
-	private void initVariables() throws SQLException, ArchitectException {
+	private void initVariables() throws SQLException, SQLObjectException {
 		//Initialize the match pool
 		engineLogger.info("Loading match pool...");
 		pool = new MatchPool(project);
@@ -438,7 +438,7 @@ public class MergeProcessor extends AbstractProcessor {
 	private void mergeChildTables(ResultRow parentDupRow, 
 			ResultRow parentMasterRow, 
 			TableMergeRules parentTableMergeRule) 
-	throws ArchitectException, SQLException {
+	throws SQLObjectException, SQLException {
 		
 		engineLogger.debug("Merging child records of " + parentTableMergeRule.getTableName() + " ...");
 		engineLogger.debug("Duplicate: " + 
@@ -748,9 +748,9 @@ public class MergeProcessor extends AbstractProcessor {
 	 * @return number of rows deleted.
 	 * 
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
-	private int deleteRowByUniqueKey(SQLTable table, ResultRow row) throws SQLException, ArchitectException {
+	private int deleteRowByUniqueKey(SQLTable table, ResultRow row) throws SQLException, SQLObjectException {
 		StringBuilder sql = new StringBuilder();
 		sql.append("DELETE FROM ");
 		sql.append(DDLUtils.toQualifiedName(table));
@@ -762,7 +762,7 @@ public class MergeProcessor extends AbstractProcessor {
 	}
 
 	private ResultSet findUpdateValueByUniqueKey(SQLTable table,
-			String updateStatement, ResultRow row) throws SQLException, ArchitectException {
+			String updateStatement, ResultRow row) throws SQLException, SQLObjectException {
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT (");
 		sql.append(updateStatement);
@@ -784,10 +784,10 @@ public class MergeProcessor extends AbstractProcessor {
 	 * 
 	 * @return True if the row already exists, false otherwise.
 	 * 
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 * @throws SQLException
 	 */
-	private boolean isRowUnique(SQLTable sourceTable, ResultRow row) throws ArchitectException, SQLException {
+	private boolean isRowUnique(SQLTable sourceTable, ResultRow row) throws SQLObjectException, SQLException {
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT COUNT(*)");
 		sql.append(" FROM ");
@@ -847,7 +847,7 @@ public class MergeProcessor extends AbstractProcessor {
 	 *         rule. Null if not found
 	 * 
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private ResultRow findRowByWhereStatement(TableMergeRules tableMergeRule, String whereStatement)
 			throws SQLException {
@@ -890,10 +890,10 @@ public class MergeProcessor extends AbstractProcessor {
 	 *         Null if not found
 	 * 
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private ResultRow findRowByUniqueKey(TableMergeRules tableMergeRule,
-			ResultRow row) throws SQLException, ArchitectException {
+			ResultRow row) throws SQLException, SQLObjectException {
 		return findRowByWhereStatement(tableMergeRule,
 				generateUKWhereStatement(row));
 	}
@@ -912,7 +912,7 @@ public class MergeProcessor extends AbstractProcessor {
 	 *         Null if not found
 	 * 
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private ResultRow findRowByPrimaryKey(TableMergeRules tableMergeRule,
 			ResultRow row) throws SQLException {
@@ -934,7 +934,7 @@ public class MergeProcessor extends AbstractProcessor {
 	 *         Null if not found
 	 * 
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private ResultRow findRowByImportedKey(TableMergeRules tableMergeRule,
 			ResultRow row) throws SQLException {
@@ -954,7 +954,7 @@ public class MergeProcessor extends AbstractProcessor {
 	 *         any columns in the primary key, then it returns an empty String.
 	 * 
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private String generatePKWhereStatement(ResultRow row) throws SQLException {
 		boolean first = true;
@@ -991,9 +991,9 @@ public class MergeProcessor extends AbstractProcessor {
 	 * @return The WHERE clause in String form. If the given row does not have
 	 *         any columns in the unique key, then it returns an empty String.
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
-	private String generateUKWhereStatement(ResultRow row) throws SQLException, ArchitectException {
+	private String generateUKWhereStatement(ResultRow row) throws SQLException, SQLObjectException {
 		boolean first = true;
 		StringBuilder sql = new StringBuilder();
 		for (SQLColumn col : row.tableMergeRule.getUniqueKeyColumns()) {
@@ -1028,7 +1028,7 @@ public class MergeProcessor extends AbstractProcessor {
 	 *         any columns in the imported key, then it returns an empty String.
 	 * 
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private String generateFKWhereStatement(ResultRow row) throws SQLException {
 		boolean first = true;
@@ -1070,11 +1070,11 @@ public class MergeProcessor extends AbstractProcessor {
 	 * @return A list of ResultRows from the child table that reference the
 	 *         given parent ResultRow.
 	 * @throws SQLException
-	 * @throws ArchitectException
+	 * @throws SQLObjectException
 	 */
 	private List<ResultRow> findChildRowsByParentRow(
 			ResultRow foreignKeyValues, 
-			TableMergeRules tableMergeRule) throws SQLException, ArchitectException {
+			TableMergeRules tableMergeRule) throws SQLException, SQLObjectException {
 		
 		
 		boolean first = true;
@@ -1143,7 +1143,7 @@ public class MergeProcessor extends AbstractProcessor {
 	}
 
 	private int mergeRows(ResultRow dupRowValues, ResultRow masterRowValues,
-			TableMergeRules tableMergeRules) throws SQLException, ArchitectException {
+			TableMergeRules tableMergeRules) throws SQLException, SQLObjectException {
 		boolean first = true;
 
 		//builds the update sql
@@ -1374,7 +1374,7 @@ public class MergeProcessor extends AbstractProcessor {
 		 *            checking.
 		 * @return Returns true if the ColumnMergeRule with the given index is
 		 *         for a column that is an imported key. Otherwise returns false;
-		 * @throws ArchitectException
+		 * @throws SQLObjectException
 		 */
 		public boolean isImportedKey(int column) {
 			ColumnMergeRules cmr = tableMergeRule.getChildren().get(column);
@@ -1391,7 +1391,7 @@ public class MergeProcessor extends AbstractProcessor {
 		 *            checking.
 		 * @return Returns true if the ColumnMergeRule with the given index is
 		 *         for a column in the primary key. Otherwise returns false;
-		 * @throws ArchitectException
+		 * @throws SQLObjectException
 		 */
 		public boolean isInPrimaryKey(int column) {
 			ColumnMergeRules cmr = tableMergeRule.getChildren().get(column);

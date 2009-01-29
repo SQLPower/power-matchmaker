@@ -19,10 +19,10 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public abstract class CachableColumn {
 	private SQLColumn cachedColumn;
@@ -77,7 +77,7 @@ public abstract class CachableColumn {
      * @throws NullPointerException
      *             if any of the business objects required for resolving the
      *             column object are missing
-     * @throws ArchitectRuntimeException
+     * @throws SQLObjectRuntimeException
      *             if getColumnByName fails
      */
     public SQLColumn getColumn() {
@@ -96,8 +96,8 @@ public abstract class CachableColumn {
 
             return newColumn;
             
-        } catch (ArchitectException ex) {
-            throw new ArchitectRuntimeException(ex);
+        } catch (SQLObjectException ex) {
+            throw new SQLObjectRuntimeException(ex);
         }
     }
 

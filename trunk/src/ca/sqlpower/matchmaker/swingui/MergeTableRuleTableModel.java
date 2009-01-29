@@ -21,13 +21,13 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.event.TableModelEvent;
 
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLSchema;
+import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * A Table model for the merge table rules. Shows the merge tables

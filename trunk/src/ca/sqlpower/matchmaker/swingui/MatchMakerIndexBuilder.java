@@ -31,13 +31,13 @@ import javax.swing.MutableComboBoxModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
@@ -72,7 +72,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
     /** Handles the validation rules for this form. */
     private FormValidationHandler validationHandler;
 
-	public MatchMakerIndexBuilder(final SQLTable table, final MutableComboBoxModel indexModel, final MatchMakerSwingSession swingSession) throws ArchitectException {
+	public MatchMakerIndexBuilder(final SQLTable table, final MutableComboBoxModel indexModel, final MatchMakerSwingSession swingSession) throws SQLObjectException {
 		this.table = table;
 		this.indexModel = indexModel;
 		this.swingSession = swingSession;
@@ -161,7 +161,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 	    	indexModel.setSelectedItem(index);
 			logger.debug("Index columns after save: "+index.getChildren());
 			return true;
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 				            "Unexpected error when adding Column to the Index",
 				            e);

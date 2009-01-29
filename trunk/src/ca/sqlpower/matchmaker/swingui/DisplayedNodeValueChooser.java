@@ -30,10 +30,10 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.table.TableUtils;
 
 /**
@@ -136,7 +136,7 @@ public class DisplayedNodeValueChooser {
 		private List<CustomTableColumn> candidateColumns
 							= new ArrayList<CustomTableColumn>();
 		
-		public OrderedColumnChooserTableModel(SQLTable sqlTable, List<SQLColumn> displayColumns) throws ArchitectException {
+		public OrderedColumnChooserTableModel(SQLTable sqlTable, List<SQLColumn> displayColumns) throws SQLObjectException {
 			List<Integer> oldColumns = new ArrayList<Integer>();
 			
 			for (SQLColumn col : displayColumns) {
@@ -290,19 +290,19 @@ public class DisplayedNodeValueChooser {
 	 * ordered and will be used for the display value of each node in the
 	 * provided node renderer.
 	 * 
-	 * @throws ArchitectException if there is a problem finding the columns
+	 * @throws SQLObjectException if there is a problem finding the columns
 	 * 						in the source table of the match
 	 */
 	public DisplayedNodeValueChooser(SourceTableNodeRenderer renderer,
 									Project project,
 									List<SQLColumn> displayColumns)
-									throws ArchitectException {
+									throws SQLObjectException {
 		super();
 		this.renderer = renderer;
 		this.occtm = new OrderedColumnChooserTableModel(project.getSourceTable(), displayColumns);
 	}
 	
-	public JComponent makeGUI() throws ArchitectException {
+	public JComponent makeGUI() throws SQLObjectException {
 		if (table == null) {
 			table = new JTable(occtm);
 			TableUtils.fitColumnWidths(table, 250, 10);

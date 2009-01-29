@@ -34,12 +34,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLObjectRoot;
 import ca.sqlpower.architect.swingui.dbtree.DBTreeCellRenderer;
 import ca.sqlpower.architect.swingui.dbtree.DBTreeModel;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRoot;
 import ca.sqlpower.swingui.query.SQLQueryUIComponents;
 
 /**
@@ -78,7 +78,7 @@ public class QueryDialog extends JDialog {
 				dragTree.setVisible(true);
 			}
 			dragTree.setModel(new DBTreeModel(rootNode));
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			throw new RuntimeException("Could not add DataSource to rootNode", e);
 		}
 		

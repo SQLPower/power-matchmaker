@@ -31,10 +31,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.EmailAppender;
 
 /**
@@ -71,7 +71,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 		this.setProject(project);
 	}
 
-	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException {
+	public void checkPreconditions() throws EngineSettingException, SQLObjectException, SourceTableException {
 		MatchMakerSession session = getSession();
         Project project = getProject();
         final MatchMakerSessionContext context = session.getContext();
@@ -153,7 +153,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 			progressMessage = "Checking Cleanse Engine Preconditions";
 			logger.info(progressMessage);
 			checkPreconditions();
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			throw new RuntimeException(e);
 		}
 

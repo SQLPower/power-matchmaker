@@ -27,7 +27,7 @@ import javax.swing.JList;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.sqlobject.SQLObject;
 
 public class SQLObjectComboBoxCellRenderer extends DefaultListCellRenderer {
 

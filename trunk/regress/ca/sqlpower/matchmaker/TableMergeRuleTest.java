@@ -20,8 +20,8 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 

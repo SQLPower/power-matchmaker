@@ -38,11 +38,6 @@ import javax.swing.JTable;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLRelationship;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
@@ -52,6 +47,11 @@ import ca.sqlpower.matchmaker.swingui.action.DeriveRelatedRulesAction;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
 import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator.CacheType;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLRelationship;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.MonitorableDataEntryPanel;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -226,9 +226,9 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		 * @param mergeRules
 		 *            A List of Strings containing the names of existing
 		 *            TableMergeRules for this project.
-		 * @throws ArchitectException
+		 * @throws SQLObjectException
 		 */
-		private void deriveMergeRulesByFKConstraints(DatabaseMetaData dbmd, SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws ArchitectException {
+		private void deriveMergeRulesByFKConstraints(DatabaseMetaData dbmd, SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws SQLObjectException {
 			if (isCancelled()) {
 				throw new CancellationException("Merge rule derivation cancelled by user");
 			}
@@ -321,12 +321,12 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		 *            A List of Strings containing all the names of the
 		 *            TableMergeRules in thie project
 		 * @throws SQLException
-		 * @throws ArchitectException
+		 * @throws SQLObjectException
 		 */
 		private void deriveMergeRulesByColumnNames(Connection con,
 				DatabaseMetaData dbMeta, List<String> primaryKeys,
 				TableMergeRules sourceTableMergeRule, List<String> mergeRules)
-				throws SQLException, ArchitectException {
+				throws SQLException, SQLObjectException {
 
 			ResultSet rs = null;
 			String lastTableName = "";
@@ -502,7 +502,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			columnTable = new EditableJTable(columnTableModel);
 			columnTable.addColumnSelectionInterval(1, 1);
 			TableUtils.fitColumnWidths(columnTable, 10);
-		} catch (ArchitectException ex) {
+		} catch (SQLObjectException ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 					"Error in deriving related rules.", ex);
 		}

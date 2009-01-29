@@ -26,9 +26,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -39,6 +36,9 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
@@ -171,14 +171,14 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	}
 
 	public boolean tableExists(String spDataSourceName, String catalog,
-			String schema, String tableName) throws ArchitectException {
+			String schema, String tableName) throws SQLObjectException {
 		logger.debug("Stub call: StubMatchMakerSession.tableExists()");
 		return false;
 	}
 
 	public SQLTable findPhysicalTableByName(String spDataSourceName,
 			String catalog, String schema, String tableName)
-			throws ArchitectException {
+			throws SQLObjectException {
 		logger.debug("Stub call: StubMatchMakerSession.findPhysicalTableByName()");
 		return null;
 	}

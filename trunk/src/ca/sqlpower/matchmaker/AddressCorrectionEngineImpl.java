@@ -21,14 +21,14 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.sqlobject.SQLObjectException;
 
 public class AddressCorrectionEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(AddressCorrectionEngineImpl.class);
 	
 	public void checkPreconditions() throws EngineSettingException,
-			ArchitectException, SourceTableException {
+			SQLObjectException, SourceTableException {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: AddressCorrectionEngineImpl.checkPreconditions()");
 

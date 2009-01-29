@@ -49,7 +49,6 @@ import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -68,6 +67,7 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.db.DataSourceDialogFactory;
 import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
@@ -220,7 +220,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public MatchMakerSwingSession createSession(SPDataSource ds,
 			String username, String password) throws PLSecurityException,
-			SQLException, ArchitectException, MatchMakerConfigurationException, RepositoryVersionException {
+			SQLException, SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException {
     	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     	getSessions().add(session);
         session.addSessionLifecycleListener(getSessionLifecycleListener());

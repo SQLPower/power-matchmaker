@@ -39,21 +39,21 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectSessionContext;
 import ca.sqlpower.architect.ArchitectSessionContextImpl;
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLObject;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionFormatException;
 
@@ -86,7 +86,7 @@ public class RepositoryUtil {
      * holding tables as children.
      * @return The list of SQL Statements that must be executed in the target database
      * to make it into a new MatchMaker repository
-     * @throws ArchitectException If there are problems connecting to or populating the
+     * @throws SQLObjectException If there are problems connecting to or populating the
      * target database, or if there are problems with the built-in Architect project that
      * describes the MatchMaker repository
      * @throws SQLException If there are errors in SQL queries used during this operation
@@ -96,7 +96,7 @@ public class RepositoryUtil {
      * @throws InstantiationException If the DDL Generator for the target database cannot be created
      */
     public static List<String> makeRepositoryCreationScript(SQLObject target) 
-    throws SQLException, ArchitectException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    throws SQLException, SQLObjectException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         SQLDatabase database = ArchitectUtils.getAncestor(target, SQLDatabase.class);
         SQLCatalog catalog = ArchitectUtils.getAncestor(target, SQLCatalog.class);
         SQLSchema schema = ArchitectUtils.getAncestor(target, SQLSchema.class);

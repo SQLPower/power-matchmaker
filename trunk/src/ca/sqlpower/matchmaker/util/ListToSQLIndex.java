@@ -30,10 +30,10 @@ import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 
 /**
  * This is a class that implements UserType and is used for
@@ -76,8 +76,8 @@ public class ListToSQLIndex implements UserType  {
 				}
 				newIndex.addChild(c);
 			}
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
+		} catch (SQLObjectException e) {
+			throw new SQLObjectRuntimeException(e);
 		}
         return newIndex;
     }
@@ -118,8 +118,8 @@ public class ListToSQLIndex implements UserType  {
 				}
 			}
 			return true;
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
+		} catch (SQLObjectException e) {
+			throw new SQLObjectRuntimeException(e);
 		}
 
     }
@@ -150,8 +150,8 @@ public class ListToSQLIndex implements UserType  {
 							SQLIndex.Column c;
 							c = index.new Column(columnName, AscendDescend.UNSPECIFIED);
 							index.addChild(c);
-						} catch (ArchitectException e) {
-							throw new ArchitectRuntimeException(e);
+						} catch (SQLObjectException e) {
+							throw new SQLObjectRuntimeException(e);
 						}
                     }
                 }
@@ -185,8 +185,8 @@ public class ListToSQLIndex implements UserType  {
 					logger.debug("binding null to parameter: " + i);
 					st.setNull(i, Types.VARCHAR);
 				}
-			} catch (ArchitectException e) {
-				throw new ArchitectRuntimeException(e);
+			} catch (SQLObjectException e) {
+				throw new SQLObjectRuntimeException(e);
 			}
         } else if (value == null) {
         	for (int i = index; i < COLUMN_COUNT + index; i++) {

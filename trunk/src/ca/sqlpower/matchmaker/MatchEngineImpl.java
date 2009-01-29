@@ -32,11 +32,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
 import ca.sqlpower.matchmaker.munge.MungeResult;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.EmailAppender;
 import ca.sqlpower.util.Monitorable;
 
@@ -80,7 +80,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		this.setProject(project);
 	}
 
-	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException {
+	public void checkPreconditions() throws EngineSettingException, SQLObjectException, SourceTableException {
 		MatchMakerSession session = getSession();
         Project project = getProject();
         final MatchMakerSessionContext context = session.getContext();
@@ -174,7 +174,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Checking Match Engine Preconditions";
 			logger.info(progressMessage);
 			checkPreconditions();
-		} catch (ArchitectException e) {
+		} catch (SQLObjectException e) {
 			throw new RuntimeException(e);
 		}
 

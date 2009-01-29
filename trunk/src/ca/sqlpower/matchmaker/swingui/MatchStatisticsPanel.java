@@ -45,8 +45,8 @@ import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.swingui.table.DateTableCellRenderer;
 import ca.sqlpower.swingui.table.IndicatorCellRenderer;

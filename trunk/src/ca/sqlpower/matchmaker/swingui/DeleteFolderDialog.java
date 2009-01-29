@@ -35,8 +35,8 @@ import javax.swing.JFrame;
 import javax.swing.JRadioButton;
 import javax.swing.border.EmptyBorder;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;

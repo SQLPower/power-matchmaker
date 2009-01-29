@@ -30,7 +30,7 @@ import javax.swing.JTextArea;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLTable;
 
 
 

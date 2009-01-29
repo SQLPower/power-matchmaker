@@ -63,8 +63,6 @@ import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.ConnectedComponentFinder;
 import ca.sqlpower.graph.GraphModel;
@@ -85,6 +83,8 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 import ca.sqlpower.matchmaker.util.SourceTableUtil;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -214,7 +214,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 					MatchResultVisualizer.this.getPool().findAll(chosenColumns);
     				MatchResultVisualizer.this.getPanel().repaint();
     				MatchResultVisualizer.this.doAutoLayout();
-    			} catch (ArchitectException ex) {
+    			} catch (SQLObjectException ex) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     			} catch (SQLException sqlEx) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), sqlEx.getMessage(), sqlEx);
@@ -268,7 +268,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
                 SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
     			dialog.setLocationRelativeTo((Component) e.getSource());
     			dialog.setVisible(true);
-    		} catch (ArchitectException ex) {
+    		} catch (SQLObjectException ex) {
     			MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     		}
     	}
@@ -362,7 +362,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
                 SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
     			dialog.setLocationRelativeTo((Component) e.getSource());
     			dialog.setVisible(true);
-    		} catch (ArchitectException ex) {
+    		} catch (SQLObjectException ex) {
     			MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     		}
     	}
@@ -386,7 +386,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineNoMatch(record1, record2);
 				pool.store();
-            } catch (ArchitectException ex) {
+            } catch (SQLObjectException ex) {
             	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"define " + record1 + " and " + record2 + " to not be duplicates.", ex);
             } catch (SQLException ex) {
@@ -417,7 +417,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineUnmatched(record1, record2);
 				pool.store();
-			} catch (ArchitectException ex) {
+			} catch (SQLObjectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying to " +
 						"unmatch " + record1 + " and " + record2, ex);
 			} catch (SQLException ex) {
@@ -449,7 +449,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineMaster(master, duplicate);
 				pool.store();
-			} catch (ArchitectException ex) {
+			} catch (SQLObjectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + master + " to be the master of " + duplicate, ex);
 			} catch (SQLException ex) {
@@ -481,7 +481,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineMaster(master, duplicate);
 				pool.store();
-            } catch (ArchitectException ex) {
+            } catch (SQLObjectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + duplicate + " to be a duplicate of " + master, ex);
 			} catch (SQLException ex) {
@@ -704,7 +704,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 	 */
     private final Preferences matchValidationPrefs;
     
-    public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, ArchitectException {
+    public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, SQLObjectException {
     	super();
         this.project = project;
         
@@ -752,7 +752,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				pool.clearRecords();
 		        try {
 					pool.findAll(displayColumns);
-				} catch (ArchitectException ex) {
+				} catch (SQLObjectException ex) {
     				MMSUtils.showExceptionDialog(getPanel(), ex.getMessage(), ex);
     			} catch (SQLException sqlEx) {
     				MMSUtils.showExceptionDialog(getPanel(), sqlEx.getMessage(), sqlEx);

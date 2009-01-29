@@ -30,7 +30,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sqlobject.SQLTable;
 
 public class ViewBuilderWizard extends JFrame {
     
