@@ -20,15 +20,42 @@
 package ca.sqlpower.matchmaker.address;
 
 import java.io.File;
+import java.util.List;
+import java.util.regex.Pattern;
 
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.address.Address.Type;
+import ca.sqlpower.validation.ValidateResult;
 
 public class AddressDatabaseTest extends TestCase {
 
     private Address address;
     private AddressDatabase addressDB;
-    
+
+    /**
+     * Searches the message string of each result in the given list for the
+     * given regular expression. If any match is found, the assertion passes.
+     * 
+     * @param results
+     *            The list of results to search through
+     * @param regex
+     *            The regular expression pattern to search for. This pattern is
+     *            treated as case-insensitive, and does not have to match a
+     *            whole message--just part of one.
+     */
+    private static void assertResultContains(List<ValidateResult> results, String regex) {
+        Pattern p = Pattern.compile(".*" + regex + ".*", Pattern.CASE_INSENSITIVE);
+        for (ValidateResult result : results) {
+            if (result.getMessage() != null && p.matcher(result.getMessage()).matches()) {
+                return;
+            }
+        }
+        throw new AssertionFailedError(
+                "Expected pattern /"+regex+"/ not found among the "
+                + results.size() + " results: " + results); 
+    }
+
     @Override
     protected void setUp() throws Exception {
         addressDB = new AddressDatabase(new File("/Users/fuerth/addressdb"));
@@ -42,7 +69,15 @@ public class AddressDatabaseTest extends TestCase {
         super.tearDown();
     }
     
-    public void testReplaceIncorrectMunicipality() {
+    public void testNoticeInvalidPostalCode() {
+        address.setPostalCode("1AAAAA"); // does not follow A1A1A1 pattern, so should never be valid
+        
+        List<ValidateResult> result = addressDB.correct(address);
+        
+        assertResultContains(result, "invalid postal code");
+    }
+    
+    public void testIncorrectMunicipality() {
         // The record we're hoping to match: NS,ANTIGONISH,HILLCREST,ST,ANTIGONISH,B2G 1Z3
         address.setType(Type.URBAN);
         address.setProvince("NS");
@@ -52,10 +87,10 @@ public class AddressDatabaseTest extends TestCase {
         address.setPostalCode("B2G 1Z3");
         address.resetChangeFlags();
         
-        addressDB.correctMunicipality(address);
+        List<ValidateResult> results = addressDB.correct(address);
         
-        assertTrue(address.isMunicipalityChanged());
-        assertEquals("ANTIGONISH", address.getMunicipality());
+        assertResultContains(results, "ANITGINOSH.*does not exist");
+        assertResultContains(results, "municipality.*does not agree");
     }
 
     public void testUnrecognizedMunicipality() throws Exception {
@@ -63,7 +98,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setMunicipality("ANITGINOSH"); // this is the incorrect municipality name
         address.resetChangeFlags();
         
-        addressDB.correctMunicipality(address);
+        addressDB.correct(address);
         
         assertFalse(address.isMunicipalityChanged());
     }
@@ -77,7 +112,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setPostalCode("B2G 1Z3");
         address.resetChangeFlags();
         
-        addressDB.correctMunicipality(address);
+        addressDB.correct(address);
         
         assertFalse(address.isMunicipalityChanged());
         assertEquals("ANTIGONISH", address.getMunicipality());
@@ -89,7 +124,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setProvince("NS");
         address.resetChangeFlags();
         
-        addressDB.correctMunicipality(address);
+        addressDB.correct(address);
         
         assertTrue(address.isMunicipalityChanged());
         assertEquals("OXFORD", address.getMunicipality());

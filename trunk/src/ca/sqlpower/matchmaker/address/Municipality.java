@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +61,12 @@ public class Municipality {
             this.name = name;
             this.fsas = fsas;
         }
-        
+
+        public ValidAlternateName(String name, String ... fsas) {
+            this.name = name;
+            this.fsas = new HashSet<String>(Arrays.asList(fsas));
+        }
+
         public String getName() {
             return name;
         }
@@ -75,6 +81,23 @@ public class Municipality {
         }
     }
 
+    /**
+     * Creates the key string for a given municipality and province name. This
+     * is the string that can be looked up via the Berkeley DB primary key for
+     * this class.
+     * 
+     * @param municipality
+     *            The official name of the city, town, or part of a city
+     * @param provinceCode
+     *            The two-letter for the province or state that the municipality
+     *            is in.
+     * @return The key, which is composed of the two pieces of information
+     *         provided.
+     */
+    public final static String createKey(String municipality, String provinceCode) {
+        return provinceCode + "," + municipality;
+    }
+    
     /**
      * The unique identifier for the official municipality name. The key
      * values are of the form "PR,OFFICIAL NAME" (two-letter province code
@@ -163,6 +186,38 @@ public class Municipality {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Determines if the given municipality name is acceptable for this
+     * municipality within the given postal code's FSA.
+     * 
+     * @param municipality
+     *            The name to test (not case sensitive). Null is allowed, but
+     *            will always result in this method returning false.
+     * @param postalCode The postal code to verify against.
+     * @return
+     */
+    public boolean isNameAcceptable(String municipality, String postalCode) {
+        if (municipality == null) {
+            return false;
+        }
+        ValidAlternateName van = validAlternateNames.get(municipality.toUpperCase());
+        if (van == null) {
+            return false;
+        }
+        
+        if (van.getFsas().isEmpty()) {
+            return true;
+        } else if (postalCode == null || postalCode.length() < 3) {
+            // this alternate name is only valid in part of the region, and we were
+            // not given a postal code to verify against, so false.
+            return false;
+        } else if (van.getFsas().contains(postalCode.substring(0, 3).toUpperCase())) {
+            return true;
+        } else {
+            return false;
+        }
     }
     
 }
