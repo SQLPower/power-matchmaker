@@ -58,6 +58,7 @@ public class CommonWordsFinder {
         ResultSet rs = null;
         try {
             con = column.getParentTable().getParentDatabase().getConnection();
+            stmt = con.createStatement();
             
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT ").append(column.getName()).append(" FROM ").append(SQLObjectUtils.toQualifiedName(column.getParentTable(), SQLDatabase.class));
