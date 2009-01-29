@@ -294,7 +294,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     private CreateRepositoryAction createRepositoryAction = new CreateRepositoryAction(this);
     
 	private Action newDeDupeAction = null;
-	private Action newXrefAction = null;
+//	TODO: Implement Cross-referencing projects first before re-enabling this action
+//	private Action newXrefAction = null;
 	private Action newCleanseAction = null;
 	
 	private Action editProjectAction = new EditProjectAction("Edit Project");
@@ -539,7 +540,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.setMnemonic('m');
 		projectMenu.add(newDeDupeAction);
 		projectMenu.add(newCleanseAction);
-		projectMenu.add(newXrefAction);
+//		TODO: Implement Cross-referencing projects first before re-enabling this action
+//		projectMenu.add(newXrefAction);
 		projectMenu.addSeparator();
 		projectMenu.add(editProjectAction);
 		projectMenu.add(deleteProjectAction);
@@ -594,7 +596,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		toolBar.add(newDeDupeAction);
 		toolBar.add(newCleanseAction);
-		toolBar.add(newXrefAction);
+//		TODO: Implement Cross-referencing projects first before re-enabling this action
+//		toolBar.add(newXrefAction);
         toolBar.addSeparator();
         toolBar.add(runMatchAction);
         toolBar.add(runMergeAction);
