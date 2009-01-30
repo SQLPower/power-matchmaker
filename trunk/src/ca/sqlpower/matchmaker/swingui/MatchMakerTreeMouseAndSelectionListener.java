@@ -533,6 +533,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 								node.getProject().getMergingEngine(), node.getProject()));
 					} else if (node.getActionType() == ProjectActionType.RUN_CLEANSING) {
 						swingSession.setCurrentEditorComponent(swingSession.getCleanseEnginePanel(node.getProject().getCleansingEngine(), node.getProject()));
+					} else if (node.getActionType() == ProjectActionType.RUN_ADDRESS_CORRECTION) {
+						swingSession.setCurrentEditorComponent(swingSession.getAddressCorrectionEnginePanel(node.getProject().getAddressCorrectionEngine(), node.getProject()));
+					} else if (node.getActionType() == ProjectActionType.VALIDATE_ADDRESSES) {
+						
 					}
 				} else if (o instanceof TranslateGroupParent) {
 					swingSession

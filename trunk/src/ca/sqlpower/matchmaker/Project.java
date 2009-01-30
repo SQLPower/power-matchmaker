@@ -102,6 +102,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	/** the settings for the merge engine */
     private MergeSettings mergeSettings = new MergeSettings();
 
+    /** the settings for the address correction engine */
+	private AddressCorrectionSettings addressCorrectionSettings = new AddressCorrectionSettings();
+    
 	/** Optional SQL WHERE clause for the source table. If no filer is desired, this value is null. */
     private String filter;
 
@@ -688,6 +691,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         
         sb.append("; mungeSettings=").append(mungeSettings);
         sb.append("; mergeSettings=").append(mergeSettings);
+        sb.append("; addressCorrectionSettings=").append(addressCorrectionSettings);
         sb.append("; filter=").append(filter);
         sb.append("; view=").append(view);
         return sb.toString();
@@ -1071,5 +1075,16 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
 	public Monitorable getRunningEngine() {
 	    return runningEngine.get();
+	}
+
+	public void setAddressCorrectionSettings(AddressCorrectionSettings addressCorrectionSettings) {
+		AddressCorrectionSettings oldValue = this.addressCorrectionSettings;
+		this.addressCorrectionSettings = addressCorrectionSettings;
+		getEventSupport().firePropertyChange("addressCorrectionSettings", oldValue,
+				this.addressCorrectionSettings);
+	}
+	
+	public AddressCorrectionSettings getAddressCorrectionSettings() {
+		return addressCorrectionSettings;
 	}
 }

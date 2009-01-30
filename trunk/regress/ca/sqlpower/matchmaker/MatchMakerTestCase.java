@@ -237,6 +237,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    processCount = new Integer(processCount +1);
 		    ((MatchMakerSettings) oldVal).setProcessCount(processCount);
 		    return oldVal;
+		} else if (property.getPropertyType() == AddressCorrectionSettings.class) {
+			Integer processCount = ((MatchMakerSettings) oldVal).getProcessCount();
+		    processCount = new Integer(processCount +1);
+		    ((MatchMakerSettings) oldVal).setProcessCount(processCount);
+		    return oldVal;
 		} else if (property.getPropertyType() == SQLTable.class) {
 			((SQLTable) oldVal).setRemarks("Testing Remarks");
 			return oldVal;
