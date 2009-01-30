@@ -52,7 +52,7 @@ public class Address {
      * The street number, excluding suffix. This field will never be null for
      * an URBAN address, and will always be null for other address types.
      */
-    private String streetNumber;
+    private Integer streetNumber;
     
     /**
      * The street number suffix (1/2, 1/4, 3/4, or a letter A-Z) if this address
@@ -190,11 +190,11 @@ public class Address {
         this.suitePrefix = suitePrefix;
     }
 
-    public String getStreetNumber() {
+    public Integer getStreetNumber() {
         return streetNumber;
     }
 
-    public void setStreetNumber(String streetNumber) {
+    public void setStreetNumber(Integer streetNumber) {
         this.streetNumber = streetNumber;
     }
 
@@ -286,6 +286,17 @@ public class Address {
     public void setType(Type type) {
         this.type = type;
     }
-    
+
+    public void normalize() {
+        if (municipality != null) setMunicipality(municipality.toUpperCase());
+        if (suite != null) setSuite(suite.toUpperCase());
+        if (streetNumberSuffix != null) setStreetNumberSuffix(streetNumberSuffix.toUpperCase());
+        if (street != null) setStreet(street.toUpperCase());
+        if (streetType != null) setStreetType(streetType.toUpperCase());
+        if (streetDirection != null) setStreetDirection(streetDirection.toUpperCase());
+        if (province != null) setProvince(province.toUpperCase());
+        if (postalCode != null) setPostalCode(postalCode.toUpperCase());
+        if (country != null) setCountry(country.toUpperCase());
+    }
     
 }

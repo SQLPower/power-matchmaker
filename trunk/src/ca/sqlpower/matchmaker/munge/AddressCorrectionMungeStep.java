@@ -42,7 +42,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		addChild(postalCode = new MungeStepOutput<String>("Postal/ZIP", String.class));
 	
 		InputDescriptor input0 = new InputDescriptor("Suite", String.class);
-		InputDescriptor input1 = new InputDescriptor("Street Number", String.class);
+		InputDescriptor input1 = new InputDescriptor("Street Number", Integer.class);
 		InputDescriptor input2 = new InputDescriptor("Street number Suffix", String.class);
 		InputDescriptor input3 = new InputDescriptor("Street", String.class);
 		InputDescriptor input4 = new InputDescriptor("Street Type", String.class);
@@ -68,7 +68,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public Boolean doCall() throws Exception {
 		Address address = new Address();
 		address.setSuite((String)getMSOInputs().get(0).getData());
-		address.setStreetNumber((String)getMSOInputs().get(1).getData());
+		address.setStreetNumber((Integer)getMSOInputs().get(1).getData());
 		address.setStreetNumberSuffix((String)getMSOInputs().get(2).getData());
 		address.setStreet((String)getMSOInputs().get(3).getData());
 		address.setStreetType((String)getMSOInputs().get(4).getData());

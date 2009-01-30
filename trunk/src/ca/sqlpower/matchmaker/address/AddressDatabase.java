@@ -35,7 +35,9 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.persist.EntityCursor;
+import com.sleepycat.persist.EntityJoin;
 import com.sleepycat.persist.EntityStore;
+import com.sleepycat.persist.ForwardCursor;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
@@ -120,6 +122,7 @@ public class AddressDatabase {
         List<ValidateResult> results = new ArrayList<ValidateResult>();
         
         // translate province/state names to official code
+        a.normalize();
         
         // translate municipality name to canonical name
         Set<Municipality> municipalities = findMunicipality(a.getMunicipality(), a.getProvince());
@@ -165,7 +168,42 @@ public class AddressDatabase {
             }
             
         } else {
-            // try to find unique postal code match
+            // try to find unique postal code match TODO extract to public method
+            EntityJoin<String, PostalCode> join = new EntityJoin<String, PostalCode>(postalCodePK);
+            
+            if (a.getProvince() != null) {
+                join.addCondition(postalCodeProvince, a.getProvince());
+            }
+            if (a.getMunicipality() != null) {
+                join.addCondition(postalCodeMunicipality, a.getMunicipality());
+            }
+            if (a.getStreet() != null) {
+                join.addCondition(postalCodeStreet, a.getStreet());
+            }
+            
+            // TODO check how many fields match these criteria
+            // (for example, if more than 1000 records match, just emit an error)
+            
+            ForwardCursor<PostalCode> matches = null;
+            try {
+                matches = join.entities();
+                for (PostalCode pc : matches) {
+                    if (pc.containsAddress(a)) {
+                        a.setPostalCode(pc.getPostalCode());
+                        results.add(ValidateResult.createValidateResult(
+                                Status.WARN, "Added postal code to valid address"));
+                        break;
+                        // TODO check for multiple matches (they would differ by street type & direction)
+                    }
+                }
+            } finally {
+                if (matches != null) matches.close();
+            }
+            
+            if (a.getPostalCode() == null) {
+                results.add(ValidateResult.createValidateResult(
+                        Status.FAIL, "No matching postal code found for address"));
+            }
         }
         
         return results;
