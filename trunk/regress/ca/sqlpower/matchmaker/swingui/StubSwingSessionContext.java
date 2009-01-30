@@ -172,4 +172,14 @@ public class StubSwingSessionContext implements SwingSessionContext {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubSwingSessionContext.ensureDefaultRepositoryDefined()");
 	}
+	
+	public void setAddressCorrectionDataPath(String path) {
+		logger.debug("Stub call: StubSwingSessionContext.setAddressCorrectionDataPath()");
+		
+	}
+	
+	public String getAddressCorrectionDataPath() {
+		logger.debug("Stub call: StubSwingSessionContext.getAddressCorrectionDataPath()");
+		return null;
+	}
 }
