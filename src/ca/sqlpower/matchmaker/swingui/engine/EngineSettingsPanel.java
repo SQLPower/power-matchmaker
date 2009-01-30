@@ -83,7 +83,9 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 * An enumeration for all the different types of MatchMakerEngines.
 	 */
 	public enum EngineType {
-		MATCH_ENGINE("Match Engine"), MERGE_ENGINE("Merge Engine"), CLEANSE_ENGINE("Cleanse Engine");
+		MATCH_ENGINE("Match Engine"), MERGE_ENGINE("Merge Engine"), 
+		CLEANSE_ENGINE("Cleanse Engine"), ADDRESS_CORRECTION_ENGINE("Address Correciton Engine");
+		
 		String engineName;
 		
 		private EngineType(String engineName) {
@@ -246,6 +248,9 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		} else if (type == EngineType.CLEANSE_ENGINE) {
 			engine = project.getCleansingEngine();
 			engineSettings = project.getMungeSettings();
+		} else if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			engine = project.getAddressCorrectionEngine();
+			engineSettings = project.getAddressCorrectionSettings();
 		} else {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
@@ -386,7 +391,6 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.CLEANSE_ENGINE) {
 			y += 2;
-		
 
 			pb.add(new JLabel("Munge Processes to run: "), cc.xy(2, y, "r,t"));
 			MungeProcessSelectionList selectionButton = new MungeProcessSelectionList(project) {

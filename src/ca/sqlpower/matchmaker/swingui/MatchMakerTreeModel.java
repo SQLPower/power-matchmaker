@@ -120,7 +120,17 @@ public class MatchMakerTreeModel implements TreeModel {
         /**
          * Shows the "run cleansing" UI.
          */
-        RUN_CLEANSING("Run Cleansing Engine");
+        RUN_CLEANSING("Run Cleansing Engine"),
+        
+        /**
+         * Shows the "Run Address Correction" UI.
+         */
+        RUN_ADDRESS_CORRECTION("Run Address Correction Engine"),
+        
+        /**
+         * Shows the "Validate Addresses" UI.
+         */
+        VALIDATE_ADDRESSES("Validate Addresses");
         
         private final String name;
         
@@ -217,6 +227,8 @@ public class MatchMakerTreeModel implements TreeModel {
 	private static final ProjectActionType[] CLEANSING_ACTIONS = 
 		{ProjectActionType.RUN_CLEANSING, ProjectActionType.AUDIT_INFO};
 	
+	private static final ProjectActionType[] ADDRESSS_CORRECTION_ACTIONS = 
+		{ ProjectActionType.RUN_ADDRESS_CORRECTION, ProjectActionType.VALIDATE_ADDRESSES };
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 	
@@ -269,6 +281,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	            }
             } else if (project.getType() == ProjectMode.CLEANSE) {
             	for (ProjectActionType type : CLEANSING_ACTIONS) {
+            		actionNodes.add(new ProjectActionNode(type, project));
+            	}
+            } else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
+            	for (ProjectActionType type: ADDRESSS_CORRECTION_ACTIONS) {
             		actionNodes.add(new ProjectActionNode(type, project));
             	}
             }

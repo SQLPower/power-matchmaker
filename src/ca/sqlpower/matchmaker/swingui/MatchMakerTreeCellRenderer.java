@@ -92,10 +92,12 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			}
 		} else if (value instanceof ProjectActionNode) {
 			ProjectActionType val = ((ProjectActionNode) value).getActionType();
-			if (val.equals(ProjectActionType.VALIDATE_MATCHES)) {
+			if (val.equals(ProjectActionType.VALIDATE_MATCHES) || 
+					val.equals(ProjectActionType.VALIDATE_ADDRESSES)) {
 				setIcon(validateIcon);
 			} else if (val.equals(ProjectActionType.RUN_MATCH) ||
-					val.equals(ProjectActionType.RUN_CLEANSING)) {
+					val.equals(ProjectActionType.RUN_CLEANSING) ||
+					val.equals(ProjectActionType.RUN_ADDRESS_CORRECTION)) {
 				setIcon(matchEngineIcon);
 			} else if (val.equals(ProjectActionType.RUN_MERGE)) {
 				setIcon(mergeEngineIcon);

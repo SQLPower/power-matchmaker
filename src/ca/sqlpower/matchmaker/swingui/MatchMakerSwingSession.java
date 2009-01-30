@@ -73,6 +73,7 @@ import javax.swing.undo.UndoManager;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.matchmaker.AddressCorrectionEngineImpl;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
@@ -437,6 +438,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Map<CleanseEngineImpl, EngineSettingsPanel> cleanseEnginePanels;
 
 	/**
+     * A map that links an engine to a panel. This is used so that only
+     * one of each engine and panel ever exist per project.
+     */
+	private Map<AddressCorrectionEngineImpl, EngineSettingsPanel> addressCorrectionEnginePanels;
+	
+	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
      * would use a LoginDialog instead of calling this constructor directly.
      *
@@ -455,6 +462,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         matchEnginePanels = new HashMap<MatchEngineImpl, EngineSettingsPanel>();
         mergeEnginePanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
         cleanseEnginePanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
+        addressCorrectionEnginePanels = new HashMap<AddressCorrectionEngineImpl, EngineSettingsPanel>();
         
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         
@@ -1108,6 +1116,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 				panel.cleanup();
 			};
 			logger.debug("cleanseEnginePanels.size() returns: " + cleanseEnginePanels.size());
+			
+			panel = addressCorrectionEnginePanels.remove(((Project) mmo).getAddressCorrectionEngine());
+			if (panel != null) {
+				panel.cleanup();
+			};
 		}
 	}
 	
@@ -1372,6 +1385,21 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		return ep;
 	}
 
+	/**
+	 * Returns or creates the editor panel linked to the given Address Correction Engine engine
+	 * 
+	 * @param mei The current engine
+	 * @param project The current project
+	 */
+	public EngineSettingsPanel getAddressCorrectionEnginePanel(AddressCorrectionEngineImpl engine, Project project) {
+		EngineSettingsPanel ep = addressCorrectionEnginePanels.get(engine);
+		if (ep == null) {
+			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.ADDRESS_CORRECTION_ENGINE);
+			addressCorrectionEnginePanels.put(engine,ep);
+		}
+		return ep;
+	}
+	
 	//undo stuff
 	
 	protected UndoAction undoAction = new UndoAction();
