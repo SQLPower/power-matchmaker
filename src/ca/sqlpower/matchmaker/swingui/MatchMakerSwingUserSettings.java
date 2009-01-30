@@ -73,9 +73,4 @@ public class MatchMakerSwingUserSettings extends AbstractUserSetting {
      */
     public static final String AUTO_LOGIN_DATA_SOURCE = "SwingUserSettings.AUTO_LOGIN_DATA_SOURCE";
 
-    /**
-	 * The preference key that specifies the path to the directory containing
-	 * Address Correction Data provided by SQL Power Group Inc.
-	 */
-	public static final String ADDRESS_CORRECTION_DATA_PATH = "SwingUserSettings.ADDRESS_CORRECTION_DATA_PATH";
 }

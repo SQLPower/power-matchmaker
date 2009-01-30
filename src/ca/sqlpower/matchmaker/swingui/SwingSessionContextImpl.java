@@ -327,11 +327,11 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     }
 
     public void setAddressCorrectionDataPath(String path) {
-    	swingPrefs.put(MatchMakerSwingUserSettings.ADDRESS_CORRECTION_DATA_PATH, path);
+    	context.setAddressCorrectionDataPath(path);
     }
     
     public String getAddressCorrectionDataPath() {
-    	return swingPrefs.get(MatchMakerSwingUserSettings.ADDRESS_CORRECTION_DATA_PATH, "");
+    	return context.getAddressCorrectionDataPath();
     }
     
     

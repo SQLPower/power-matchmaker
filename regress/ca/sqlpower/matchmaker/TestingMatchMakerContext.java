@@ -111,4 +111,12 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	public void ensureDefaultRepositoryDefined() {
 		// Do nothing
 	}
+
+	public String getAddressCorrectionDataPath() {
+		return null;
+	}
+
+	public void setAddressCorrectionDataPath(String path) {
+		// Do nothing
+	}
 }

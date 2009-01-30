@@ -269,5 +269,14 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 	    	defaultRepository = makeDefaultDataSource();
 	    }
 	}
+	
+    public void setAddressCorrectionDataPath(String path) {
+    	prefs.put(ADDRESS_CORRECTION_DATA_PATH, path);
+    }
+    
+    public String getAddressCorrectionDataPath() {
+    	return prefs.get(ADDRESS_CORRECTION_DATA_PATH, "");
+    }
+
 }
 

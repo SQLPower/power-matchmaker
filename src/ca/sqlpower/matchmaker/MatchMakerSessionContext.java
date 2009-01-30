@@ -64,6 +64,13 @@ public interface MatchMakerSessionContext {
      */
     public static final String PREFS_PL_INI_PATH = "PL.INI.PATH";
     
+    /**
+	 * The preference key that specifies the path to the directory containing
+	 * Address Correction Data provided by SQL Power Group Inc.
+	 */
+	public static final String ADDRESS_CORRECTION_DATA_PATH = "MatchMakerSessionContext.ADDRESS_CORRECTION_DATA_PATH";
+
+    
     public List<SPDataSource> getDataSources();
 
     /**
@@ -136,4 +143,14 @@ public interface MatchMakerSessionContext {
 	 * data sources, and if it's not, then add an entry for it.
 	 */
     public void ensureDefaultRepositoryDefined();
+    
+    /**
+     * Sets the path of the directory containing the Address Correction Data.
+     */
+    public void setAddressCorrectionDataPath(String path);
+    
+    /**
+     * Returns the path of the directory containing the Address Correction Data.
+     */
+    public String getAddressCorrectionDataPath();
 }
