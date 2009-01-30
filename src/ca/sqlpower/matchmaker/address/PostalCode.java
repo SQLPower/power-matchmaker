@@ -428,4 +428,48 @@ public class PostalCode {
         
         return sb.toString();
     }
+
+    /**
+     * Determines whether or not this postal code contains the given address.
+     * The fields considered when determining a match are province,
+     * municipality, street name, street type, street direction, street number,
+     * and suite number.
+     * 
+     * @param a The address to match. The address itself must not be null, but the
+     * fields that the address does not have must be null. For example, an address
+     * that does not have a suite number must return a null (as opposed to empty)
+     * suite number.
+     *   
+     * @return
+     */
+    public boolean containsAddress(Address a) {
+        if (!nullSafeEquals(getProvinceCode(), a.getProvince())) return false;
+        if (!nullSafeEquals(getMunicipalityName(), a.getMunicipality())) return false;
+        if (!nullSafeEquals(getStreetName(), a.getStreet())) return false;
+        
+        Integer from = getStreetAddressFromNumber();
+        Integer to = getStreetAddressToNumber();
+        
+        // in English: if there is a from and to street number, but the address falls outside it, FAIL!
+        if (from != null && to != null && (a.getStreetNumber() < from || a.getStreetNumber() > to)) {
+            return false;
+        }
+        if (!nullSafeEquals(getStreetTypeCode(), a.getStreetType())) return false;
+        
+        return true;
+    }
+    
+    /**
+     * Returns true if o1.equals(o2) or both o1 and o2 are null.
+     */
+    private static boolean nullSafeEquals(Object o1, Object o2) {
+        if (o1 == null && o2 == null) {
+            return true;
+        }
+        if (o1 == null) {
+            return false;
+        }
+        return o1.equals(o2);
+    }
+    
 }

@@ -93,6 +93,24 @@ public class AddressDatabaseTest extends TestCase {
         assertResultContains(results, "municipality.*does not agree");
     }
 
+    public void testAddPostalCode() {
+        // The record we're hoping to match: NS,ANTIGONISH,HILLCREST,ST,14..58,ANTIGONISH,B2G 1Z3
+        address.setType(Type.URBAN);
+        address.setProvince("NS");
+        address.setMunicipality("ANTIGONISH");
+        address.setStreetNumber(20);
+        address.setStreet("Hillcrest");
+        address.setStreetType("St");
+        address.resetChangeFlags();
+        
+        List<ValidateResult> results = addressDB.correct(address);
+        
+        System.out.println("addpostalcode: " + results);
+        System.out.println(address);
+        assertEquals("B2G1Z3", address.getPostalCode());
+        assertResultContains(results, "added postal code");
+    }
+
     public void testUnrecognizedMunicipality() throws Exception {
         // The record we're hoping to match: NS,ANTIGONISH,HILLCREST,ST,ANTIGONISH,B2G 1Z3
         address.setMunicipality("ANITGINOSH"); // this is the incorrect municipality name

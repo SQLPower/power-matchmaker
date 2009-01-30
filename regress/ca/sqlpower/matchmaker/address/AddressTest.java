@@ -19,29 +19,41 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import ca.sqlpower.matchmaker.address.Address.Type;
 import junit.framework.TestCase;
 
 public class AddressTest extends TestCase {
 
-    private Address address;
+    /** SQLPower Word Wide Headquarters! */
+    private Address sqlpWWHQ;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        address = new Address();
+        sqlpWWHQ = new Address();
+        sqlpWWHQ.setCountry("CA");
+        sqlpWWHQ.setMunicipality("NORTH YORK");
+        sqlpWWHQ.setPostalCode("M2N6K1");
+        sqlpWWHQ.setProvince("ON");
+        sqlpWWHQ.setStreet("YONGE");
+        sqlpWWHQ.setStreetNumber(4950);
+        sqlpWWHQ.setStreetType("ST");
+        sqlpWWHQ.setSuite("2110");
+        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.resetChangeFlags();
     }
     
     public void testMunicipalityChangedFlag() throws Exception {
-        assertFalse(address.isMunicipalityChanged());
-        address.setMunicipality("moocow");
-        assertTrue(address.isMunicipalityChanged());
+        assertFalse(sqlpWWHQ.isMunicipalityChanged());
+        sqlpWWHQ.setMunicipality("moocow");
+        assertTrue(sqlpWWHQ.isMunicipalityChanged());
     }
     
     public void testResetChangeFlags() throws Exception {
-        address.setMunicipality("moocow");
+        sqlpWWHQ.setMunicipality("moocow");
 
-        address.resetChangeFlags();
+        sqlpWWHQ.resetChangeFlags();
         
-        assertFalse(address.isMunicipalityChanged());
+        assertFalse(sqlpWWHQ.isMunicipalityChanged());
     }
 }
