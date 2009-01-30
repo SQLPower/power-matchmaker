@@ -24,6 +24,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -53,6 +54,7 @@ public class UserPreferencesEditor implements DataEntryPanel {
     private JRadioButton autoLoginRadioButton = new JRadioButton("Automatically connect to this repository");
     private JComboBox autoLoginDataSourceBox = new JComboBox();
     private JRadioButton loginDialogRadioButton = new JRadioButton("Show the Login Dialog");
+    private JTextField addressDataPath = new JTextField();
     
     public UserPreferencesEditor(SwingSessionContext context) {
         this.context = context;
@@ -92,9 +94,13 @@ public class UserPreferencesEditor implements DataEntryPanel {
         autoLoginDataSourceBox.setSelectedItem(context.getAutoLoginDataSource());
         autoLoginDataSourceBox.setEnabled(context.isAutoLoginEnabled());
         
+        addressDataPath.setText(context.getAddressCorrectionDataPath());
+        
         fb.append("On Startup:", autoLoginRadioButton);
         fb.append("",            autoLoginDataSourceBox);
         fb.append("",            loginDialogRadioButton);
+        fb.appendSeparator();
+        fb.append("Address Correction Data Path:", addressDataPath);
         
         return fb.getPanel();
     }
@@ -102,6 +108,7 @@ public class UserPreferencesEditor implements DataEntryPanel {
     public boolean applyChanges() {
         context.setAutoLoginEnabled(autoLoginRadioButton.isSelected());
         context.setAutoLoginDataSource((SPDataSource) autoLoginDataSourceBox.getSelectedItem());
+        context.setAddressCorrectionDataPath(addressDataPath.getText());
         return true;
     }
 

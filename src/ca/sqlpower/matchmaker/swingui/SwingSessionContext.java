@@ -163,4 +163,13 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      */
     public void setAutoLoginDataSource(SPDataSource selectedItem);
 
+    /**
+     * Sets the path of the directory containing the Address Correction Data.
+     */
+    public void setAddressCorrectionDataPath(String path);
+    
+    /**
+     * Returns the path of the directory containing the Address Correction Data.
+     */
+    public String getAddressCorrectionDataPath();
 }

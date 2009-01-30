@@ -326,6 +326,15 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         return null;
     }
 
+    public void setAddressCorrectionDataPath(String path) {
+    	swingPrefs.put(MatchMakerSwingUserSettings.ADDRESS_CORRECTION_DATA_PATH, path);
+    }
+    
+    public String getAddressCorrectionDataPath() {
+    	return swingPrefs.get(MatchMakerSwingUserSettings.ADDRESS_CORRECTION_DATA_PATH, "");
+    }
+    
+    
     ///////// Global GUI Stuff //////////
 
     /* (non-Javadoc)
