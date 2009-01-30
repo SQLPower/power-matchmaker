@@ -184,6 +184,18 @@ public class SwingSessionContextTest extends TestCase {
 			public void ensureDefaultRepositoryDefined() {
 				logger.debug("Stub call: .ensureDefaultRepositoryDefined()");
 			}
+
+			public String getAddressCorrectionDataPath() {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: MatchMakerSessionContext.getAddressCorrectionDataPath()");
+				return null;
+			}
+
+			public void setAddressCorrectionDataPath(String path) {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: MatchMakerSessionContext.setAddressCorrectionDataPath()");
+				
+			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();
