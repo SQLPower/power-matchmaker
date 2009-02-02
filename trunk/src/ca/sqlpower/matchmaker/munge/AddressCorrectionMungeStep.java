@@ -92,22 +92,22 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public Boolean doCall() throws Exception {
-		Address address = new Address();
 
-// 		TODO: set get the Address Line 1 and Line 2 inputs once the Address Line parser is committed
-//		address.setSuite((String)getMSOInputs().get(0).getData());
-//		address.setStreetNumber((Integer)getMSOInputs().get(1).getData());
-		address.setMunicipality((String)getMSOInputs().get(2).getData());
-		address.setProvince((String)getMSOInputs().get(3).getData());
-		address.setPostalCode((String)getMSOInputs().get(4).getData());
-		address.setCountry((String)getMSOInputs().get(5).getData());
+		String addressLine1 = (String)getMSOInputs().get(0).getData();
+		String municipality = (String)getMSOInputs().get(2).getData();
+		String province = (String)getMSOInputs().get(3).getData();
+		String inPostalCode = (String)getMSOInputs().get(4).getData();
+		String country = (String)getMSOInputs().get(5).getData();
 		
-		logger.debug("Parsing Address \n" + address + "");
+		// nicely formatted 
+		String addressString = addressLine1 + ", " + municipality + ", " + province + ", " + inPostalCode + ", " + country;
+		logger.debug("Parsing Address: " + addressString);
+		Address address = Address.parse(addressLine1, municipality, province, inPostalCode, country);
 		
 		List<ValidateResult> results = addressDB.validate(address);
 
 		if (results.size() > 0) { 
-			logger.debug("Address \n" + address + "\n was invalid with the following problem(s):");
+			logger.debug("Address '" + addressString + "' was invalid with the following problem(s):");
 		}
 		
 		for (ValidateResult result: results) {
