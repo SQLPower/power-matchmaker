@@ -59,16 +59,12 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		addChild(postalCode = new MungeStepOutput<String>("Postal/ZIP", String.class));
 		addChild(countryName = new MungeStepOutput<String>("Country", String.class));
 	
-		InputDescriptor input0 = new InputDescriptor("Suite", String.class);
-		InputDescriptor input1 = new InputDescriptor("Street Number", Integer.class);
-		InputDescriptor input2 = new InputDescriptor("Street Number Suffix", String.class);
-		InputDescriptor input3 = new InputDescriptor("Street", String.class);
-		InputDescriptor input4 = new InputDescriptor("Street Type", String.class);
-		InputDescriptor input5 = new InputDescriptor("Street Direction", String.class);		
-		InputDescriptor input6 = new InputDescriptor("Municipality", String.class);
-		InputDescriptor input7 = new InputDescriptor("Province", String.class);
-		InputDescriptor input8 = new InputDescriptor("Postal/ZIP", String.class);
-		InputDescriptor input9 = new InputDescriptor("Country", String.class);
+		InputDescriptor input0 = new InputDescriptor("Address Line 1", String.class);
+		InputDescriptor input1 = new InputDescriptor("Address Line 2", String.class);
+		InputDescriptor input2 = new InputDescriptor("Municipality", String.class);
+		InputDescriptor input3 = new InputDescriptor("Province", String.class);
+		InputDescriptor input4 = new InputDescriptor("Postal/ZIP", String.class);
+		InputDescriptor input5 = new InputDescriptor("Country", String.class);
 
 		super.addInput(input0);
 		super.addInput(input1);
@@ -76,10 +72,6 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		super.addInput(input3);
 		super.addInput(input4);
 		super.addInput(input5);
-		super.addInput(input6);
-		super.addInput(input7);
-		super.addInput(input8);
-		super.addInput(input9);
 	}
 	
 	@Override
@@ -92,16 +84,14 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	@Override
 	public Boolean doCall() throws Exception {
 		Address address = new Address();
-		address.setSuite((String)getMSOInputs().get(0).getData());
-		address.setStreetNumber((Integer)getMSOInputs().get(1).getData());
-		address.setStreetNumberSuffix((String)getMSOInputs().get(2).getData());
-		address.setStreet((String)getMSOInputs().get(3).getData());
-		address.setStreetType((String)getMSOInputs().get(4).getData());
-		address.setStreetDirection((String)getMSOInputs().get(5).getData());
-		address.setMunicipality((String)getMSOInputs().get(6).getData());
-		address.setProvince((String)getMSOInputs().get(7).getData());
-		address.setPostalCode((String)getMSOInputs().get(8).getData());
-		address.setCountry((String)getMSOInputs().get(9).getData());
+
+// 		TODO: set get the Address Line 1 and Line 2 inputs once the Address Line parser is committed
+//		address.setSuite((String)getMSOInputs().get(0).getData());
+//		address.setStreetNumber((Integer)getMSOInputs().get(1).getData());
+		address.setMunicipality((String)getMSOInputs().get(2).getData());
+		address.setProvince((String)getMSOInputs().get(3).getData());
+		address.setPostalCode((String)getMSOInputs().get(4).getData());
+		address.setCountry((String)getMSOInputs().get(5).getData());
 
 		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
 		if (addressCorrectionDataPath == null || addressCorrectionDataPath.length() == 0) {
