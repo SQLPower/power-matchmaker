@@ -48,6 +48,7 @@
 	<classpathentry kind="lib" path="lib/architect_dbtree_lib.jar"/>
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/je-3.3.75.jar" sourcepath="libsrc/je-3.3.75_src.zip"/>
+	<classpathentry kind="lib" path="lib/antlr-3.1.1-runtime.jar" sourcepath="libsrc/antlr-3.1.1-runtime_src.zip"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

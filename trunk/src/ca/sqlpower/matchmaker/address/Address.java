@@ -19,6 +19,14 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.TokenStream;
+
+import ca.sqlpower.matchmaker.address.parse.AddressLexer;
+import ca.sqlpower.matchmaker.address.parse.AddressParser;
+
 /**
  * A class for representing any North American address (urban, rural, or post office box).
  * Instances of this class are mutable, because they serve as working areas for the
@@ -38,7 +46,9 @@ public class Address {
     
     /**
      * The suite, unit, or apartment number. If the address does not have
-     * a suite number, this will be null.
+     * a suite number, this will be null. Note that the suite "number" can
+     * be numeric, alphabetic, or alphanumeric. It is always represented
+     * here by a string.
      */
     private String suite;
 
@@ -48,6 +58,13 @@ public class Address {
      */
     private boolean suitePrefix;
 
+    /**
+     * The suite type, as specified in the address. Typical values include "APT", "UNIT",
+     * "SUITE", and so on. If the suite number is a prefix, the suite type should not be
+     * printed.
+     */
+    private String suiteType;
+    
     /**
      * The street number, excluding suffix. This field will never be null for
      * an URBAN address, and will always be null for other address types.
@@ -118,7 +135,52 @@ public class Address {
     public Address() {
         
     }
-    
+
+    /**
+     * Creates a new address by parsing all of the "line 1" information and
+     * taking the rest of the information individually. If the value for any of
+     * the fields is not known, pass in null for that field.
+     * 
+     * @param streetAddress
+     *            The street address as it should appear on the envelope. This
+     *            information will be parsed to provide all the individual
+     *            street address fields (street name, street number, street
+     *            direction, suite, and so on). Example input strings that are
+     *            parseable:
+     *            <ul>
+     *             <li>4950 Yonge St
+     *             <li>4950 Yonge St Suite 2110
+     *             <li>2110-4950 Yonge St
+     *             <li>500 Front St W
+     *             <li>300 The Esplanade
+     *            </ul>
+     * @param municipality
+     *            The city, village, town, or suburb name
+     * @param province
+     *            The two-letter province or state abbreviation
+     * @param postalCode
+     *            The postal or zip code
+     * @param country
+     *            The ISO two-letter country code
+     * @throws RecognitionException 
+     */
+    public static Address parse(String streetAddress, String municipality, String province, String postalCode,
+            String country) throws RecognitionException {
+        AddressLexer lexer = new AddressLexer(new ANTLRStringStream(streetAddress));
+        TokenStream addressTokens = new CommonTokenStream(lexer);
+        AddressParser p = new AddressParser(addressTokens);
+        p.streetAddress();
+        Address a = p.getAddress();
+        a.municipality = municipality;
+        a.province = province;
+        a.postalCode = postalCode;
+        a.country = country;
+        a.resetChangeFlags();
+        return a;
+    }
+
+
+
     /**
      * Resets the flags that track field changes. If you plan to check if the
      * correction exercise has modified fields, you should call this after
@@ -152,6 +214,9 @@ public class Address {
             sb.append(" ").append(streetDirection);
         }
         if (suite != null && !suitePrefix) {
+            if (suiteType != null) {
+                sb.append(" ").append(suiteType);
+            }
             sb.append(" ").append(suite);
         }
         
@@ -190,6 +255,14 @@ public class Address {
         this.suitePrefix = suitePrefix;
     }
 
+    public String getSuiteType() {
+        return suiteType;
+    }
+    
+    public void setSuiteType(String suiteType) {
+        this.suiteType = suiteType;
+    }
+    
     public Integer getStreetNumber() {
         return streetNumber;
     }
