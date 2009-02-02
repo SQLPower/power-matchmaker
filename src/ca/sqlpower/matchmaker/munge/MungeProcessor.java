@@ -32,8 +32,6 @@ import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel.Edge;
 
 public class MungeProcessor extends AbstractProcessor {
 
-    private static final Logger logger = Logger.getLogger(MungeProcessor.class);
-    
     /**
      * The munging process this processor is responsible for executing.  The
      * graph of munge steps is retrieved fresh every time this processor is
@@ -61,7 +59,7 @@ public class MungeProcessor extends AbstractProcessor {
     
     public Boolean call(int rowCount) throws Exception {
     	if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
-    		logger.setLevel(Level.DEBUG);
+    		engineLogger.setLevel(Level.DEBUG);
     	}
     	
     	MungeResultStep resultStep = mungeProcess.getResultStep();
@@ -129,7 +127,7 @@ public class MungeProcessor extends AbstractProcessor {
 				try {
 					step.close();
 				} catch (Exception ex) {
-					logger.error("Close failed; squishing exception in order" +
+					engineLogger.error("Close failed; squishing exception in order" +
 							" not to obscure any earlier exceptions.", ex);
 				}
 			}
@@ -152,7 +150,7 @@ public class MungeProcessor extends AbstractProcessor {
     	dfs.performSearch(gm);
     	processOrder = dfs.getFinishOrder();
     	Collections.reverse(processOrder);
-    	logger.debug("Order of processing: " + processOrder);
+    	engineLogger.debug("Order of processing: " + processOrder);
 	}
     
     /**
