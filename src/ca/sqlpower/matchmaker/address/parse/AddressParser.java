@@ -1,22 +1,14 @@
-// $ANTLR 3.1.1 /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-02-02 14:28:55
+// $ANTLR 3.1.1 /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-02-02 16:34:42
 
 package ca.sqlpower.matchmaker.address.parse;
 
-import java.util.ArrayList;
+import ca.sqlpower.matchmaker.address.*;
+
+
+import org.antlr.runtime.*;
+import java.util.Stack;
 import java.util.List;
-
-import org.antlr.runtime.BaseRecognizer;
-import org.antlr.runtime.BitSet;
-import org.antlr.runtime.DFA;
-import org.antlr.runtime.EarlyExitException;
-import org.antlr.runtime.NoViableAltException;
-import org.antlr.runtime.Parser;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.RecognizerSharedState;
-import org.antlr.runtime.Token;
-import org.antlr.runtime.TokenStream;
-
-import ca.sqlpower.matchmaker.address.Address;
+import java.util.ArrayList;
 
 public class AddressParser extends Parser {
     public static final String[] tokenNames = new String[] {
@@ -50,6 +42,10 @@ public class AddressParser extends Parser {
     public String getGrammarFileName() { return "/Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g"; }
 
 
+
+    /* Shut up warning about unused import */
+    static { Stack s; s = null; }
+
     private Address address = new Address();
 
     public Address getAddress() { return address; }
@@ -81,14 +77,14 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "fullAddress"
-    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:40:1: fullAddress : streetAddress city p= PROVINCE c= POSTALCODE ;
+    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:44:1: fullAddress : streetAddress city p= PROVINCE c= POSTALCODE ;
     public final void fullAddress() throws RecognitionException {
         Token p=null;
         Token c=null;
 
         try {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:41:2: ( streetAddress city p= PROVINCE c= POSTALCODE )
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:41:4: streetAddress city p= PROVINCE c= POSTALCODE
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:45:2: ( streetAddress city p= PROVINCE c= POSTALCODE )
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:45:4: streetAddress city p= PROVINCE c= POSTALCODE
             {
             pushFollow(FOLLOW_streetAddress_in_fullAddress25);
             streetAddress();
@@ -121,18 +117,18 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "streetAddress"
-    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:47:1: streetAddress : (n= NUMBER street | suiteNum '-' n= NUMBER street | n= NUMBER street s= SUITE suiteNum );
+    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:51:1: streetAddress : (n= NUMBER street | suiteNum '-' n= NUMBER street | n= NUMBER street s= SUITE suiteNum );
     public final void streetAddress() throws RecognitionException {
         Token n=null;
         Token s=null;
 
         try {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:48:2: (n= NUMBER street | suiteNum '-' n= NUMBER street | n= NUMBER street s= SUITE suiteNum )
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:52:2: (n= NUMBER street | suiteNum '-' n= NUMBER street | n= NUMBER street s= SUITE suiteNum )
             int alt1=3;
             alt1 = dfa1.predict(input);
             switch (alt1) {
                 case 1 :
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:48:4: n= NUMBER street
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:52:4: n= NUMBER street
                     {
                     n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_streetAddress58); 
                     pushFollow(FOLLOW_street_in_streetAddress60);
@@ -145,7 +141,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:49:4: suiteNum '-' n= NUMBER street
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:53:4: suiteNum '-' n= NUMBER street
                     {
                     pushFollow(FOLLOW_suiteNum_in_streetAddress70);
                     suiteNum();
@@ -166,7 +162,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:52:4: n= NUMBER street s= SUITE suiteNum
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:56:4: n= NUMBER street s= SUITE suiteNum
                     {
                     n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_streetAddress88); 
                     pushFollow(FOLLOW_street_in_streetAddress90);
@@ -202,13 +198,13 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "suiteNum"
-    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:58:1: suiteNum : n= NUMBER ;
+    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:62:1: suiteNum : n= NUMBER ;
     public final void suiteNum() throws RecognitionException {
         Token n=null;
 
         try {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:58:9: (n= NUMBER )
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:58:11: n= NUMBER
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:62:9: (n= NUMBER )
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:62:11: n= NUMBER
             {
             n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_suiteNum109); 
              address.setSuite((n!=null?n.getText():null)); 
@@ -228,13 +224,13 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "street"
-    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:61:1: street : ( streetName (t= STREETTYPE )? (d= STREETDIR )? | d= STREETDIR streetName (t= STREETTYPE )? );
+    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:65:1: street : ( streetName (t= STREETTYPE )? (d= STREETDIR )? | d= STREETDIR streetName (t= STREETTYPE )? );
     public final void street() throws RecognitionException {
         Token t=null;
         Token d=null;
 
         try {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:61:8: ( streetName (t= STREETTYPE )? (d= STREETDIR )? | d= STREETDIR streetName (t= STREETTYPE )? )
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:65:8: ( streetName (t= STREETTYPE )? (d= STREETDIR )? | d= STREETDIR streetName (t= STREETTYPE )? )
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -252,14 +248,14 @@ public class AddressParser extends Parser {
             }
             switch (alt5) {
                 case 1 :
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:61:10: streetName (t= STREETTYPE )? (d= STREETDIR )?
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:65:10: streetName (t= STREETTYPE )? (d= STREETDIR )?
                     {
                     pushFollow(FOLLOW_streetName_in_street124);
                     streetName();
 
                     state._fsp--;
 
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:61:22: (t= STREETTYPE )?
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:65:22: (t= STREETTYPE )?
                     int alt2=2;
                     int LA2_0 = input.LA(1);
 
@@ -268,7 +264,7 @@ public class AddressParser extends Parser {
                     }
                     switch (alt2) {
                         case 1 :
-                            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:61:22: t= STREETTYPE
+                            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:65:22: t= STREETTYPE
                             {
                             t=(Token)match(input,STREETTYPE,FOLLOW_STREETTYPE_in_street128); 
 
@@ -277,7 +273,7 @@ public class AddressParser extends Parser {
 
                     }
 
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:61:36: (d= STREETDIR )?
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:65:36: (d= STREETDIR )?
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -286,7 +282,7 @@ public class AddressParser extends Parser {
                     }
                     switch (alt3) {
                         case 1 :
-                            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:61:36: d= STREETDIR
+                            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:65:36: d= STREETDIR
                             {
                             d=(Token)match(input,STREETDIR,FOLLOW_STREETDIR_in_street133); 
 
@@ -302,7 +298,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:64:4: d= STREETDIR streetName (t= STREETTYPE )?
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:68:4: d= STREETDIR streetName (t= STREETTYPE )?
                     {
                     d=(Token)match(input,STREETDIR,FOLLOW_STREETDIR_in_street143); 
                     pushFollow(FOLLOW_streetName_in_street145);
@@ -310,7 +306,7 @@ public class AddressParser extends Parser {
 
                     state._fsp--;
 
-                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:64:28: (t= STREETTYPE )?
+                    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:68:28: (t= STREETTYPE )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -319,7 +315,7 @@ public class AddressParser extends Parser {
                     }
                     switch (alt4) {
                         case 1 :
-                            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:64:28: t= STREETTYPE
+                            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:68:28: t= STREETTYPE
                             {
                             t=(Token)match(input,STREETTYPE,FOLLOW_STREETTYPE_in_street149); 
 
@@ -349,16 +345,16 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "streetName"
-    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:69:1: streetName : (n+= NAME )+ ;
+    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:73:1: streetName : (n+= NAME )+ ;
     public final void streetName() throws RecognitionException {
         Token n=null;
         List list_n=null;
 
         try {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:70:2: ( (n+= NAME )+ )
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:70:4: (n+= NAME )+
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:2: ( (n+= NAME )+ )
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:4: (n+= NAME )+
             {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:70:4: (n+= NAME )+
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:4: (n+= NAME )+
             int cnt6=0;
             loop6:
             do {
@@ -372,7 +368,7 @@ public class AddressParser extends Parser {
 
                 switch (alt6) {
             	case 1 :
-            	    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:70:5: n+= NAME
+            	    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:5: n+= NAME
             	    {
             	    n=(Token)match(input,NAME,FOLLOW_NAME_in_streetName168); 
             	    if (list_n==null) list_n=new ArrayList();
@@ -408,16 +404,16 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "city"
-    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:1: city : (n+= NAME )+ ;
+    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:78:1: city : (n+= NAME )+ ;
     public final void city() throws RecognitionException {
         Token n=null;
         List list_n=null;
 
         try {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:6: ( (n+= NAME )+ )
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:8: (n+= NAME )+
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:78:6: ( (n+= NAME )+ )
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:78:8: (n+= NAME )+
             {
-            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:8: (n+= NAME )+
+            // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:78:8: (n+= NAME )+
             int cnt7=0;
             loop7:
             do {
@@ -431,7 +427,7 @@ public class AddressParser extends Parser {
 
                 switch (alt7) {
             	case 1 :
-            	    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:74:9: n+= NAME
+            	    // /Users/fuerth/prg/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:78:9: n+= NAME
             	    {
             	    n=(Token)match(input,NAME,FOLLOW_NAME_in_city195); 
             	    if (list_n==null) list_n=new ArrayList();
@@ -527,7 +523,7 @@ public class AddressParser extends Parser {
             this.transition = DFA1_transition;
         }
         public String getDescription() {
-            return "47:1: streetAddress : (n= NUMBER street | suiteNum '-' n= NUMBER street | n= NUMBER street s= SUITE suiteNum );";
+            return "51:1: streetAddress : (n= NUMBER street | suiteNum '-' n= NUMBER street | n= NUMBER street s= SUITE suiteNum );";
         }
     }
  

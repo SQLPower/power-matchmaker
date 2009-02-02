@@ -86,6 +86,10 @@ public class MunicipalityTest extends TestCase {
         assertFalse(northYork.isNameAcceptable("N.YORK", "anything goes"));
     }
     
+    public void testOfficialNameAcceptable() {
+        assertTrue(niagaraOnTheLake.isNameAcceptable("NIAGARA ON THE LAKE", "ANYTHING GOES"));
+    }
+    
     public void testGetProvince() throws Exception {
         assertEquals("ON", northYork.getProvince());
     }

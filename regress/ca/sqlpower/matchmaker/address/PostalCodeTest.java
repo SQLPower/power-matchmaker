@@ -19,8 +19,8 @@
 
 package ca.sqlpower.matchmaker.address;
 
-import ca.sqlpower.matchmaker.address.Address.Type;
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.address.Address.Type;
 
 public class PostalCodeTest extends TestCase {
 

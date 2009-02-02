@@ -202,6 +202,9 @@ public class Municipality {
         if (municipality == null) {
             return false;
         }
+        if (municipality.equals(getOfficialName())) {
+            return true;
+        }
         ValidAlternateName van = validAlternateNames.get(municipality.toUpperCase());
         if (van == null) {
             return false;

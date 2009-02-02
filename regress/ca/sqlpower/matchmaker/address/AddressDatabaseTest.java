@@ -45,15 +45,40 @@ public class AddressDatabaseTest extends TestCase {
      *            whole message--just part of one.
      */
     private static void assertResultContains(List<ValidateResult> results, String regex) {
+        if (!resultContains(results, regex)) {
+            throw new AssertionFailedError(
+                    "Pattern /"+regex+"/ was not found among the "
+                    + results.size() + " results: " + results); 
+        }
+    }
+
+    /**
+     * Searches the message string of each result in the given list for the
+     * given regular expression. If no match is found, the assertion passes.
+     * 
+     * @param results
+     *            The list of results to search through
+     * @param regex
+     *            The regular expression pattern to search for. This pattern is
+     *            treated as case-insensitive, and does not have to match a
+     *            whole message--just part of one.
+     */
+    private static void assertResultDoesNotContain(List<ValidateResult> results, String regex) {
+        if (resultContains(results, regex)) {
+            throw new AssertionFailedError(
+                    "Pattern /"+regex+"/ was found among the "
+                    + results.size() + " results: " + results); 
+        }
+    }
+
+    private static boolean resultContains(List<ValidateResult> results, String regex) {
         Pattern p = Pattern.compile(".*" + regex + ".*", Pattern.CASE_INSENSITIVE);
         for (ValidateResult result : results) {
             if (result.getMessage() != null && p.matcher(result.getMessage()).matches()) {
-                return;
+                return true;
             }
         }
-        throw new AssertionFailedError(
-                "Expected pattern /"+regex+"/ not found among the "
-                + results.size() + " results: " + results); 
+        return false;
     }
 
     @Override
@@ -110,6 +135,16 @@ public class AddressDatabaseTest extends TestCase {
         assertEquals("B2G1Z3", address.getPostalCode());
         assertResultContains(results, "added postal code");
     }
+    
+    public void testNoWarningForOfficialName() throws Exception {
+        address.setType(Type.URBAN);
+        address.setProvince("NS");
+        address.setMunicipality("ANTIGONISH");
+        
+        List<ValidateResult> results = addressDB.correct(address);
+
+        assertResultDoesNotContain(results, "corrected municipality");
+    }
 
     public void testUnrecognizedMunicipality() throws Exception {
         // The record we're hoping to match: NS,ANTIGONISH,HILLCREST,ST,ANTIGONISH,B2G 1Z3
@@ -142,20 +177,35 @@ public class AddressDatabaseTest extends TestCase {
         address.setProvince("NS");
         address.resetChangeFlags();
         
-        addressDB.correct(address);
+        List<ValidateResult> results = addressDB.correct(address);
         
         assertTrue(address.isMunicipalityChanged());
         assertEquals("OXFORD", address.getMunicipality());
+        assertResultContains(results, "corrected municipality");
     }
 
-    public void testAddress() throws Exception {
-    	address = Address.parse("59 BRAMLEY ST S", "PORT HOPE", "ON", "L1A3K3", "Canada");
-    	List<ValidateResult> results = addressDB.correct(address);
-    	
-    	for (ValidateResult result: results) {
-    		System.out.println(result.toString());
-    	}
-    	
-    	assertEquals(0, results.size());
+    /**
+     * This is just a valid address that we made a test for because it
+     * happened to be causing problems at the time. There are other tests
+     * for the specific problem we ran up against, but I'm leaving this
+     * test here for variety.
+     */
+    public void testValidAddress() throws Exception {
+        address.setStreetNumber(59);
+        address.setStreet("BRAMLEY");
+        address.setStreetType("ST");
+        address.setStreetDirection("S");
+        address.setMunicipality("PORT HOPE");
+        address.setProvince("ON");
+        address.setPostalCode("L1A3K3");
+        address.setCountry("Canada");
+        System.out.println(address);
+        List<ValidateResult> results = addressDB.correct(address);
+        
+        for (ValidateResult result: results) {
+            System.out.println(result.toString());
+        }
+        
+        assertEquals(0, results.size());
     }
 }
