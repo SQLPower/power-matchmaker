@@ -28,8 +28,8 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
-import ca.sqlpower.matchmaker.munge.MungeResult;
 import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.util.Monitorable;
 
 public class AddressCorrectionEngineImpl extends AbstractEngine {
 
@@ -39,6 +39,17 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	
 	private int progress = 0;
 	
+	/**
+	 * The current monitorable that is running in the engine.
+	 * <p>
+	 * Never ever ever EVER set the currentProcessor directly, call
+	 * {@link #setCurrentProcessor(Monitorable)} instead because it
+	 * needs synchronized access.
+	 * 
+	 * Failure to do so is punishable by death by screaming monkeys!
+	 */
+	private Monitorable currentProcessor;
+	
 	public AddressCorrectionEngineImpl(MatchMakerSession session, Project project) {
 		logger = Logger.getLogger(AddressCorrectionEngineImpl.class + "." + project.getName());
 		this.setSession(session);
@@ -47,7 +58,7 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	
 	public void checkPreconditions() throws EngineSettingException,
 			SQLObjectException, SourceTableException {
-
+		// No preconditions to check yet
 	}
 
 	@Override
@@ -77,14 +88,16 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			message = "Searching for invalid addresses";
 			logger.info(message);
 			for (MungeProcess process: mungeProcesses) {
+				checkCancelled();
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
 				MungeProcessor munger = new MungeProcessor(process, logger);
+				setCurrentProcessor(munger);
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
 				munger.call();
 				
-				List<MungeResult> results = process.getResults();
+				setCurrentProcessor(null);
 			}
 			
 			message = "Address Correction Engine finished successfully";
@@ -102,6 +115,14 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 		}
 	}
 	
+	@Override
+	public synchronized void setCancelled(boolean cancelled) {
+		super.setCancelled(cancelled);
+		if (cancelled && currentProcessor != null) {
+			currentProcessor.setCancelled(true);
+		}
+	}
+	
 	public Logger getLogger() {
 		return logger;
 	}
@@ -109,5 +130,8 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	public String getObjectType() {
 		return null;
 	}
-
+	
+	private synchronized void setCurrentProcessor(Monitorable processor) {
+		currentProcessor = processor;
+	}
 }
