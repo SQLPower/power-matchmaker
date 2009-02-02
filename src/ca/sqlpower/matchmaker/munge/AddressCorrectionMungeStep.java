@@ -44,6 +44,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	private MungeStepOutput<String> provinceName;
 	private MungeStepOutput<String> countryName;
 	private MungeStepOutput<String> postalCode;
+
+	private AddressDatabase addressDB;
 	
 	public AddressCorrectionMungeStep() {
 		super("Address Correction", false);
@@ -53,7 +55,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		addChild(streetNumberSuffix = new MungeStepOutput<String>("Street Number Suffix", String.class));
 		addChild(street = new MungeStepOutput<String>("Street", String.class));
 		addChild(streetType = new MungeStepOutput<String>("Street Type", String.class));
-		addChild(streetType = new MungeStepOutput<String>("Street Direction", String.class));
+		addChild(streetDirection = new MungeStepOutput<String>("Street Direction", String.class));
 		addChild(municipalityName = new MungeStepOutput<String>("Municipality", String.class));
 		addChild(provinceName = new MungeStepOutput<String>("Province", String.class));
 		addChild(postalCode = new MungeStepOutput<String>("Postal/ZIP", String.class));
@@ -79,6 +81,13 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		MatchMakerSession session = getSession();
 		MatchMakerSessionContext context = session.getContext();
 		setParameter(ADDRESS_CORRECTION_DATA_PATH, context.getAddressCorrectionDataPath());
+		
+		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
+		if (addressCorrectionDataPath == null || addressCorrectionDataPath.length() == 0) {
+			throw new IllegalStateException("Address Correction Data Path is empty. Please set the path in User Preferences");
+		}
+		addressDB = new AddressDatabase(new File(addressCorrectionDataPath));
+		
 	}
 	
 	@Override
@@ -92,30 +101,29 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		address.setProvince((String)getMSOInputs().get(3).getData());
 		address.setPostalCode((String)getMSOInputs().get(4).getData());
 		address.setCountry((String)getMSOInputs().get(5).getData());
-
-		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
-		if (addressCorrectionDataPath == null || addressCorrectionDataPath.length() == 0) {
-			throw new IllegalStateException("Address Correction Data Path is empty. Please set the path in User Preferences");
-		}
 		
-		AddressDatabase addressDB = new AddressDatabase(new File(addressCorrectionDataPath));
+		logger.debug("Parsing Address \n" + address + "");
 		
 		List<ValidateResult> results = addressDB.validate(address);
-		
-		if (results.size() > 0) {
-			
-		} else {
-			suite.setData(address.getSuite());
-			streetNumber.setData(address.getStreetNumber());
-			streetNumberSuffix.setData(address.getStreetNumberSuffix());
-			street.setData(address.getStreet());
-			streetType.setData(address.getStreetType());
-			streetDirection.setData(address.getStreetDirection());
-			municipalityName.setData(address.getMunicipality());
-			provinceName.setData(address.getProvince());
-			countryName.setData(address.getCountry());
-			postalCode.setData(address.getPostalCode());
+
+		if (results.size() > 0) { 
+			logger.debug("Address \n" + address + "\n was invalid with the following problem(s):");
 		}
+		
+		for (ValidateResult result: results) {
+			logger.debug("\tStatus:" + result.getStatus() + " Message: " + result.getMessage());
+		}
+		
+		suite.setData(address.getSuite());
+		streetNumber.setData(address.getStreetNumber());
+		streetNumberSuffix.setData(address.getStreetNumberSuffix());
+		street.setData(address.getStreet());
+		streetType.setData(address.getStreetType());
+		streetDirection.setData(address.getStreetDirection());
+		municipalityName.setData(address.getMunicipality());
+		provinceName.setData(address.getProvince());
+		countryName.setData(address.getCountry());
+		postalCode.setData(address.getPostalCode());
 		
 		return Boolean.TRUE;
 	}
