@@ -166,11 +166,16 @@ public class Address {
      */
     public static Address parse(String streetAddress, String municipality, String province, String postalCode,
             String country) throws RecognitionException {
-        AddressLexer lexer = new AddressLexer(new ANTLRStringStream(streetAddress));
-        TokenStream addressTokens = new CommonTokenStream(lexer);
-        AddressParser p = new AddressParser(addressTokens);
-        p.streetAddress();
-        Address a = p.getAddress();
+    	Address a;
+    	if (streetAddress != null) {
+    		AddressLexer lexer = new AddressLexer(new ANTLRStringStream(streetAddress.toUpperCase()));
+	        TokenStream addressTokens = new CommonTokenStream(lexer);
+	        AddressParser p = new AddressParser(addressTokens);
+	        p.streetAddress();
+	        a = p.getAddress();
+    	} else {
+    		a = new Address();
+    	}
         a.municipality = municipality;
         a.province = province;
         a.postalCode = postalCode;

@@ -171,33 +171,43 @@ public class AddressDatabase {
             // try to find unique postal code match TODO extract to public method
             EntityJoin<String, PostalCode> join = new EntityJoin<String, PostalCode>(postalCodePK);
             
+            boolean allNulls = true;
+            
             if (a.getProvince() != null) {
                 join.addCondition(postalCodeProvince, a.getProvince());
+                allNulls = false;
             }
             if (a.getMunicipality() != null) {
                 join.addCondition(postalCodeMunicipality, a.getMunicipality());
+                allNulls = false;
             }
             if (a.getStreet() != null) {
                 join.addCondition(postalCodeStreet, a.getStreet());
+                allNulls = false;
             }
+            
             
             // TODO check how many fields match these criteria
             // (for example, if more than 1000 records match, just emit an error)
             
-            ForwardCursor<PostalCode> matches = null;
-            try {
-                matches = join.entities();
-                for (PostalCode pc : matches) {
-                    if (pc.containsAddress(a)) {
-                        a.setPostalCode(pc.getPostalCode());
-                        results.add(ValidateResult.createValidateResult(
-                                Status.WARN, "Added postal code to valid address"));
-                        break;
-                        // TODO check for multiple matches (they would differ by street type & direction)
-                    }
-                }
-            } finally {
-                if (matches != null) matches.close();
+            if (!allNulls) {
+	            ForwardCursor<PostalCode> matches = null;
+	            try {
+	                matches = join.entities();
+	                for (PostalCode pc : matches) {
+	                    if (pc.containsAddress(a)) {
+	                        a.setPostalCode(pc.getPostalCode());
+	                        results.add(ValidateResult.createValidateResult(
+	                                Status.WARN, "Added postal code to valid address"));
+	                        break;
+	                        // TODO check for multiple matches (they would differ by street type & direction)
+	                    }
+	                }
+	            } finally {
+	                if (matches != null) matches.close();
+	            }
+            } else {
+            	results.add(ValidateResult.createValidateResult(Status.FAIL, "Address is too incomplete for lookup"));
             }
             
             if (a.getPostalCode() == null) {
