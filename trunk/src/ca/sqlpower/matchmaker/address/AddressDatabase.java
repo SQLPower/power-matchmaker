@@ -134,12 +134,12 @@ public class AddressDatabase {
                     Status.FAIL, "Municipality \"" + a.getMunicipality() + "\" is ambiguous"));
         } else {
             Municipality m = municipalities.iterator().next();
+            a.setProvince(m.getProvince());
             if (!m.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
                 a.setMunicipality(m.getOfficialName());
+                results.add(ValidateResult.createValidateResult(
+                        Status.WARN, "Corrected municipality to " + a.getMunicipality() + ", " + a.getProvince()));
             }
-            a.setProvince(m.getProvince());
-            results.add(ValidateResult.createValidateResult(
-                    Status.WARN, "Corrected municipality to " + a.getMunicipality() + ", " + a.getProvince()));
         }
         
         // validate street

@@ -8,6 +8,10 @@ import ca.sqlpower.matchmaker.address.*;
 }
 
 @members {
+
+/* Shut up warning about unused import */
+static { Stack s; s = null; }
+
 private Address address = new Address();
 
 public Address getAddress() { return address; }
@@ -77,8 +81,27 @@ city	:	(n += NAME)+				{ address.setMunicipality(wordList($n)); }
 SUITE	:	'UNIT' | 'APT' | 'APARTMENT' | 'SUITE';
 
 STREETTYPE
-	:	'AVE' | 'BLVD' | 'CR' | 'CRT' | 'PKY' | 'RD' | 'ST' | 'TERR' | 'WAY';
-		/* TODO: complete list from Canada Post */
+	:	'ABBEY' | 'ACRES' | 'ALLEE' | 'ALLEY' | 'AUT' | 'AVE' | 'AV'
+	| 	'BAY' | 'BEACH' | 'BEND' | 'BLVD' | 'BOUL' | 'BYPASS' | 'BYWAY'
+	|	'CAMPUS' | 'CAPE' | 'CAR' | 'CARREF' | 'CTR' | 'C' | 'CERCLE' | 'CHASE' | 'CH' | 'CIR' | 'CIRCT' | 'CLOSE' | 'COMMON' | 'CONC' | 'CRNRS' | 'COTE' | 'COUR' | 'COURS' | 'CRT' | 'COVE' | 'CRES' | 'CROIS' | 'CROSS' | 'CDS'
+	|	'DALE' | 'DELL' | 'DIVERS' | 'DOWNS' | 'DR'
+	|	'ECH' | 'END' | 'ESPL' | 'ESTATE' | 'EXPY' | 'EXTEN'
+	|	'FARM' | 'FIELD' | 'FOREST' | 'FWY' | 'FRONT'
+	|	'GDNS' | 'GATE' | 'GLADE' | 'GLEN' | 'GREEN' | 'GROVE'
+	|	'HARBR' | 'HEATH' | 'HTS' | 'HGHLDS' | 'HWY' | 'HILL' | 'HOLLOW'
+	|	'ILE' | 'IMP' | 'INLET' | 'ISLAND'
+	|	'KEY' | 'KNOLL'
+	|	'LANDING' | 'LANE' | 'LMTS' | 'LINE' | 'LINK' | 'LKOUT' | 'LOOP'
+	|	'MALL' | 'MANOR' | 'MAZE' | 'MEADOW' | 'MEWS' | 'MONTEE' | 'MOOR' | 'MOUNT' | 'MTN'
+	|	'ORCH'
+	|	'PARADE' | 'PARC' | 'PK' | 'PKY' | 'PASS' | 'PATH' | 'PTWAY' | 'PINES' | 'PL' | 'PLACE' | 'PLAT' | 'PLAZA' | 'PT' | 'POINTE' | 'PORT' | 'PVT' | 'PROM'
+	|	'QUAI' | 'QUAY'
+	|	'RAMP' | 'RANG' | 'RG' | 'RIDGE' | 'RISE' | 'RD' | 'RDPT' | 'RTE' | 'ROW' | 'RUE' | 'RLE' | 'RUN'
+	|	'SENT' | 'SQ' | 'ST' | 'SUBDIV'
+	|	'TERR' | 'TSSE' | 'THICK' | 'TOWERS' | 'TLINE' | 'TRAIL' | 'TRNABT'
+	|	'VALE' | 'VIA' | 'VIEW' | 'VILLAGE' | 'VILLAS' | 'VISTA' | 'VOIE'
+	|	'WALK' | 'WAY' | 'WHARF' | 'WOOD' | 'WYND'
+	;
 
 STREETDIR
 	:	'N' | 'S' | 'E' | 'W'
