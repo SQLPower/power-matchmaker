@@ -7,10 +7,19 @@ package ca.sqlpower.matchmaker.address.parse;
 import ca.sqlpower.matchmaker.address.*;
 }
 
+@lexer::header {
+package ca.sqlpower.matchmaker.address.parse;
+}
+
 @members {
 
 /* Shut up warning about unused import */
-static { Stack s; s = null; }
+static {
+  Stack s = null;
+  if (s != null) {
+    /* wow! */
+  }
+}
 
 private Address address = new Address();
 
@@ -37,6 +46,19 @@ private Integer quietIntParse(String s) {
     return Integer.valueOf(s);
   } catch (NumberFormatException ex) {
     return null;
+  }
+}
+}
+
+@lexer::members {
+
+/* Shut up warnings about unused imports */
+static {
+  Stack s = null;
+  List l = null;
+  ArrayList al = null;
+  if (s != null && l != null && al != null) {
+    /*wow!*/ 
   }
 }
 }
@@ -78,7 +100,7 @@ streetName
 city	:	(n += NAME)+				{ address.setMunicipality(wordList($n)); }
 	;
 
-SUITE	:	'UNIT' | 'APT' | 'APARTMENT' | 'SUITE';
+SUITE	:	'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE';
 
 STREETTYPE
 	:	'ABBEY' | 'ACRES' | 'ALLEE' | 'ALLEY' | 'AUT' | 'AVE' | 'AV'
