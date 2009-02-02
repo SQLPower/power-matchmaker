@@ -19,30 +19,94 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeProcessor;
+import ca.sqlpower.matchmaker.munge.MungeResult;
 import ca.sqlpower.sqlobject.SQLObjectException;
 
 public class AddressCorrectionEngineImpl extends AbstractEngine {
 
-	private static final Logger logger = Logger.getLogger(AddressCorrectionEngineImpl.class);
+	private final Logger logger;
+	
+	private String message;
+	
+	private int progress = 0;
+	
+	public AddressCorrectionEngineImpl(MatchMakerSession session, Project project) {
+		logger = Logger.getLogger(AddressCorrectionEngineImpl.class + "." + project.getName());
+		this.setSession(session);
+		this.setProject(project);
+	}
 	
 	public void checkPreconditions() throws EngineSettingException,
 			SQLObjectException, SourceTableException {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: AddressCorrectionEngineImpl.checkPreconditions()");
 
 	}
 
+	@Override
+	public EngineInvocationResult call() throws EngineSettingException,
+			SourceTableException {
+		Level oldLoggerLevel = logger.getLevel();
+		logger.setLevel(getMessageLevel());
+		setCancelled(false);
+		
+		setFinished(false);
+		setStarted(true);
+		progress = 0;
+
+		try {
+			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
+			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
+				if (mp.getActive()) {
+					mungeProcesses.add(mp);
+				}
+			}
+
+			message = "Starting Address Correction Engine";
+			logger.info(message);
+			
+			checkCancelled();
+			
+			message = "Searching for invalid addresses";
+			logger.info(message);
+			for (MungeProcess process: mungeProcesses) {
+				message = "Running munge process " + process.getName();
+				logger.debug(getMessage());
+				MungeProcessor munger = new MungeProcessor(process, logger);
+				message = "Running munge process " + process.getName();
+				logger.debug(getMessage());
+				munger.call();
+				
+				List<MungeResult> results = process.getResults();
+			}
+			
+			message = "Address Correction Engine finished successfully";
+			logger.info(message);
+			return EngineInvocationResult.SUCCESS;
+		} catch (CancellationException cex) {
+			logger.warn("Match engine terminated by user");
+			return EngineInvocationResult.ABORTED;
+		} catch (Exception e) {
+			logger.error("Address Correction Engine Failed", e);
+			return EngineInvocationResult.FAILURE;
+		} finally {
+			logger.setLevel(oldLoggerLevel);
+			setFinished(true);
+		}
+	}
+	
 	public Logger getLogger() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: AddressCorrectionEngineImpl.getLogger()");
-		return null;
+		return logger;
 	}
 
 	public String getObjectType() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: AddressCorrectionEngineImpl.getObjectType()");
 		return null;
 	}
 

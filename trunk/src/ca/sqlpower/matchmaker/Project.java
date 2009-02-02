@@ -977,7 +977,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 */
 	public AddressCorrectionEngineImpl getAddressCorrectionEngine() {
 		if (addressCorrectionEngine == null) {
-			addressCorrectionEngine = new AddressCorrectionEngineImpl();
+			addressCorrectionEngine = new AddressCorrectionEngineImpl(getSession(), this);
 		}
 		return addressCorrectionEngine;
 	}
