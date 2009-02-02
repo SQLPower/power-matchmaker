@@ -148,4 +148,14 @@ public class AddressDatabaseTest extends TestCase {
         assertEquals("OXFORD", address.getMunicipality());
     }
 
+    public void testAddress() throws Exception {
+    	address = Address.parse("59 BRAMLEY ST S", "PORT HOPE", "ON", "L1A3K3", "Canada");
+    	List<ValidateResult> results = addressDB.correct(address);
+    	
+    	for (ValidateResult result: results) {
+    		System.out.println(result.toString());
+    	}
+    	
+    	assertEquals(0, results.size());
+    }
 }
