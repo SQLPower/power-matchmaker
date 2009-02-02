@@ -238,4 +238,20 @@ public class AddressParserTest extends TestCase {
         assertEquals(Integer.valueOf(50), a.getStreetNumber());
         assertEquals("W", a.getStreetDirection());
     }
+
+    /**
+     * This is some data we came across that caused a NumberFormatException in the
+     * parser.
+     */
+    public void testMalformedStreetNumber() throws Exception {
+        Address a = parseStreetOnly("12345-123st");
+        System.out.println(a);
+        
+        // NOTE: this fails now due to a workaround in parseStreetOnly()
+        assertEquals("123ST", a.getStreet());
+        assertNull(a.getStreetType());
+        assertEquals("12345", a.getSuite());
+        assertNull(a.getSuiteType());
+        assertTrue(a.isSuitePrefix());
+    }
 }

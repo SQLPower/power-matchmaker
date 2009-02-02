@@ -23,6 +23,18 @@ private static String wordList(List<?> words) {
    }
    return sb.toString();
 }
+
+/**
+ * Parses an integer value from a string, failing silently and returning
+ * null if the value is not parseable.
+ */
+private Integer quietIntParse(String s) {
+  try {
+    return Integer.valueOf(s);
+  } catch (NumberFormatException ex) {
+    return null;
+  }
+}
 }
 
 fullAddress
@@ -33,11 +45,11 @@ fullAddress
 	;
 	
 streetAddress
-	:	n=NUMBER street				{ address.setStreetNumber(Integer.valueOf($n.text)); }
-	|	suiteNum '-' n=NUMBER street		{ address.setStreetNumber(Integer.valueOf($n.text));
+	:	n=NUMBER street				{ address.setStreetNumber(quietIntParse($n.text)); }
+	|	suiteNum '-' n=NUMBER street		{ address.setStreetNumber(quietIntParse($n.text));
 							  address.setSuitePrefix(true);
 							}
-	|	n=NUMBER street s=SUITE suiteNum	{ address.setStreetNumber(Integer.valueOf($n.text));
+	|	n=NUMBER street s=SUITE suiteNum	{ address.setStreetNumber(quietIntParse($n.text));
 							  address.setSuitePrefix(false);
 							  address.setSuiteType($s.text);
 							}
