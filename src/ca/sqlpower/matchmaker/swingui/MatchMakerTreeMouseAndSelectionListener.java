@@ -69,6 +69,7 @@ import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.RefreshAction;
 import ca.sqlpower.matchmaker.swingui.action.ScriptAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
+import ca.sqlpower.matchmaker.swingui.address.AddressValidationPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.sqlobject.SQLTable;
 
@@ -536,7 +537,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					} else if (node.getActionType() == ProjectActionType.RUN_ADDRESS_CORRECTION) {
 						swingSession.setCurrentEditorComponent(swingSession.getAddressCorrectionEnginePanel(node.getProject().getAddressCorrectionEngine(), node.getProject()));
 					} else if (node.getActionType() == ProjectActionType.VALIDATE_ADDRESSES) {
-						
+					    swingSession.setCurrentEditorComponent(new AddressValidationPanel(swingSession, node.getProject()));
 					}
 				} else if (o instanceof TranslateGroupParent) {
 					swingSession
