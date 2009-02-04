@@ -37,7 +37,6 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.util.FakeSQLDatabase;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -63,6 +62,7 @@ import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 import ca.sqlpower.testutil.MockJDBCResultSetMetaData;
+import ca.sqlpower.util.FakeSQLDatabase;
 
 public class ProjectXMLDAOTest extends TestCase {
 
