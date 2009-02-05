@@ -147,6 +147,13 @@ public class RepositoryUtil {
                     // But we control the contents of this script, so we can ensure that won't happen.
                     line = line.replace("{USER}", SQL.quote(targetDS.getUser()));
                     
+                    // These statements will insert the repository catalog and schema names in case the 
+                    // repository is not being created in the default catalog and schema.  
+                    line = line.replace("{CATALOG}", 
+                    		catalog == null || catalog.getName().length() == 0 ? "" : catalog.getName() + "." );
+                    line = line.replace("{SCHEMA}", 
+                    		schema == null || schema.getName().length() == 0 ? "" : schema.getName() + "." );
+                    
                     statement.append(line + "\n");
                 }
                 line = br.readLine();

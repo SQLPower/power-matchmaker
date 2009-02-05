@@ -8,20 +8,26 @@
 --
 -- The following strings will be substituted before being passed to the
 -- Database:
---         {USER}   The database user name for the current connection
+--         {USER}    The database user name for the current connection
+--		   {CATALOG} The Catalog of the matchmaker repository, if 
+--					 supported by the platform. If not, it gets 
+--					 substituted with an empty string. 
+--		   {SCHEMA}  The Schema of the matchmaker repository, if 
+--					 supported by the platform. If not, it gets 
+--					 substituted with an empty string. 
 
-insert into mm_schema_info values ('schema_version', '6.0.1')
+insert into {CATALOG}{SCHEMA}mm_schema_info values ('schema_version', '6.0.1')
 ;
 
-INSERT INTO pl_group(group_name,group_desc,last_update_date,last_update_user,create_date)
+INSERT INTO {CATALOG}{SCHEMA}pl_group(group_name,group_desc,last_update_date,last_update_user,create_date)
 VALUES('PL_ADMIN','Special PL group with ALL privileges',CURRENT_TIMESTAMP,{USER},CURRENT_TIMESTAMP)
 ;
 
-INSERT INTO pl_user (user_id, last_update_date, last_update_user, 
+INSERT INTO {CATALOG}{SCHEMA}pl_user (user_id, last_update_date, last_update_user, 
 default_kpi_frequency, show_red_ind, show_yellow_ind, show_green_ind, show_grey_ind)
 VALUES (upper({USER}), CURRENT_TIMESTAMP, {USER}, 'MONTHLY', 'Y', 'Y', 'Y', 'Y')
 ;
 
-INSERT INTO user_group (user_id, group_name, last_update_date, last_update_user) 
+INSERT INTO {CATALOG}{SCHEMA}user_group (user_id, group_name, last_update_date, last_update_user) 
 VALUES (upper({USER}), 'PL_ADMIN', CURRENT_TIMESTAMP, {USER})
 ;
