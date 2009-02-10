@@ -186,7 +186,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_TYPE, CacheType.EAGER_CACHE);
 				project.startCompoundEdit();
             	if (deriveByForeignKeyConstraints.isSelected()) {
-            		deriveMergeRulesByFKConstraints(dbMeta, sourceTable, sourceTableMergeRule, mergeRules);
+            		deriveMergeRulesByFKConstraints(sourceTable, sourceTableMergeRule, mergeRules);
             	}
             	if (deriveByColumnNames.isSelected()) {
             		deriveMergeRulesByColumnNames(con, dbMeta, primaryKeys, sourceTableMergeRule, mergeRules);
@@ -228,12 +228,12 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		 *            TableMergeRules for this project.
 		 * @throws SQLObjectException
 		 */
-		private void deriveMergeRulesByFKConstraints(DatabaseMetaData dbmd, SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws SQLObjectException {
+		private void deriveMergeRulesByFKConstraints(SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws SQLObjectException {
 			if (isCancelled()) {
 				throw new CancellationException("Merge rule derivation cancelled by user");
 			}
 			
-			List<SQLRelationship> exportedKeys = table.getExportedKeys(dbmd);
+			List<SQLRelationship> exportedKeys = table.getExportedKeys();
 
 			for (SQLRelationship exportedKey : exportedKeys) {
 				SQLTable fkTable = exportedKey.getFkTable();
@@ -290,7 +290,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				mergeRules.add(fkTable.getName());
 
 				// recursively derive merge rules for child tables
-				deriveMergeRulesByFKConstraints(dbmd, fkTable, mergeRule, mergeRules);
+				deriveMergeRulesByFKConstraints(fkTable, mergeRule, mergeRules);
 			}
 		}
 
