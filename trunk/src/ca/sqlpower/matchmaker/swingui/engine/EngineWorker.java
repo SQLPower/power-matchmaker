@@ -95,7 +95,6 @@ class EngineWorker extends SPSwingWorker {
 		this.engineOutputDoc = outputPanel.getOutputDocument();
 		this.parentComponent = outputPanel.getOutputComponent().getTopLevelAncestor();
 		this.action = action;
-		engine.checkPreconditions();
 		ProgressWatcher.watchProgress(outputPanel.getProgressBar(), engine);
 	}
 	
