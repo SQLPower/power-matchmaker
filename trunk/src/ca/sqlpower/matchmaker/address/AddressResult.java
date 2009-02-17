@@ -17,11 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.munge;
+package ca.sqlpower.matchmaker.address;
 
 import java.util.List;
 
-import ca.sqlpower.matchmaker.address.Address;
 
 /**
  * An object representation of an invalid address record

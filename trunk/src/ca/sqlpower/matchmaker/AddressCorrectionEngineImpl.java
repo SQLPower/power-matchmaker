@@ -26,7 +26,7 @@ import java.util.concurrent.CancellationException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.munge.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.ValidatingAddressCorrectionMungeProcessor;
 import ca.sqlpower.sqlobject.SQLObjectException;

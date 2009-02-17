@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
-import ca.sqlpower.matchmaker.munge.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.sqlobject.SQLColumn;
