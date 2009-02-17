@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.address.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
 

@@ -429,6 +429,7 @@ public class MatchPool extends MonitorableImpl {
             logger.debug("The SQL statement we are running is " + lastSQL);
             
             if (ps != null) ps.close();
+            ps = null;
             ps = con.prepareStatement(lastSQL);
             
             int batchCount = 0;
@@ -479,6 +480,7 @@ public class MatchPool extends MonitorableImpl {
             logger.debug("The SQL statement we are running is " + lastSQL);
             
             if (ps != null) ps.close();
+            ps = null;
             ps = con.prepareStatement(lastSQL);
             
             batchCount = 0;
@@ -565,6 +567,7 @@ public class MatchPool extends MonitorableImpl {
             logger.debug("The SQL statement we are running is " + lastSQL);
             
             if (ps != null) ps.close();
+            ps = null;
             ps = con.prepareStatement(lastSQL);
             
             batchCount = 0;

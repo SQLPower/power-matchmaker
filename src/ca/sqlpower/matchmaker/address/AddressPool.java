@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.munge;
+package ca.sqlpower.matchmaker.address;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,8 +33,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.address.Address;
-import ca.sqlpower.matchmaker.munge.AddressResult.StorageState;
+import ca.sqlpower.matchmaker.address.AddressResult.StorageState;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -244,7 +243,6 @@ public class AddressPool {
 		engineLogger.debug("# of New Address Records:" + newAddresses.size());
 
 		Connection con = null;
-		ResultSet rs = null;
 		PreparedStatement ps = null;
 		
 		try {
@@ -347,6 +345,8 @@ public class AddressPool {
 				if (batchCount > 0 && supportsBatchUpdates) {
 					ps.executeBatch();
 				}
+				if (ps != null) ps.close();
+				ps = null;
 			}
 			
 			if (newAddresses.size() > 0) {
@@ -435,18 +435,25 @@ public class AddressPool {
 				if (batchCount > 0 && supportsBatchUpdates) {
 					ps.executeBatch();
 				}
+				
+				if (ps != null) ps.close();
+				ps = null;
 			}
 			con.commit();
 			for (AddressResult result: addresses.values()) {
 				result.markClean();
 			}
 		} catch (Exception ex) {
-			con.rollback();
-			throw new RuntimeException(ex);
+			try {
+				con.rollback();
+			} catch (SQLException sqlEx) {
+				engineLogger.error("Error while rolling back. " +
+						"Suppressing this exception to prevent it from overshadowing the orginal exception.", sqlEx);
+			}
+			throw new RuntimeException("Unexpected exception while storing address validation results", ex);
 		} finally {
-			if (rs != null) rs.close();
-			if (ps != null) ps.close();
-			if (con != null) con.close();
+			if (ps != null) try { ps.close(); } catch (SQLException e) { engineLogger.error("Error while closing PreparedStatement", e); }
+			if (con != null) try { con.close(); } catch (SQLException e) { engineLogger.error("Error while closing Connection", e); }
 		}
 	}
 
