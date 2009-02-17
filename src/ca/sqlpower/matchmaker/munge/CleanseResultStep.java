@@ -38,7 +38,6 @@ import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLType;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 /**
@@ -189,58 +188,6 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 			logger.error("Unsupported sql type! " + type);
 		}
 	}
-
-	/**
-     * Returns the Java class associated with the given SQL type code.
-     * 
-     * @param type
-     *            The type ID number. See {@link SQLType} for the official list.
-     * @return The class for the given type. Defaults to java.lang.String if the
-     *         type code is unknown, since almost every SQL type can be
-     *         represented as a string if necessary.
-     */
-    private Class<?> typeClass(int type) {
-        switch (type) {
-        case Types.VARCHAR:
-        case Types.VARBINARY:
-        case Types.STRUCT:
-        case Types.REF:
-        case Types.OTHER:
-        case Types.NULL:
-        case Types.LONGVARCHAR:
-        case Types.LONGVARBINARY:
-        case Types.JAVA_OBJECT:
-        case Types.DISTINCT:
-        case Types.DATALINK:
-        case Types.CLOB:
-        case Types.CHAR:
-        case Types.BLOB:
-        case Types.BINARY:
-        case Types.ARRAY:
-        default:
-            return String.class;
-
-        case Types.TINYINT:
-        case Types.SMALLINT:
-        case Types.REAL:
-        case Types.NUMERIC:
-        case Types.INTEGER:
-        case Types.FLOAT:
-        case Types.DOUBLE:
-        case Types.DECIMAL:
-        case Types.BIGINT:
-            return BigDecimal.class;
-
-        case Types.BIT:
-        case Types.BOOLEAN:
-            return Boolean.class;
-        
-        case Types.TIMESTAMP:
-        case Types.TIME:
-        case Types.DATE:
-            return Date.class;
-        }
-    }
 
 	private void update(int type, int columnIndex, Object data) throws Exception {
 		ResultSet rs = inputStep.getResultSet();

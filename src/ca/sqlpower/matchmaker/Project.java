@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
+import ca.sqlpower.matchmaker.munge.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -271,7 +272,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		if (type == ProjectMode.FIND_DUPES){
 			t = buildDedupeResultTable(oldResultTable, si);
 		} else if (getType() == ProjectMode.ADDRESS_CORRECTION) {
-			t = buildAddressCorrectionResultTable(oldResultTable, si);
+			t = AddressPool.buildAddressCorrectionResultTable(oldResultTable, si);
 		} else {
 			throw new IllegalStateException("Building result table on a project type that does not use result tables! " +
 					"Project Name: " + this.getName() + " Project Type: " + this.getType());
@@ -287,29 +288,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		return t;
 	}
 	
-	/**
-	 * Builds a result table specifically configured for Address Correction projects. 
-	 * 
-	 * @param resultTable
-	 * @param si
-	 * @return
-	 */
-	private SQLTable buildAddressCorrectionResultTable(SQLTable resultTable, SQLIndex si) throws SQLObjectException {
-		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
-		addResultTableColumns(t, si, "src_addr_key_col_");
-		
-		SQLColumn col = new SQLColumn(t, "status", Types.VARCHAR, 15, 0);
-		t.addColumn(col);
-		
-		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
-		for (int i = 0; i < si.getChildCount(); i++) {
-			newidx.addChild(newidx.new Column(t.getColumn(i), AscendDescend.ASCENDING));
-		}
-		t.addIndex(newidx);
-		
-		return t;
-	}
-
 	/**
 	 * This builds the result table according to given setup information. 
 	 *  
@@ -479,7 +457,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		if (type == ProjectMode.FIND_DUPES) {
 			inMemory.add(buildDedupeResultTable(resultTable, si));
 		} else if (type == ProjectMode.ADDRESS_CORRECTION){
-			inMemory.add(buildAddressCorrectionResultTable(resultTable, si));
+			inMemory.add(AddressPool.buildAddressCorrectionResultTable(resultTable, si));
 		} else {
 			throw new IllegalStateException("Checking result table on a project type that does not use result tables! " +
 					"Project Name: " + this.getName() + " Project Type: " + this.getType());

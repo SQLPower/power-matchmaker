@@ -291,6 +291,11 @@ public class MungeProcess
 			if (resultStep != null) {
 				resultStep.addInputStep((SQLInputStep) child);
 			}
+			for (MungeStep step: getChildren()) {
+				if (child instanceof AddressCorrectionMungeStep) {
+					((AddressCorrectionMungeStep)step).setInputStep(child);
+				}
+			}
 		} else if (child instanceof MungeResultStep) {
 			if (resultStep != null && resultStep != child) {
 				throw new IllegalStateException("A munge process can only have one munge result step");
@@ -300,7 +305,11 @@ public class MungeProcess
 					this.resultStep.addInputStep(input);
 				}
 			}
-		}	
+		} else if (child instanceof AddressCorrectionMungeStep) {
+			for (SQLInputStep input : inputSteps) {
+				((AddressCorrectionMungeStep)child).setInputStep(input);
+			}
+		}
 	}
 
 	@Override

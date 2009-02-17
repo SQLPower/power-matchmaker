@@ -162,5 +162,17 @@ public class MungeProcessor extends AbstractProcessor {
     List<MungeStep> getProcessOrder() {
     	return processOrder;
     }
+
+	/**
+	 * A package private method that will return the {@link MungeProcess} being
+	 * run by this {@link MungeProcessor}.
+	 */
+    MungeProcess getMungeProcess() {
+    	return mungeProcess;
+    }
+
+    Logger getLogger() {
+    	return engineLogger;
+    }
 }
 

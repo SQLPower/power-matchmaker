@@ -29,6 +29,8 @@ import javax.swing.AbstractAction;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.munge.AddressCorrectionMungeStep;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -46,6 +48,13 @@ public class NewMungeProcessAction extends AbstractAction {
 	private static final Logger logger = Logger.getLogger(NewMungeProcessAction.class);
     private final MatchMakerSwingSession swingSession;
 	private final Project project;
+	
+	/**
+	 * The default distance between the upper y co-ordinate of the input step
+	 * and the upper y co-ordinate of the result step when the new Munge Process
+	 * gets created.
+	 */
+	private static final int DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP = 300;
 
 	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Project parent) {
 	    super("New Munge Process");
@@ -99,7 +108,7 @@ public class NewMungeProcessAction extends AbstractAction {
 		}
 		
 		String x = Integer.toString(MungePen.AUTO_SCROLL_INSET + 5);
-		String y = Integer.toString(300);
+		String y = Integer.toString(DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP);
 		
 		//sets the input one just outside of the autoscroll bounds
 		inputStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
@@ -120,6 +129,16 @@ public class NewMungeProcessAction extends AbstractAction {
 				throw new RuntimeException("Could not set up the cleanse result munge step!", ex);
 			}
 		}
+		
+		if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
+			AddressCorrectionMungeStep addressStep = new AddressCorrectionMungeStep();
+			addressStep.setInputStep(inputStep);
+			addressStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
+			addressStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
+			addressStep.setParameter(MungeStep.MUNGECOMPONENT_Y, Integer.toString(DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP / 2));
+			process.addChild(addressStep);
+		}
+		
     	swingSession.save(process);
 	}
 
