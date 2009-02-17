@@ -26,8 +26,9 @@ import java.util.concurrent.CancellationException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.munge.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeProcessor;
+import ca.sqlpower.matchmaker.munge.ValidatingAddressCorrectionMungeProcessor;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Monitorable;
 
@@ -87,11 +88,15 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			
 			message = "Searching for invalid addresses";
 			logger.info(message);
+			
+			AddressPool pool = new AddressPool(getProject());
+			pool.load(logger);
+			
 			for (MungeProcess process: mungeProcesses) {
 				checkCancelled();
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
-				MungeProcessor munger = new MungeProcessor(process, logger);
+				ValidatingAddressCorrectionMungeProcessor munger = new ValidatingAddressCorrectionMungeProcessor(process, pool, logger);
 				setCurrentProcessor(munger);
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());

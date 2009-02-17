@@ -19,9 +19,12 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.math.BigDecimal;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,6 +37,7 @@ import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.sqlobject.SQLType;
 
 /**
  * An abstract implementation of the MungeStep interface. The only
@@ -731,4 +735,56 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		}
 		return result;
 	}
+	
+	/**
+     * Returns the Java class associated with the given SQL type code.
+     * 
+     * @param type
+     *            The type ID number. See {@link SQLType} for the official list.
+     * @return The class for the given type. Defaults to java.lang.String if the
+     *         type code is unknown, since almost every SQL type can be
+     *         represented as a string if necessary.
+     */
+    protected Class<?> typeClass(int type) {
+        switch (type) {
+        case Types.VARCHAR:
+        case Types.VARBINARY:
+        case Types.STRUCT:
+        case Types.REF:
+        case Types.OTHER:
+        case Types.NULL:
+        case Types.LONGVARCHAR:
+        case Types.LONGVARBINARY:
+        case Types.JAVA_OBJECT:
+        case Types.DISTINCT:
+        case Types.DATALINK:
+        case Types.CLOB:
+        case Types.CHAR:
+        case Types.BLOB:
+        case Types.BINARY:
+        case Types.ARRAY:
+        default:
+            return String.class;
+
+        case Types.TINYINT:
+        case Types.SMALLINT:
+        case Types.REAL:
+        case Types.NUMERIC:
+        case Types.INTEGER:
+        case Types.FLOAT:
+        case Types.DOUBLE:
+        case Types.DECIMAL:
+        case Types.BIGINT:
+            return BigDecimal.class;
+
+        case Types.BIT:
+        case Types.BOOLEAN:
+            return Boolean.class;
+        
+        case Types.TIMESTAMP:
+        case Types.TIME:
+        case Types.DATE:
+            return Date.class;
+        }
+    }
 }
