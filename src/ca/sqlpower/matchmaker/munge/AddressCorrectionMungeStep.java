@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -35,7 +36,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public static final String ADDRESS_CORRECTION_DATA_PATH = "AddressCorrectionDataPath";
 	
 	private MungeStepOutput<String> suite;
-	private MungeStepOutput<Integer> streetNumber;
+	private MungeStepOutput<BigDecimal> streetNumber;
 	private MungeStepOutput<String> streetNumberSuffix;
 	private MungeStepOutput<String> street;
 	private MungeStepOutput<String> streetType;
@@ -55,7 +56,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		super("Address Correction", false);
 		
 		addChild(suite = new MungeStepOutput<String>("Suite", String.class));
-		addChild(streetNumber = new MungeStepOutput<Integer>("Street Number", Integer.class));
+		addChild(streetNumber = new MungeStepOutput<BigDecimal>("Street Number", BigDecimal.class));
 		addChild(streetNumberSuffix = new MungeStepOutput<String>("Street Number Suffix", String.class));
 		addChild(street = new MungeStepOutput<String>("Street", String.class));
 		addChild(streetType = new MungeStepOutput<String>("Street Type", String.class));
@@ -134,7 +135,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		}
 		
 		suite.setData(address.getSuite());
-		streetNumber.setData(address.getStreetNumber());
+		streetNumber.setData(BigDecimal.valueOf(address.getStreetNumber()));
 		streetNumberSuffix.setData(address.getStreetNumberSuffix());
 		street.setData(address.getStreet());
 		streetType.setData(address.getStreetType());
