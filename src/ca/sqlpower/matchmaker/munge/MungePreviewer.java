@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -215,6 +217,7 @@ public class MungePreviewer extends MungeProcessor {
 			
 		} catch (Exception e) {
 			refreshEnabled = false;
+			logger.error("Could not refresh preview:", e);
 			for (PreviewListener l : listeners) {
 				l.previewDisabled("Could not refresh preview : " + e.getMessage());
 			}
@@ -280,12 +283,23 @@ public class MungePreviewer extends MungeProcessor {
 		
 		if (refreshEnabled) {
 			try {
-				process.getParentProject().getMatchingEngine().checkPreconditions();
+				Project project = process.getParentProject();
+				
+				// XXX: A quick fix, but ideally, each project type would be a
+				// subclass of Project and have a 'getEngine' method that would
+				// return the appropriate engine.
+				if (project.getType() == ProjectMode.FIND_DUPES) {
+					project.getMatchingEngine().checkPreconditions();
+				} else if (project.getType() == ProjectMode.CLEANSE) {
+					project.getCleansingEngine().checkPreconditions();
+				} else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
+					project.getAddressCorrectionEngine().checkPreconditions();
+				}
 			} catch (Exception e1) {
 				logger.debug("Preview disabled");
 				this.refreshEnabled = false;
 				for (PreviewListener l : listeners) {
-					l.previewDisabled("Match engine precondition failed : " + e1.getMessage());
+					l.previewDisabled("Engine precondition failed : " + e1.getMessage());
 				}
 				return;
 			}
