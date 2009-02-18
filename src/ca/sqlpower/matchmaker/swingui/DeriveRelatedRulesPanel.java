@@ -373,6 +373,10 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 					if (catalogName == null) {
 						catalogName = "";
 					}
+					
+					if (schemaName == null) {
+						schemaName = "";
+					}
 	
 					// Set the variables accordingly if the table has changed
 					if (!(tableName.equals(lastTableName) && catalogName.equals(lastCatalogName) &&
