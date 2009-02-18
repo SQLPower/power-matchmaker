@@ -28,7 +28,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -41,6 +40,7 @@ import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
@@ -327,7 +327,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		ds.setPass("n/a");
 		final SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
-		SQLTable resultTable = ArchitectUtils.addSimulatedTable(db, "cat",
+		SQLTable resultTable = SQLObjectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		project.setResultTable(resultTable);
 		assertFalse(project.doesResultTableExist());
@@ -384,7 +384,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		ds.setPass("n/a");
 		final SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
-		SQLTable sourceTable = ArchitectUtils.addSimulatedTable(db, "cat",
+		SQLTable sourceTable = SQLObjectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		project.setSourceTable(sourceTable);
 		assertFalse(project.doesSourceTableExist());

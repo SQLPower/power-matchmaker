@@ -23,11 +23,11 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLTable;
 
 /**
@@ -215,11 +215,11 @@ public class CachableTable {
 				db = mmo.getSession().getDatabase(getSPDataSource());
 			}
 			
-			if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
+			if (SQLObjectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
 				SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
 				if (table == null) {
 					logger.debug("     Not found.  Adding simulated...");
-					table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
+					table = SQLObjectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
 				} else {
 					logger.debug("     Found!");
 				}
