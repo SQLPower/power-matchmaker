@@ -70,8 +70,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		InputDescriptor input1 = new InputDescriptor("Address Line 2", String.class);
 		InputDescriptor input2 = new InputDescriptor("Municipality", String.class);
 		InputDescriptor input3 = new InputDescriptor("Province", String.class);
-		InputDescriptor input4 = new InputDescriptor("Postal/ZIP", String.class);
-		InputDescriptor input5 = new InputDescriptor("Country", String.class);
+		InputDescriptor input4 = new InputDescriptor("Country", String.class);
+		InputDescriptor input5 = new InputDescriptor("Postal/ZIP", String.class);
 
 		super.addInput(input0);
 		super.addInput(input1);
