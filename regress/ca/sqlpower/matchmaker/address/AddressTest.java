@@ -56,4 +56,16 @@ public class AddressTest extends TestCase {
         
         assertFalse(sqlpWWHQ.isMunicipalityChanged());
     }
+    
+    
+    public void testParse() throws Exception {
+    	Address address = Address.parse("4950 YONGE ST", "NORTH YORK", "ON", "M2N6K1", "CA");
+    	assertEquals(Integer.valueOf(4950), address.getStreetNumber());
+    	assertEquals("YONGE", address.getStreet());
+    	assertEquals("ST", address.getStreetType());
+    	assertEquals("NORTH YORK", address.getMunicipality());
+    	assertEquals("ON", address.getProvince());
+    	assertEquals("M2N6K1", address.getPostalCode());
+    	assertEquals("CA", address.getCountry());
+    }
 }
