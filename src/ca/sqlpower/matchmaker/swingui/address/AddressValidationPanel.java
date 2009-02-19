@@ -20,17 +20,25 @@
 package ca.sqlpower.matchmaker.swingui.address;
 
 import java.awt.Dimension;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Vector;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.ScrollPaneConstants;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.address.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressResult;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
+import ca.sqlpower.sqlobject.SQLObjectException;
 
 public class AddressValidationPanel extends NoEditEditorPane {
 
@@ -40,15 +48,33 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
     private final Project project;
     
+    private Collection<AddressResult> addresses;
+    
+    private Vector<String> addressDetails = new Vector<String>();
+    
     public AddressValidationPanel(MatchMakerSwingSession session, Project project) {
         this.session = session;
         this.project = project;
-        JList needsValidationList = new JList(new String[] { "Example 1", "Example 2", "Example 3" });
-        needsValidationList.setPreferredSize(new Dimension(200, 50));
-        setPanel(new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT,
-                new JScrollPane(needsValidationList),
-                new JLabel("To begin address validation, please select an address from the list.", JLabel.CENTER)));
+        AddressPool pool = new AddressPool(project);
+        try {
+        	pool.load(logger);
+        	addresses = pool.getAddressResults(logger);
+        	for(AddressResult result: addresses) {
+        		addressDetails.add(result.toString());
+        	}
+        	
+        	JList needsValidationList = new JList(addressDetails);
+        	JScrollPane addressPane = new JScrollPane(needsValidationList);
+        	addressPane.setPreferredSize(new Dimension(200,50));
+        	addressPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        	addressPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        	setPanel(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, addressPane,
+        			new JLabel("To begin address validation, please select an address from the list.", JLabel.CENTER)));
+		} catch (SQLException e) {
+			MMSUtils.showExceptionDialog(getPanel(), "A SQL Exception occured while trying to load the invalid addresses", e);
+		} catch (SQLObjectException e) {
+			MMSUtils.showExceptionDialog(getPanel(), "An error occured while trying to load the invalid addresses", e);
+		}
     }
     
     @Override
