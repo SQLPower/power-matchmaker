@@ -166,6 +166,12 @@ public class Address {
      */
     public static Address parse(String streetAddress, String municipality, String province, String postalCode,
             String country) throws RecognitionException {
+    	
+    	// XXX: Stupid (and hopefully temporary) workaround to prevent the parser from failing.
+		// Apparently it expects the municipality, province, and postal code to
+		// be in the streetAddress
+		streetAddress = streetAddress + " FOO FOO FOO";
+    	
     	Address a;
     	if (streetAddress != null) {
     		AddressLexer lexer = new AddressLexer(new ANTLRStringStream(streetAddress.toUpperCase()));
