@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -455,6 +456,20 @@ public class AddressPool {
 			if (ps != null) try { ps.close(); } catch (SQLException e) { engineLogger.error("Error while closing PreparedStatement", e); }
 			if (con != null) try { con.close(); } catch (SQLException e) { engineLogger.error("Error while closing Connection", e); }
 		}
+	}
+	/**
+	 * Returns a Collection of invalid addresses. Note that it will only return
+	 * invalid addresses stored in the result table as of the last call to the
+	 * {@link #load(Logger)} method, so if any new invalid addresses were added
+	 * to the result table after calling {@link #load(Logger)}, then they won't
+	 * appear in the Collection returned here. Furthermore, if this AddressPool
+	 * was initialized without calling load, then it will not contain any
+	 * invalid addresses that were stored in the result table.
+	 * 
+	 * @return A collection of invalid address results.
+	 */
+	public Collection<AddressResult> getAddressResults(Logger engineLogger)  {
+		return addresses.values();
 	}
 
 	private void appendFullyQualifiedTableName(StringBuilder sql,
