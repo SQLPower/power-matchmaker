@@ -33,19 +33,10 @@ import ca.sqlpower.validation.ValidateResult;
 
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
+	private static Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
+	
 	public static final String ADDRESS_CORRECTION_DATA_PATH = "AddressCorrectionDataPath";
 	
-	private MungeStepOutput<String> suite;
-	private MungeStepOutput<BigDecimal> streetNumber;
-	private MungeStepOutput<String> streetNumberSuffix;
-	private MungeStepOutput<String> street;
-	private MungeStepOutput<String> streetType;
-	private MungeStepOutput<String> streetDirection;
-	private MungeStepOutput<String> municipalityName;
-	private MungeStepOutput<String> provinceName;
-	private MungeStepOutput<String> countryName;
-	private MungeStepOutput<String> postalCode;
-
 	private AddressDatabase addressDB;
 	
 	private boolean addressValid;
@@ -55,16 +46,16 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public AddressCorrectionMungeStep() {
 		super("Address Correction", false);
 		
-		addChild(suite = new MungeStepOutput<String>("Suite", String.class));
-		addChild(streetNumber = new MungeStepOutput<BigDecimal>("Street Number", BigDecimal.class));
-		addChild(streetNumberSuffix = new MungeStepOutput<String>("Street Number Suffix", String.class));
-		addChild(street = new MungeStepOutput<String>("Street", String.class));
-		addChild(streetType = new MungeStepOutput<String>("Street Type", String.class));
-		addChild(streetDirection = new MungeStepOutput<String>("Street Direction", String.class));
-		addChild(municipalityName = new MungeStepOutput<String>("Municipality", String.class));
-		addChild(provinceName = new MungeStepOutput<String>("Province", String.class));
-		addChild(countryName = new MungeStepOutput<String>("Country", String.class));
-		addChild(postalCode = new MungeStepOutput<String>("Postal/ZIP", String.class));
+		addChild(new MungeStepOutput<String>("Suite", String.class));
+		addChild(new MungeStepOutput<BigDecimal>("Street Number", BigDecimal.class));
+		addChild(new MungeStepOutput<String>("Street Number Suffix", String.class));
+		addChild(new MungeStepOutput<String>("Street", String.class));
+		addChild(new MungeStepOutput<String>("Street Type", String.class));
+		addChild(new MungeStepOutput<String>("Street Direction", String.class));
+		addChild(new MungeStepOutput<String>("Municipality", String.class));
+		addChild(new MungeStepOutput<String>("Province", String.class));
+		addChild(new MungeStepOutput<String>("Country", String.class));
+		addChild(new MungeStepOutput<String>("Postal/ZIP", String.class));
 	
 		InputDescriptor input0 = new InputDescriptor("Address Line 1", String.class);
 		InputDescriptor input1 = new InputDescriptor("Address Line 2", String.class);
@@ -86,7 +77,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void doOpen(Logger log) throws Exception {
+	public void doOpen(Logger logger) throws Exception {
 		MatchMakerSession session = getSession();
 		MatchMakerSessionContext context = session.getContext();
 		setParameter(ADDRESS_CORRECTION_DATA_PATH, context.getAddressCorrectionDataPath());
@@ -105,7 +96,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		addressValid = false;
 		
 		MungeStepOutput addressLine1MSO = getMSOInputs().get(0);
-		String addressLine1 = (addressLine1MSO != null) ? (String)addressLine1MSO.getData() : null;
+		String addressLine1 = (addressLine1MSO != null) ? (String)addressLine1MSO.getData(): null;
 		MungeStepOutput addressLine2MSO = getMSOInputs().get(1);
 		String addressLine2 = (addressLine2MSO != null) ? (String)addressLine2MSO.getData() : null;
 		MungeStepOutput municipalityMSO = getMSOInputs().get(2);
@@ -122,7 +113,9 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		logger.debug("Parsing Address: " + addressString);
 		Address address = Address.parse(addressLine1, municipality, province, inPostalCode, country);
 		
-		List<ValidateResult> results = addressDB.validate(address);
+		logger.debug("Address that was parsed:\n" + address.toString());
+		
+		List<ValidateResult> results = addressDB.correct(address);
 
 		if (results.size() > 0) { 
 			logger.debug("Address '" + addressString + "' was invalid with the following problem(s):");
@@ -134,17 +127,21 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			addressValid = true;
 		}
 		
-		suite.setData(address.getSuite());
-		streetNumber.setData(BigDecimal.valueOf(address.getStreetNumber()));
-		streetNumberSuffix.setData(address.getStreetNumberSuffix());
-		street.setData(address.getStreet());
-		streetType.setData(address.getStreetType());
-		streetDirection.setData(address.getStreetDirection());
-		municipalityName.setData(address.getMunicipality());
-		provinceName.setData(address.getProvince());
-		countryName.setData(address.getCountry());
-		postalCode.setData(address.getPostalCode());
+		logger.debug("Address after correction:\n" + address.toString());
 		
+		List<MungeStepOutput> outputs = getChildren(); 
+		
+		outputs.get(0).setData(address.getSuite());
+		outputs.get(1).setData(address.getStreetNumber() != null ? BigDecimal.valueOf(address.getStreetNumber()) : null);
+		outputs.get(2).setData(address.getStreetNumberSuffix());
+		outputs.get(3).setData(address.getStreet());
+		outputs.get(4).setData(address.getStreetType());
+		outputs.get(5).setData(address.getStreetDirection());
+		outputs.get(6).setData(address.getMunicipality());
+		outputs.get(7).setData(address.getProvince());
+		outputs.get(8).setData(address.getCountry());
+		outputs.get(9).setData(address.getPostalCode());
+
 		return Boolean.TRUE;
 	}
 	
