@@ -91,8 +91,8 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 	class IconCellRenderer extends DefaultListCellRenderer {
 
-		final ImageIcon canadaIcon = new ImageIcon(AddressValidationPanel.class.getResource("countryIcons/canada.png"));
-		final ImageIcon usaIcon = new ImageIcon(AddressValidationPanel.class.getResource("countryIcons/usa.png"));
+		final ImageIcon canadaIcon = new ImageIcon(AddressValidationPanel.class.getResource("countryIcons/Canada.png"));
+		//final ImageIcon usaIcon = new ImageIcon(AddressValidationPanel.class.getResource("countryIcons/usa.png"));
 		
 		
 		public Component getListCellRendererComponent(JList list, Object value,
@@ -104,8 +104,8 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			setText(address.htmlToString());
 			if (address.getCountry().equals("Canada")) {
 				setIcon(canadaIcon);
-			} else if (address.getCountry().equals("USA")) {
-				setIcon(usaIcon);
+			//} else if (address.getCountry().equals("USA")) {
+			//	setIcon(usaIcon);
 			} else {
 				//not support these kind of countries yet
 			}
