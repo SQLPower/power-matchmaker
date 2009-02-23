@@ -21,12 +21,15 @@ package ca.sqlpower.matchmaker.address;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 
 /**
  * An object representation of an invalid address record
  * as stored in the Address Correction Result table.
  */
 public class AddressResult {
+	
+	private static final Logger logger = Logger.getLogger(AddressResult.class); 
 
 	static enum StorageState {
 		NEW("NEW"),
@@ -140,6 +143,49 @@ public class AddressResult {
 	
 	StorageState getStorageState() {
 		return storageState;
+	}
+	
+	/**
+	 * Returns a String which is a HTML format so that Street Lines and 
+	 * Municipality,Province,Country and Postal code can show on 3 different lines but 
+	 * within the same item.  
+	 *  
+	 * @return a HTML formatted String of the address.
+	 */
+	public String htmlToString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("<html><p align=left>");
+		sb.append(getAddressLine1() != null ? getAddressLine1() : "");
+		if (addressLine1 != null && addressLine1.trim().equals("")) {
+			sb.append(" ");
+		}
+		sb.append(getAddressLine2() != null ? getAddressLine2() : "");
+		if (isAddressLineExist()) {
+			sb.append("<br>");
+		}
+		sb.append(getMunicipality() != null ? getMunicipality() : "");
+		sb.append(" ");
+		sb.append(getProvince() != null ? getProvince() : "");
+		sb.append(" ");
+		sb.append(getCountry() != null ? getCountry() : "");
+		sb.append("<br>");
+		sb.append(getPostalCode() != null ? getPostalCode() : " ");
+		sb.append("</p>" + "</html>");
+		return sb.toString();
+	}
+	/**
+	 * Determine whether the first line of htmlToString(addressline1 and addressline2
+	 * should exist or not. If they are nulls or empty Strings or either, the first line
+	 * of htmlToString should be the next line( municipality,province and country).
+	 * @return true if the first line of address has meaning, false otherwise.
+	 */
+	private boolean isAddressLineExist() {
+		boolean line1 = (addressLine1 == null || addressLine1.trim().equals(""));
+		boolean line2 = (addressLine2 == null || addressLine2.trim().equals(""));
+		if (line1 && line2) {
+			return false;
+		}
+		return true;
 	}
 	
 	public String toString() {
