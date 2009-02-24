@@ -19,8 +19,11 @@
 
 package ca.sqlpower.matchmaker.swingui.address;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Vector;
@@ -31,6 +34,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.border.AbstractBorder;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import org.apache.log4j.Logger;
 
@@ -100,6 +107,37 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			
+			LineBorder lineBorder = new LineBorder(Color.LIGHT_GRAY, 2, true) {
+				int inset = this.getThickness()+3;
+				@Override
+				public Insets getBorderInsets(Component c) {
+					return new Insets(inset,inset,inset,inset);
+				}
+				@Override
+				public Insets getBorderInsets(Component c, Insets insets) {
+					insets.top = insets.bottom = insets.left = insets.right = this.inset;
+					return insets;
+				}
+				@Override
+				public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			        Color oldColor = g.getColor();
+			        int i;
+
+			        g.setColor(lineColor);
+			        for(i = 0; i < thickness; i++)  {
+			        	g.drawRoundRect(x+i, y+i, width-i-i-1, height-i-i-1, 10*thickness, 10*thickness);
+			        }
+			        g.setColor(oldColor);
+			    }
+			};
+			
+			EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
+			CompoundBorder border = new CompoundBorder(emptyBorder, lineBorder);
+			
+			if (cellHasFocus) {
+				
+			}
+			setBorder(border);
 			AddressResult address = (AddressResult)value;
 			setText(address.htmlToString());
 			if (address.getCountry().equals("Canada")) {
@@ -111,6 +149,10 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			}
 			return this;
 		}
+	}
+	
+	class AddressBoarder extends AbstractBorder {
+		
 	}
 
 }
