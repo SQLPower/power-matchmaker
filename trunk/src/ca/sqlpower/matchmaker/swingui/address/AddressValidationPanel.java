@@ -34,7 +34,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.border.AbstractBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -134,9 +133,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
 			CompoundBorder border = new CompoundBorder(emptyBorder, lineBorder);
 			
-			if (cellHasFocus) {
-				
-			}
 			setBorder(border);
 			AddressResult address = (AddressResult)value;
 			setText(address.htmlToString());
@@ -150,9 +146,4 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			return this;
 		}
 	}
-	
-	class AddressBoarder extends AbstractBorder {
-		
-	}
-
 }
