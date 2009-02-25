@@ -68,4 +68,51 @@ public class AddressTest extends TestCase {
     	assertEquals("M2N6K1", address.getPostalCode());
     	assertEquals("CA", address.getCountry());
     }
+
+	/**
+	 * The Address parser should be able to parse CIRCLE. When this test was
+	 * made, the parse would not recognize it and result in all the street
+	 * address fields coming up null. But if you change it to CIR, then it would
+	 * work. Ideally it should work for both.
+	 */
+    public void testParseWithNonAbbreviatedStreetType() throws Exception {
+    	Address address = Address.parse("1751 SANDHURST CIRCLE", "AGINCOURT", "ON", "", "CA");
+    	assertEquals(Integer.valueOf(1751), address.getStreetNumber());
+    	assertEquals("SANDHURST", address.getStreet());
+    	assertEquals("CIR", address.getStreetType());
+    	assertEquals("AGINCOURT", address.getMunicipality());
+    	assertEquals("ON", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    }
+    
+    /**
+	 * The parser should be able to properly extract the street number suffix.
+	 */
+    public void testParseWithStreetNumberSuffix() throws Exception {
+    	Address address = Address.parse("15C DEVONRIDGE CRES", "SCARBOROUGH", "ON", "M1C5A5", "CA");
+    	assertEquals(Integer.valueOf(15), address.getStreetNumber());
+    	assertEquals("C", address.getStreetNumberSuffix());
+    	assertEquals("DEVONRIDGE", address.getStreet());
+    	assertEquals("CRES", address.getStreetType());
+    	assertEquals("SCARBOROUGH", address.getMunicipality());
+    	assertEquals("M1C5A5", address.getPostalCode());
+    	assertEquals("ON", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    }
+    
+    /**
+     * In Quebec, the street type is actually put BEFORE the street name.
+     * The parser should be able to handle this.
+     * The Address tested here is: 4539 RUE BROOKLYN, TROIS-RIVIERES, QC, G8Y1C8
+     */
+    public void testParseQuebecStreetAddress() throws Exception {
+    	Address address = Address.parse("4539 RUE BROOKLYN", "TROIS-RIVIERES", "QC", "G8Y1C8", "CA");
+    	assertEquals(Integer.valueOf(4539), address.getStreetNumber());
+    	assertEquals("BROOKLYN", address.getStreet());
+    	assertEquals("RUE", address.getStreetType());
+    	assertEquals("TROIS-RIVIERES", address.getMunicipality());
+    	assertEquals("G8Y1C8", address.getPostalCode());
+    	assertEquals("QC", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    }
 }
