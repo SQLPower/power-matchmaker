@@ -115,4 +115,24 @@ public class AddressTest extends TestCase {
     	assertEquals("QC", address.getProvince());
     	assertEquals("CA", address.getCountry());
     }
+    
+    /**
+     * This address has a long and complicated street name that
+     * also contains a street type (RIDGE) in the street name itself.
+     *
+     * The parser should be able to extract the full street name and
+     * recognize the proper street type (which is CRT here, not RIDGE)
+     * 
+     * Test Address: 42 POPLAR RIDGE TRAILER CRT, DRAYTON VALLEY, AB, T7A1N4
+     */
+    public void testParseComplicatedStreetName() throws Exception {
+    	Address address = Address.parse("42 POPLAR RIDGE TRAILER CRT", "DRAYTON VALLEY", "AB", "T7A1N4", "CA");
+    	assertEquals(Integer.valueOf(42), address.getStreetNumber());
+    	assertEquals("POPLAR RIDGE TRAILER", address.getStreet());
+    	assertEquals("CRT", address.getStreetType());
+    	assertEquals("DRAYTON VALLEY", address.getMunicipality());
+    	assertEquals("T7A1N4", address.getPostalCode());
+    	assertEquals("AB", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    }
 }
