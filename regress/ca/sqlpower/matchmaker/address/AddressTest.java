@@ -135,4 +135,21 @@ public class AddressTest extends TestCase {
     	assertEquals("AB", address.getProvince());
     	assertEquals("CA", address.getCountry());
     }
+    
+    /**
+     * Test to ensure the parser can deal with street addresses 
+     * containing an apostrophe.
+     * 
+     * Input: 1539 HALL'S RD, COURTENAY, BC, V9N5R8
+     */
+    public void testAddressWithApostrophe() throws Exception {
+    	Address address = Address.parse("1539 HALL'S RD", "COURTENAY", "BC", "V9N5R8", "CA");
+    	assertEquals(Integer.valueOf(1539), address.getStreetNumber());
+    	assertEquals("HALL'S", address.getStreet());
+    	assertEquals("RD", address.getStreetType());
+    	assertEquals("COURTENAY", address.getMunicipality());
+    	assertEquals("V9N5R8", address.getPostalCode());
+    	assertEquals("BC", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    }
 }
