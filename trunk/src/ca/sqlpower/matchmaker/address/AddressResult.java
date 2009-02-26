@@ -156,20 +156,22 @@ public class AddressResult {
 		StringBuffer sb = new StringBuffer();
 		sb.append("<html><p align=left>");
 		sb.append(getAddressLine1() != null ? getAddressLine1() : "");
-		if (addressLine1 != null && addressLine1.trim().equals("")) {
+		if (addressLine1 != null && !addressLine1.trim().equals("")) {
 			sb.append(" ");
 		}
 		sb.append(getAddressLine2() != null ? getAddressLine2() : "");
-		if (isAddressLineExist()) {
-			sb.append("<br>");
+		
+		if ( !isThisLineExist(addressLine1) && !isThisLineExist(addressLine2) ) {
+			sb.append("<font color=\"FF0000\">Address Line Missing</font>");
 		}
-		sb.append(getMunicipality() != null ? getMunicipality() : "");
-		sb.append(" ");
-		sb.append(getProvince() != null ? getProvince() : "");
-		sb.append(" ");
-		sb.append(getCountry() != null ? getCountry() : "");
 		sb.append("<br>");
-		sb.append(getPostalCode() != null ? getPostalCode() : " ");
+		sb.append(isThisLineExist(municipality) ? getMunicipality() : "<font color=\"FF0000\">Municipality Missing</font>");
+		sb.append(" ");
+		sb.append(isThisLineExist(province) ? getProvince() : "<font color=\"FF0000\">Province Missing</font>");
+		sb.append(" ");
+		sb.append(isThisLineExist(country) ? getCountry() : "<font color=\"FF0000\">Country Missing</font>");
+		sb.append("<br>");
+		sb.append(isThisLineExist(postalCode) ? postalCode : "<font color=\"FF0000\">Postal Code Missing</font>");
 		sb.append("</p>" + "</html>");
 		return sb.toString();
 	}
@@ -179,10 +181,9 @@ public class AddressResult {
 	 * of htmlToString should be the next line( municipality,province and country).
 	 * @return true if the first line of address has meaning, false otherwise.
 	 */
-	private boolean isAddressLineExist() {
-		boolean line1 = (addressLine1 == null || addressLine1.trim().equals(""));
-		boolean line2 = (addressLine2 == null || addressLine2.trim().equals(""));
-		if (line1 && line2) {
+	private boolean isThisLineExist(String str) {
+		boolean line1 = (str == null || str.trim().equals(""));
+		if (line1) {
 			return false;
 		}
 		return true;

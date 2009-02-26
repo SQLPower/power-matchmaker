@@ -24,59 +24,112 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Vector;
+import java.util.List;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
+import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.address.Address;
+import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.validation.ValidateResult;
+
+import com.sleepycat.je.DatabaseException;
 
 public class AddressValidationPanel extends NoEditEditorPane {
 
     private static final Logger logger = Logger.getLogger(AddressValidationPanel.class);
     
-    private final MatchMakerSwingSession session;
-
-    private final Project project;
+    /**
+     * A collection of invalid addresses
+     */
+    private Collection<AddressResult> addressResults;
     
-    private Collection<AddressResult> addresses;
+    private AddressDatabase addressDatabase;
     
-    private Vector<AddressResult> addressDetails = new Vector<AddressResult>();
+    /**
+     * The horizontal split pane in the validation screen
+     */
+    private JSplitPane horizontalSplitPane; 
+    
+    /**
+     * The vertical split pane, which is also the right component
+     * of the horizontalSplitPane, in the validation screen
+     */
+    private JSplitPane verticalSplitPane;
+    
+    /**
+     * The top component verticalSplitPane 
+     */
+    private JScrollPane validationSuggestionPane = new JScrollPane();
+    
+    /**
+     * This is passed to a JScrollPane (problem pane), which is the bottom 
+     * component of verticalSplitPane
+     */
+    private JTable problemTable;
+    
+    /**
+     * The result after validation step
+     */
+    private List<ValidateResult> validateResult;
     
     public AddressValidationPanel(MatchMakerSwingSession session, Project project) {
-        this.session = session;
-        this.project = project;
 		AddressPool pool = new AddressPool(project);
 		try {
+			addressDatabase = new AddressDatabase(new File(session.getContext().getAddressCorrectionDataPath()));
 			pool.load(logger);
-			addresses = pool.getAddressResults(logger);
-			for (AddressResult result : addresses) {
-				addressDetails.add(result);
-			}
+			addressResults = pool.getAddressResults(logger);
 
-			JList needsValidationList = new JList(addressDetails);
-			needsValidationList.setCellRenderer(new IconCellRenderer());
+			JList needsValidationList = new JList(addressResults.toArray());
+			needsValidationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			needsValidationList.addListSelectionListener(new AddressListCellSelectionListener());
+			needsValidationList.setCellRenderer(new AddressListCellRenderer());
 			JScrollPane addressPane = new JScrollPane(needsValidationList);
-			addressPane.setPreferredSize(new Dimension(250, 50));
-	       	setPanel(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, addressPane,
-					new JLabel("To begin address validation, please select an address from the list.",	JLabel.CENTER)));
+			addressPane.setPreferredSize(new Dimension(300, 50));
+			addressPane.setMinimumSize(new Dimension(1,1));
+			
+	        horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, addressPane,
+					new JLabel("To begin address validation, please select an address from the list.",	JLabel.CENTER));
+			setPanel(horizontalSplitPane);
+			//initialize the verticalSplitPane
+			verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, validationSuggestionPane, new JScrollPane());
+			
+			validationSuggestionPane.setMinimumSize(new Dimension(1,1));
+			//verticalSplitPane.setPreferredSize(new Dimension(700,50));
+			verticalSplitPane.setResizeWeight(0.5);
+			
+			logger.info(addressPane.getBounds().height);
+			
+			// TO-FIX: should set the divider location according to the whole panel's height,
+			// but currently cannot get the height ( every time get 0 if called getHeight() ).
+			verticalSplitPane.setDividerLocation(700);
 		} catch (SQLException e) {
 			MMSUtils.showExceptionDialog(
 							getPanel(),
@@ -87,7 +140,12 @@ public class AddressValidationPanel extends NoEditEditorPane {
 							getPanel(),
 							"An error occured while trying to load the invalid addresses",
 							e);
-		}
+		} catch (DatabaseException e) {
+			MMSUtils.showExceptionDialog(
+					        getPanel(), 
+					        "A database exception occured while trying to load the invalid addresses", 
+					        e);
+		} 
 	}
 
 	@Override
@@ -95,17 +153,17 @@ public class AddressValidationPanel extends NoEditEditorPane {
 		return (JSplitPane) super.getPanel();
 	}
 
-	class IconCellRenderer extends DefaultListCellRenderer {
+	class AddressListCellRenderer extends JLabel implements ListCellRenderer {
 
-		final ImageIcon canadaIcon = new ImageIcon(AddressValidationPanel.class.getResource("countryIcons/Canada.png"));
-		//final ImageIcon usaIcon = new ImageIcon(AddressValidationPanel.class.getResource("countryIcons/usa.png"));
+		final ImageIcon canadaIcon = new ImageIcon(AddressValidationPanel.class.getResource("icons/Canada.png"));
 		
+		public AddressListCellRenderer() {
+			setOpaque(true);
+		}
 		
-		public Component getListCellRendererComponent(JList list, Object value,
+		public Component getListCellRendererComponent(final JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 
-			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			
 			LineBorder lineBorder = new LineBorder(Color.LIGHT_GRAY, 2, true) {
 				int inset = this.getThickness()+3;
 				@Override
@@ -132,18 +190,117 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			
 			EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
 			CompoundBorder border = new CompoundBorder(emptyBorder, lineBorder);
-			
 			setBorder(border);
+			
+			if (isSelected) {
+				setBackground(list.getSelectionBackground());
+				setForeground(list.getSelectionForeground());
+			} else {
+				setBackground(list.getBackground());
+				setForeground(list.getForeground());
+			}
+			setEnabled(list.isEnabled());
+			setFont(list.getFont());
+			
 			AddressResult address = (AddressResult)value;
 			setText(address.htmlToString());
 			if (address.getCountry().equals("Canada")) {
 				setIcon(canadaIcon);
-			//} else if (address.getCountry().equals("USA")) {
-			//	setIcon(usaIcon);
+			}
+			
+			return this;
+		}
+	}
+	
+	class AddressListCellSelectionListener implements ListSelectionListener {
+
+		public void valueChanged(ListSelectionEvent e) {
+			
+			//remember user's choice of the divider's location
+			horizontalSplitPane.setDividerLocation(horizontalSplitPane.getDividerLocation());
+			
+			horizontalSplitPane.setRightComponent(verticalSplitPane);
+			verticalSplitPane.setDividerLocation(verticalSplitPane.getDividerLocation());
+			
+			AddressResult selected = (AddressResult) ((JList)e.getSource()).getSelectedValue();
+			try {
+				Address address1 = Address.parse(selected.getAddressLine1(),
+						selected.getMunicipality(), selected.getProvince(),
+						selected.getPostalCode(), selected.getCountry());
+				validateResult = addressDatabase.correct(address1);
+				problemTable = new JTable(new TableModel());
+				verticalSplitPane.setBottomComponent(new JScrollPane(problemTable));
+				verticalSplitPane.getBottomComponent().setMinimumSize(new Dimension(1, 1));
+
+				problemTable.getTableHeader().setResizingAllowed(true);
+				problemTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+				TableColumnModel column = problemTable.getColumnModel();
+				// set the prefered width of the columns 
+				column.getColumn(0).setPreferredWidth(140);
+				column.getColumn(1).setPreferredWidth(750);
+
+				column.getColumn(0).setCellRenderer(new TableRenderer());
+				column.getColumn(1).setCellRenderer(new TableRenderer());
+				
+			} catch (RecognitionException e1) {
+				MMSUtils.showExceptionDialog(getPanel(), 
+						"There was an error while trying to parse this address", 
+						e1);
+			}
+			
+		}
+		
+	}
+	
+	class TableRenderer extends JLabel implements TableCellRenderer {
+		
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			setHorizontalAlignment(CENTER);
+			String str = (String)value;
+			if (str.equals("WARN")) {
+				setIcon(new ImageIcon(AddressValidationPanel.class.getResource("icons/warn.png")));
+				setText("Warning");
+			} else if (str.equals("FAIL")) {
+				setIcon(new ImageIcon(AddressValidationPanel.class.getResource("icons/fail.png")));
+				setText("Failure");
 			} else {
-				//not support these kind of countries yet
+				setText(str);
 			}
 			return this;
+		}
+	}
+	
+	// This is the table model for the table of the problem pane (the bottom
+	// of the verticalSplitPane.	
+	class TableModel extends AbstractTableModel {
+		
+		private String[] columnNames = {"Status","Problem Details"};
+		private String[][] data = new String[validateResult.size()][2];
+				
+		public TableModel() {
+			int i = 0;
+			for (ValidateResult result: validateResult) {
+				data[i][0] = result.getStatus().toString();
+				data[i++][1] = result.getMessage();
+			}
+		}
+	
+		public int getColumnCount() {
+			return columnNames.length;
+		}
+		
+		public String getColumnName(int col) {
+			return columnNames[col];
+		}
+		
+		public int getRowCount() {
+			return data.length;
+		}
+		
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return data[rowIndex][columnIndex];
 		}
 	}
 }
