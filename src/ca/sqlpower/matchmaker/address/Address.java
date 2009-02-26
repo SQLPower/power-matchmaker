@@ -205,7 +205,28 @@ public class Address {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (suite != null && suitePrefix) {
+        sb.append(getStreetAddress());
+        
+        sb.append("\n");
+        sb.append(municipality);
+        sb.append(" ").append(province);
+        sb.append("  ").append(postalCode);
+
+        sb.append("\n");
+        sb.append(country);
+        
+        return sb.toString();
+    }
+
+	/**
+	 * Returns the street address of this {@link Address}. This includes
+	 * everything except the municipality, province/state, country, and postal
+	 * codes.
+	 */
+	public String getStreetAddress() {
+		StringBuilder sb = new StringBuilder();
+		
+		if (suite != null && suitePrefix) {
             sb.append(suite).append("-");
         }
         if (streetNumber != null) {
@@ -231,16 +252,8 @@ public class Address {
             sb.append(" ").append(suite);
         }
         
-        sb.append("\n");
-        sb.append(municipality);
-        sb.append(" ").append(province);
-        sb.append("  ").append(postalCode);
-
-        sb.append("\n");
-        sb.append(country);
-        
         return sb.toString();
-    }
+	}
 
     public String getUnparsedAddress() {
         return unparsedAddress;
