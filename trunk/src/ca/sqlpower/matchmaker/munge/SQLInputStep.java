@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -66,7 +68,7 @@ public class SQLInputStep extends AbstractMungeStep {
     
     /**
      * The table this step selects from.  This value is initialized based on the
-     * containing project's source table when setParent() is called.
+     * containing project's source table when {@link #doOpen(Logger)} is called.
      */
     private SQLTable table;
     
@@ -146,13 +148,7 @@ public class SQLInputStep extends AbstractMungeStep {
     			setName(table.getName());
     		}
 
-    		// TODO: Verify that outputs are the same with the table's columns.
-    		if (getChildCount() == 0) {
-    			for (SQLColumn c : table.getColumns()) {
-    				MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), TypeMap.typeClass(c.getType()));
-    				addChild(newOutput);
-    			}
-    		}
+    		setupOutputs();
 
     		SQLDatabase db = table.getParentDatabase();
     		if (db == null) {
@@ -203,6 +199,61 @@ public class SQLInputStep extends AbstractMungeStep {
     			rs = previewRS;
     		}
     	}
+    }
+
+    /**
+     * Populates or refreshes the outputs of this step based on the current
+     * columns of {@link #table}.  This method will both add missing outputs
+     * and remove outputs that correspond to columns the table currently
+     * does not have. It will also adjust the data type of outputs whose
+     * columns' types have changed.
+     */
+    private void setupOutputs() throws SQLObjectException {
+        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren());
+        for (SQLColumn c : table.getColumns()) {
+            String colName = c.getName();
+            MungeStepOutput<?> output = getOutputByName(colName);
+            if (output == null) {
+                // new column -- create an output and we're done
+                MungeStepOutput<?> newOutput = new MungeStepOutput(colName, TypeMap.typeClass(c.getType()));
+                addChild(newOutput);
+            } else if (output.getType() != TypeMap.typeClass(c.getType())) {
+                // existing column changed type -- recreate output with same name and new type
+                int idx = getChildren().indexOf(output);
+                MungeStepOutput<?> newOutput = new MungeStepOutput(colName, TypeMap.typeClass(c.getType()));
+                addChild(idx, newOutput);
+                MungeProcess mp = getParent();
+                for (MungeStep step : mp.getChildren()) {
+                    for (int i = 0; i < step.getInputCount(); i++) {
+                        InputDescriptor id = step.getInputDescriptor(i);
+                        MungeStepOutput input = step.getMSOInputs().get(i);
+                        if (input == output) {
+                            step.disconnectInput(i);
+                            
+                            // reconnect the new output if its type is compatible
+                            if (id.getType().isAssignableFrom(TypeMap.typeClass(c.getType()))) {
+                                step.connectInput(i, newOutput);
+                            }
+                        }
+                    }
+                    
+                }
+                removeChild(output);
+                orphanOutputs.remove(output);
+            } else {
+                // existing column with existing output -- nothing to do
+                orphanOutputs.remove(output);
+            }
+        }
+        
+        // clean up outputs whose columns no longer exist in the table
+        for (MungeStepOutput mso : orphanOutputs) {
+            MungeProcess mp = getParent();
+            for (MungeStep step : mp.getChildren()) {
+                step.disconnectInput(mso);
+            }
+            removeChild(mso);
+        }
     }
     
     @Override

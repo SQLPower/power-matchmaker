@@ -249,8 +249,9 @@ public class StubMungeStep implements MungeStep {
 		return false;
 	}
 
-	public void disconnectInput(MungeStepOutput mso) {
+	public int disconnectInput(MungeStepOutput mso) {
 		logger.debug("Stub call: StubMungeStep.disconnectInput()");
+		return 0;
 	}
 
 	public void removeUnusedInput() {

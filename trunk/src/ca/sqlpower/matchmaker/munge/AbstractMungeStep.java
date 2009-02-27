@@ -112,6 +112,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		this.canAddInputs = canAddInputs;
 	}
 	
+	@Override
+	public MungeProcess getParent() {
+	    return (MungeProcess) super.getParent();
+	}
+	
 	//The set of methods that can be to be overwritten by the subclasses. 
 	/**
 	 * A method that is called when a step is opened. Default is No-op. 
@@ -181,15 +186,18 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * MungeStepOutput, note that this may remove more than
 	 * one input
 	 */
-	public void disconnectInput(MungeStepOutput mso) {
+	public int disconnectInput(MungeStepOutput mso) {
+	    int disconnectCount = 0;
 		for (int i = 0; i < inputs.size(); i++) {
 			Input in = inputs.get(i);
 			if (in.current == mso) {
 				getEventSupport().firePropertyChange("inputs", i,
 					in.current, null);
 				in.current = null;
+				disconnectCount++;
 			}
 		}
+		return disconnectCount;
 	}
 	
 	public int addInput(InputDescriptor desc) {
