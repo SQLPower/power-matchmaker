@@ -182,11 +182,9 @@ public class AddressResult {
 	 * @return true if the first line of address has meaning, false otherwise.
 	 */
 	private boolean isThisLineExist(String str) {
-		boolean line1 = (str == null || str.trim().equals(""));
-		if (line1) {
-			return false;
-		}
-		return true;
+		boolean line = (str == null || str.trim().equals(""));
+		return !line;
+
 	}
 	
 	public String toString() {
