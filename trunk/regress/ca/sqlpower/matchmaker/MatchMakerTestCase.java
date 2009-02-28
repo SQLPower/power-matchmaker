@@ -447,6 +447,15 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		        processCount = new Integer(processCount +1);
 		    }
 		    ((MatchMakerSettings) newVal).setProcessCount(processCount);
+		} else if (property.getPropertyType() == AddressCorrectionSettings.class) {
+			newVal = new AddressCorrectionSettings();
+		    Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
+		    if (processCount == null) {
+		        processCount = new Integer(0);
+		    } else {
+		        processCount = new Integer(processCount +1);
+		    }
+		    ((MatchMakerSettings) newVal).setProcessCount(processCount);
 		} else if (property.getPropertyType() == SQLTable.class) {
 			newVal = new SQLTable();
 		} else if (property.getPropertyType() == ViewSpec.class) {
