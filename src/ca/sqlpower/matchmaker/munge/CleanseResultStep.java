@@ -28,12 +28,15 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -65,13 +68,43 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		super("Table!", false);
 	}
 
-	private void addInitialInputs() throws SQLObjectException {
-		if (getMSOInputs().size() == 0) {
-			for (SQLColumn c : table.getColumns()) {
-				InputDescriptor id = new InputDescriptor(c.getName(), typeClass(c.getType()));
-				addInput(id);
-			}
-		}
+	private void refreshInputs() throws SQLObjectException {
+        Set<Input> orphanInputs = new HashSet<Input>(getInputs());
+        for (SQLColumn c : table.getColumns()) {
+            String colName = c.getName();
+            int inputIdx = -1;
+            Input input = null;
+            for (int i = 0; i < getInputCount(); i++) {
+                Input in = getInputs().get(i);
+                if (c.getName().equals(in.getName())) {
+                    inputIdx = i;
+                    input = in;
+                    break;
+                }
+            }
+            
+            if (input == null) {
+                // new column -- create an input and we're done
+                InputDescriptor newInput = new InputDescriptor(c.getName(), typeClass(c.getType()));
+                addInput(newInput);
+            } else if (input.getType() != TypeMap.typeClass(c.getType())) {
+                // existing column changed type -- recreate input with same name and new type
+                InputDescriptor newInput = new InputDescriptor(c.getName(), typeClass(c.getType()));
+                removeInput(inputIdx);
+                addInput(newInput, inputIdx);
+                orphanInputs.remove(input);
+            } else {
+                // existing column with existing input -- nothing to do
+                orphanInputs.remove(input);
+            }
+        }
+        
+        // clean up inputs whose columns no longer exist in the table
+        for (Input orphanInput : orphanInputs) {
+            int index = getInputs().indexOf(orphanInput);
+            removeInput(index);
+        }
+
 	}
 	
 	public void addInputStep(SQLInputStep inputStep) {
@@ -239,11 +272,11 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	public void doOpen(Logger logger) throws Exception {		
 		table = getProject().getSourceTable();
 		
-		//checks if the database support updatable result sets.
+		//checks if the database supports updatable result sets.
 		usePS = !table.getParentDatabase().getDataSource().getParentType().getSupportsUpdateableResultSets();
 		
 		setName(table.getName());
-		addInitialInputs();
+		refreshInputs();
 	}
 	
 	
