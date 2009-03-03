@@ -48,7 +48,6 @@ import javax.swing.SpinnerNumberModel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.AddressCorrectionSettings;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
@@ -251,7 +250,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			engineSettings = project.getMungeSettings();
 		} else if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			engine = project.getAddressCorrectionEngine();
-			engineSettings = project.getAddressCorrectionSettings();
+			engineSettings = project.getMungeSettings();
 		} else {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
@@ -356,7 +355,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			if (type == EngineType.MATCH_ENGINE) {
 				clearMatchPool = new JCheckBox("Clear match pool?", ((MungeSettings)engineSettings).isClearMatchPool());
 			} else {
-				clearMatchPool = new JCheckBox("Clear Address Pool?" , ((AddressCorrectionSettings)engineSettings).isClearAddressPool());
+				clearMatchPool = new JCheckBox("Clear Address Pool?" , ((MungeSettings)engineSettings).isClearMatchPool());
 			}
 			if (debugMode.isSelected()) {
 				clearMatchPool.setSelected(false);
@@ -488,10 +487,8 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	public boolean applyChanges() {
 		refreshRunActionStatus();
 		engineSettings.setDebug(debugMode.isSelected());
-		if (type == EngineType.MATCH_ENGINE) {
+		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
-		} else if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-			((AddressCorrectionSettings)engineSettings).setClearAddressPool(clearMatchPool.isSelected());
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());
