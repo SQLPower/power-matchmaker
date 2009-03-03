@@ -42,7 +42,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -59,6 +58,7 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.validation.ValidateResult;
+import ca.sqlpower.validation.swingui.ValidateResultTableModel;
 
 import com.sleepycat.je.DatabaseException;
 
@@ -228,7 +228,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						selected.getMunicipality(), selected.getProvince(),
 						selected.getPostalCode(), selected.getCountry());
 				validateResult = addressDatabase.correct(address1);
-				problemTable = new JTable(new TableModel());
+				problemTable = new JTable(new ValidateResultTableModel(validateResult));
 				verticalSplitPane.setBottomComponent(new JScrollPane(problemTable));
 				verticalSplitPane.getBottomComponent().setMinimumSize(new Dimension(1, 1));
 
@@ -271,36 +271,5 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			return this;
 		}
 	}
-	
-	// This is the table model for the table of the problem pane (the bottom
-	// of the verticalSplitPane.	
-	class TableModel extends AbstractTableModel {
-		
-		private String[] columnNames = {"Status","Problem Details"};
-		private String[][] data = new String[validateResult.size()][2];
-				
-		public TableModel() {
-			int i = 0;
-			for (ValidateResult result: validateResult) {
-				data[i][0] = result.getStatus().toString();
-				data[i++][1] = result.getMessage();
-			}
-		}
-	
-		public int getColumnCount() {
-			return columnNames.length;
-		}
-		
-		public String getColumnName(int col) {
-			return columnNames[col];
-		}
-		
-		public int getRowCount() {
-			return data.length;
-		}
-		
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			return data[rowIndex][columnIndex];
-		}
-	}
+
 }
