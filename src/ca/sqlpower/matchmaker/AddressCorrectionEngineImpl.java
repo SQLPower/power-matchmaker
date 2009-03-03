@@ -92,7 +92,7 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			AddressPool pool = new AddressPool(getProject());
 			pool.load(logger);
 			
-			if (getProject().getAddressCorrectionSettings().isClearAddressPool()) {
+			if (getProject().getMungeSettings().isClearMatchPool()) {
 				message = "Clearing Address Pool";
 				logger.info(message);
 				pool.clear();

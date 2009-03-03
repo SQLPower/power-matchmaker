@@ -36,7 +36,6 @@ import junit.framework.TestCase;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
-import ca.sqlpower.matchmaker.AddressCorrectionSettings;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
@@ -282,10 +281,6 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						MergeSettings mergeSettings = new MergeSettings();
 						setAllSetters(session, mergeSettings, propertiesThatAreNotPersisted);
 						newVal = mergeSettings;
-					} else if (property.getPropertyType() == AddressCorrectionSettings.class) {
-						AddressCorrectionSettings addressCorrectionSettings = new AddressCorrectionSettings();
-						setAllSetters(session, addressCorrectionSettings, propertiesThatAreNotPersisted);
-						newVal = addressCorrectionSettings;
 					} else if (property.getPropertyType() == SQLTable.class) {
 						newVal = session.findPhysicalTableByName("", "MM_TEST", "fake_table");
 					} else if (property.getPropertyType() == ViewSpec.class) {
