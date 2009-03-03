@@ -48,6 +48,7 @@ import javax.swing.SpinnerNumberModel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.AddressCorrectionSettings;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
@@ -351,8 +352,12 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		};
 		debugMode.addItemListener(itemListener);
 
-		if (type == EngineType.MATCH_ENGINE) {
-			clearMatchPool = new JCheckBox("Clear match pool?", ((MungeSettings)engineSettings).isClearMatchPool());
+		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			if (type == EngineType.MATCH_ENGINE) {
+				clearMatchPool = new JCheckBox("Clear match pool?", ((MungeSettings)engineSettings).isClearMatchPool());
+			} else {
+				clearMatchPool = new JCheckBox("Clear Address Pool?" , ((AddressCorrectionSettings)engineSettings).isClearAddressPool());
+			}
 			if (debugMode.isSelected()) {
 				clearMatchPool.setSelected(false);
 				// See comment just above about why this is disabled
@@ -416,7 +421,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		y += 2;
 		pb.add(debugMode, cc.xy(4, y, "l,c"));
 
-		if (type == EngineType.MATCH_ENGINE) {
+		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			y += 2;
 			pb.add(clearMatchPool, cc.xy(4, y, "l,c"));
 		}
@@ -485,6 +490,8 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		engineSettings.setDebug(debugMode.isSelected());
 		if (type == EngineType.MATCH_ENGINE) {
 			((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
+		} else if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			((AddressCorrectionSettings)engineSettings).setClearAddressPool(clearMatchPool.isSelected());
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());

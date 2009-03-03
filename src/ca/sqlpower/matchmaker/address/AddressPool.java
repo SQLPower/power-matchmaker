@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.AddressResult.StorageState;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -149,6 +150,34 @@ public class AddressPool {
 			result.markDirty();
 		}
 		addresses.put(key, result);
+	}
+	
+	public void clear() throws SQLException {
+		SQLTable resultTable = project.getResultTable();
+		Connection con = null;
+		Statement stmt = null;
+		
+		try {
+			con = project.createResultTableConnection();
+			stmt = con.createStatement();
+			
+			con.setAutoCommit(false);
+			String sql = "DELETE FROM " + DDLUtils.toQualifiedName(resultTable) + " WHERE 1=1";
+			stmt.execute(sql);
+			con.commit();
+		} catch (Exception ex) {
+			con.rollback();
+			if (ex instanceof SQLException) {
+				throw (SQLException) ex;
+			} else {
+				throw new RuntimeException("An unexpected error occured while clearing the Address Pool", ex);
+			}
+		} finally {
+			if (stmt != null) stmt.close();
+			if (con != null) stmt.close();
+		}
+		
+		addresses.clear();
 	}
 	
 	public void load(Logger engineLogger) throws SQLException, SQLObjectException {
