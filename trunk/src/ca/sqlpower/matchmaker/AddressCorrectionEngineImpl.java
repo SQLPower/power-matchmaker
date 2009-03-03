@@ -86,11 +86,20 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			
 			checkCancelled();
 			
-			message = "Searching for invalid addresses";
+			message = "Loading previously invalidated addresses";
 			logger.info(message);
 			
 			AddressPool pool = new AddressPool(getProject());
 			pool.load(logger);
+			
+			if (getProject().getAddressCorrectionSettings().isClearAddressPool()) {
+				message = "Clearing Address Pool";
+				logger.info(message);
+				pool.clear();
+			}
+			
+			message = "Searching for invalid addresses";
+			logger.info(message);
 			
 			for (MungeProcess process: mungeProcesses) {
 				checkCancelled();

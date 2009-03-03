@@ -83,8 +83,13 @@ public class ValidatingAddressCorrectionMungeProcessor extends MungeProcessor {
 			
 			boolean finished = false;
 			
+			checkCancelled();
+			
 			while (!finished && (rowCount == -1 || monitorableHelper.getProgress() < rowCount)) {
+				checkCancelled();
+				
 				for (MungeStep step: preValidationSteps) {
+					checkCancelled();
 					boolean continuing = step.call();
 					
 					if (step instanceof AddressCorrectionMungeStep) {
@@ -114,10 +119,10 @@ public class ValidatingAddressCorrectionMungeProcessor extends MungeProcessor {
 							String municipality = ( municipalityMSO != null) ? (String)municipalityMSO.getData() : null;
 							MungeStepOutput provinceMSO = inputs.get(3);
 							String province = (provinceMSO != null) ? (String)provinceMSO.getData() : null;
-							MungeStepOutput postalCodeMSO = inputs.get(4);
-							String inPostalCode = (postalCodeMSO != null) ? (String)postalCodeMSO.getData() : null;
-							MungeStepOutput countryMSO = inputs.get(5);
+							MungeStepOutput countryMSO = inputs.get(4);
 							String country = (countryMSO != null) ? (String)countryMSO.getData() : null;
+							MungeStepOutput postalCodeMSO = inputs.get(5);
+							String inPostalCode = (postalCodeMSO != null) ? (String)postalCodeMSO.getData() : null;
 							
 							AddressResult result = new AddressResult(uniqueKeyValues, addressLine1, addressLine2, municipality, province, inPostalCode, country, false);
 							
