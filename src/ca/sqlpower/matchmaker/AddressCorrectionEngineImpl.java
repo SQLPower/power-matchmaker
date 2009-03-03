@@ -40,6 +40,8 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	
 	private int progress = 0;
 	
+	private int jobSize = 0;
+	
 	/**
 	 * The current monitorable that is running in the engine.
 	 * <p>
@@ -65,6 +67,9 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException,
 			SourceTableException {
+		
+		double startTime = System.currentTimeMillis();
+		
 		Level oldLoggerLevel = logger.getLevel();
 		logger.setLevel(getMessageLevel());
 		setCancelled(false);
@@ -74,12 +79,16 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 		progress = 0;
 
 		try {
+			
 			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
 			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
 				if (mp.getActive()) {
 					mungeProcesses.add(mp);
 				}
 			}
+
+			int numRowsToProcess = getNumRowsToProcess();
+			jobSize = numRowsToProcess * mungeProcesses.size();
 
 			message = "Starting Address Correction Engine";
 			logger.info(message);
@@ -109,8 +118,8 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 				setCurrentProcessor(munger);
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
-				munger.call();
-				
+				munger.call(numRowsToProcess);
+				progress += munger.getProgress();
 				setCurrentProcessor(null);
 			}
 			
@@ -126,6 +135,8 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 		} finally {
 			logger.setLevel(oldLoggerLevel);
 			setFinished(true);
+			double time = System.currentTimeMillis() - startTime;
+			logger.info("Address Correction Engine finished in " + time + " ms");
 		}
 	}
 	
@@ -147,5 +158,22 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	
 	private synchronized void setCurrentProcessor(Monitorable processor) {
 		currentProcessor = processor;
+	}
+	
+	@Override
+	public Integer getJobSize() {
+		logger.debug("Address Correction Engine jobsize is: " + jobSize);
+		return jobSize;
+	}
+	
+	public synchronized int getProgress() {
+		int currentProgress;
+		if (currentProcessor instanceof Processor) {
+			currentProgress = progress + currentProcessor.getProgress();
+		} else {
+			currentProgress = progress;
+		}
+		logger.debug("Address Correction Engine progress is: " + currentProgress);
+		return currentProgress;
 	}
 }
