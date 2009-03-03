@@ -19,10 +19,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -299,32 +295,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		}
 	}
 
-	private int getNumRowsToProcess() throws SQLException {
-		Integer processCount = getProject().getMungeSettings().getProcessCount();
-		int rowCount;
-		Connection con = null;
-		Statement stmt = null;
-		try {
-			con = getProject().getSourceTable().getParentDatabase().getDataSource().createConnection();
-			
-			stmt = con.createStatement();
-			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
-			ResultSet result = stmt.executeQuery(rowCountSQL);
-			logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
-			if (result.next()) {
-				rowCount = result.getInt("ROW_COUNT");
-			} else {
-				throw new AssertionError("No rows came back from source table row count query!");
-			}
-		} finally {
-			if (stmt != null) stmt.close();
-			if (con != null) con.close();
-		}
-		if (processCount != null && processCount.intValue() > 0 && processCount.intValue() < rowCount) {
-			rowCount = processCount.intValue();
-		}
-		return rowCount;
-	}
+
 	
 	///////// Monitorable support ///////////
 	

@@ -55,8 +55,12 @@ public class ValidatingAddressCorrectionMungeProcessor extends MungeProcessor {
 	}
 	
 	public Boolean call(int rowCount) throws Exception {
-		determineProcessOrder();
 		
+		monitorableHelper.setStarted(true);
+		monitorableHelper.setFinished(false);
+		monitorableHelper.setJobSize(rowCount);
+		
+		determineProcessOrder();
 		List<MungeStep> processOrder = getProcessOrder();
 		
 		int addressStepIndex = -1;
@@ -135,6 +139,7 @@ public class ValidatingAddressCorrectionMungeProcessor extends MungeProcessor {
 						break;
 					}
 				}
+				monitorableHelper.incrementProgress();
 			}
 			
 			for (MungeStep step: preValidationSteps) {
@@ -164,6 +169,7 @@ public class ValidatingAddressCorrectionMungeProcessor extends MungeProcessor {
 					getLogger().error("Exception thrown while attempting to close step " + step.getName(), e);
 				}
 			}
+			monitorableHelper.setFinished(true);
 		}
 		
 		return Boolean.TRUE;

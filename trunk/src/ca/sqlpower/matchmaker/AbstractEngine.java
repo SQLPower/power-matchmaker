@@ -22,13 +22,16 @@ package ca.sqlpower.matchmaker;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.security.EmailNotification;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.EmailNotification.EmailRecipient;
@@ -306,5 +309,40 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 
 	public String getObjectName() {
 		return getProject().getOid().toString();
+	}
+
+	/**
+	 * Returns the number of rows in the source table of the project that this
+	 * engine is working on.
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
+	protected int getNumRowsToProcess() throws SQLException {
+		Integer processCount;
+		processCount = getProject().getMungeSettings().getProcessCount();
+		int rowCount;
+		Connection con = null;
+		Statement stmt = null;
+		try {
+			con = getProject().getSourceTable().getParentDatabase().getDataSource().createConnection();
+			
+			stmt = con.createStatement();
+			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
+			ResultSet result = stmt.executeQuery(rowCountSQL);
+			logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
+			if (result.next()) {
+				rowCount = result.getInt("ROW_COUNT");
+			} else {
+				throw new AssertionError("No rows came back from source table row count query!");
+			}
+		} finally {
+			if (stmt != null) stmt.close();
+			if (con != null) con.close();
+		}
+		if (processCount != null && processCount.intValue() > 0 && processCount.intValue() < rowCount) {
+			rowCount = processCount.intValue();
+		}
+		return rowCount;
 	}
 }
