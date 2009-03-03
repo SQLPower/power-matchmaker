@@ -99,6 +99,11 @@ public class AddressValidationPanel extends NoEditEditorPane {
      * The result after validation step
      */
     private List<ValidateResult> validateResult;
+ 
+    /**
+     * The flag to tell whether need to set the divider location or not
+     */
+    private boolean dividerLocationInitialized = false;
     
     public AddressValidationPanel(MatchMakerSwingSession session, Project project) {
 		AddressPool pool = new AddressPool(project);
@@ -121,15 +126,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			//initialize the verticalSplitPane
 			verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, validationSuggestionPane, new JScrollPane());
 			
-			validationSuggestionPane.setMinimumSize(new Dimension(1,1));
-			//verticalSplitPane.setPreferredSize(new Dimension(700,50));
-			verticalSplitPane.setResizeWeight(0.5);
-			
-			logger.info(addressPane.getBounds().height);
-			
-			// TO-FIX: should set the divider location according to the whole panel's height,
-			// but currently cannot get the height ( every time get 0 if called getHeight() ).
-			verticalSplitPane.setDividerLocation(700);
+			verticalSplitPane.setResizeWeight(0.5);			
 		} catch (SQLException e) {
 			MMSUtils.showExceptionDialog(
 							getPanel(),
@@ -220,6 +217,12 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			horizontalSplitPane.setDividerLocation(horizontalSplitPane.getDividerLocation());
 			
 			horizontalSplitPane.setRightComponent(verticalSplitPane);
+			
+			if (!dividerLocationInitialized) {
+				verticalSplitPane.setDividerLocation((int)(0.8*horizontalSplitPane.getBounds().height));
+				dividerLocationInitialized = true;
+			} 
+			
 			verticalSplitPane.setDividerLocation(verticalSplitPane.getDividerLocation());
 			
 			AddressResult selected = (AddressResult) ((JList)e.getSource()).getSelectedValue();
@@ -237,8 +240,8 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				TableColumnModel column = problemTable.getColumnModel();
 				// set the prefered width of the columns 
 				column.getColumn(0).setPreferredWidth(140);
-				column.getColumn(1).setPreferredWidth(750);
-
+				column.getColumn(1).setPreferredWidth(verticalSplitPane.getBounds().width - 150);
+				
 				column.getColumn(0).setCellRenderer(new TableRenderer());
 				column.getColumn(1).setCellRenderer(new TableRenderer());
 				
