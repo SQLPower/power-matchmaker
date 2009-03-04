@@ -46,6 +46,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public AddressCorrectionMungeStep() {
 		super("Address Correction", false);
 		
+		addChild(new MungeStepOutput<String>("Address Line 1", String.class));
+		addChild(new MungeStepOutput<String>("Address Line 2", String.class));
 		addChild(new MungeStepOutput<String>("Suite", String.class));
 		addChild(new MungeStepOutput<BigDecimal>("Street Number", BigDecimal.class));
 		addChild(new MungeStepOutput<String>("Street Number Suffix", String.class));
@@ -131,16 +133,18 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		
 		List<MungeStepOutput> outputs = getChildren(); 
 		
-		outputs.get(0).setData(address.getSuite());
-		outputs.get(1).setData(address.getStreetNumber() != null ? BigDecimal.valueOf(address.getStreetNumber()) : null);
-		outputs.get(2).setData(address.getStreetNumberSuffix());
-		outputs.get(3).setData(address.getStreet());
-		outputs.get(4).setData(address.getStreetType());
-		outputs.get(5).setData(address.getStreetDirection());
-		outputs.get(6).setData(address.getMunicipality());
-		outputs.get(7).setData(address.getProvince());
-		outputs.get(8).setData(address.getCountry());
-		outputs.get(9).setData(address.getPostalCode());
+		outputs.get(0).setData(address.getStreetAddress());
+		outputs.get(1).setData(addressLine2);
+		outputs.get(2).setData(address.getSuite());
+		outputs.get(3).setData(address.getStreetNumber() != null ? BigDecimal.valueOf(address.getStreetNumber()) : null);
+		outputs.get(4).setData(address.getStreetNumberSuffix());
+		outputs.get(5).setData(address.getStreet());
+		outputs.get(6).setData(address.getStreetType());
+		outputs.get(7).setData(address.getStreetDirection());
+		outputs.get(8).setData(address.getMunicipality());
+		outputs.get(9).setData(address.getProvince());
+		outputs.get(10).setData(address.getCountry());
+		outputs.get(11).setData(address.getPostalCode());
 
 		return Boolean.TRUE;
 	}
