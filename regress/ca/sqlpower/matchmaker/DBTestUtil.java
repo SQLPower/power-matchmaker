@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ddl.HSQLDBDDLGenerator;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
@@ -128,6 +129,7 @@ public class DBTestUtil {
         
         SPDataSource hsqlDataSource = new SPDataSource(new PlDotIni());
         hsqlDataSource.getParentType().setJdbcDriver("org.hsqldb.jdbcDriver");
+        hsqlDataSource.getParentType().setDDLGeneratorClass(HSQLDBDDLGenerator.class.getName());
         hsqlDataSource.setName("In-memory HSQLDB");
     
         hsqlDataSource.setUser(hsqlUserName);
