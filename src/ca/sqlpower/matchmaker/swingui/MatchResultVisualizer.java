@@ -82,8 +82,8 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.DefaultGraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
-import ca.sqlpower.matchmaker.util.SourceTableUtil;
 import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.MonitorableWorker;
@@ -709,16 +709,18 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         this.project = project;
         
 		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
-        	String errorText = "The MatchMaker has detected changes in the " +
-			"source table structure.\nYour project will require modifications before the engines can run properly.\n" +
-			"The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
-			"Would you like the MatchMaker to modify the project now?";
+        	String errorText =
+        	    "The MatchMaker has detected changes in the source table structure.\n" +
+        	    "Your project will require modifications before the engines can run properly.\n" +
+        	    "The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
+        	    "Would you like the MatchMaker to modify the project now?";
 			int response = JOptionPane.showOptionDialog(session.getFrame(), errorText,
 					"Source Table Changed", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
-					new String[] {"Fix Now", "Not Now"}, "Modify Now");
+					new String[] {"Fix Now", "Not Now"}, "Fix Now");
 			if (response == JOptionPane.YES_OPTION) {
 				try {
-					SourceTableUtil.checkAndfixProject(session, project);
+				    SQLDatabase db = project.getSourceTable().getParentDatabase();
+				    db.refresh();
 				} catch (Exception ex1) {
 					MMSUtils.showExceptionDialog(getPanel(), "Failed to fix project!", ex1);
 				}

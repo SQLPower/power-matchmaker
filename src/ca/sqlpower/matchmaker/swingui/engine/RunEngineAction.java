@@ -22,14 +22,11 @@ package ca.sqlpower.matchmaker.swingui.engine;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.SourceTableException;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.util.SourceTableUtil;
 import ca.sqlpower.swingui.event.TaskTerminationEvent;
 import ca.sqlpower.swingui.event.TaskTerminationListener;
 
@@ -106,24 +103,7 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 			w.addTaskTerminationListener(this);
 			new Thread(w).start();
 		} catch (Exception ex) {
-			if (ex instanceof SourceTableException) {
-				String errorText = "The MatchMaker has detected changes in the " +
-						"source table structure.\nYour project will require modifications before the engines can run properly.\n" +
-						"The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
-						"Would you like the MatchMaker to modify the project now?";
-				int response = JOptionPane.showOptionDialog(session.getFrame(), errorText,
-						"Source Table Changed", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
-						new String[] {"Fix Now", "Not Now"}, "Modify Now");
-				if (response == JOptionPane.YES_OPTION) {
-					try {
-						SourceTableUtil.checkAndfixProject(session, project);
-					} catch (Exception ex1) {
-						MMSUtils.showExceptionDialog(editorPane.getPanel(), "Failed to fix project!", ex1);
-					}
-				}
-			} else {
-				MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
-			}
+		    MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
 		}
 	}
 
