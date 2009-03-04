@@ -234,7 +234,7 @@ public class MMSUtils {
 		ddlg.setTargetSchema(project.getResultTableSchema());
 		if (project.doesResultTableExist()) {
 			int answer = JOptionPane.showConfirmDialog(frame,
-					"Result table exists, do you want to drop and recreate it?",
+					"The result table exists. Do you want to drop and recreate it?",
 					"Table exists",
 					JOptionPane.YES_NO_OPTION);
 			if ( answer != JOptionPane.YES_OPTION ) {
