@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.FlowLayout;
+
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -32,6 +35,7 @@ import ca.sqlpower.matchmaker.munge.GoogleAddressLookup;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
+import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -41,6 +45,9 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
     private JTextField key;
     private JSpinner rateLimit;
     
+    private JButton showAllButton;
+	private JButton hideAllButton;
+	    
     public GoogleAddressLookupMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
         super(ms, handler, session);
         setOutputShowNames(true);
@@ -87,13 +94,14 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
         rateLimit = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 10.0, 0.1));
         rateLimit.setValue(temp.getRateLimit());
         
+        JPanel mainContent = new JPanel();
+        DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("fill:pref:grow", "fill:pref, pref"), mainContent);
+                
         FormLayout layout = new FormLayout(
-                "4dlu,pref,4dlu,fill:pref:grow,4dlu", // columns
-                "4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
+        		"4dlu,pref,4dlu,fill:pref:grow,4dlu", // columns
+                "4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
         CellConstraints cc = new CellConstraints();
-
         JPanel content = new JPanel(layout);
-        
         content.add(new JLabel("URL:"), cc.xy(2,2));
         content.add(url, cc.xy(4,2));
         content.add(new JLabel("Google Maps API Key:"), cc.xy(2,4));
@@ -101,6 +109,18 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
         content.add(new JLabel("Rate Limit (s):"), cc.xy(2,6));
         content.add(rateLimit, cc.xy(4,6));
         
-        return content;
+        JPanel subPanel = new JPanel(new FlowLayout());
+        showAllButton = new JButton(new HideShowAllLabelsAction("Show All", false, true, true));
+        hideAllButton = new JButton(new HideShowAllLabelsAction("Hide All", false, true, false));
+        subPanel.add(showAllButton);
+        subPanel.add(hideAllButton);
+        
+        builder.append(content);
+        builder.nextLine();
+        builder.append(subPanel);
+                
+        return mainContent;
     }
+    
+    
 }

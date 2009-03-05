@@ -924,6 +924,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		 * control variables
 		 */
 		boolean input;
+		boolean output;
 		boolean show;
 		
 		/**
@@ -931,17 +932,24 @@ public abstract class AbstractMungeComponent extends JPanel {
 		 * 
 		 * @param The title of the action
 		 */
-		public HideShowAllLabelsAction(String title, boolean input, boolean show) {
+		public HideShowAllLabelsAction(String title, boolean input, boolean output, boolean show) {
 			super(title);
 			this.input = input;
+			this.output= output;
 			this.show = show;
 		}
 		
 		
 		public void actionPerformed(ActionEvent e) {
-			CoolJLabel[] labels = input ? inputLabels : outputLabels;
-			for (CoolJLabel l : labels) {
-				if (show) l.expand(); else l.collapse();
+			if(input) {
+				for (CoolJLabel l : inputLabels) {
+					if (show) l.expand(); else l.collapse();
+				}
+			}
+			if(output) {
+				for (CoolJLabel l : outputLabels) {
+					if (show) l.expand(); else l.collapse();
+				}
 			}
 		}
 	}
