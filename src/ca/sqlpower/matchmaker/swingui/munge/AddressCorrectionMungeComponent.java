@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.FlowLayout;
+
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -27,16 +30,25 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 public class AddressCorrectionMungeComponent extends AbstractMungeComponent {
 
+	private JButton showAllButton;
+	private JButton hideAllButton;
+	
 	public AddressCorrectionMungeComponent(MungeStep step,
 			FormValidationHandler handler, MatchMakerSession s) {
 		super(step, handler, s);
-		setOutputShowNames(true);
-		setInputShowNames(true);
 	}
 
 	@Override
 	protected JPanel buildUI() {
-		return new JPanel();
+		showAllButton = new JButton(new HideShowAllLabelsAction("Show All", true, true, true));
+		hideAllButton = new JButton(new HideShowAllLabelsAction("Hide All", true, true, false));
+		JPanel content = new JPanel(new FlowLayout());
+		content.add(showAllButton);
+		content.add(hideAllButton);
+				
+		setOutputShowNames(true);				
+		setInputShowNames(true);
+		return content;
 	}
 
 }

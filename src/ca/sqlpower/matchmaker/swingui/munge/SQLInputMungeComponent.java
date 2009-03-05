@@ -44,8 +44,8 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();
 		content.setLayout(new FlowLayout());
-		content.add(new JButton(new HideShowAllLabelsAction("Show All", false, true)));
-		content.add(new JButton(new HideShowAllLabelsAction("Hide All", false, false)));
+		content.add(new JButton(new HideShowAllLabelsAction("Show All", false, true, true)));
+		content.add(new JButton(new HideShowAllLabelsAction("Hide All", false, true, false)));
 		setOutputShowNames(true);
 		return content;
 	}
