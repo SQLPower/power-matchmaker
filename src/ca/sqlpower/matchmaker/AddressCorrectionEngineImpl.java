@@ -90,6 +90,11 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			int numRowsToProcess = getNumRowsToProcess();
 			jobSize = numRowsToProcess * mungeProcesses.size();
 
+			if (getProject().getMungeSettings().getDebug()) {
+				message = "Engine is running in debug mode so changes will be rolled back";
+				logger.info(message);
+			}
+			
 			message = "Starting Address Correction Engine";
 			logger.info(message);
 			

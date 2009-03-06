@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker.swingui.engine;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -30,7 +29,6 @@ import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -39,7 +37,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -66,6 +63,7 @@ import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -77,6 +75,23 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<Project, MatchMakerFolder> {
 
+	private static final String ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS = 
+		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu";
+		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21             22   23   24   25 	
+
+	private static final String MATCH_ENGINE_PANEL_ROW_SPECS = 
+		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
+		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23             24   25   26   27 	
+
+	private static final String MERGE_ENGINE_PANEL_ROW_SPECS = 
+		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
+		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17             18   19   20   21  	
+
+	private static final String CLEANSE_ENGINE_PANEL_ROW_SPECS = 
+		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
+		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21             22   23   24   25 	
+
+	
 	private static final Logger logger = Logger.getLogger(EngineSettingsPanel.class);
 	
 	/**
@@ -84,7 +99,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 */
 	public enum EngineType {
 		MATCH_ENGINE("Match Engine"), MERGE_ENGINE("Merge Engine"), 
-		CLEANSE_ENGINE("Cleanse Engine"), ADDRESS_CORRECTION_ENGINE("Address Correciton Engine");
+		CLEANSE_ENGINE("Cleanse Engine"), ADDRESS_CORRECTION_ENGINE("Address Correction Engine");
 		
 		String engineName;
 		
@@ -138,6 +153,12 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	private JCheckBox clearMatchPool;
 	
 	/**
+	 * A flag for telling the engine whether to try to use batch execute when
+	 * running insert and update statements into the match/address pool.
+	 */
+	private JCheckBox useBatchExecute;
+	
+	/**
 	 * The frame that this editor lives in.
 	 */
 	private JFrame parentFrame;
@@ -186,14 +207,14 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	/**
 	 * The abort button
 	 */
-	private JButton abortB;
+	private JButton abortButton;
 	
 	/**
 	 * The action that is called when the engine is finished
 	 */
 	private Runnable engineFinish = new Runnable(){
 		public void run() {
-			abortB.setEnabled(false);
+			abortButton.setEnabled(false);
 		}
 	};
 	
@@ -202,7 +223,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 */
 	private Runnable engineStart = new Runnable(){
 		public void run() {
-			abortB.setEnabled(true);
+			abortButton.setEnabled(true);
 		}
 	};
 
@@ -255,7 +276,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
 		
-		this.runEngineAction = new RunEngineAction(swingSession, project, engine, "Run " + engineType,
+		this.runEngineAction = new RunEngineAction(swingSession, project, engine, "Run Engine",
 				engineOutputPanel, this, engineStart, engineFinish);
 		
 		this.panel = buildUI();
@@ -294,24 +315,13 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 * this method simply lays out the components that class provides.
 	 */	
 	private JPanel buildUI() {
-		FormLayout layout = new FormLayout(
-				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu",
-				//  1         2    3         4     5     6    7     8
-		"10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
-		//   1    2     3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21
-		PanelBuilder pb;
-		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
-		: new JPanel(layout);
-		pb = new PanelBuilder(layout, p);
 
-		CellConstraints cc = new CellConstraints();
-
-	
 		if (engineSettings.getLog() == null) {
 			engineSettings.setLog(new File(project.getName() + ".log"));
 		}
 
 		File logFile = engineSettings.getLog();
+		
 		logFilePath = new JTextField(logFile.getAbsolutePath());
 		handler.addValidateObject(logFilePath, new FileNameValidator("Log"));
 
@@ -324,11 +334,11 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			recordsToProcess.setValue(engineSettings.getProcessCount());
 		}
 
-		debugMode = new JCheckBox("Debug Mode? (Changes will be rolled back)", engineSettings.getDebug());
+		debugMode = new JCheckBox("Debug Mode (Changes will be rolled back)", engineSettings.getDebug());
 		itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (((JCheckBox) e.getSource()).isSelected()) {
-					if (type == EngineType.MATCH_ENGINE) {
+					if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 						clearMatchPool.setSelected(false);
 						// I've currently disabled the clear match pool option because the match
 						// in debug mode, changes should be rolled back, but if the clearing of the match
@@ -342,7 +352,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 					engine.setMessageLevel(Level.ALL);
 					messageLevel.setSelectedItem(engine.getMessageLevel());
 				} else {
-					if (type == EngineType.MATCH_ENGINE) {
+					if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 						clearMatchPool.setEnabled(true);
 					}
 					recordsToProcess.setValue(new Integer(0));
@@ -353,15 +363,19 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			if (type == EngineType.MATCH_ENGINE) {
-				clearMatchPool = new JCheckBox("Clear match pool?", ((MungeSettings)engineSettings).isClearMatchPool());
+				clearMatchPool = new JCheckBox("Clear match pool", ((MungeSettings)engineSettings).isClearMatchPool());
 			} else {
-				clearMatchPool = new JCheckBox("Clear Address Pool?" , ((MungeSettings)engineSettings).isClearMatchPool());
+				clearMatchPool = new JCheckBox("Clear address pool" , ((MungeSettings)engineSettings).isClearMatchPool());
 			}
 			if (debugMode.isSelected()) {
 				clearMatchPool.setSelected(false);
 				// See comment just above about why this is disabled
 				clearMatchPool.setEnabled(false);
 			}
+		}
+		
+		if (engineSettings instanceof MungeSettings) {
+			useBatchExecute = new JCheckBox("Batch execute SQL statments", ((MungeSettings)engineSettings).isUseBatchExecute());
 		}
 
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
@@ -385,20 +399,42 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		};
 		messageLevel.addActionListener(messageLevelActionListener);
 
+		String rowSpecs;
+		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			rowSpecs = ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS;
+		} else if (type == EngineType.MERGE_ENGINE) {
+			rowSpecs = MERGE_ENGINE_PANEL_ROW_SPECS;
+		} else if (type == EngineType.CLEANSE_ENGINE) {
+			rowSpecs = CLEANSE_ENGINE_PANEL_ROW_SPECS;
+		} else {
+			rowSpecs = MATCH_ENGINE_PANEL_ROW_SPECS;
+		}
+		FormLayout layout = new FormLayout(
+				"4dlu,fill:pref,4dlu,pref,fill:pref:grow,pref,4dlu,pref,4dlu",
+				 rowSpecs);
+		
+		PanelBuilder pb;
+		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
+		: new JPanel(layout);
+		pb = new PanelBuilder(layout, p);
+
+		CellConstraints cc = new CellConstraints();
+		
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		int y = 4;
 		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));
-		pb.add(logFilePath, cc.xy(4, y, "f,f"));
-		pb.add(new JButton(browseLogFileAction), cc.xy(5, y, "r,f"));
-		pb.add(appendToLog, cc.xy(7, y, "l,f"));
+		pb.add(logFilePath, cc.xyw(4, y, 2, "f,f"));
+		pb.add(new JButton(browseLogFileAction), cc.xy(6, y, "l,f"));
+		y += 2;
+		pb.add(appendToLog, cc.xy(4, y, "l,t"));
+		pb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(5, y, "r,t"));
 
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.CLEANSE_ENGINE) {
 			y += 2;
 
 			pb.add(new JLabel("Munge Processes to run: "), cc.xy(2, y, "r,t"));
 			MungeProcessSelectionList selectionButton = new MungeProcessSelectionList(project) {
-
 				@Override
 				public boolean getValue(MungeProcess mp) {
 					return mp.getActive();
@@ -408,77 +444,65 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 				public void setValue(MungeProcess mp, boolean value) {
 					mp.setActive(value);
 				}
-				
 			};
-			pb.add(selectionButton, cc.xy(4, y, "l,c"));
+			pb.add(selectionButton, cc.xyw(4, y, 2, "l,c"));
 		}
 
 		y += 2;
-		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
+		pb.add(new JLabel("# of records to process:"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
+		pb.add(new JLabel(" (Set to 0 to process all)"), cc.xy(5, y, "l, c"));
 
-		y += 2;
-		pb.add(debugMode, cc.xy(4, y, "l,c"));
-
+		if (engineSettings instanceof MungeSettings) {
+			y += 2;
+			pb.add(useBatchExecute, cc.xyw(4, y, 2, "l,c"));
+		}
+		
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			y += 2;
-			pb.add(clearMatchPool, cc.xy(4, y, "l,c"));
+			pb.add(clearMatchPool, cc.xyw(4, y, 2, "l,c"));
 		}
 
 		y += 2;
-		pb.add(new JLabel("Message Level:"), cc.xy(2,y, "r,c"));
-		pb.add(messageLevel, cc.xy(4,y,"l,c"));
+		pb.add(debugMode, cc.xyw(4, y, 2, "l,c"));
+		
+		y += 2;
+		pb.add(new JLabel("Message Level:"), cc.xy(2,y, "r,t"));
+		pb.add(messageLevel, cc.xy(4,y,"l,t"));
 
-		FormLayout bbLayout = new FormLayout(
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
-		"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
-		PanelBuilder bbpb;
-		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
-		: new JPanel(bbLayout);
-		bbpb = new PanelBuilder(bbLayout, bbp);
-		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(2, 2, "f,f"));
-		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
-		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
-
-		// TODO: Match statistics has been disabled for now until we
-		// re-implement it.
-//		Action showMatchStatsActon = new ShowMatchStatisticInfoAction(swingSession, project, parentFrame);
-		if (type == EngineType.MATCH_ENGINE || type == EngineType.MERGE_ENGINE) {
-			Action showMatchStatsAction = new AbstractAction("Match Statistics...") {
-				public void actionPerformed(ActionEvent e) {
-					JOptionPane.showMessageDialog(parentFrame,
-					"Match statistics is not yet available. We apologize for the inconvenience");
-				}
-			};
-			bbpb.add(new JButton(showMatchStatsAction), cc.xy(2, 4, "f,f"));
-		}
-		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
-
-		abortB = new JButton(new AbstractAction("Abort!"){
+		abortButton = new JButton(new AbstractAction("Abort!"){
 			public void actionPerformed(ActionEvent e) {
 				engine.setCancelled(true);
 			}
 		});
 
-		abortB.setEnabled(false);
+		abortButton.setEnabled(false);
 
-		bbpb.add(abortB,cc.xy(6,4));
+		ButtonBarBuilder bbb = new ButtonBarBuilder();
+		bbb.addFixed(new JButton(new SaveAction()));
+		bbb.addRelatedGap();
+		bbb.addFixed(new JButton(new ShowCommandAction(parentFrame, this, engine)));
+		bbb.addRelatedGap();
+		bbb.addFixed(new JButton(runEngineAction));
+		bbb.addRelatedGap();
+		bbb.addFixed(abortButton);
+		
+		y += 2;
+		pb.add(bbb.getPanel(), cc.xyw(2, y, 6, "r,c"));
 
-		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
-
-		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
-		engineAccessoryPanel.add(engineOutputPanel.getProgressBar(), BorderLayout.NORTH);
-		engineAccessoryPanel.add(engineOutputPanel.getButtonBar(), BorderLayout.SOUTH);
-
-		JPanel anotherP = new JPanel(new BorderLayout(12, 12));
-		anotherP.add(pb.getPanel(), BorderLayout.NORTH);
-		anotherP.add(engineOutputPanel.getOutputComponent(), BorderLayout.CENTER);
-		anotherP.add(engineAccessoryPanel, BorderLayout.SOUTH);
-		anotherP.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+		y += 2;
+		pb.add(engineOutputPanel.getProgressBar(), cc.xyw(2, y, 6));
+		
+		y += 2;
+		pb.add(engineOutputPanel.getOutputComponent(), cc.xyw(2, y, 6));
+		
+		y += 2;
+		pb.add(engineOutputPanel.getButtonBar(), cc.xyw(2, y, 6));
+		
 
 		refreshRunActionStatus();
 		
-		return anotherP;
+		return pb.getPanel();
 	}
 
 	/**
@@ -489,6 +513,9 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		engineSettings.setDebug(debugMode.isSelected());
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
+		}
+		if (engineSettings instanceof MungeSettings) {
+			((MungeSettings)engineSettings).setUseBatchExecute(useBatchExecute.isSelected());
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());

@@ -21,9 +21,6 @@ package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -35,18 +32,12 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 
 import org.apache.log4j.Logger;
-
-import ca.sqlpower.matchmaker.swingui.MMSUtils;
-import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
@@ -99,7 +90,7 @@ public class EngineOutputPanel {
 		}
 		engineOutputDoc = new DefaultStyledDocument();
 
-		outputTextArea = new JTextArea(20, 80);
+		outputTextArea = new JTextArea(10, 80);
 		outputTextArea.setDocument(engineOutputDoc);
 		outputTextArea.setEditable(false);
 		outputTextArea.setWrapStyleWord(true);
@@ -143,51 +134,8 @@ public class EngineOutputPanel {
 			}
 		};
 		JButton clearButton = new JButton(clearAction);
-		clearButton.setText("Clear");
+		clearButton.setText("Clear Log");
 		bbBuilder.addGridded(clearButton);
-		bbBuilder.addRelatedGap();
-		
-		Action saveAsAction = new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						SPSUtils.saveDocument(
-								owner,
-								engineOutputDoc,
-								(FileExtensionFilter) SPSUtils.TEXT_FILE_FILTER);
-					}
-				});
-			}
-		};
-		JButton saveAsButton = new JButton(saveAsAction);
-		saveAsButton.setText("Save As...");
-		bbBuilder.addGridded(saveAsButton);
-		bbBuilder.addRelatedGap();
-
-		JButton copyButton = new JButton(new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-
-					public void run() {
-						try {
-							StringSelection selection = new StringSelection(
-									engineOutputDoc.getText(0,
-											engineOutputDoc.getLength()));
-							Clipboard clipboard = Toolkit
-							.getDefaultToolkit()
-							.getSystemClipboard();
-							clipboard.setContents(selection, selection);
-						} catch (BadLocationException e1) {
-							MMSUtils.showExceptionDialog(owner,
-									"Document Copy Error", e1);
-						}
-					}
-				});
-			}
-		});
-		copyButton.setText("Copy to Clipboard");
-		bbBuilder.addGridded(copyButton);
-		bbBuilder.addRelatedGap();
 
 		buttonBar = bbBuilder.getPanel();
 		
