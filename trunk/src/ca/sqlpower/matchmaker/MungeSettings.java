@@ -34,6 +34,7 @@ public class MungeSettings extends MatchMakerSettings {
         result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
         result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
         result = PRIME * result + ((clearMatchPool == true) ? 345 : 456);
+        result = PRIME * result + ((useBatchExecute == true) ? 1 : 0);
         return result;
     }
 
@@ -60,6 +61,8 @@ public class MungeSettings extends MatchMakerSettings {
         
         if (clearMatchPool != other.clearMatchPool ) return false;
         
+        if (useBatchExecute != other.useBatchExecute ) return false;
+        
         return true;
     }
 
@@ -78,6 +81,12 @@ public class MungeSettings extends MatchMakerSettings {
 	 */
 	private boolean clearMatchPool = false;
 
+	/**
+	 * Set whether or not to use batch updates when running SQL statements to
+	 * update the Match/Address Pool
+	 */
+	private boolean useBatchExecute = false;
+
 	public boolean getClearMatchPool() {
 		return clearMatchPool;
 	}
@@ -86,6 +95,17 @@ public class MungeSettings extends MatchMakerSettings {
 		return clearMatchPool;
 	}
 
+	public boolean isUseBatchExecute() {
+		return useBatchExecute ;
+	}
+	
+	public void setUseBatchExecute(boolean useBatchExecute) {
+		boolean oldValue = this.useBatchExecute;
+		this.useBatchExecute = useBatchExecute;
+		getEventSupport().firePropertyChange("useBatchExecute", oldValue,
+				this.useBatchExecute);
+	}
+	
 	public void setClearMatchPool(boolean clearMatchPool) {
 		boolean oldValue = this.clearMatchPool;
 		this.clearMatchPool = clearMatchPool;
@@ -121,6 +141,7 @@ public class MungeSettings extends MatchMakerSettings {
         buf.append("autoMatchThreshold->"+autoMatchThreshold+", ");
         buf.append("lastBackupNo->"+lastBackupNo+", ");
         buf.append("clearMatchPool->"+clearMatchPool+", ");
+        buf.append("useBatchExecute->"+useBatchExecute+", ");
         buf.append(super.toString());
         buf.append("]");
         return buf.toString();
@@ -146,6 +167,7 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setSession(s);
 		settings.setClearMatchPool(isClearMatchPool());
 		settings.setVisible(isVisible());
+		settings.setUseBatchExecute(isUseBatchExecute());
 		return settings;
 	}
 }

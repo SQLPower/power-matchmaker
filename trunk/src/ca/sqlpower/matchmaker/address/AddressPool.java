@@ -255,7 +255,7 @@ public class AddressPool {
 	 * @throws SQLException
 	 * @throws SQLObjectException
 	 */
-	public void store(Logger engineLogger) throws SQLException, SQLObjectException {
+	public void store(Logger engineLogger, boolean useBatchExecute, boolean debug) throws SQLException, SQLObjectException {
 		List<AddressResult> dirtyAddresses = new ArrayList<AddressResult>();
 		List<AddressResult> newAddresses = new ArrayList<AddressResult>();
 		
@@ -278,7 +278,7 @@ public class AddressPool {
 		try {
 			con = project.createResultTableConnection();
 			con.setAutoCommit(false);
-			boolean supportsBatchUpdates = con.getMetaData().supportsBatchUpdates();
+			boolean useBatchUpdates = useBatchExecute && con.getMetaData().supportsBatchUpdates();
 			SQLTable resultTable = project.getResultTable();
 			int keySize = project.getSourceTableIndex().getChildCount();
 
@@ -356,7 +356,7 @@ public class AddressPool {
 					
 					engineLogger.debug("Preparing the following address result to be updated: " + result);
 					
-					if (supportsBatchUpdates) {
+					if (useBatchUpdates) {
 						engineLogger.debug("Adding statement to batch");
 						ps.addBatch();
 						batchCount++;
@@ -372,7 +372,7 @@ public class AddressPool {
 				}
 				
 				// Execute remaining batch statements
-				if (batchCount > 0 && supportsBatchUpdates) {
+				if (batchCount > 0 && useBatchUpdates) {
 					ps.executeBatch();
 				}
 				if (ps != null) ps.close();
@@ -445,7 +445,7 @@ public class AddressPool {
 
 					engineLogger.debug("Preparing the following address to be inserted: " + result);
 					
-					if (supportsBatchUpdates) {
+					if (useBatchUpdates) {
 						engineLogger.debug("Adding to batch");
 						ps.addBatch();
 						batchCount++;
@@ -462,14 +462,22 @@ public class AddressPool {
 				}
 				
 				// Execute remaining batch statements
-				if (batchCount > 0 && supportsBatchUpdates) {
+				if (batchCount > 0 && useBatchUpdates) {
 					ps.executeBatch();
 				}
 				
 				if (ps != null) ps.close();
 				ps = null;
 			}
-			con.commit();
+			
+			if (debug) {
+				engineLogger.debug("Rolling back changes");
+				con.rollback();
+			} else {
+				engineLogger.debug("Committing changes");
+				con.commit();
+			}
+			
 			for (AddressResult result: addresses.values()) {
 				result.markClean();
 			}
