@@ -128,6 +128,9 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 				setCurrentProcessor(null);
 			}
 			
+			MungeSettings settings = getProject().getMungeSettings();
+			pool.store(getLogger(), settings.isUseBatchExecute(), settings.getDebug());
+			
 			message = "Address Correction Engine finished successfully";
 			logger.info(message);
 			return EngineInvocationResult.SUCCESS;
