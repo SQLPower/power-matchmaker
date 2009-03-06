@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -146,9 +145,7 @@ public class ValidatingAddressCorrectionMungeProcessor extends MungeProcessor {
 			for (MungeStep step: preValidationSteps) {
 				step.commit();
 			}
-			MungeSettings settings = process.getParentProject().getMungeSettings();
-			pool.store(getLogger(), settings.isUseBatchExecute(), settings.getDebug());
-			
+
 		} catch (Throwable t) {
 			for (MungeStep step: preValidationSteps) {
 				try {
