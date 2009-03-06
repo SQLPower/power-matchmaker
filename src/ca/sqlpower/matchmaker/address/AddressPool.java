@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,6 +28,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.address.AddressResult.StorageState;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -147,6 +150,7 @@ public class AddressPool {
 	public void addAddress(AddressResult result, Logger engineLogger) {
 		List<Object> key = result.getKeyValues();
 		if (addresses.containsKey(key)) {
+			engineLogger.debug("Address added marked as dirty");
 			result.markDirty();
 		}
 		addresses.put(key, result);
@@ -199,8 +203,24 @@ public class AddressPool {
 			while (rs.next()) {
 				List<Object> keyValues = new ArrayList<Object>();
 				int numKeys = project.getSourceTableIndex().getChildCount();
+
+				// We need to convert the column types to the base set of
+				// String, Boolean, BigDecimal, and Date that we use in the
+				// Munge Processes. Otherwise, when we cannot properly compare
+				// the key values of these loaded. Addresses with the ones
+				// coming through the munge process.
 				for (int i = 0; i < numKeys; i++) {
-					keyValues.add(rs.getObject(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+					int type = project.getSourceTableIndex().getChild(i).getColumn().getType();
+					Class c = TypeMap.typeClass(type);
+					if (c == BigDecimal.class) {
+						keyValues.add(rs.getBigDecimal(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+					} else if (c == Date.class) {
+						keyValues.add(rs.getDate(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+		            } else if (c == Boolean.class) {
+		            	keyValues.add(rs.getBoolean(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+		            } else {
+		            	keyValues.add(rs.getString(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+		            }
 				}
 				
 				String addressLine1 = rs.getString(INPUT_ADDRESS_LINE1);
@@ -293,31 +313,31 @@ public class AddressPool {
 				appendFullyQualifiedTableName(sql, resultTable);
 				
 				sql.append(" SET ");
-				sql.append(INPUT_ADDRESS_LINE1).append("=?, ");
-				sql.append(INPUT_ADDRESS_LINE2).append("=?, ");
-				sql.append(INPUT_MUNICIPALITY).append("=?, ");
-				sql.append(INPUT_PROVINCE).append("=?, ");
-				sql.append(INPUT_COUNTRY).append("=?, ");
-				sql.append(INPUT_POSTAL_CODE).append("=?, ");
+				sql.append(INPUT_ADDRESS_LINE1).append("=?, ");				// 1
+				sql.append(INPUT_ADDRESS_LINE2).append("=?, ");				// 2
+				sql.append(INPUT_MUNICIPALITY).append("=?, ");				// 3
+				sql.append(INPUT_PROVINCE).append("=?, ");					// 4
+				sql.append(INPUT_COUNTRY).append("=?, ");					// 5
+				sql.append(INPUT_POSTAL_CODE).append("=?, ");				// 6
 				
-				sql.append(OUTPUT_SUITE).append("=?, ");
-				sql.append(OUTPUT_STREET_NUMBER).append("=?, ");
-				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=?, ");
-				sql.append(OUTPUT_STREET_NAME).append("=?, ");
-				sql.append(OUTPUT_STREET_TYPE).append("=?, ");
-				sql.append(OUTPUT_STREET_DIRECTION).append("=?, ");
-				sql.append(OUTPUT_MUNICIPALITY).append("=?, ");
-				sql.append(OUTPUT_PROVINCE).append("=?, ");
-				sql.append(OUTPUT_COUNTRY).append("=?, ");
-				sql.append(OUTPUT_POSTAL_CODE).append("=?, ");
-				sql.append(STATUS).append("=? ");
+				sql.append(OUTPUT_SUITE).append("=?, ");					// 7
+				sql.append(OUTPUT_STREET_NUMBER).append("=?, ");			// 8
+				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=?, ");		// 9
+				sql.append(OUTPUT_STREET_NAME).append("=?, ");				// 10
+				sql.append(OUTPUT_STREET_TYPE).append("=?, ");				// 11
+				sql.append(OUTPUT_STREET_DIRECTION).append("=?, ");			// 12
+				sql.append(OUTPUT_MUNICIPALITY).append("=?, ");				// 13
+				sql.append(OUTPUT_PROVINCE).append("=?, ");					// 14
+				sql.append(OUTPUT_COUNTRY).append("=?, ");					// 15
+				sql.append(OUTPUT_POSTAL_CODE).append("=?, ");				// 16
+				sql.append(STATUS).append("=? ");							// 17
 				
 				sql.append("WHERE ");
 				for (int i = 0; i < keySize; i++) {
 					if (i > 0) {
 						sql.append("AND ");
 					}
-					sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(i).append("=? ");
+					sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(i).append("=? "); // 18+
 				}
 				
 				ps = con.prepareStatement(sql.toString());
@@ -347,7 +367,7 @@ public class AddressPool {
 					ps.setString(16, outputAddress.getPostalCode());
 					ps.setBoolean(17, result.isValidated());
 					
-					int j = 17;
+					int j = 18;
 					
 					for (Object keyValue: result.getKeyValues()) {
 						ps.setObject(j, keyValue);
