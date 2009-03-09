@@ -98,7 +98,8 @@ public class SERPTest extends TestCase {
     			
     			address = Address.parse(streetAddress, municipality, province, postalCode, "CA");
     			
-    			List<ValidateResult> results = addressDB.correct(address);
+    			AddressValidator validator = new AddressValidator(addressDB, address);
+    			List<ValidateResult> results = validator.getResults();
     			
     			for (ValidateResult validateResult: results) {
     				logger.debug(validateResult);

@@ -29,6 +29,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
+import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.validation.ValidateResult;
 
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
@@ -117,7 +118,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		
 		logger.debug("Address that was parsed:\n" + address.toString());
 		
-		List<ValidateResult> results = addressDB.correct(address);
+		AddressValidator validator = new AddressValidator(addressDB, address);
+		List<ValidateResult> results = validator.getResults();
 
 		if (results.size() > 0) { 
 			logger.debug("Address '" + addressString + "' was invalid with the following problem(s):");

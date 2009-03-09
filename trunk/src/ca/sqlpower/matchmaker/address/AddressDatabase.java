@@ -28,16 +28,11 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.validation.Status;
-import ca.sqlpower.validation.ValidateResult;
-
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.persist.EntityCursor;
-import com.sleepycat.persist.EntityJoin;
 import com.sleepycat.persist.EntityStore;
-import com.sleepycat.persist.ForwardCursor;
 import com.sleepycat.persist.PrimaryIndex;
 import com.sleepycat.persist.SecondaryIndex;
 import com.sleepycat.persist.StoreConfig;
@@ -52,10 +47,10 @@ public class AddressDatabase {
     private PrimaryIndex<String, Municipality> municipalityPK;
     private SecondaryIndex<String, String, Municipality> municipalitySK;
     
-    private PrimaryIndex<String, PostalCode> postalCodePK;
-    private SecondaryIndex<String, String, PostalCode> postalCodeProvince;
-    private SecondaryIndex<String, String, PostalCode> postalCodeMunicipality;
-    private SecondaryIndex<String, String, PostalCode> postalCodeStreet;
+    PrimaryIndex<String, PostalCode> postalCodePK;
+    SecondaryIndex<String, String, PostalCode> postalCodeProvince;
+    SecondaryIndex<String, String, PostalCode> postalCodeMunicipality;
+    SecondaryIndex<String, String, PostalCode> postalCodeStreet;
     
     private void open() throws DatabaseException {
         EnvironmentConfig envConfig = new EnvironmentConfig();
@@ -117,116 +112,6 @@ public class AddressDatabase {
         open();
     }
 
-    public List<ValidateResult> validate(Address a) throws DatabaseException {
-        
-        List<ValidateResult> results = new ArrayList<ValidateResult>();
-        
-        // translate province/state names to official code
-        a.normalize();
-        
-        // translate municipality name to canonical name
-        Set<Municipality> municipalities = findMunicipality(a.getMunicipality(), a.getProvince());
-        if (municipalities.size() == 0) {
-            results.add(ValidateResult.createValidateResult(
-                    Status.FAIL, "Municipality \"" + a.getMunicipality() + "\" does not exist"));
-        } else if (municipalities.size() > 1) {
-            results.add(ValidateResult.createValidateResult(
-                    Status.FAIL, "Municipality \"" + a.getMunicipality() + "\" is ambiguous"));
-        } else {
-            Municipality m = municipalities.iterator().next();
-            a.setProvince(m.getProvince());
-            if (!m.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
-                a.setMunicipality(m.getOfficialName());
-                results.add(ValidateResult.createValidateResult(
-                        Status.WARN, "Corrected municipality to " + a.getMunicipality() + ", " + a.getProvince()));
-            }
-        }
-        
-        // validate street
-        
-        if (a.getPostalCode() != null) {
-            String pcNormalized = a.getPostalCode().toUpperCase().replaceAll("[^A-Z0-9]", "");
-            PostalCode pc = postalCodePK.get(pcNormalized);
-            
-            // verify province, municipality, street, type, direction, and street number
-            if (pc == null) {
-                results.add(ValidateResult.createValidateResult(
-                        Status.FAIL, "Invalid postal code: " + a.getPostalCode()));
-            } else {
-                if (!pc.getProvinceCode().equals(a.getProvince())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Province code does not agree with postal code"));
-                }
-                if (!pc.getMunicipalityName().equals(a.getMunicipality())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Municipality does not agree with postal code"));
-                }
-                if (pc.getStreetName() != null && !pc.getStreetName().equals(a.getStreet())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Street name does not agree with postal code"));
-                }
-            }
-            
-        } else {
-            // try to find unique postal code match TODO extract to public method
-            EntityJoin<String, PostalCode> join = new EntityJoin<String, PostalCode>(postalCodePK);
-            
-            boolean allNulls = true;
-            
-            if (a.getProvince() != null) {
-                join.addCondition(postalCodeProvince, a.getProvince());
-                allNulls = false;
-            }
-            if (a.getMunicipality() != null) {
-                join.addCondition(postalCodeMunicipality, a.getMunicipality());
-                allNulls = false;
-            }
-            if (a.getStreet() != null) {
-                join.addCondition(postalCodeStreet, a.getStreet());
-                allNulls = false;
-            }
-            
-            
-            // TODO check how many fields match these criteria
-            // (for example, if more than 1000 records match, just emit an error)
-            
-            if (!allNulls) {
-	            ForwardCursor<PostalCode> matches = null;
-	            try {
-	                matches = join.entities();
-	                for (PostalCode pc : matches) {
-	                    if (pc.containsAddress(a)) {
-	                        a.setPostalCode(pc.getPostalCode());
-	                        results.add(ValidateResult.createValidateResult(
-	                                Status.WARN, "Added postal code to valid address"));
-	                        break;
-	                        // TODO check for multiple matches (they would differ by street type & direction)
-	                    }
-	                }
-	            } finally {
-	                if (matches != null) matches.close();
-	            }
-            } else {
-            	results.add(ValidateResult.createValidateResult(Status.FAIL, "Address is too incomplete for lookup"));
-            }
-            
-            if (a.getPostalCode() == null) {
-                results.add(ValidateResult.createValidateResult(
-                        Status.FAIL, "No matching postal code found for address"));
-            }
-        }
-        
-        return results;
-    }
-    
-    public List<ValidateResult> correct(Address a) {
-        try {
-            return validate(a);
-        } catch (DatabaseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Returns the set of Municipalities that have the given name as their
      * official name or one of their alternates, restricting the results to the
@@ -262,5 +147,23 @@ public class AddressDatabase {
         }
         hits.close();
         return results;
+    }
+
+    /**
+     * Returns all known information abotu the given postal code.
+     * 
+     * @param postalCode
+     *            The code. The lookup is not case sensitive, and all
+     *            non-alplanumeric characters are ignored, so the arguments
+     *            "A1A1A1" and "a1a 1A1" are equivalent. This argument must not
+     *            be null.
+     * @return The PostalCode object for the given code, or null if the given
+     *         code does not exist in this database.
+     * @throws DatabaseException if the lookup fails due to database problems
+     */
+    public PostalCode findPostalCode(String postalCode) throws DatabaseException {
+        String pcNormalized = postalCode.toUpperCase().replaceAll("[^A-Z0-9]", "");
+        PostalCode pc = postalCodePK.get(pcNormalized);
+        return pc;
     }
 }
