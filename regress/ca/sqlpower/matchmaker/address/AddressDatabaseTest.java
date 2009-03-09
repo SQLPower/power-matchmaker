@@ -81,6 +81,11 @@ public class AddressDatabaseTest extends TestCase {
         return false;
     }
 
+    private List<ValidateResult> createValidateResults() {
+        AddressValidator validator = new AddressValidator(addressDB, address);
+        return validator.getResults();
+    }
+    
     @Override
     protected void setUp() throws Exception {
         addressDB = new AddressDatabase(new File("/Users/fuerth/addressdb"));
@@ -97,7 +102,7 @@ public class AddressDatabaseTest extends TestCase {
     public void testNoticeInvalidPostalCode() {
         address.setPostalCode("1AAAAA"); // does not follow A1A1A1 pattern, so should never be valid
         
-        List<ValidateResult> result = addressDB.correct(address);
+        List<ValidateResult> result = createValidateResults();
         
         assertResultContains(result, "invalid postal code");
     }
@@ -112,7 +117,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setPostalCode("B2G 1Z3");
         address.resetChangeFlags();
         
-        List<ValidateResult> results = addressDB.correct(address);
+        List<ValidateResult> results = createValidateResults();
         
         assertResultContains(results, "ANITGINOSH.*does not exist");
         assertResultContains(results, "municipality.*does not agree");
@@ -128,7 +133,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setStreetType("St");
         address.resetChangeFlags();
         
-        List<ValidateResult> results = addressDB.correct(address);
+        List<ValidateResult> results = createValidateResults();
         
         System.out.println("addpostalcode: " + results);
         System.out.println(address);
@@ -141,7 +146,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setProvince("NS");
         address.setMunicipality("ANTIGONISH");
         
-        List<ValidateResult> results = addressDB.correct(address);
+        List<ValidateResult> results = createValidateResults();
 
         assertResultDoesNotContain(results, "corrected municipality");
     }
@@ -151,7 +156,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setMunicipality("ANITGINOSH"); // this is the incorrect municipality name
         address.resetChangeFlags();
         
-        addressDB.correct(address);
+        createValidateResults();
         
         assertFalse(address.isMunicipalityChanged());
     }
@@ -165,7 +170,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setPostalCode("B2G 1Z3");
         address.resetChangeFlags();
         
-        addressDB.correct(address);
+        createValidateResults();
         
         assertFalse(address.isMunicipalityChanged());
         assertEquals("ANTIGONISH", address.getMunicipality());
@@ -177,7 +182,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setProvince("NS");
         address.resetChangeFlags();
         
-        List<ValidateResult> results = addressDB.correct(address);
+        List<ValidateResult> results = createValidateResults();
         
         assertTrue(address.isMunicipalityChanged());
         assertEquals("OXFORD", address.getMunicipality());
@@ -200,7 +205,7 @@ public class AddressDatabaseTest extends TestCase {
         address.setPostalCode("L1A3K3");
         address.setCountry("Canada");
         System.out.println(address);
-        List<ValidateResult> results = addressDB.correct(address);
+        List<ValidateResult> results = createValidateResults();
         
         for (ValidateResult result: results) {
             System.out.println(result.toString());

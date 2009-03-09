@@ -53,6 +53,7 @@ import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
+import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
@@ -230,7 +231,8 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				Address address1 = Address.parse(selected.getAddressLine1(),
 						selected.getMunicipality(), selected.getProvince(),
 						selected.getPostalCode(), selected.getCountry());
-				validateResult = addressDatabase.correct(address1);
+				AddressValidator validator = new AddressValidator(addressDatabase, address1);
+				validateResult = validator.getResults();
 				problemTable = new JTable(new ValidateResultTableModel(validateResult));
 				verticalSplitPane.setBottomComponent(new JScrollPane(problemTable));
 				verticalSplitPane.getBottomComponent().setMinimumSize(new Dimension(1, 1));
