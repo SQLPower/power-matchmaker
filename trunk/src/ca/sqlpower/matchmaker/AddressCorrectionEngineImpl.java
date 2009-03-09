@@ -52,6 +52,8 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	 * Failure to do so is punishable by death by screaming monkeys!
 	 */
 	private Monitorable currentProcessor;
+
+	private int numRowsToProcess;
 	
 	public AddressCorrectionEngineImpl(MatchMakerSession session, Project project) {
 		logger = Logger.getLogger(AddressCorrectionEngineImpl.class + "." + project.getName());
@@ -87,8 +89,8 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 				}
 			}
 
-			int numRowsToProcess = getNumRowsToProcess();
-			jobSize = numRowsToProcess * mungeProcesses.size();
+			numRowsToProcess = getNumRowsToProcess();
+			jobSize = numRowsToProcess * (mungeProcesses.size() + 1);
 
 			if (getProject().getMungeSettings().getDebug()) {
 				message = "Engine is running in debug mode so changes will be rolled back";
@@ -129,7 +131,11 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			}
 			
 			MungeSettings settings = getProject().getMungeSettings();
+			setCurrentProcessor(pool);
+			logger.info("Storing invalid addresses");
 			pool.store(getLogger(), settings.isUseBatchExecute(), settings.getDebug());
+			progress += pool.getProgress();
+			setCurrentProcessor(null);
 			
 			message = "Address Correction Engine finished successfully";
 			logger.info(message);
@@ -178,6 +184,16 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 		int currentProgress;
 		if (currentProcessor instanceof Processor) {
 			currentProgress = progress + currentProcessor.getProgress();
+		} else if (currentProcessor instanceof AddressPool) {
+			float poolProgress = currentProcessor.getProgress();
+			Integer poolJobSizeInteger = currentProcessor.getJobSize();
+			if (poolJobSizeInteger == null) {
+				currentProgress = progress;
+			} else {
+				float poolJobSize = poolJobSizeInteger.floatValue();
+				float matchPoolProgress = poolProgress / poolJobSize * numRowsToProcess;
+				currentProgress = progress + Math.round(matchPoolProgress);
+			}
 		} else {
 			currentProgress = progress;
 		}

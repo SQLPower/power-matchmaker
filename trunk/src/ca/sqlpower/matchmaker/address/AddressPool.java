@@ -45,6 +45,7 @@ import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.util.MonitorableImpl;
 
 /**
  * An object representation of the Address Correction result table. It is used
@@ -52,7 +53,7 @@ import ca.sqlpower.sqlobject.SQLIndex.Column;
  * storing them into the database, and by the Address Correction Validation
  * screen to populate the list of invalid addresses and their details.
  */
-public class AddressPool {
+public class AddressPool extends MonitorableImpl{
 
 	private static final String SOURCE_ADDRESS_KEY_COLUMN_BASE 	= "src_addr_key_col_";
 	private static final String INPUT_ADDRESS_LINE1 			= "input_address_line1";
@@ -276,6 +277,9 @@ public class AddressPool {
 	 * @throws SQLObjectException
 	 */
 	public void store(Logger engineLogger, boolean useBatchExecute, boolean debug) throws SQLException, SQLObjectException {
+		setStarted(true);
+		setProgress(0);
+		
 		List<AddressResult> dirtyAddresses = new ArrayList<AddressResult>();
 		List<AddressResult> newAddresses = new ArrayList<AddressResult>();
 		
@@ -288,10 +292,12 @@ public class AddressPool {
 			}
 
 		}
+
+		setJobSize(dirtyAddresses.size() + newAddresses.size());
 		
 		engineLogger.debug("# of Dirty Address Records:" + dirtyAddresses.size());
 		engineLogger.debug("# of New Address Records:" + newAddresses.size());
-
+		
 		Connection con = null;
 		PreparedStatement ps = null;
 		
@@ -389,6 +395,7 @@ public class AddressPool {
 						engineLogger.debug("Executing update statement");
 						ps.execute();
 					}
+					incrementProgress();
 				}
 				
 				// Execute remaining batch statements
@@ -479,6 +486,7 @@ public class AddressPool {
 						engineLogger.debug("Executing statement");
 						ps.execute();
 					}
+					incrementProgress();
 				}
 				
 				// Execute remaining batch statements
@@ -510,6 +518,7 @@ public class AddressPool {
 			}
 			throw new RuntimeException("Unexpected exception while storing address validation results", ex);
 		} finally {
+			setFinished(true);
 			if (ps != null) try { ps.close(); } catch (SQLException e) { engineLogger.error("Error while closing PreparedStatement", e); }
 			if (con != null) try { con.close(); } catch (SQLException e) { engineLogger.error("Error while closing Connection", e); }
 		}
