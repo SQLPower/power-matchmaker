@@ -143,7 +143,7 @@ public class AddressDatabase {
             if (province == null || province.equals(m.getProvince())) {
                 results.add(m);
             }
-            System.out.println(m);
+            logger.debug("Found municipality: " + m);
         }
         hits.close();
         return results;
