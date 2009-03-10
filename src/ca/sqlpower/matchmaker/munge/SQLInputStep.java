@@ -292,7 +292,7 @@ public class SQLInputStep extends AbstractMungeStep {
     public MungeResultStep getOutputStep(Project project) throws SQLObjectException {
         if (outputStep != null) {
             return outputStep;
-        } else if (project.getType() == ProjectMode.CLEANSE) {
+        } else if (project.getType() == ProjectMode.CLEANSE || project.getType() == ProjectMode.ADDRESS_CORRECTION) {
     		outputStep = new CleanseResultStep();
     	} else {
     		outputStep = new DeDupeResultStep();
