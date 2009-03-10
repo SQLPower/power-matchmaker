@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.FlowLayout;
+
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
@@ -33,6 +36,9 @@ public class CleanseResultMungeComponent extends AbstractMungeComponent {
 	
 	public CleanseResultMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler, session);
+		content.setLayout(new FlowLayout());
+		content.add(new JButton(new HideShowAllLabelsAction("Show All", true, false, true)));
+		content.add(new JButton(new HideShowAllLabelsAction("Hide All", true, false, false)));
 		setInputShowNames(true);
 	}
 
