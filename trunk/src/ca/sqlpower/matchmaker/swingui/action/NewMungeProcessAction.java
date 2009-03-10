@@ -54,7 +54,7 @@ public class NewMungeProcessAction extends AbstractAction {
 	 * and the upper y co-ordinate of the result step when the new Munge Process
 	 * gets created.
 	 */
-	private static final int DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP = 300;
+	private static final int DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP = 350;
 
 	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Project parent) {
 	    super("New Munge Process");
@@ -122,6 +122,7 @@ public class NewMungeProcessAction extends AbstractAction {
 		
 		if (mungeResultStep instanceof CleanseResultStep) {
 			try {
+				mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
 				mungeResultStep.open(logger);
                 mungeResultStep.rollback();
 				mungeResultStep.close();
