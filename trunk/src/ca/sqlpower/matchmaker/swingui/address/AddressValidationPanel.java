@@ -24,6 +24,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -121,6 +123,12 @@ public class AddressValidationPanel extends NoEditEditorPane {
      * This is the list model which stores only the invalid addresses
      */
     private DefaultListModel invalidResults = new DefaultListModel();
+    
+    /**
+     * This is the selected AddressLabel which is in the middle of the 
+     * validation screen waiting to be corrected.
+     */
+    private AddressLabel selectedAddressLabel;
     
     public AddressValidationPanel(MatchMakerSwingSession session, Collection<AddressResult> results) {
 		try {
@@ -231,7 +239,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			button.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					//TODO implement this method to revert function work
+					selectedAddressLabel.setAddress(selectedAddressLabel.getRevertToAddress());
 				}
 				
 			});
@@ -269,9 +277,9 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					AddressValidator validator = new AddressValidator(addressDatabase, address1);
 				    validateResult = validator.getResults();
 
-					AddressLabel addressLabel = new AddressLabel(address1, false, null);
-					addressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
-					leftPane.add(addressLabel);
+					selectedAddressLabel = new AddressLabel(address1, false, null);
+					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
+					leftPane.add(selectedAddressLabel);
 					leftPane.add(Box.createVerticalStrut(10));
 					JLabel problems = new JLabel("Problems:");
 					leftPane.add(problems);
@@ -296,6 +304,31 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					JList suggestionList = new JList(validator.getSuggestions().toArray());
 					suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 					suggestionList.setCellRenderer(new AddressListCellRenderer(address1));
+					//suggestionList.addListSelectionListener(new SuggestionListCellSelectionListener());
+					suggestionList.addMouseListener(new MouseListener() {
+
+						public void mouseClicked(MouseEvent e) {
+							final Address selected = (Address) ((JList)e.getSource()).getSelectedValue();
+							selectedAddressLabel.setAddress(selected);
+						}
+
+						public void mouseEntered(MouseEvent e) {
+							// Do nothing							
+						}
+
+						public void mouseExited(MouseEvent e) {
+							// Do nothing							
+						}
+
+						public void mousePressed(MouseEvent e) {
+							// Do nothing
+						}
+
+						public void mouseReleased(MouseEvent e) {
+							// Do nothing
+						}
+						
+					});
 					JScrollPane scrollList = new JScrollPane(suggestionList);
 					scrollList.setPreferredSize(new Dimension(300, 50));
 					rightPane.add(scrollList);
