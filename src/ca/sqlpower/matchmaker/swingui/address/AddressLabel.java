@@ -19,14 +19,16 @@
 
 package ca.sqlpower.matchmaker.swingui.address;
 
+import static ca.sqlpower.matchmaker.address.AddressValidator.different;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
@@ -34,14 +36,10 @@ import javax.swing.JList;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
-import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.swingui.ColourScheme;
-import static ca.sqlpower.matchmaker.address.AddressValidator.different;
-import ca.sqlpower.matchmaker.address.AddressResult;
-import ca.sqlpower.matchmaker.swingui.MMSUtils;
 
 public class AddressLabel extends JComponent {
 	
@@ -50,6 +48,7 @@ public class AddressLabel extends JComponent {
 	private Address currentAddress;
 	private Address revertToAddress;
 	
+	private static final int BORDER_SPACE = 12;
 	/**
 	 * If non-null, fields in {@link #currentAddress} that differ from fields in this
 	 * address will be rendered in a different colour.
@@ -89,7 +88,7 @@ public class AddressLabel extends JComponent {
 		setFont(Font.decode("plain 12"));
 		FontMetrics fm = getFontMetrics(getFont());
 		if (list != null) {
-			setPreferredSize(new Dimension(fm.stringWidth(getProperLabelLength()) + 14, fm.getHeight() * 3));
+			setPreferredSize(new Dimension(fm.charWidth('m') * 40, fm.getHeight() * 3));
 		} else {
 			setPreferredSize(new Dimension(fm.charWidth('m') * 35 , fm.getHeight() * 5));
 			setMaximumSize(new Dimension(fm.charWidth('m') * 42, fm.getHeight() * 10));
@@ -98,31 +97,6 @@ public class AddressLabel extends JComponent {
 		EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
 		CompoundBorder border = borderFactory.generateAddressLabelBorder(Color.LIGHT_GRAY, 2, 5, true, emptyBorder);
 		setBorder(border);
-		if (list == null) {
-			addMouseListener(new MouseListener() {
-
-				public void mouseClicked(MouseEvent e) {
-					logger.info("Stub call: MouseListener.mouseClicked()");
-				}
-
-				public void mouseEntered(MouseEvent e) {
-					logger.debug("Stub call: MouseListener.mouseEntered()");
-				}
-
-				public void mouseExited(MouseEvent e) {
-					logger.debug("Stub call: MouseListener.mouseExited()");
-				}
-
-				public void mousePressed(MouseEvent e) {
-					logger.debug("Stub call: MouseListener.mousePressed()");
-				}
-
-				public void mouseReleased(MouseEvent e) {
-					logger.debug("Stub call: MouseListener.mouseReleased()");
-				}
-				
-			});
-		}
 	}
 	
 	public Address getRevertToAddress() {
@@ -132,7 +106,7 @@ public class AddressLabel extends JComponent {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		Graphics2D g2 = (Graphics2D) g;
+		final Graphics2D g2 = (Graphics2D) g;
 		g2.setColor(getBackground());
 		g2.fillRect(0, 0, getWidth(), getHeight());
 		// TODO g2.translate(border.getLeft(), border.getTop())
@@ -154,8 +128,11 @@ public class AddressLabel extends JComponent {
 		    } else {
                 g2.setColor(getForeground());
 		    }
+		    FontRenderContext frc = g2.getFontRenderContext();
 			g2.drawString(currentAddress.getStreetAddress(), x, y);
-			addressLine1Hotspot = fm.getStringBounds(currentAddress.getStreetAddress(), g2);
+			GlyphVector gly = g2.getFont().createGlyphVector(frc, currentAddress.getStreetAddress());
+			addressLine1Hotspot = gly.getVisualBounds();
+			//addressLine1Hotspot = fm.getStringBounds(currentAddress.getStreetAddress(), g2);
 		} else {
 			g2.setColor(missingFieldColour);
 			g2.drawString("Street Address Missing", x, y);
@@ -200,7 +177,38 @@ public class AddressLabel extends JComponent {
 			g2.setColor(missingFieldColour);
 			g2.drawString("PostalCode Missing", x, y);
 			x += fm.stringWidth("PostalCode Missing");
-		}		
+		}
+//		if (list == null) {
+//			addMouseListener(new MouseListener() {
+//
+//				public void mouseClicked(MouseEvent e) {
+//					logger.info(e.getPoint());
+//					logger.info(addressLine1Hotspot.getX() + "  " + (int) -addressLine1Hotspot.getY());
+//					logger.info(addressLine1Hotspot.getWidth() + "  " + addressLine1Hotspot.getHeight());
+//					if (e.getX() >= addressLine1Hotspot.getX() + BORDER_SPACE &&
+//							e.getX() <= addressLine1Hotspot.getX() + BORDER_SPACE + addressLine1Hotspot.getWidth()) {
+//						logger.info("This is the right area");
+//						JTextField textField = new JTextField(currentAddress.getStreetAddress()); 
+//						add(textField);
+//						textField.repaint();
+//						repaint();
+//					}
+//				}
+//
+//				public void mouseEntered(MouseEvent e) {
+//				}
+//
+//				public void mouseExited(MouseEvent e) {
+//				}
+//
+//				public void mousePressed(MouseEvent e) {
+//				}
+//
+//				public void mouseReleased(MouseEvent e) {
+//				}
+//				
+//			});
+//		}
 	}
 	
 	public void setAddress(Address address) {
@@ -213,75 +221,5 @@ public class AddressLabel extends JComponent {
 			return true;
 		}
 		return str.trim().equals("null") || str.trim().equals("");
-	}
-
-	/**
-	 * Get the longer line of 2 lines addressLabel
-	 * @param address
-	 * @return the longer line of addressLabel
-	 */
-	private String lineLength(Address address) {
-		String streetAddress1 = "";
-		String streetAddress2 = "";
-		if (isFieldMissing(address.getStreetAddress())) {
-			streetAddress1 += "Street Address Missing";
-		} else {
-			streetAddress1 += address.getStreetAddress();
-		}
-		streetAddress1 += "  ";
-		if (isFieldMissing(address.getMunicipality())) {
-			streetAddress2 += "Municipality Missing";
-		} else {
-			streetAddress2 += address.getMunicipality();
-		}
-		streetAddress2 += " ";
-		if (isFieldMissing(address.getProvince())) {
-			streetAddress2 += "Province Missing";
-		} else {
-			streetAddress2 += address.getProvince();
-		}
-		streetAddress2 += " ";
-		if (isFieldMissing(address.getPostalCode())) {
-			streetAddress2 += "PostalCode Missing";
-		} else {
-			streetAddress2 += address.getPostalCode();
-		}
-		streetAddress2 += "  ";
-		if (streetAddress1.length() > streetAddress2.length()) {
-			return streetAddress1;
-		} else {
-			return streetAddress2;
-		}
-	}
-	
-	/**
-	 * Find the longest String line in a list of addresses
-	 * @return the longest String line of a list of addresses
-	 */
-	private String getProperLabelLength() {
-		String properLength = "";
-		String temp = "";
-		Address tempAddress = null;
-		for (int i = 0; i <list.getModel().getSize(); i++) {
-			if (list.getModel().getElementAt(i) instanceof AddressResult) {
-				AddressResult a = (AddressResult)list.getModel().getElementAt(i);
-				try {
-					tempAddress = Address.parse(a.getAddressLine1(), a.getMunicipality(), a.getProvince(), a.getPostalCode(), a.getCountry());
-				} catch (RecognitionException e) {
-					MMSUtils
-					.showExceptionDialog(
-							getParent(),
-							"There was an error while trying to parse this address",
-							e);
-				}
-			} else if (list.getModel().getElementAt(i) instanceof Address){
-				tempAddress = (Address)list.getModel().getElementAt(i);
-			}
-			temp = lineLength(tempAddress);
-			if (temp.length() > properLength.length()) {
-				properLength = temp;
-			}
-		}
-		return properLength;
 	}
 }
