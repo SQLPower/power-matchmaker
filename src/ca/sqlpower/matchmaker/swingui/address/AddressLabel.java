@@ -34,20 +34,24 @@ import javax.swing.JList;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.swingui.ColourScheme;
 import static ca.sqlpower.matchmaker.address.AddressValidator.different;
+import ca.sqlpower.matchmaker.address.AddressResult;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 
 public class AddressLabel extends JComponent {
 	
 	private static final Logger logger = Logger.getLogger(AddressLabel.class);
 
-	private Address address;
+	private Address currentAddress;
+	private Address revertToAddress;
 	
 	/**
-	 * If non-null, fields in {@link #address} that differ from fields in this
+	 * If non-null, fields in {@link #currentAddress} that differ from fields in this
 	 * address will be rendered in a different colour.
 	 */
 	private Address comparisonAddress;
@@ -61,6 +65,11 @@ public class AddressLabel extends JComponent {
 	private Color comparisonColour = ColourScheme.BREWER_SET19.get(1);
 	
 	private Rectangle2D addressLine1Hotspot;
+	
+	/**
+	 * if list is null, then this AddressLabel is not editable.
+	 * else, otherwise.
+	 */
 	private JList list;
 	private boolean isSelected;
 
@@ -71,7 +80,7 @@ public class AddressLabel extends JComponent {
     }
     
     public AddressLabel(Address address, Address comparisonAddress, boolean isSelected, JList list) {
-		this.address = address;
+		this.currentAddress = this.revertToAddress = address;
         this.comparisonAddress = comparisonAddress;
 		this.isSelected = isSelected;
 		this.list = list;
@@ -79,8 +88,12 @@ public class AddressLabel extends JComponent {
 		//setBackground(Color.WHITE);
 		setFont(Font.decode("plain 12"));
 		FontMetrics fm = getFontMetrics(getFont());
-		setPreferredSize(new Dimension(fm.charWidth('m') * 33, fm.getHeight() * 3));
-		setMaximumSize(new Dimension(fm.charWidth('m') * 40, fm.getHeight() * 10));
+		if (list != null) {
+			setPreferredSize(new Dimension(fm.stringWidth(getProperLabelLength()) + 14, fm.getHeight() * 3));
+		} else {
+			setPreferredSize(new Dimension(fm.charWidth('m') * 35 , fm.getHeight() * 5));
+			setMaximumSize(new Dimension(fm.charWidth('m') * 42, fm.getHeight() * 10));
+		}
 		AddressLabelBorderFactory borderFactory = new AddressLabelBorderFactory();
 		EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
 		CompoundBorder border = borderFactory.generateAddressLabelBorder(Color.LIGHT_GRAY, 2, 5, true, emptyBorder);
@@ -112,10 +125,16 @@ public class AddressLabel extends JComponent {
 		}
 	}
 	
+	public Address getRevertToAddress() {
+		return revertToAddress;
+	}
+
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
+		g2.setColor(getBackground());
+		g2.fillRect(0, 0, getWidth(), getHeight());
 		// TODO g2.translate(border.getLeft(), border.getTop())
 		FontMetrics fm = getFontMetrics(getFont());
 		int y = fm.getHeight()+fm.stringWidth(" ");
@@ -129,63 +148,64 @@ public class AddressLabel extends JComponent {
 				g2.fillRect(0, 0, getWidth(), getHeight());
 			}
 		}
-		if (!isFieldMissing(address.getStreetAddress())) {
-		    if (comparisonAddress != null && different(address.getStreetAddress(), comparisonAddress.getStreetAddress())) {
+		if (!isFieldMissing(currentAddress.getStreetAddress())) {
+		    if (comparisonAddress != null && different(currentAddress.getStreetAddress(), comparisonAddress.getStreetAddress())) {
 		        g2.setColor(comparisonColour);
 		    } else {
                 g2.setColor(getForeground());
 		    }
-			g2.drawString(address.getStreetAddress(), x, y);
-			addressLine1Hotspot = fm.getStringBounds(address.getStreetAddress(), g2);
+			g2.drawString(currentAddress.getStreetAddress(), x, y);
+			addressLine1Hotspot = fm.getStringBounds(currentAddress.getStreetAddress(), g2);
 		} else {
 			g2.setColor(missingFieldColour);
 			g2.drawString("Street Address Missing", x, y);
 			addressLine1Hotspot = fm.getStringBounds("Street Address Missing", g2);
 		}
 		y += fm.getHeight();
-		if (!isFieldMissing(address.getMunicipality())) {
-		    if (comparisonAddress != null && different(address.getMunicipality(), comparisonAddress.getMunicipality())) {
+		if (!isFieldMissing(currentAddress.getMunicipality())) {
+		    if (comparisonAddress != null && different(currentAddress.getMunicipality(), comparisonAddress.getMunicipality())) {
                 g2.setColor(comparisonColour);
 		    } else {
 		        g2.setColor(getForeground());
 		    }
-			g2.drawString(address.getMunicipality(), x, y);
-			x += fm.stringWidth(address.getMunicipality() + " ");
+			g2.drawString(currentAddress.getMunicipality(), x, y);
+			x += fm.stringWidth(currentAddress.getMunicipality() + " ");
 		} else {
 			g2.setColor(missingFieldColour);
 			g2.drawString("Municipality Missing", x, y);
 			x += fm.stringWidth("Municipality Missing" + " ");
 		}
-		if (!isFieldMissing(address.getProvince())) {
-            if (comparisonAddress != null && different(address.getProvince(), comparisonAddress.getProvince())) {
+		if (!isFieldMissing(currentAddress.getProvince())) {
+            if (comparisonAddress != null && different(currentAddress.getProvince(), comparisonAddress.getProvince())) {
                 g2.setColor(comparisonColour);
             } else {
                 g2.setColor(getForeground());
             }
-			g2.drawString(address.getProvince(), x, y);
-			x += fm.stringWidth(address.getProvince() + " ");
+			g2.drawString(currentAddress.getProvince(), x, y);
+			x += fm.stringWidth(currentAddress.getProvince() + " ");
 		} else {
 			g2.setColor(missingFieldColour);
 			g2.drawString("Province Missing", x, y);
 			x += fm.stringWidth("Province Missing" + " ");
 		}
-		if (!isFieldMissing(address.getPostalCode())) {
-            if (comparisonAddress != null && different(address.getPostalCode(), comparisonAddress.getPostalCode())) {
+		if (!isFieldMissing(currentAddress.getPostalCode())) {
+            if (comparisonAddress != null && different(currentAddress.getPostalCode(), comparisonAddress.getPostalCode())) {
                 g2.setColor(comparisonColour);
             } else {
                 g2.setColor(getForeground());
             }
-			g2.drawString(address.getPostalCode(), x, y);
-			x += fm.stringWidth(address.getPostalCode() + " ");
+			g2.drawString(currentAddress.getPostalCode(), x, y);
+			x += fm.stringWidth(currentAddress.getPostalCode() + " ");
 		} else {
 			g2.setColor(missingFieldColour);
 			g2.drawString("PostalCode Missing", x, y);
 			x += fm.stringWidth("PostalCode Missing");
-		}
-//		if (lineLength(address) > getPreferredSize().width) {
-//			setPreferredSize(new Dimension(lineLength(address),fm.getHeight()*3));
-//			logger.info(lineLength(address));
-//		}
+		}		
+	}
+	
+	public void setAddress(Address address) {
+		this.currentAddress = address;
+		repaint();
 	}
 	
 	private boolean isFieldMissing(String str) {
@@ -195,29 +215,73 @@ public class AddressLabel extends JComponent {
 		return str.trim().equals("null") || str.trim().equals("");
 	}
 
-	private int lineLength(Address address) {
-		int length1 = 0;
-		int length2 = 0;
+	/**
+	 * Get the longer line of 2 lines addressLabel
+	 * @param address
+	 * @return the longer line of addressLabel
+	 */
+	private String lineLength(Address address) {
+		String streetAddress1 = "";
+		String streetAddress2 = "";
 		if (isFieldMissing(address.getStreetAddress())) {
-			length1 = "Street Address Missing".length();
+			streetAddress1 += "Street Address Missing";
 		} else {
-			length1 = address.getStreetAddress().length();
+			streetAddress1 += address.getStreetAddress();
 		}
+		streetAddress1 += "  ";
 		if (isFieldMissing(address.getMunicipality())) {
-			length2 += "Municipality Missing".length();
+			streetAddress2 += "Municipality Missing";
 		} else {
-			length2 += address.getMunicipality().length();
+			streetAddress2 += address.getMunicipality();
 		}
+		streetAddress2 += " ";
 		if (isFieldMissing(address.getProvince())) {
-			length2 += "Province Missing".length();
+			streetAddress2 += "Province Missing";
 		} else {
-			length2 += address.getProvince().length();
+			streetAddress2 += address.getProvince();
 		}
+		streetAddress2 += " ";
 		if (isFieldMissing(address.getPostalCode())) {
-			length2 += "PostalCode Missing".length();
+			streetAddress2 += "PostalCode Missing";
 		} else {
-			length2 += address.getPostalCode().length();
+			streetAddress2 += address.getPostalCode();
 		}
-		return Math.max(length1, length2);
+		streetAddress2 += "  ";
+		if (streetAddress1.length() > streetAddress2.length()) {
+			return streetAddress1;
+		} else {
+			return streetAddress2;
+		}
+	}
+	
+	/**
+	 * Find the longest String line in a list of addresses
+	 * @return the longest String line of a list of addresses
+	 */
+	private String getProperLabelLength() {
+		String properLength = "";
+		String temp = "";
+		Address tempAddress = null;
+		for (int i = 0; i <list.getModel().getSize(); i++) {
+			if (list.getModel().getElementAt(i) instanceof AddressResult) {
+				AddressResult a = (AddressResult)list.getModel().getElementAt(i);
+				try {
+					tempAddress = Address.parse(a.getAddressLine1(), a.getMunicipality(), a.getProvince(), a.getPostalCode(), a.getCountry());
+				} catch (RecognitionException e) {
+					MMSUtils
+					.showExceptionDialog(
+							getParent(),
+							"There was an error while trying to parse this address",
+							e);
+				}
+			} else if (list.getModel().getElementAt(i) instanceof Address){
+				tempAddress = (Address)list.getModel().getElementAt(i);
+			}
+			temp = lineLength(tempAddress);
+			if (temp.length() > properLength.length()) {
+				properLength = temp;
+			}
+		}
+		return properLength;
 	}
 }
