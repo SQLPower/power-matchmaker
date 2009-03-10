@@ -37,18 +37,42 @@ import javax.swing.border.EmptyBorder;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
+import ca.sqlpower.swingui.ColourScheme;
+import static ca.sqlpower.matchmaker.address.AddressValidator.different;
 
 public class AddressLabel extends JComponent {
 	
 	private static final Logger logger = Logger.getLogger(AddressLabel.class);
 
 	private Address address;
+	
+	/**
+	 * If non-null, fields in {@link #address} that differ from fields in this
+	 * address will be rendered in a different colour.
+	 */
+	private Address comparisonAddress;
+	
+	/**
+	 * The colour "differing" fields will be rendered in. Non-differing fields
+	 * will be rendered in this component's foreground colour.
+	 * 
+	 * @see #setForeground(Color)
+	 */
+	private Color comparisonColour = ColourScheme.BREWER_SET19.get(1);
+	
 	private Rectangle2D addressLine1Hotspot;
 	private JList list;
 	private boolean isSelected;
+
+    private Color missingFieldColour = ColourScheme.BREWER_SET19.get(0);
 	
-	public AddressLabel(Address address, boolean isSelected, JList list) {
+    public AddressLabel(Address address, boolean isSelected, JList list) {
+        this(address, null, isSelected, list);
+    }
+    
+    public AddressLabel(Address address, Address comparisonAddress, boolean isSelected, JList list) {
 		this.address = address;
+        this.comparisonAddress = comparisonAddress;
 		this.isSelected = isSelected;
 		this.list = list;
 		this.setOpaque(true);
@@ -106,39 +130,55 @@ public class AddressLabel extends JComponent {
 			}
 		}
 		if (!isFieldMissing(address.getStreetAddress())) {
-			g2.setColor(Color.BLACK);
+		    if (comparisonAddress != null && different(address.getStreetAddress(), comparisonAddress.getStreetAddress())) {
+		        g2.setColor(comparisonColour);
+		    } else {
+                g2.setColor(getForeground());
+		    }
 			g2.drawString(address.getStreetAddress(), x, y);
 			addressLine1Hotspot = fm.getStringBounds(address.getStreetAddress(), g2);
 		} else {
-			g2.setColor(Color.RED);
+			g2.setColor(missingFieldColour);
 			g2.drawString("Street Address Missing", x, y);
 			addressLine1Hotspot = fm.getStringBounds("Street Address Missing", g2);
 		}
 		y += fm.getHeight();
 		if (!isFieldMissing(address.getMunicipality())) {
-			g2.setColor(Color.BLACK);
+		    if (comparisonAddress != null && different(address.getMunicipality(), comparisonAddress.getMunicipality())) {
+                g2.setColor(comparisonColour);
+		    } else {
+		        g2.setColor(getForeground());
+		    }
 			g2.drawString(address.getMunicipality(), x, y);
 			x += fm.stringWidth(address.getMunicipality() + " ");
 		} else {
-			g2.setColor(Color.RED);
+			g2.setColor(missingFieldColour);
 			g2.drawString("Municipality Missing", x, y);
 			x += fm.stringWidth("Municipality Missing" + " ");
 		}
 		if (!isFieldMissing(address.getProvince())) {
-			g2.setColor(Color.BLACK);
+            if (comparisonAddress != null && different(address.getProvince(), comparisonAddress.getProvince())) {
+                g2.setColor(comparisonColour);
+            } else {
+                g2.setColor(getForeground());
+            }
 			g2.drawString(address.getProvince(), x, y);
 			x += fm.stringWidth(address.getProvince() + " ");
 		} else {
-			g2.setColor(Color.RED);
+			g2.setColor(missingFieldColour);
 			g2.drawString("Province Missing", x, y);
 			x += fm.stringWidth("Province Missing" + " ");
 		}
 		if (!isFieldMissing(address.getPostalCode())) {
-			g2.setColor(Color.BLACK);
+            if (comparisonAddress != null && different(address.getPostalCode(), comparisonAddress.getPostalCode())) {
+                g2.setColor(comparisonColour);
+            } else {
+                g2.setColor(getForeground());
+            }
 			g2.drawString(address.getPostalCode(), x, y);
 			x += fm.stringWidth(address.getPostalCode() + " ");
 		} else {
-			g2.setColor(Color.RED);
+			g2.setColor(missingFieldColour);
 			g2.drawString("PostalCode Missing", x, y);
 			x += fm.stringWidth("PostalCode Missing");
 		}

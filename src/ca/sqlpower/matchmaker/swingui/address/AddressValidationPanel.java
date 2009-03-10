@@ -142,7 +142,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			final JList needsValidationList = new JList(allResults);
 			needsValidationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			needsValidationList.addListSelectionListener(new AddressListCellSelectionListener());
-			needsValidationList.setCellRenderer(new AddressListCellRenderer());
+			needsValidationList.setCellRenderer(new AddressListCellRenderer(null));
 			JScrollPane addressPane = new JScrollPane(needsValidationList);
 			addressPane.setPreferredSize(new Dimension(250, 1000));
 			
@@ -186,11 +186,21 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 	class AddressListCellRenderer implements ListCellRenderer {
 
+	    /**
+	     * The address to compare against when rendering the label. If null,
+	     * no comparison will be made.
+	     */
+	    private final Address comparisonAddress;
+	    
+        public AddressListCellRenderer(Address comparisonAddress) {
+            this.comparisonAddress = comparisonAddress;
+	    }
+        
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
 			AddressLabel address;
 			if (value instanceof Address) {
-				address = new AddressLabel((Address) value, isSelected, list);
+				address = new AddressLabel((Address) value, comparisonAddress, isSelected, list);
 				address.setOpaque(true);
 				return address;
 			} else {
@@ -205,7 +215,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				} catch (RecognitionException e) {
 					throw new RuntimeException(e);
 				}
-				address = new AddressLabel(address1, isSelected, list);
+				address = new AddressLabel(address1, comparisonAddress, isSelected, list);
 				return address;
 			}
 		}
@@ -285,7 +295,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 					JList suggestionList = new JList(validator.getSuggestions().toArray());
 					suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-					suggestionList.setCellRenderer(new AddressListCellRenderer());
+					suggestionList.setCellRenderer(new AddressListCellRenderer(address1));
 					JScrollPane scrollList = new JScrollPane(suggestionList);
 					scrollList.setPreferredSize(new Dimension(300, 50));
 					rightPane.add(scrollList);
