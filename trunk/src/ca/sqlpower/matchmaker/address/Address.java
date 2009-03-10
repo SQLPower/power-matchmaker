@@ -137,6 +137,29 @@ public class Address {
     }
 
     /**
+     * Creates a copy of the given address.
+     * 
+     * @param source The address to copy.
+     */
+    public Address(Address source) {
+        country = source.country;
+        directionPrefix = source.directionPrefix;
+        municipality = source.municipality;
+        postalCode = source.postalCode;
+        province = source.province;
+        street = source.street;
+        streetDirection = source.streetDirection;
+        streetNumber = source.streetNumber;
+        streetNumberSuffix = source.streetNumberSuffix;
+        streetType = source.streetType;
+        suite = source.suite;
+        suitePrefix = source.suitePrefix;
+        suiteType = source.suiteType;
+        type = source.type;
+        unparsedAddress = source.unparsedAddress;
+    }
+    
+    /**
      * Creates a new address by parsing all of the "line 1" information and
      * taking the rest of the information individually. If the value for any of
      * the fields is not known, pass in null for that field.

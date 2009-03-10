@@ -132,7 +132,7 @@ public class AddressDatabase {
         if (name == null) {
             return Collections.emptySet();
         }
-        String upperName = name.toUpperCase();
+        String upperName = name.toUpperCase().trim();
         
         // TODO check if province code is valid, and ignore if not
         
