@@ -65,30 +65,25 @@ public class AddressValidator {
     }
     
     private void validateImpl() throws DatabaseException {
-        Address a = address;
+        Address a = new Address(address);
         
         results = new ArrayList<ValidateResult>();
         suggestions = new ArrayList<Address>();
         
-        // translate province/state names to official code
+        // translate province/state names to official code (TODO)
         a.normalize();
         
         // translate municipality name to canonical name
+        Municipality municipality = null;
         Set<Municipality> municipalities = db.findMunicipality(a.getMunicipality(), a.getProvince());
         if (municipalities.size() == 0) {
             results.add(ValidateResult.createValidateResult(
                     Status.FAIL, "Municipality \"" + a.getMunicipality() + "\" does not exist"));
         } else if (municipalities.size() > 1) {
             results.add(ValidateResult.createValidateResult(
-                    Status.FAIL, "Municipality \"" + a.getMunicipality() + "\" is ambiguous"));
+                    Status.FAIL, "Municipality \"" + a.getMunicipality() + "\" is ambiguous (" + municipalities.size() + " matches)"));
         } else {
-            Municipality m = municipalities.iterator().next();
-            a.setProvince(m.getProvince());
-            if (!m.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
-                a.setMunicipality(m.getOfficialName());
-                results.add(ValidateResult.createValidateResult(
-                        Status.WARN, "Corrected municipality to " + a.getMunicipality() + ", " + a.getProvince()));
-            }
+            municipality = municipalities.iterator().next();
         }
         
         // validate street
@@ -100,22 +95,67 @@ public class AddressValidator {
             if (pc == null) {
                 results.add(ValidateResult.createValidateResult(
                         Status.FAIL, "Invalid postal code: " + a.getPostalCode()));
+                
+                // This will trigger a postal code lookup in the next section
+                a.setPostalCode(null);
+                
             } else {
+                Address suggestion = new Address(a);
+                suggestion.setPostalCode(pc.getPostalCode());
+                boolean needSuggestion = false;
                 if (!pc.getProvinceCode().equals(a.getProvince())) {
                     results.add(ValidateResult.createValidateResult(
                             Status.FAIL, "Province code does not agree with postal code"));
+                    suggestion.setProvince(pc.getProvinceCode());
+                    needSuggestion = true;
                 }
-                if (!pc.getMunicipalityName().equals(a.getMunicipality())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Municipality does not agree with postal code"));
+                if (different(pc.getMunicipalityName(), a.getMunicipality())) {
+                    if (municipality != null) {
+                        // it might be a valid alternate name
+                        if (!municipality.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
+                            results.add(ValidateResult.createValidateResult(
+                                    Status.FAIL, "Municipality is not a valid alternate within postal code"));
+                            suggestion.setMunicipality(municipality.getOfficialName());
+                            needSuggestion = true;
+                        }
+                    } else {
+                        results.add(ValidateResult.createValidateResult(
+                                Status.FAIL, "Municipality does not agree with postal code"));
+                        suggestion.setMunicipality(pc.getMunicipalityName());
+                        needSuggestion = true;
+                    }
                 }
-                if (pc.getStreetName() != null && !pc.getStreetName().equals(a.getStreet())) {
+                if (different(pc.getStreetName(), a.getStreet())) {
                     results.add(ValidateResult.createValidateResult(
                             Status.FAIL, "Street name does not agree with postal code"));
+                    suggestion.setStreet(pc.getStreetName());
+                    needSuggestion = true;
+                }
+                if (different(pc.getStreetTypeCode(), a.getStreetType())) {
+                    results.add(ValidateResult.createValidateResult(
+                            Status.FAIL, "Street type does not agree with postal code"));
+                    suggestion.setStreetType(pc.getStreetTypeCode());
+                    needSuggestion = true;
+                }
+                if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
+                    results.add(ValidateResult.createValidateResult(
+                            Status.FAIL, "Street direction does not agree with postal code"));
+                    suggestion.setStreetDirection(pc.getStreetDirectionCode());
+                    needSuggestion = true;
+                }
+                
+                // TODO all the other fields
+                
+                if (needSuggestion) {
+                    suggestions.add(suggestion);
                 }
             }
             
-        } else {
+        }
+        
+        if (a.getPostalCode() == null) {
+            results.add(ValidateResult.createValidateResult(Status.FAIL, "Postal Code is missing"));
+            
             // try to find unique postal code match TODO extract to public method
             EntityJoin<String, PostalCode> join = new EntityJoin<String, PostalCode>(db.postalCodePK);
             
@@ -144,11 +184,14 @@ public class AddressValidator {
                     matches = join.entities();
                     for (PostalCode pc : matches) {
                         if (pc.containsAddress(a)) {
-                            a.setPostalCode(pc.getPostalCode());
-                            results.add(ValidateResult.createValidateResult(
-                                    Status.WARN, "Added postal code to valid address"));
-                            break;
-                            // TODO check for multiple matches (they would differ by street type & direction)
+                            Address suggestion = new Address(a);
+                            suggestion.setPostalCode(pc.getPostalCode());
+                            suggestion.setProvince(pc.getProvinceCode());
+                            suggestion.setStreet(pc.getStreetName());
+                            suggestion.setStreetDirection(pc.getStreetDirectionCode());
+                            suggestion.setStreetType(pc.getStreetTypeCode());
+                            suggestions.add(suggestion);
+                            // don't break--multiple matches can differ by street type and direction
                         }
                     }
                 } finally {
@@ -166,6 +209,20 @@ public class AddressValidator {
         
     }
 
+    /**
+     * Compares two strings case insensitively, and considers null to be equivalent
+     * to the empty string. Leading and trailing whitespace is ignored.
+     * 
+     * @param s1 One string to compare
+     * @param s2 The other string to compare
+     * @return True iff strings s1 and s2 differ according to the rules outlined
+     * above.
+     */
+    private static boolean different(String s1, String s2) {
+        if (s1 == null) s1 = "";
+        if (s2 == null) s2 = "";
+        return !s1.trim().equalsIgnoreCase(s2.trim());
+    }
     /**
      * Runs the validation process on {@link #address}. You don't have to call
      * this method explicitly--it will be called when you try to access the

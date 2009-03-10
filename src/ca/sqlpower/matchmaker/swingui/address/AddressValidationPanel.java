@@ -283,7 +283,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					}
 					leftPane.add(Box.createVerticalStrut(200));
 
-					JList suggestionList = new JList(selected.getSuggestionsList().toArray());
+					JList suggestionList = new JList(validator.getSuggestions().toArray());
 					suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 					suggestionList.setCellRenderer(new AddressListCellRenderer());
 					JScrollPane scrollList = new JScrollPane(suggestionList);

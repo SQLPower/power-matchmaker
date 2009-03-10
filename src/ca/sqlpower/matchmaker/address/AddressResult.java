@@ -19,10 +19,8 @@
 
 package ca.sqlpower.matchmaker.address;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
 /**
@@ -198,21 +196,4 @@ public class AddressResult {
 			   postalCode + " " + 
 			   outputAddress;
 	}
-	
-	/**
-	 * Just return some suggestion addresses
-	 * @return suggestion List of addresses
-	 */
-    public List<Address> getSuggestionsList() {
-    	ArrayList<Address> suggestionsList = new ArrayList<Address>();
-    	try {
-			suggestionsList.add(Address.parse(addressLine1, municipality, province, postalCode, country));
-			suggestionsList.add(Address.parse("4950 Yonge Street", "Toronto", "ON", "M2N6K1", "Canada"));
-			suggestionsList.add(Address.parse("17 Kensington Ave", "Toronto", "ON", "M2M1R5", "Canada"));
-		} catch (RecognitionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return suggestionsList;
-    }
 }
