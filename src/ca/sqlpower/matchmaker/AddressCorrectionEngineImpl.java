@@ -150,7 +150,7 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			logger.setLevel(oldLoggerLevel);
 			setFinished(true);
 			double time = System.currentTimeMillis() - startTime;
-			logger.info("Address Correction Engine finished in " + time + " ms");
+			logger.info(String.format("Address Correction Engine processed %d records in %.3f seconds (%.2f per second)", numRowsToProcess, time/1000, (numRowsToProcess * 1000 / time)));
 		}
 	}
 	
