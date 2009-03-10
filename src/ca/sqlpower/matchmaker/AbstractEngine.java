@@ -325,7 +325,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		Connection con = null;
 		Statement stmt = null;
 		try {
-			con = getProject().getSourceTable().getParentDatabase().getDataSource().createConnection();
+			con = getProject().createSourceTableConnection();
 			
 			stmt = con.createStatement();
 			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
