@@ -186,10 +186,17 @@ public class AddressPool extends MonitorableImpl{
 	}
 	
 	public void load(Logger engineLogger) throws SQLException, SQLObjectException {
+		setCancelled(false);
+		setStarted(true);
+		setFinished(false);
+		setProgress(0);
+		
 		SQLTable resultTable = project.getResultTable();
 		Connection con = null;
 		Statement stmt = null;
 		ResultSet rs = null;
+		
+		setJobSize(getNumRowsToProcess());
 		
 		try {
 			con = project.createResultTableConnection();
@@ -249,9 +256,11 @@ public class AddressPool extends MonitorableImpl{
 				result.markClean();
 				
 				addresses.put(keyValues, result);
+				incrementProgress();
 			}
 			engineLogger.debug("Loaded " + addresses.size() + " addresses from the result table");
 		} finally { 
+			setFinished(true);
 			if (rs != null) rs.close();
 			if (stmt != null) stmt.close();
 			if (con != null) con.close();
@@ -278,6 +287,8 @@ public class AddressPool extends MonitorableImpl{
 	 */
 	public void store(Logger engineLogger, boolean useBatchExecute, boolean debug) throws SQLException, SQLObjectException {
 		setStarted(true);
+		setFinished(false);
+		setCancelled(false);
 		setProgress(0);
 		
 		List<AddressResult> dirtyAddresses = new ArrayList<AddressResult>();
@@ -547,5 +558,26 @@ public class AddressPool extends MonitorableImpl{
 			sql.append(resultTable.getSchemaName()).append(".");
 		}
 		sql.append(resultTable.getName());
+	}
+	
+	private int getNumRowsToProcess() throws SQLException {
+		int rowCount;
+		Connection con = null;
+		Statement stmt = null;
+		try {
+			con = project.createResultTableConnection();
+			stmt = con.createStatement();
+			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(project.getResultTable());
+			ResultSet result = stmt.executeQuery(rowCountSQL);
+			if (result.next()) {
+				rowCount = result.getInt("ROW_COUNT");
+			} else {
+				throw new AssertionError("No rows came back from source table row count query!");
+			}
+		} finally {
+			if (stmt != null) stmt.close();
+			if (con != null) con.close();
+		}
+		return rowCount;
 	}
 }
