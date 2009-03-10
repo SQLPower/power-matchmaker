@@ -210,7 +210,7 @@ public class AddressValidator {
     }
 
     /**
-     * Compares two strings case insensitively, and considers null to be equivalent
+     * Compares two strings case insensitively, also considering null to be equivalent
      * to the empty string. Leading and trailing whitespace is ignored.
      * 
      * @param s1 One string to compare
@@ -218,7 +218,7 @@ public class AddressValidator {
      * @return True iff strings s1 and s2 differ according to the rules outlined
      * above.
      */
-    private static boolean different(String s1, String s2) {
+    public static boolean different(String s1, String s2) {
         if (s1 == null) s1 = "";
         if (s2 == null) s2 = "";
         return !s1.trim().equalsIgnoreCase(s2.trim());
