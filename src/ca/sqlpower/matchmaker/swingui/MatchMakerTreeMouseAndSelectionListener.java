@@ -29,6 +29,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.ProgressMonitor;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
@@ -46,6 +47,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -69,9 +71,10 @@ import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.RefreshAction;
 import ca.sqlpower.matchmaker.swingui.action.ScriptAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.matchmaker.swingui.address.AddressValidationPanel;
+import ca.sqlpower.matchmaker.swingui.address.AddressPoolLoadingWorker;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.swingui.ProgressWatcher;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component
@@ -544,7 +547,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					} else if (node.getActionType() == ProjectActionType.RUN_ADDRESS_CORRECTION) {
 						swingSession.setCurrentEditorComponent(swingSession.getAddressCorrectionEnginePanel(node.getProject().getAddressCorrectionEngine(), node.getProject()));
 					} else if (node.getActionType() == ProjectActionType.VALIDATE_ADDRESSES) {
-					    swingSession.setCurrentEditorComponent(new AddressValidationPanel(swingSession, node.getProject()));
+						AddressPool pool = new AddressPool(node.getProject());
+						ProgressMonitor monitor = new ProgressMonitor(owningFrame, "", "", 0, 100);
+						AddressPoolLoadingWorker addressPoolLoadingWorker = new AddressPoolLoadingWorker(pool, swingSession);
+						ProgressWatcher.watchProgress(monitor, addressPoolLoadingWorker);
+						Thread workerThread = new Thread(addressPoolLoadingWorker);
+						workerThread.start();
 					}
 				} else if (o instanceof TranslateGroupParent) {
 					swingSession
@@ -589,4 +597,5 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		}
 	}
 
+	
 }

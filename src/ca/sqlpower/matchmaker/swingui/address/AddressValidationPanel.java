@@ -25,7 +25,6 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,16 +48,13 @@ import javax.swing.event.ListSelectionListener;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
-import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -126,12 +122,10 @@ public class AddressValidationPanel extends NoEditEditorPane {
      */
     private DefaultListModel invalidResults = new DefaultListModel();
     
-    public AddressValidationPanel(MatchMakerSwingSession session, Project project) {
-		AddressPool pool = new AddressPool(project);
+    public AddressValidationPanel(MatchMakerSwingSession session, Collection<AddressResult> results) {
 		try {
 			addressDatabase = new AddressDatabase(new File(session.getContext().getAddressCorrectionDataPath()));
-			pool.load(logger);
-			addressResults = pool.getAddressResults(logger);
+			addressResults = results;
 
 			Object[] addressArray = addressResults.toArray();
 			int k = 0;
@@ -177,16 +171,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 	        horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, validateResultPane,
 					new JLabel("To begin address validation, please select an address from the list.",	JLabel.CENTER));
 			setPanel(horizontalSplitPane);
-		} catch (SQLException e) {
-			MMSUtils.showExceptionDialog(
-							getPanel(),
-							"A SQL Exception occured while trying to load the invalid addresses",
-							e);
-		} catch (SQLObjectException e) {
-			MMSUtils.showExceptionDialog(
-							getPanel(),
-							"An error occured while trying to load the invalid addresses",
-							e);
 		} catch (DatabaseException e) {
 			MMSUtils.showExceptionDialog(
 					        getPanel(), 
