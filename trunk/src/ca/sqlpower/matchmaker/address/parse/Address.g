@@ -54,18 +54,6 @@ private boolean couldBeGD() {
    return postalCode.getRecordType() == PostalCode.RecordType.GENERAL_DELIVERY;
 }
 
-private static String wordList(List<?> words) {
-   StringBuilder sb = new StringBuilder();
-   boolean first = true;
-   for (Object word : words) {
-     Token t = (Token) word;
-     if (!first) sb.append(" ");
-     sb.append(t.getText());
-     first = false;
-   }
-   return sb.toString();
-}
-
 /**
  * Parses an integer value from a string, failing silently and returning
  * null if the value is not parseable.
@@ -110,10 +98,22 @@ return t.toString();
 
 
 address
-	:	{couldBeUrban()}?=> streetAddress	{address.setType(Address.Type.URBAN);}
+	:	{couldBeUrban()}?=> streetAddress	
 	|	{couldBeRural()}?=> ruralRouteAddress
 	|	{couldBeLockBox()}?=> lockBoxAddress
-	|	{couldBeGD()}?=> generalDeliveryAddress	{address.setType(Address.Type.GD);}
+	|	{couldBeGD()}?=> generalDeliveryAddress	
+	|	failedParse				//Default to keep address information if all else fails
+	;
+	
+failedParse
+	:	failedToken*
+	;
+
+failedToken
+	:	n=(ROUTESERVICETYPE | LOCKBOXTYPE | GD | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
+							{
+							 address.setFailedParsingString(address.getFailedParsingString() + n);
+							}
 	;
 	
 streetAddress	
@@ -132,7 +132,8 @@ streetAddress
 	;
 	
 street
-	:	n=NUMBER s=(STREETNUMSUFFIX|SUFFIXANDDIR) streetToken+	{address.setStreetNumber(quietIntParse($n.text));
+	:	n=NUMBER s=(STREETNUMSUFFIX|SUFFIXANDDIR) streetToken+	
+							{address.setStreetNumber(quietIntParse($n.text));
 							 address.setStreetNumberSuffix($s.text);
 							}
 	|	n=NUMANDSUFFIX streetToken+		{String streetNum = $n.text;
@@ -143,46 +144,56 @@ street
 	;
 	
 streetToken
-	:	{hasStreetNameStarted}? d=(STREETDIR|SUFFIXANDDIR)	{
+	:	{hasStreetNameStarted}? d=(STREETDIR|SUFFIXANDDIR)	
+							{
 							 address.setStreetDirection($d.text);
 							}
-	|	{addressDatabase.containsStreetType(input.LT(1).getText())}? t=NAME
+							
+	|	{!address.isStreetTypePrefix() && addressDatabase.containsStreetType(input.LT(1).getText())}? t=NAME
 							{
-							 if (!address.isStreetTypePrefix()) {
-							    if (address.getStreetType() != null) {
-							       appendStreetName(address.getStreetType());
-							    }
-							    address.setStreetTypePrefix(!hasStreetNameStarted);
-							    address.setStreetType($t.text);
+							 if (address.getStreetType() != null) {
+							    appendStreetName(address.getStreetType());
 							 }
+							 address.setStreetTypePrefix(!hasStreetNameStarted);
+							 address.setStreetType($t.text);
 							}
-	|	n=(NAME|NUMBER|NUMANDSUFFIX)					{
+							
+	|	n=(NAME|NUMBER|NUMANDSUFFIX)		{
 							 if (!address.isStreetTypePrefix() && address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
 							    address.setStreetType(null);
 							 }
+							 
 							 hasStreetNameStarted = true;
 							 appendStreetName($n.text);
 							}
 	;
-
-//oldStreet
-//	:	streetName streetType d=STREETDIR?	{
-//							  address.setStreetDirection($d.text);
-//							}
-//	|	d=STREETDIR? streetName streetType	{ 
-//							  address.setStreetDirection($d.text);
-//							}
-//	|	streetName streetType
-//	|	streetName
-//	;
 	
 ruralRouteAddress
-	:	
+	:	rs=ROUTESERVICETYPE n=NUMBER? di=DITYPE? stn=NAME?
+							{
+							 address.setRuralRouteType($rs.text);
+							 address.setRuralRouteNumber(quietIntParse($rs.text));
+							 address.setDeliveryInstallationType($di.text);
+							 address.setDeliveryInstallationName($stn.text);
+							 address.setType(Address.Type.RURAL);
+							}
+	|	rs=ROUTESERVICETYPE n=NUMBER street	{
+							 address.setRuralRouteType($rs.text);
+							 address.setRuralRouteNumber(quietIntParse($rs.text));
+							 address.setType(Address.Type.RURAL);
+							}
 	;
 	
 lockBoxAddress
-	:
+	:	lb=LOCKBOXTYPE n=NUMBER di=DITYPE? stn=NAME?
+							{
+							 address.setLockBoxType($lb.text);
+							 address.setLockBoxNumber(quietIntParse($n.text));
+							 address.setDeliveryInstallationType($di.text);
+							 address.setDeliveryInstallationName($stn.text);
+							 address.setType(Address.Type.LOCK_BOX);
+							}
 	;
 	
 generalDeliveryAddress
@@ -190,16 +201,15 @@ generalDeliveryAddress
 							 address.setGeneralDeliveryName($gd.text);
 							 address.setDeliveryInstallationType($t.text);
 							 address.setDeliveryInstallationName($n.text);
+							 address.setType(Address.Type.GD);
 							}
 	;
+	
+ROUTESERVICETYPE
+	:	'RR' | 'SS' | 'MR';
 
-streetType
-	:	{addressDatabase.containsStreetType(input.LT(1).getText())}? n=NAME	{address.setStreetType($n.text);}
-	;
-
-streetName
-	:	(n += NAME)+				{ address.setStreet(wordList($n)); }
-	;
+LOCKBOXTYPE
+	:	'PO BOX' | 'CP' ;
 
 GD
 	:	'GD' | 'GENERAL DELIVERY' | 'PR' ;

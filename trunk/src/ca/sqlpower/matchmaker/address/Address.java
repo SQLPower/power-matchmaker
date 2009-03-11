@@ -40,7 +40,7 @@ public class Address {
 	private static final Logger logger = Logger.getLogger(Address.class);
 
     public static enum Type {
-        URBAN, RURAL, PO_BOX, GD
+        URBAN, RURAL, LOCK_BOX, GD
     }
     
     /**
@@ -145,6 +145,20 @@ public class Address {
     
     private String deliveryInstallationName;
     
+    private String lockBoxType;
+    
+    private Integer lockBoxNumber;
+    
+    private String ruralRouteType;
+    
+    private Integer ruralRouteNumber;
+    
+    /**
+     * If the parser cannot correctly separate the address line the whole address line will
+     * be placed here to keep the input address line the same for output.
+     */
+    private String failedParsingString;
+    
     /**
      * Creates a new Address record with all fields set to their defaults (usually null).
      */
@@ -159,20 +173,30 @@ public class Address {
      */
     public Address(Address source) {
         country = source.country;
+        deliveryInstallationName = source.deliveryInstallationName;
+        deliveryInstallationType = source.deliveryInstallationType;
         directionPrefix = source.directionPrefix;
+        failedParsingString = source.failedParsingString;
+        generalDeliveryName = source.generalDeliveryName;
+        lockBoxNumber = source.lockBoxNumber;
+        lockBoxType = source.lockBoxType;
         municipality = source.municipality;
         postalCode = source.postalCode;
         province = source.province;
+        ruralRouteNumber = source.ruralRouteNumber;
+        ruralRouteType = source.ruralRouteType;
         street = source.street;
         streetDirection = source.streetDirection;
         streetNumber = source.streetNumber;
         streetNumberSuffix = source.streetNumberSuffix;
         streetType = source.streetType;
+        streetTypePrefix = source.streetTypePrefix;
         suite = source.suite;
         suitePrefix = source.suitePrefix;
         suiteType = source.suiteType;
         type = source.type;
         unparsedAddress = source.unparsedAddress;
+        
     }
     
     /**
@@ -259,13 +283,53 @@ public class Address {
     }
     
     public String getAddress() {
-    	if (type == Type.URBAN) {
-    		return getStreetAddress();
-    	} else if (type == Type.GD) {
-    		return getGeneralDeliveryAddress();
+    	if (type == null) {  //parse failure on address line
+    		return failedParsingString;
     	}
-    	return "";
+    	switch (type) {
+    	case URBAN:
+    		return getStreetAddress();
+    	case RURAL:
+    		return getRuralRouteAddress();
+    	case LOCK_BOX:
+    		return getLockBoxAddress();
+    	case GD:
+    		return getGeneralDeliveryAddress();
+   		default:
+   			throw new IllegalStateException("Address type " + type + " is unknown");
+    	}
     }
+
+	private String getRuralRouteAddress() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(ruralRouteType);
+		if (ruralRouteNumber != null) {
+			sb.append(" ").append(ruralRouteNumber);
+		}
+		if (street != null) {
+			sb.append(" ").append(getStreetAddress());
+		} else {
+			if (deliveryInstallationType != null) {
+				sb.append(" ").append(deliveryInstallationType);
+			}
+			if (deliveryInstallationName != null) {
+				sb.append(" ").append(deliveryInstallationName);
+			}
+		}
+		return sb.toString();
+	}
+
+	private String getLockBoxAddress() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(lockBoxType).append(" ").append(lockBoxNumber);
+		if (deliveryInstallationType != null) {
+			sb.append(" ").append(deliveryInstallationType);
+		}
+		if (deliveryInstallationName != null) {
+			sb.append(" ").append(deliveryInstallationName);
+		}
+		return sb.toString();
+	}
 
 	public String getGeneralDeliveryAddress() {
 		StringBuilder sb = new StringBuilder();
@@ -487,6 +551,51 @@ public class Address {
 
 	public String getDeliveryInstallationName() {
 		return deliveryInstallationName;
+	}
+
+	public void setLockBoxType(String lockBoxType) {
+			this.lockBoxType = lockBoxType;
+		
+	}
+
+	public String getLockBoxType() {
+		return lockBoxType;
+	}
+
+	public void setLockBoxNumber(Integer lockBoxNumber) {
+			this.lockBoxNumber = lockBoxNumber;
+		
+	}
+
+	public Integer getLockBoxNumber() {
+		return lockBoxNumber;
+	}
+
+	public void setRuralRouteType(String ruralRouteType) {
+			this.ruralRouteType = ruralRouteType;
+		
+	}
+
+	public String getRuralRouteType() {
+		return ruralRouteType;
+	}
+
+	public void setRuralRouteNumber(Integer ruralRouteNumber) {
+			this.ruralRouteNumber = ruralRouteNumber;
+		
+	}
+
+	public Integer getRuralRouteNumber() {
+		return ruralRouteNumber;
+	}
+
+	public void setFailedParsingString(String failedParsingString) {
+			this.failedParsingString = failedParsingString;
+		
+	}
+
+	public String getFailedParsingString() {
+		return failedParsingString;
 	}
 
 	public void normalize() {
