@@ -49,12 +49,12 @@ public class SERPTest extends TestCase {
 	/**
 	 * The path to the SERP self test input file.
 	 */
-	private static final String TEST_FILE_PATH = "";
+	private static final String TEST_FILE_PATH = "../matchmaker-addressparse/test_data/30843SCT";
 	
 	/**
 	 * The path to the SERP self test result file.
 	 */
-	private static final String RESULT_FILE_PATH = "";
+	private static final String RESULT_FILE_PATH = "../matchmaker-addressparse/test_data/30843SCR";
 	private AddressDatabase addressDB;
 	private Address address;
 	
@@ -96,7 +96,7 @@ public class SERPTest extends TestCase {
     			
     			logger.debug("Next address is '" + streetAddress + ", " + municipality + ", " + province + ", " + postalCode);
     			
-    			address = Address.parse(streetAddress, municipality, province, postalCode, "CA");
+    			address = Address.parse(streetAddress, municipality, province, postalCode, "CA", addressDB);
     			
     			AddressValidator validator = new AddressValidator(addressDB, address);
     			List<ValidateResult> results = validator.getResults();
@@ -112,9 +112,10 @@ public class SERPTest extends TestCase {
 
     			boolean failed = false;
     			
-    			if (!resultStreetAddress.equals(address.getStreetAddress())) {
+    			final String add = address.getAddress();
+				if (!resultStreetAddress.equals(add)) {
     				logger.debug("Street Address is wrong: Expected '" + resultStreetAddress 
-    						+ "' Got '" + address.getStreetAddress() + "'");
+    						+ "' Got '" + address.getAddress() + "'");
     				failed = true;
     			}
     			

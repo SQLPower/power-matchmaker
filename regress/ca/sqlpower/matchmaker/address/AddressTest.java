@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import java.io.File;
+
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.address.Address.Type;
 
@@ -27,9 +29,18 @@ public class AddressTest extends TestCase {
     /** SQLPower Word Wide Headquarters! */
     private Address sqlpWWHQ;
     
+    private AddressDatabase addressDatabase;
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+	    String bdbPath = System.getProperty("ca.sqlpower.matchmaker.test.addressDB");
+	    if (bdbPath == null) {
+	        throw new RuntimeException(
+	                "Please define the system property ca.sqlpower.matchmaker.test.addressDB" +
+	                " to point to the directory where your BDB instance is which contains addresses");
+	    }
+        addressDatabase = new AddressDatabase(new File(bdbPath));
         sqlpWWHQ = new Address();
         sqlpWWHQ.setCountry("CA");
         sqlpWWHQ.setMunicipality("NORTH YORK");
@@ -59,7 +70,7 @@ public class AddressTest extends TestCase {
     
     
     public void testParse() throws Exception {
-    	Address address = Address.parse("4950 YONGE ST", "NORTH YORK", "ON", "M2N6K1", "CA");
+    	Address address = Address.parse("4950 YONGE ST", "NORTH YORK", "ON", "M2N6K1", "CA", addressDatabase);
     	assertEquals(Integer.valueOf(4950), address.getStreetNumber());
     	assertEquals("YONGE", address.getStreet());
     	assertEquals("ST", address.getStreetType());
@@ -76,10 +87,10 @@ public class AddressTest extends TestCase {
 	 * work. Ideally it should work for both.
 	 */
     public void testParseWithNonAbbreviatedStreetType() throws Exception {
-    	Address address = Address.parse("1751 SANDHURST CIRCLE", "AGINCOURT", "ON", "", "CA");
+    	Address address = Address.parse("1751 SANDHURST CIRCLE", "AGINCOURT", "ON", "", "CA", addressDatabase);
     	assertEquals(Integer.valueOf(1751), address.getStreetNumber());
     	assertEquals("SANDHURST", address.getStreet());
-    	assertEquals("CIR", address.getStreetType());
+    	assertEquals("CIRCLE", address.getStreetType());
     	assertEquals("AGINCOURT", address.getMunicipality());
     	assertEquals("ON", address.getProvince());
     	assertEquals("CA", address.getCountry());
@@ -89,7 +100,7 @@ public class AddressTest extends TestCase {
 	 * The parser should be able to properly extract the street number suffix.
 	 */
     public void testParseWithStreetNumberSuffix() throws Exception {
-    	Address address = Address.parse("15C DEVONRIDGE CRES", "SCARBOROUGH", "ON", "M1C5A5", "CA");
+    	Address address = Address.parse("15C DEVONRIDGE CRES", "SCARBOROUGH", "ON", "M1C5A5", "CA", addressDatabase);
     	assertEquals(Integer.valueOf(15), address.getStreetNumber());
     	assertEquals("C", address.getStreetNumberSuffix());
     	assertEquals("DEVONRIDGE", address.getStreet());
@@ -106,7 +117,7 @@ public class AddressTest extends TestCase {
      * The Address tested here is: 4539 RUE BROOKLYN, TROIS-RIVIERES, QC, G8Y1C8
      */
     public void testParseQuebecStreetAddress() throws Exception {
-    	Address address = Address.parse("4539 RUE BROOKLYN", "TROIS-RIVIERES", "QC", "G8Y1C8", "CA");
+    	Address address = Address.parse("4539 RUE BROOKLYN", "TROIS-RIVIERES", "QC", "G8Y1C8", "CA", addressDatabase);
     	assertEquals(Integer.valueOf(4539), address.getStreetNumber());
     	assertEquals("BROOKLYN", address.getStreet());
     	assertEquals("RUE", address.getStreetType());
@@ -126,7 +137,7 @@ public class AddressTest extends TestCase {
      * Test Address: 42 POPLAR RIDGE TRAILER CRT, DRAYTON VALLEY, AB, T7A1N4
      */
     public void testParseComplicatedStreetName() throws Exception {
-    	Address address = Address.parse("42 POPLAR RIDGE TRAILER CRT", "DRAYTON VALLEY", "AB", "T7A1N4", "CA");
+    	Address address = Address.parse("42 POPLAR RIDGE TRAILER CRT", "DRAYTON VALLEY", "AB", "T7A1N4", "CA", addressDatabase);
     	assertEquals(Integer.valueOf(42), address.getStreetNumber());
     	assertEquals("POPLAR RIDGE TRAILER", address.getStreet());
     	assertEquals("CRT", address.getStreetType());
@@ -143,7 +154,7 @@ public class AddressTest extends TestCase {
      * Input: 1539 HALL'S RD, COURTENAY, BC, V9N5R8
      */
     public void testAddressWithApostrophe() throws Exception {
-    	Address address = Address.parse("1539 HALL'S RD", "COURTENAY", "BC", "V9N5R8", "CA");
+    	Address address = Address.parse("1539 HALL'S RD", "COURTENAY", "BC", "V9N5R8", "CA", addressDatabase);
     	assertEquals(Integer.valueOf(1539), address.getStreetNumber());
     	assertEquals("HALL'S", address.getStreet());
     	assertEquals("RD", address.getStreetType());

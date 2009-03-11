@@ -19,11 +19,18 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -51,6 +58,13 @@ public class AddressDatabase {
     SecondaryIndex<String, String, PostalCode> postalCodeProvince;
     SecondaryIndex<String, String, PostalCode> postalCodeMunicipality;
     SecondaryIndex<String, String, PostalCode> postalCodeStreet;
+    private SecondaryIndex<String, String, PostalCode> postalStreetTypeCode;
+    
+    /**
+     * This map stores all valid address types (like STREET and AVENUE) to their short form stored
+     * in the database.
+     */
+    private final Map<String, String> validAddressTypes = new HashMap<String, String>();
     
     private void open() throws DatabaseException {
         EnvironmentConfig envConfig = new EnvironmentConfig();
@@ -72,6 +86,7 @@ public class AddressDatabase {
         postalCodeProvince = store.getSecondaryIndex(postalCodePK, String.class, "provinceCode");
         postalCodeMunicipality = store.getSecondaryIndex(postalCodePK, String.class, "municipalityName");
         postalCodeStreet = store.getSecondaryIndex(postalCodePK, String.class, "streetName");
+        postalStreetTypeCode = store.getSecondaryIndex(postalCodePK, String.class, "streetTypeCode");
     }
 
     /**
@@ -110,7 +125,43 @@ public class AddressDatabase {
     public AddressDatabase(File databaseEnvironmentLocation) throws DatabaseException {
         this.databaseEnvironmentLocation = databaseEnvironmentLocation;
         open();
+        loadFullAddressTypes();
     }
+
+    private void loadFullAddressTypes() throws DatabaseException {
+    	logger.debug("There are " + postalStreetTypeCode.map().keySet().size() + " keys");
+    	for (String addressType : postalStreetTypeCode.map().keySet()) {
+    		validAddressTypes.put(addressType, addressType);
+    		logger.debug("Inserting address type from database " + addressType);
+    	}
+    	BufferedReader reader = null;
+    	try {
+    		reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File("src/ca/sqlpower/matchmaker/address/StreetAddressType.property"))));
+    		String line = reader.readLine();
+    		while (line != null) {
+    			String[] mapping = line.split("=");
+    			if (mapping.length != 2) {
+    				throw new IllegalStateException("Street Address Type property file has an invalid line at " + line + ". " +
+    						"Each line should map one alternative street type spelling to the accepted abbreviation.");
+    			}
+    			validAddressTypes.put(mapping[0], mapping[1]);
+    			logger.debug("Inserting address type from file " + mapping[0] + " to " + mapping[1]);
+    			line = reader.readLine();
+    		}
+    	} catch (FileNotFoundException e) {
+    		throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} finally {
+    		if (reader != null) {
+    			try {
+    				reader.close();
+    			} catch (Exception e) {
+    				//Squishing exception to allow any other exception to make it through.
+    			}
+    		}
+    	}
+	}
 
     /**
      * Returns the set of Municipalities that have the given name as their
@@ -147,6 +198,11 @@ public class AddressDatabase {
         }
         hits.close();
         return results;
+    }
+    
+    public boolean containsStreetType(String streetType) {
+    	logger.debug("Looking for street type " + streetType);
+    	return validAddressTypes.keySet().contains(streetType);
     }
 
     /**

@@ -1,6 +1,5 @@
 grammar Address;
 
-/* XXX: this has no effect! need to figure out the right way to include package statement */
 @header {
 package ca.sqlpower.matchmaker.address.parse;
 
@@ -13,17 +12,47 @@ package ca.sqlpower.matchmaker.address.parse;
 
 @members {
 
-/* Shut up warning about unused import */
-static {
-  Stack s = null;
-  if (s != null) {
-    /* wow! */
-  }
-}
+private PostalCode postalCode;
+
+private AddressDatabase addressDatabase;
 
 private Address address = new Address();
 
+/**
+ * This may be moved into a local variable later
+ */
+ private boolean hasStreetNameStarted = false;
+
 public Address getAddress() { return address; }
+
+public void setAddressDatabase(AddressDatabase addressDatabase) {
+   this.addressDatabase = addressDatabase;
+}
+
+public void setPostalCode(String postalCodeString) throws DatabaseException {
+   if (addressDatabase == null) throw new NullPointerException("No address database!");
+   postalCode = addressDatabase.findPostalCode(postalCodeString);
+}
+
+private boolean couldBeUrban() {
+   if (postalCode == null) return true;
+   return postalCode.getRecordType() == PostalCode.RecordType.STREET || postalCode.getRecordType() == PostalCode.RecordType.STREET_AND_ROUTE;
+}
+
+private boolean couldBeRural() {
+   if (postalCode == null) return true;
+   return postalCode.getRecordType() == PostalCode.RecordType.ROUTE || postalCode.getRecordType() == PostalCode.RecordType.STREET_AND_ROUTE;
+}
+
+private boolean couldBeLockBox() {
+   if (postalCode == null) return true;
+   return postalCode.getRecordType() == PostalCode.RecordType.LOCK_BOX;
+}
+
+private boolean couldBeGD() {
+   if (postalCode == null) return true;
+   return postalCode.getRecordType() == PostalCode.RecordType.GENERAL_DELIVERY;
+}
 
 private static String wordList(List<?> words) {
    StringBuilder sb = new StringBuilder();
@@ -48,97 +77,155 @@ private Integer quietIntParse(String s) {
     return null;
   }
 }
+
+private void appendStreetName(String name) {
+   if (address.getStreet() != null && address.getStreet().trim().length() > 0) {
+      address.setStreet(address.getStreet() + " " + name);
+   } else {
+      address.setStreet(name);
+   }
 }
 
-@lexer::members {
-
-/* Shut up warnings about unused imports */
-static {
-  Stack s = null;
-  List l = null;
-  ArrayList al = null;
-  if (s != null && l != null && al != null) {
-    /*wow!*/ 
-  }
+public String getErrorMessage(RecognitionException e, 
+String[] tokenNames) 
+{ 
+List stack = getRuleInvocationStack(e, this.getClass().getName()); 
+String msg = null; 
+if ( e instanceof NoViableAltException ) { 
+NoViableAltException nvae = (NoViableAltException)e; 
+msg = " no viable alt; token="+e.token+ 
+" (decision="+nvae.decisionNumber+ 
+" state "+nvae.stateNumber+")"+ 
+" decision=<<"+nvae.grammarDecisionDescription+">>"; 
+} 
+else { 
+msg = super.getErrorMessage(e, tokenNames); 
+} 
+return stack+" "+msg; 
+} 
+public String getTokenErrorDisplay(Token t) { 
+return t.toString(); 
+} 
 }
-}
 
-fullAddress
-	:	streetAddress city p=PROVINCE c=POSTALCODE
-							{ address.setProvince($p.text);
-							  address.setPostalCode($c.text);
-							}
+
+address
+	:	{couldBeUrban()}?=> streetAddress	{address.setType(Address.Type.URBAN);}
+	|	{couldBeRural()}?=> ruralRouteAddress
+	|	{couldBeLockBox()}?=> lockBoxAddress
+	|	{couldBeGD()}?=> generalDeliveryAddress	{address.setType(Address.Type.GD);}
 	;
 	
-streetAddress
-	:	n=NUMBER street				{ address.setStreetNumber(quietIntParse($n.text)); }
-	|	suiteNum '-' n=NUMBER street		{ address.setStreetNumber(quietIntParse($n.text));
+streetAddress	
+	:	sn=NUMBER '-' street			{ 
 							  address.setSuitePrefix(true);
+							  address.setSuite($sn.text);
+							  address.setType(Address.Type.URBAN);
 							}
-	|	n=NUMBER street s=SUITE suiteNum	{ address.setStreetNumber(quietIntParse($n.text));
+	|	street s=SUITE sn=NUMBER		{ 
 							  address.setSuitePrefix(false);
 							  address.setSuiteType($s.text);
+							  address.setSuite($sn.text);
+							  address.setType(Address.Type.URBAN);
+							}
+	|	street					{address.setType(Address.Type.URBAN);}
+	;
+	
+street
+	:	n=NUMBER s=(STREETNUMSUFFIX|SUFFIXANDDIR) streetToken+	{address.setStreetNumber(quietIntParse($n.text));
+							 address.setStreetNumberSuffix($s.text);
+							}
+	|	n=NUMANDSUFFIX streetToken+		{String streetNum = $n.text;
+							 address.setStreetNumber(quietIntParse(streetNum.substring(0, streetNum.length() - 1)));
+							 address.setStreetNumberSuffix(streetNum.substring(streetNum.length() - 1, streetNum.length()));
+							}
+	|	n=NUMBER streetToken+			{address.setStreetNumber(quietIntParse($n.text));}
+	;
+	
+streetToken
+	:	{hasStreetNameStarted}? d=(STREETDIR|SUFFIXANDDIR)	{
+							 address.setStreetDirection($d.text);
+							}
+	|	{addressDatabase.containsStreetType(input.LT(1).getText())}? t=NAME
+							{
+							 if (!address.isStreetTypePrefix()) {
+							    if (address.getStreetType() != null) {
+							       appendStreetName(address.getStreetType());
+							    }
+							    address.setStreetTypePrefix(!hasStreetNameStarted);
+							    address.setStreetType($t.text);
+							 }
+							}
+	|	n=(NAME|NUMBER|NUMANDSUFFIX)					{
+							 if (!address.isStreetTypePrefix() && address.getStreetType() != null) {
+							    appendStreetName(address.getStreetType());
+							    address.setStreetType(null);
+							 }
+							 hasStreetNameStarted = true;
+							 appendStreetName($n.text);
 							}
 	;
 
-suiteNum:	n=NUMBER				{ address.setSuite($n.text); }
+//oldStreet
+//	:	streetName streetType d=STREETDIR?	{
+//							  address.setStreetDirection($d.text);
+//							}
+//	|	d=STREETDIR? streetName streetType	{ 
+//							  address.setStreetDirection($d.text);
+//							}
+//	|	streetName streetType
+//	|	streetName
+//	;
+	
+ruralRouteAddress
+	:	
+	;
+	
+lockBoxAddress
+	:
+	;
+	
+generalDeliveryAddress
+	:	gd=GD t=DITYPE? n=NAME?			{
+							 address.setGeneralDeliveryName($gd.text);
+							 address.setDeliveryInstallationType($t.text);
+							 address.setDeliveryInstallationName($n.text);
+							}
 	;
 
-street	:	streetName t=STREETTYPE? d=STREETDIR?	{ address.setStreetType($t.text);
-							  address.setStreetDirection($d.text);
-							}
-	|	d=STREETDIR streetName t=STREETTYPE?	{ address.setStreetType($t.text);
-							  address.setStreetDirection($d.text);
-							}
+streetType
+	:	{addressDatabase.containsStreetType(input.LT(1).getText())}? n=NAME	{address.setStreetType($n.text);}
 	;
 
 streetName
 	:	(n += NAME)+				{ address.setStreet(wordList($n)); }
 	;
-		/* XXX: this is ambiguous with city because all tokens in between are optional */
-	
-city	:	(n += NAME)+				{ address.setMunicipality(wordList($n)); }
-	;
+
+GD
+	:	'GD' | 'GENERAL DELIVERY' | 'PR' ;
+
+DITYPE
+	:	'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC';
 
 SUITE	:	'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE';
 
-STREETTYPE
-	:	'ABBEY' | 'ACRES' | 'ALLEE' | 'ALLEY' | 'AUT' | 'AVE' | 'AV'
-	| 	'BAY' | 'BEACH' | 'BEND' | 'BLVD' | 'BOUL' | 'BYPASS' | 'BYWAY'
-	|	'CAMPUS' | 'CAPE' | 'CAR' | 'CARREF' | 'CTR' | 'C' | 'CERCLE' | 'CHASE' | 'CH' | 'CIR' | 'CIRCT' | 'CLOSE' | 'COMMON' | 'CONC' | 'CRNRS' | 'COTE' | 'COUR' | 'COURS' | 'CRT' | 'COVE' | 'CRES' | 'CROIS' | 'CROSS' | 'CDS'
-	|	'DALE' | 'DELL' | 'DIVERS' | 'DOWNS' | 'DR'
-	|	'ECH' | 'END' | 'ESPL' | 'ESTATE' | 'EXPY' | 'EXTEN'
-	|	'FARM' | 'FIELD' | 'FOREST' | 'FWY' | 'FRONT'
-	|	'GDNS' | 'GATE' | 'GLADE' | 'GLEN' | 'GREEN' | 'GROVE'
-	|	'HARBR' | 'HEATH' | 'HTS' | 'HGHLDS' | 'HWY' | 'HILL' | 'HOLLOW'
-	|	'ILE' | 'IMP' | 'INLET' | 'ISLAND'
-	|	'KEY' | 'KNOLL'
-	|	'LANDING' | 'LANE' | 'LMTS' | 'LINE' | 'LINK' | 'LKOUT' | 'LOOP'
-	|	'MALL' | 'MANOR' | 'MAZE' | 'MEADOW' | 'MEWS' | 'MONTEE' | 'MOOR' | 'MOUNT' | 'MTN'
-	|	'ORCH'
-	|	'PARADE' | 'PARC' | 'PK' | 'PKY' | 'PASS' | 'PATH' | 'PTWAY' | 'PINES' | 'PL' | 'PLACE' | 'PLAT' | 'PLAZA' | 'PT' | 'POINTE' | 'PORT' | 'PVT' | 'PROM'
-	|	'QUAI' | 'QUAY'
-	|	'RAMP' | 'RANG' | 'RG' | 'RIDGE' | 'RISE' | 'RD' | 'RDPT' | 'RTE' | 'ROW' | 'RUE' | 'RLE' | 'RUN'
-	|	'SENT' | 'SQ' | 'ST' | 'SUBDIV'
-	|	'TERR' | 'TSSE' | 'THICK' | 'TOWERS' | 'TLINE' | 'TRAIL' | 'TRNABT'
-	|	'VALE' | 'VIA' | 'VIEW' | 'VILLAGE' | 'VILLAS' | 'VISTA' | 'VOIE'
-	|	'WALK' | 'WAY' | 'WHARF' | 'WOOD' | 'WYND'
-	;
+SUFFIXANDDIR
+	:	'N' | 'S' | 'E' | 'W'; //Needed because STREETNUMSUFFIX would take the directions from STREETDIR
+	
+STREETNUMSUFFIX 
+	:	('A'..'Z' | '1'..'3');
 
 STREETDIR
-	:	'N' | 'S' | 'E' | 'W'
-	|	'NE' | 'NW' | 'NO'
+	:	'NE' | 'NW' | 'NO'
 	|	'SE' | 'SW' | 'SO';
-
-PROVINCE:	'BC' | 'AB' | 'SK' | 'MB' | 'ON' | 'QC' | 'NS' | 'NB' | 'PE' | 'NL' | 'NU' | 'NT' | 'YU';
-
-POSTALCODE
-	:	'A'..'Z' '0'..'9' 'A'..'Z' WS* '0'..'9' 'A'..'Z' '0'..'9';
-
+	
+NUMANDSUFFIX
+	:	('0'..'9')+ ('A'..'Z');
+	
 NUMBER
 	:	'0'..'9'+;
-
-NAME	:	('A'..'Z' | '0'..'9')+;
+	
+NAME	:	('A'..'Z' | '0'..'9' | '\'' | '-')+;
 		/* TODO: allow multiple words (spaces!) */
 	
 WS	:	(' ' | '\t')+ {skip();};

@@ -30,6 +30,37 @@ import com.sleepycat.persist.model.SecondaryKey;
  */
 @Entity
 public class PostalCode {
+	
+	public enum RecordType {
+		STREET(1),
+		STREET_AND_ROUTE(2),
+		LOCK_BOX(3),
+		ROUTE(4),
+		GENERAL_DELIVERY(5);
+		
+		/**
+		 * The type code for each record type defined by Canada Post.
+		 */
+		private final int recordTypeCode;
+		
+		private RecordType(int typeCode) {
+			recordTypeCode = typeCode;
+			
+		}
+		
+		public static RecordType getTypeForCode(int code) {
+			for (RecordType type : values()) {
+				if (code == type.getRecordTypeCode()) {
+					return type;
+				}
+			}
+			throw new IllegalStateException("No known record type for code " + code);
+		}
+		
+		public int getRecordTypeCode() {
+			return recordTypeCode;
+		}
+	}
 
     /**
      * The postal or ZIP code, formatted in all caps with no spaces (for a
@@ -52,6 +83,7 @@ public class PostalCode {
     @SecondaryKey(relate=Relationship.MANY_TO_ONE)
     private String streetName;
     
+    @SecondaryKey(relate=Relationship.MANY_TO_ONE)
     private String streetTypeCode;
     private String streetDirectionCode;
     private AddressSequenceType streetAddressSequenceType;
@@ -78,7 +110,7 @@ public class PostalCode {
 
     private String largeVolumeReceiverName;
 
-    
+    private RecordType recordType;
     
     public String getPostalCode() {
         return postalCode;
@@ -396,7 +428,22 @@ public class PostalCode {
 
 
 
-    @Override
+    public RecordType getRecordType() {
+		return recordType;
+	}
+
+
+    public void setRecordType(int type) {
+    	recordType = RecordType.getTypeForCode(type);
+    }
+
+	public void setRecordType(RecordType recordType) {
+		this.recordType = recordType;
+	}
+
+
+
+	@Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("PostalCode: ").append(postalCode);
