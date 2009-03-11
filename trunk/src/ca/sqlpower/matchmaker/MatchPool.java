@@ -353,7 +353,7 @@ public class MatchPool extends MonitorableImpl {
 	 * @throws SQLException
 	 */
     public void store() throws SQLException {
-    	store(null, false);
+    	store(null, false, false);
     }
 
 	/**
@@ -364,8 +364,8 @@ public class MatchPool extends MonitorableImpl {
 	 *            database will be rolled back at the end of the method.
 	 *            Otherwise, all changes are committed at the end.
 	 */
-    public void store(boolean debug) throws SQLException {
-    	store(null, debug);
+    public void store(boolean useBatchUpdates, boolean debug) throws SQLException {
+    	store(null, useBatchUpdates, debug);
     }
 
 	/**
@@ -377,8 +377,8 @@ public class MatchPool extends MonitorableImpl {
 	 *            time.
 	 * @throws SQLException
 	 */
-    public void store(Aborter aborter) throws SQLException {
-    	store(aborter, false);
+    public void store(boolean useBatchUpdates, Aborter aborter) throws SQLException {
+    	store(aborter, useBatchUpdates, false);
     }
 
 	/**
@@ -400,7 +400,7 @@ public class MatchPool extends MonitorableImpl {
 	 *             if the aborter's checkCancelled() method does. In this case,
 	 *             the changes to the match pool will be rolled back.
 	 */
-    public void store(Aborter aborter, boolean debug) throws SQLException {
+    public void store(Aborter aborter, boolean useBatchUpdates, boolean debug) throws SQLException {
         logger.debug("Starting to store");
         setProgress(0);
         setCancelled(false);
@@ -414,7 +414,7 @@ public class MatchPool extends MonitorableImpl {
         int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[0]).getKeyValues().size();
         try {
             con = project.createResultTableConnection();
-            boolean supportsBatchUpdates = con.getMetaData().supportsBatchUpdates();
+            boolean supportsBatchUpdates = useBatchUpdates && con.getMetaData().supportsBatchUpdates();
             con.setAutoCommit(false);
             StringBuilder sql = new StringBuilder();
             sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
@@ -450,12 +450,15 @@ public class MatchPool extends MonitorableImpl {
             	// Since not all JDBC drivers support batch updates.
             	if (supportsBatchUpdates) {
 	        		batchCount++;
+	        		logger.debug("Adding statement to batch");
 	        		ps.addBatch();
 	        		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	        			logger.debug("Executing batch update");
 	        			ps.executeBatch();
 	        			batchCount = 0;
 	        		}
             	} else {
+            		logger.debug("Executing update statement");
             		ps.executeUpdate();
             	}
             	it.remove();
@@ -508,17 +511,21 @@ public class MatchPool extends MonitorableImpl {
 
             		if (supportsBatchUpdates) {
 	            		batchCount++;
+	            		logger.debug("Adding statement to batch");
 	            		ps.addBatch();
 	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	            			logger.debug("Executing batch update");
 	            			ps.executeBatch();
 	            			batchCount = 0;
 	            		}
             		} else {
+            			logger.debug("Executing update statement");
             			ps.executeUpdate();
             		}
             		pmr.setStoreState(StoreState.CLEAN);
             	} else if (!it.hasNext() && supportsBatchUpdates) {
             		// execute remaining batched commands
+            		logger.debug("Executing batch update");
             		ps.executeBatch();
             	}
             	
@@ -622,17 +629,21 @@ public class MatchPool extends MonitorableImpl {
             		
             		if (supportsBatchUpdates) {
 	            		batchCount++;
+	            		logger.debug("Adding insert statement to batch");
 	            		ps.addBatch();
 	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	            			logger.debug("Executing batch insert");
 	            			ps.executeBatch();
 	            			batchCount = 0;
 	            		}
             		} else {
+            			logger.debug("Executing insert statement");
             			ps.executeUpdate();
             		}
             		pmr.setStoreState(StoreState.CLEAN);
             	} else if (!it.hasNext() && supportsBatchUpdates) {
             		// execute remaining batched commands
+            		logger.debug("Executing batch insert");
             		ps.executeBatch();
             	}
             }

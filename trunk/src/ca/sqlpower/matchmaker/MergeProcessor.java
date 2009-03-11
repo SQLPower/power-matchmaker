@@ -231,7 +231,7 @@ public class MergeProcessor extends AbstractProcessor {
 
             checkCancelled();
 
-			pool.store(project.getMergeSettings().getDebug());
+			pool.store(true, project.getMergeSettings().getDebug());
 			return Boolean.TRUE;
 		} finally {
 		    monitorableHelper.setFinished(true);
