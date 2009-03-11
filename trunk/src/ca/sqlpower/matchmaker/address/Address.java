@@ -23,9 +23,12 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
+import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.parse.AddressLexer;
 import ca.sqlpower.matchmaker.address.parse.AddressParser;
+
+import com.sleepycat.je.DatabaseException;
 
 /**
  * A class for representing any North American address (urban, rural, or post office box).
@@ -34,9 +37,10 @@ import ca.sqlpower.matchmaker.address.parse.AddressParser;
  * changes made to the address fields by validation and correction code.
  */
 public class Address {
+	private static final Logger logger = Logger.getLogger(Address.class);
 
     public static enum Type {
-        URBAN, RURAL, PO_BOX
+        URBAN, RURAL, PO_BOX, GD
     }
     
     /**
@@ -90,6 +94,12 @@ public class Address {
     private String streetType;
     
     /**
+     * The street type ordering must be preserved, so if the street type comes before the street
+     * name as in Quebec then we must keep track of it.
+     */
+    private boolean streetTypePrefix = false;
+    
+    /**
      * The street direction (N, S, E, W, and so on). Null if this address does not have
      * a street direction. For French addresses, West is represented by "O" (Ouest). Other
      * compass directions are represented by the same letter in French and English.
@@ -128,6 +138,12 @@ public class Address {
      * The address type. See {@link Type} for details.
      */
     private Type type;
+    
+    private String generalDeliveryName;
+    
+    private String deliveryInstallationType;
+    
+    private String deliveryInstallationName;
     
     /**
      * Creates a new Address record with all fields set to their defaults (usually null).
@@ -188,18 +204,19 @@ public class Address {
      * @throws RecognitionException 
      */
     public static Address parse(String streetAddress, String municipality, String province, String postalCode,
-            String country) throws RecognitionException {
-    	
-    	// XXX: Stupid (and hopefully temporary) workaround to prevent the parser from failing.
-		// Apparently it expects the municipality, province, and postal code to
-		// be in the streetAddress
-		streetAddress = streetAddress + " FOO FOO FOO";
+            String country, AddressDatabase addressDatabase) throws RecognitionException {
     	
     	Address a;
     	if (streetAddress != null) {
     		AddressLexer lexer = new AddressLexer(new ANTLRStringStream(streetAddress.toUpperCase()));
 	        TokenStream addressTokens = new CommonTokenStream(lexer);
 	        AddressParser p = new AddressParser(addressTokens);
+	        p.setAddressDatabase(addressDatabase);
+	        try {
+				p.setPostalCode(postalCode);
+			} catch (DatabaseException e) {
+				throw new RuntimeException(e);
+			}
 	        p.streetAddress();
 	        a = p.getAddress();
     	} else {
@@ -228,7 +245,7 @@ public class Address {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getStreetAddress());
+        sb.append(getAddress());
         
         sb.append("\n");
         sb.append(municipality);
@@ -240,6 +257,29 @@ public class Address {
         
         return sb.toString();
     }
+    
+    public String getAddress() {
+    	if (type == Type.URBAN) {
+    		return getStreetAddress();
+    	} else if (type == Type.GD) {
+    		return getGeneralDeliveryAddress();
+    	}
+    	return "";
+    }
+
+	public String getGeneralDeliveryAddress() {
+		StringBuilder sb = new StringBuilder();
+		if (generalDeliveryName != null) {
+			sb.append(generalDeliveryName).append(" ");
+		}
+		if (deliveryInstallationType != null) {
+			sb.append(deliveryInstallationType).append(" ");
+		}
+		if (deliveryInstallationName != null) {
+			sb.append(deliveryInstallationName).append(" ");
+		}
+		return sb.toString();
+	}
 
 	/**
 	 * Returns the street address of this {@link Address}. This includes
@@ -253,16 +293,21 @@ public class Address {
             sb.append(suite).append("-");
         }
         if (streetNumber != null) {
-            sb.append(streetNumber).append(" ");
+            sb.append(streetNumber);
+            if (streetNumberSuffix != null) {
+                sb.append(streetNumberSuffix);
+            }
+            sb.append(" ");
         }
         if (streetDirection != null && directionPrefix) {
             sb.append(streetDirection).append(" ");
         }
-        if (streetNumberSuffix != null) {
-            sb.append(streetNumberSuffix).append(" ");
+        
+        if (streetType != null && streetTypePrefix) {
+            sb.append(streetType).append(" ");
         }
         sb.append(street);
-        if (streetType != null) {
+        if (streetType != null && !streetTypePrefix) {
             sb.append(" ").append(streetType);
         }
         if (streetDirection != null && !directionPrefix) {
@@ -404,10 +449,47 @@ public class Address {
     }
 
     public void setType(Type type) {
+    	logger.debug("setting type to " + type);
         this.type = type;
     }
 
-    public void normalize() {
+    public void setStreetTypePrefix(boolean streetTypeAtStart) {
+			this.streetTypePrefix = streetTypeAtStart;
+		
+	}
+
+	public boolean isStreetTypePrefix() {
+		return streetTypePrefix;
+	}
+
+	public void setGeneralDeliveryName(String generalDeliveryName) {
+			this.generalDeliveryName = generalDeliveryName;
+		
+	}
+
+	public String getGeneralDeliveryName() {
+		return generalDeliveryName;
+	}
+
+	public void setDeliveryInstallationType(String deliveryInstallationType) {
+			this.deliveryInstallationType = deliveryInstallationType;
+		
+	}
+
+	public String getDeliveryInstallationType() {
+		return deliveryInstallationType;
+	}
+
+	public void setDeliveryInstallationName(String deliveryInstallationName) {
+			this.deliveryInstallationName = deliveryInstallationName;
+		
+	}
+
+	public String getDeliveryInstallationName() {
+		return deliveryInstallationName;
+	}
+
+	public void normalize() {
         if (municipality != null) setMunicipality(municipality.toUpperCase());
         if (suite != null) setSuite(suite.toUpperCase());
         if (streetNumberSuffix != null) setStreetNumberSuffix(streetNumberSuffix.toUpperCase());

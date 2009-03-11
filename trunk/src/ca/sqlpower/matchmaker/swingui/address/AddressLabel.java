@@ -122,7 +122,7 @@ public class AddressLabel extends JComponent {
 				g2.fillRect(0, 0, getWidth(), getHeight());
 			}
 		}
-		if (!isFieldMissing(currentAddress.getStreetAddress())) {
+		if (!isFieldMissing(currentAddress.getAddress())) {
 		    if (comparisonAddress != null && different(currentAddress.getStreetAddress(), comparisonAddress.getStreetAddress())) {
 		        g2.setColor(comparisonColour);
 		    } else {

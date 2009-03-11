@@ -219,7 +219,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					address1 = Address.parse(
 							selected.getAddressLine1(), selected
 									.getMunicipality(), selected.getProvince(),
-							selected.getPostalCode(), selected.getCountry());
+							selected.getPostalCode(), selected.getCountry(), addressDatabase);
 				} catch (RecognitionException e) {
 					throw new RuntimeException(e);
 				}
@@ -273,7 +273,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					Address address1 = Address.parse(
 							selected.getAddressLine1(), selected
 									.getMunicipality(), selected.getProvince(),
-							selected.getPostalCode(), selected.getCountry());
+							selected.getPostalCode(), selected.getCountry(), addressDatabase);
 					AddressValidator validator = new AddressValidator(addressDatabase, address1);
 				    validateResult = validator.getResults();
 

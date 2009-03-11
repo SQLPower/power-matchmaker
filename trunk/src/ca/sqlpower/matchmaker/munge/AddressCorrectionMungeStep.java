@@ -114,7 +114,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		// nicely formatted 
 		String addressString = addressLine1 + ", " + addressLine2 + ", " + municipality + ", " + province + ", " + inPostalCode + ", " + country;
 		logger.debug("Parsing Address: " + addressString);
-		Address address = Address.parse(addressLine1, municipality, province, inPostalCode, country);
+		Address address = Address.parse(addressLine1, municipality, province, inPostalCode, country, addressDB);
 		
 		logger.debug("Address that was parsed:\n" + address.toString());
 		
@@ -135,7 +135,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		
 		List<MungeStepOutput> outputs = getChildren(); 
 		
-		outputs.get(0).setData(address.getStreetAddress());
+		outputs.get(0).setData(address.getAddress());
 		outputs.get(1).setData(addressLine2);
 		outputs.get(2).setData(address.getSuite());
 		outputs.get(3).setData(address.getStreetNumber() != null ? BigDecimal.valueOf(address.getStreetNumber()) : null);
