@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.swing.Action;
+import javax.swing.JTextArea;
 import javax.swing.text.Document;
 
 import org.apache.log4j.Appender;
@@ -43,6 +44,15 @@ import ca.sqlpower.swingui.SPSwingWorker;
  * A SPSwingWorker implementation that runs a MatchMakerEngine.
  */
 class EngineWorker extends SPSwingWorker {
+
+	/**
+	 * The maximum number of characters that will be displayed in the engine
+	 * output {@link JTextArea}. This is to keep the buffer from getting too
+	 * large and consuming too much memory during an engine run. If the user
+	 * wants to view the whole log output, they can just open up the text file
+	 * or use the 'Show Log' button.
+	 */
+	private static final int LOG_OUTPUT_CHAR_LIMIT = 50000;
 
 	/**
 	 * The MatchMakerEngine that the worker will run
@@ -102,7 +112,7 @@ class EngineWorker extends SPSwingWorker {
 	public void doStuff() throws EngineSettingException, IOException, SQLException, SourceTableException, InterruptedException {
 	    project.acquireEngineLock(engine);
 	    try {
-	        appender = new DocumentAppender(engineOutputDoc);
+	        appender = new DocumentAppender(engineOutputDoc, true, LOG_OUTPUT_CHAR_LIMIT);
 	        engine.getLogger().addAppender(appender);
 	        engine.call();
 	    } finally {
