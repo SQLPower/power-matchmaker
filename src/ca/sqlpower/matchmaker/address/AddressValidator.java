@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.sqlpower.matchmaker.address.Address.Type;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -129,32 +130,72 @@ public class AddressValidator {
             				errorCount++;
             			}
             		}
-            		if (different(pc.getStreetName(), a.getStreet())) {
-            			results.add(ValidateResult.createValidateResult(
-            					Status.FAIL, "Street name does not agree with postal code"));
-            			suggestion.setStreet(pc.getStreetName());
-            			errorCount++;
-            		}
-            		if (different(pc.getStreetTypeCode(), a.getStreetType())) {
-            			results.add(ValidateResult.createValidateResult(
-            					Status.FAIL, "Street type does not agree with postal code"));
-            			suggestion.setStreetType(pc.getStreetTypeCode());
-            			errorCount++;
-            		}
-            		if (a.isStreetTypePrefix() != isStreetTypePrefix(suggestion, pc)) {
-            			results.add(ValidateResult.createValidateResult(
-            					Status.FAIL, "Street type prefix does not agree with postal code"));
-            			suggestion.setStreetTypePrefix(isStreetTypePrefix(suggestion, pc));
-            			errorCount++;
-            		}
-            		if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
-            			results.add(ValidateResult.createValidateResult(
-            					Status.FAIL, "Street direction does not agree with postal code"));
-            			suggestion.setStreetDirection(pc.getStreetDirectionCode());
-            			errorCount++;
-            		}
+            		if (a.getType() == Type.URBAN) {
+            			if (different(pc.getStreetName(), a.getStreet())) {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "Street name does not agree with postal code"));
+            				suggestion.setStreet(pc.getStreetName());
+            				errorCount++;
+            			}
+            			if (different(pc.getStreetTypeCode(), a.getStreetType())) {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "Street type does not agree with postal code"));
+            				suggestion.setStreetType(pc.getStreetTypeCode());
+            				errorCount++;
+            			}
+            			if (a.isStreetTypePrefix() != isStreetTypePrefix(suggestion, pc)) {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "Street type prefix does not agree with postal code"));
+            				suggestion.setStreetTypePrefix(isStreetTypePrefix(suggestion, pc));
+            				errorCount++;
+            			}
+            			if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "Street direction does not agree with postal code"));
+            				suggestion.setStreetDirection(pc.getStreetDirectionCode());
+            				errorCount++;
+            			}
+            			if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
+            					(pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "Street number does not fall into the range of allowed street numbers for this postal code."));
+            				suggestion.setStreetNumber(pc.getStreetAddressFromNumber() + 1);
+            				errorCount++;
+            			}
+//            			if (pc.getStreetAddressFromNumber() == a.getStreetNumber() && pc.getStreetAddressNumberSuffixFromCode() != null) {
+//            				if (a.getStreetNumberSuffix() == null) {
+//            					results.add(ValidateResult.createValidateResult(
+//                						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
+//                				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
+//                				errorCount++;
+//            				} else {
+//            					char pcSuffix = pc.getStreetAddressNumberSuffixFromCode().charAt(0);
+//            					char aSuffix = a.getStreetNumberSuffix().charAt(0);
+//            					if (!(pcSuffix >= 65 && (aSuffix >= pcSuffix || aSuffix == 49 || aSuffix == 50 || aSuffix == 51))) {
+//            						results.add(ValidateResult.createValidateResult(
+//                    						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
+//                    				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
+//                    				errorCount++;
+//            					}
+//            				}
+//            			}
 
-            		// TODO all the other fields
+            			// TODO all the other fields
+            		} else if (a.getType() == Type.GD) {
+            			if (Address.isGeneralDeliveryEnglish(a.getGeneralDeliveryName()) 
+            					&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
+            				suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
+            				errorCount++;
+            			} else if (Address.isGeneralDeliveryFrench(a.getGeneralDeliveryName()) 
+            					&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
+            				suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
+            				errorCount++;
+            			}
+            		}
 
             		if (errorCount > 0) {
             			List<Address> addresses = addressSuggestionsByError.get(errorCount);
@@ -258,7 +299,7 @@ public class AddressValidator {
     	}
     	//French people like to put the street type after the street name if it is numeric and is followed
     	//by 'e', 're' or if the street name is an ordinal number.
-    	String street = suggestion.getStreet();
+    	String street = suggestion.getStreet().split(" ")[0];
     	if (street != null) {
     		try {
     			Integer.parseInt(street);
@@ -267,17 +308,31 @@ public class AddressValidator {
     			//street type goes in front still.
     		}
     		try {
-    			Integer.parseInt(street.substring(0, street.length() - 1));
-    			if (street.substring(street.length() - 1).equals("E")) {
-    				return false;
+    			if (street.length() > 1) {
+    				Integer.parseInt(street.substring(0, street.length() - 1));
+    				if (street.substring(street.length() - 1).equals("E")) {
+    					return false;
+    				}
     			}
     		} catch (NumberFormatException e) {
     			//street type goes in front still.
     		}
     		try {
-    			Integer.parseInt(street.substring(0, street.length() - 2));
-    			if (street.substring(street.length() - 2).equals("RE")) {
-    				return false;
+    			if (street.length() > 2) {
+    				Integer.parseInt(street.substring(0, street.length() - 2));
+    				if (street.substring(street.length() - 2).equals("RE")) {
+    					return false;
+    				}
+    			}
+    		} catch (NumberFormatException e) {
+    			//street type goes in front still.
+    		}
+    		try {
+    			if (street.length() > 3) {
+    				Integer.parseInt(street.substring(0, street.length() - 3));
+    				if (street.substring(street.length() - 3).equals("IER")) {
+    					return false;
+    				}
     			}
     		} catch (NumberFormatException e) {
     			//street type goes in front still.

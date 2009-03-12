@@ -180,4 +180,11 @@ public class AddressTest extends TestCase {
     	assertEquals("QC", address.getProvince());
     	assertEquals("CA", address.getCountry());
     }
+    
+    public void testGeneralDelivery() throws Exception {
+    	Address address = Address.parse("GENERAL DELIVERY STN MAIN", "ST THOMAS", "ON", "N5P3T4", "CA", addressDatabase);
+    	assertEquals("GENERAL DELIVERY", address.getGeneralDeliveryName());
+    	assertEquals("STN", address.getDeliveryInstallationType());
+    	assertEquals("MAIN", address.getDeliveryInstallationName());
+    }
 }

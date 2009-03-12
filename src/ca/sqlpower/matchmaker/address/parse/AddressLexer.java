@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-12 15:00:43
+// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-12 17:40:13
 
 package ca.sqlpower.matchmaker.address.parse;
 
@@ -14,22 +14,22 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 
 public class AddressLexer extends Lexer {
-    public static final int SUITEANDSTREETNUM=16;
-    public static final int STREETDIR=12;
-    public static final int GD=6;
-    public static final int NAME=15;
-    public static final int WS=17;
+    public static final int SUITEANDSTREETNUM=15;
+    public static final int STREETDIR=11;
+    public static final int NAME=14;
+    public static final int WS=16;
     public static final int ROUTESERVICETYPE=4;
     public static final int T__18=18;
-    public static final int SUFFIXANDDIR=9;
-    public static final int NUMBER=14;
-    public static final int NUMANDSTREETSUFFIX=11;
-    public static final int NUMANDSUFFIX=13;
+    public static final int T__17=17;
+    public static final int SUFFIXANDDIR=8;
+    public static final int NUMBER=13;
+    public static final int NUMANDSTREETSUFFIX=10;
+    public static final int NUMANDSUFFIX=12;
     public static final int LOCKBOXTYPE=5;
     public static final int EOF=-1;
-    public static final int SUITE=8;
-    public static final int DITYPE=7;
-    public static final int STREETNUMSUFFIX=10;
+    public static final int SUITE=7;
+    public static final int DITYPE=6;
+    public static final int STREETNUMSUFFIX=9;
 
     // delegates
     // delegators
@@ -44,15 +44,35 @@ public class AddressLexer extends Lexer {
     }
     public String getGrammarFileName() { return "/Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g"; }
 
-    // $ANTLR start "T__18"
-    public final void mT__18() throws RecognitionException {
+    // $ANTLR start "T__17"
+    public final void mT__17() throws RecognitionException {
         try {
-            int _type = T__18;
+            int _type = T__17;
             int _channel = DEFAULT_TOKEN_CHANNEL;
             // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:7:7: ( '-' )
             // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:7:9: '-'
             {
             match('-'); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__17"
+
+    // $ANTLR start "T__18"
+    public final void mT__18() throws RecognitionException {
+        try {
+            int _type = T__18;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:8:7: ( '#' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:8:9: '#'
+            {
+            match('#'); 
 
             }
 
@@ -69,10 +89,10 @@ public class AddressLexer extends Lexer {
         try {
             int _type = SUITEANDSTREETNUM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:236:2: ( ( '0' .. '9' )+ '-' ( '0' .. '9' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:236:4: ( '0' .. '9' )+ '-' ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:252:2: ( ( '0' .. '9' )+ '-' ( '0' .. '9' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:252:4: ( '0' .. '9' )+ '-' ( '0' .. '9' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:236:4: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:252:4: ( '0' .. '9' )+
             int cnt1=0;
             loop1:
             do {
@@ -86,7 +106,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:236:5: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:252:5: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -103,7 +123,7 @@ public class AddressLexer extends Lexer {
             } while (true);
 
             match('-'); 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:236:18: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:252:18: ( '0' .. '9' )+
             int cnt2=0;
             loop2:
             do {
@@ -117,7 +137,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:236:19: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:252:19: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -149,7 +169,7 @@ public class AddressLexer extends Lexer {
         try {
             int _type = ROUTESERVICETYPE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:2: ( 'RR' | 'SS' | 'MR' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:255:2: ( 'RR' | 'SS' | 'MR' )
             int alt3=3;
             switch ( input.LA(1) ) {
             case 'R':
@@ -176,7 +196,7 @@ public class AddressLexer extends Lexer {
 
             switch (alt3) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:4: 'RR'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:255:4: 'RR'
                     {
                     match("RR"); 
 
@@ -184,7 +204,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:11: 'SS'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:255:11: 'SS'
                     {
                     match("SS"); 
 
@@ -192,7 +212,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:18: 'MR'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:255:18: 'MR'
                     {
                     match("MR"); 
 
@@ -214,7 +234,7 @@ public class AddressLexer extends Lexer {
         try {
             int _type = LOCKBOXTYPE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:242:2: ( 'PO BOX' | 'CP' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:258:2: ( 'PO BOX' | 'CP' )
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -232,7 +252,7 @@ public class AddressLexer extends Lexer {
             }
             switch (alt4) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:242:4: 'PO BOX'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:258:4: 'PO BOX'
                     {
                     match("PO BOX"); 
 
@@ -240,7 +260,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:242:15: 'CP'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:258:15: 'CP'
                     {
                     match("CP"); 
 
@@ -257,86 +277,17 @@ public class AddressLexer extends Lexer {
     }
     // $ANTLR end "LOCKBOXTYPE"
 
-    // $ANTLR start "GD"
-    public final void mGD() throws RecognitionException {
-        try {
-            int _type = GD;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:245:2: ( 'GD' | 'GENERAL DELIVERY' | 'PR' )
-            int alt5=3;
-            int LA5_0 = input.LA(1);
-
-            if ( (LA5_0=='G') ) {
-                int LA5_1 = input.LA(2);
-
-                if ( (LA5_1=='D') ) {
-                    alt5=1;
-                }
-                else if ( (LA5_1=='E') ) {
-                    alt5=2;
-                }
-                else {
-                    NoViableAltException nvae =
-                        new NoViableAltException("", 5, 1, input);
-
-                    throw nvae;
-                }
-            }
-            else if ( (LA5_0=='P') ) {
-                alt5=3;
-            }
-            else {
-                NoViableAltException nvae =
-                    new NoViableAltException("", 5, 0, input);
-
-                throw nvae;
-            }
-            switch (alt5) {
-                case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:245:4: 'GD'
-                    {
-                    match("GD"); 
-
-
-                    }
-                    break;
-                case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:245:11: 'GENERAL DELIVERY'
-                    {
-                    match("GENERAL DELIVERY"); 
-
-
-                    }
-                    break;
-                case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:245:32: 'PR'
-                    {
-                    match("PR"); 
-
-
-                    }
-                    break;
-
-            }
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "GD"
-
     // $ANTLR start "DITYPE"
     public final void mDITYPE() throws RecognitionException {
         try {
             int _type = DITYPE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:2: ( 'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC' )
-            int alt6=12;
-            alt6 = dfa6.predict(input);
-            switch (alt6) {
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:2: ( 'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC' )
+            int alt5=12;
+            alt5 = dfa5.predict(input);
+            switch (alt5) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:4: 'BDP'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:4: 'BDP'
                     {
                     match("BDP"); 
 
@@ -344,7 +295,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:12: 'CC'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:12: 'CC'
                     {
                     match("CC"); 
 
@@ -352,7 +303,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:19: 'CDO'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:19: 'CDO'
                     {
                     match("CDO"); 
 
@@ -360,7 +311,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 4 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:27: 'CMC'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:27: 'CMC'
                     {
                     match("CMC"); 
 
@@ -368,7 +319,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 5 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:35: 'CPC'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:35: 'CPC'
                     {
                     match("CPC"); 
 
@@ -376,7 +327,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 6 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:43: 'CSP'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:43: 'CSP'
                     {
                     match("CSP"); 
 
@@ -384,7 +335,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 7 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:51: 'LCD'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:51: 'LCD'
                     {
                     match("LCD"); 
 
@@ -392,7 +343,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 8 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:59: 'PDF'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:59: 'PDF'
                     {
                     match("PDF"); 
 
@@ -400,7 +351,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 9 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:67: 'PO'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:67: 'PO'
                     {
                     match("PO"); 
 
@@ -408,7 +359,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 10 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:74: 'RPO'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:74: 'RPO'
                     {
                     match("RPO"); 
 
@@ -416,7 +367,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 11 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:82: 'STN'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:82: 'STN'
                     {
                     match("STN"); 
 
@@ -424,7 +375,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 12 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:248:90: 'SUCC'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:90: 'SUCC'
                     {
                     match("SUCC"); 
 
@@ -446,12 +397,12 @@ public class AddressLexer extends Lexer {
         try {
             int _type = SUITE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:7: ( 'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE' )
-            int alt7=7;
-            alt7 = dfa7.predict(input);
-            switch (alt7) {
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:7: ( 'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE' )
+            int alt6=7;
+            alt6 = dfa6.predict(input);
+            switch (alt6) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:9: 'UNIT'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:9: 'UNIT'
                     {
                     match("UNIT"); 
 
@@ -459,7 +410,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:18: 'APT'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:18: 'APT'
                     {
                     match("APT"); 
 
@@ -467,7 +418,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:26: 'APARTMENT'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:26: 'APARTMENT'
                     {
                     match("APARTMENT"); 
 
@@ -475,7 +426,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 4 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:40: 'SUITE'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:40: 'SUITE'
                     {
                     match("SUITE"); 
 
@@ -483,7 +434,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 5 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:50: 'APP'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:50: 'APP'
                     {
                     match("APP"); 
 
@@ -491,7 +442,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 6 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:58: 'BUREAU'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:58: 'BUREAU'
                     {
                     match("BUREAU"); 
 
@@ -499,7 +450,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 7 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:250:69: 'UNITE'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:69: 'UNITE'
                     {
                     match("UNITE"); 
 
@@ -521,7 +472,7 @@ public class AddressLexer extends Lexer {
         try {
             int _type = SUFFIXANDDIR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:253:2: ( 'N' | 'S' | 'E' | 'W' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:266:2: ( 'N' | 'S' | 'E' | 'W' )
             // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:
             {
             if ( input.LA(1)=='E'||input.LA(1)=='N'||input.LA(1)=='S'||input.LA(1)=='W' ) {
@@ -549,11 +500,11 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NUMANDSTREETSUFFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:256:2: ( ( '1' .. '3' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:256:4: ( '1' .. '3' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:2: ( ( '1' .. '3' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:4: ( '1' .. '3' )
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:256:4: ( '1' .. '3' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:256:5: '1' .. '3'
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:4: ( '1' .. '3' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:5: '1' .. '3'
             {
             matchRange('1','3'); 
 
@@ -575,11 +526,11 @@ public class AddressLexer extends Lexer {
         try {
             int _type = STREETNUMSUFFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:259:2: ( ( 'A' .. 'Z' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:259:4: ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:272:2: ( ( 'A' .. 'Z' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:272:4: ( 'A' .. 'Z' )
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:259:4: ( 'A' .. 'Z' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:259:5: 'A' .. 'Z'
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:272:4: ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:272:5: 'A' .. 'Z'
             {
             matchRange('A','Z'); 
 
@@ -601,55 +552,55 @@ public class AddressLexer extends Lexer {
         try {
             int _type = STREETDIR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:262:2: ( 'NE' | 'NW' | 'NO' | 'SE' | 'SW' | 'SO' )
-            int alt8=6;
-            int LA8_0 = input.LA(1);
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:275:2: ( 'NE' | 'NW' | 'NO' | 'SE' | 'SW' | 'SO' )
+            int alt7=6;
+            int LA7_0 = input.LA(1);
 
-            if ( (LA8_0=='N') ) {
+            if ( (LA7_0=='N') ) {
                 switch ( input.LA(2) ) {
                 case 'E':
                     {
-                    alt8=1;
+                    alt7=1;
                     }
                     break;
                 case 'W':
                     {
-                    alt8=2;
+                    alt7=2;
                     }
                     break;
                 case 'O':
                     {
-                    alt8=3;
+                    alt7=3;
                     }
                     break;
                 default:
                     NoViableAltException nvae =
-                        new NoViableAltException("", 8, 1, input);
+                        new NoViableAltException("", 7, 1, input);
 
                     throw nvae;
                 }
 
             }
-            else if ( (LA8_0=='S') ) {
+            else if ( (LA7_0=='S') ) {
                 switch ( input.LA(2) ) {
                 case 'E':
                     {
-                    alt8=4;
+                    alt7=4;
                     }
                     break;
                 case 'W':
                     {
-                    alt8=5;
+                    alt7=5;
                     }
                     break;
                 case 'O':
                     {
-                    alt8=6;
+                    alt7=6;
                     }
                     break;
                 default:
                     NoViableAltException nvae =
-                        new NoViableAltException("", 8, 2, input);
+                        new NoViableAltException("", 7, 2, input);
 
                     throw nvae;
                 }
@@ -657,13 +608,13 @@ public class AddressLexer extends Lexer {
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 8, 0, input);
+                    new NoViableAltException("", 7, 0, input);
 
                 throw nvae;
             }
-            switch (alt8) {
+            switch (alt7) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:262:4: 'NE'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:275:4: 'NE'
                     {
                     match("NE"); 
 
@@ -671,7 +622,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:262:11: 'NW'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:275:11: 'NW'
                     {
                     match("NW"); 
 
@@ -679,7 +630,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:262:18: 'NO'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:275:18: 'NO'
                     {
                     match("NO"); 
 
@@ -687,7 +638,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 4 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:4: 'SE'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:276:4: 'SE'
                     {
                     match("SE"); 
 
@@ -695,7 +646,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 5 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:11: 'SW'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:276:11: 'SW'
                     {
                     match("SW"); 
 
@@ -703,7 +654,7 @@ public class AddressLexer extends Lexer {
                     }
                     break;
                 case 6 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:263:18: 'SO'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:276:18: 'SO'
                     {
                     match("SO"); 
 
@@ -725,24 +676,24 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NUMANDSUFFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:266:2: ( ( '0' .. '9' )+ ( 'A' .. 'Z' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:266:4: ( '0' .. '9' )+ ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:279:2: ( ( '0' .. '9' )+ ( 'A' .. 'Z' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:279:4: ( '0' .. '9' )+ ( 'A' .. 'Z' )
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:266:4: ( '0' .. '9' )+
-            int cnt9=0;
-            loop9:
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:279:4: ( '0' .. '9' )+
+            int cnt8=0;
+            loop8:
             do {
-                int alt9=2;
-                int LA9_0 = input.LA(1);
+                int alt8=2;
+                int LA8_0 = input.LA(1);
 
-                if ( ((LA9_0>='0' && LA9_0<='9')) ) {
-                    alt9=1;
+                if ( ((LA8_0>='0' && LA8_0<='9')) ) {
+                    alt8=1;
                 }
 
 
-                switch (alt9) {
+                switch (alt8) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:266:5: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:279:5: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -750,16 +701,16 @@ public class AddressLexer extends Lexer {
             	    break;
 
             	default :
-            	    if ( cnt9 >= 1 ) break loop9;
+            	    if ( cnt8 >= 1 ) break loop8;
                         EarlyExitException eee =
-                            new EarlyExitException(9, input);
+                            new EarlyExitException(8, input);
                         throw eee;
                 }
-                cnt9++;
+                cnt8++;
             } while (true);
 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:266:16: ( 'A' .. 'Z' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:266:17: 'A' .. 'Z'
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:279:16: ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:279:17: 'A' .. 'Z'
             {
             matchRange('A','Z'); 
 
@@ -781,26 +732,83 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NUMBER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:2: ( ( '0' .. '9' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:4: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:282:2: ( ( '0' .. '9' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:282:4: ( '0' .. '9' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:4: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:282:4: ( '0' .. '9' )+
+            int cnt9=0;
+            loop9:
+            do {
+                int alt9=2;
+                int LA9_0 = input.LA(1);
+
+                if ( ((LA9_0>='0' && LA9_0<='9')) ) {
+                    alt9=1;
+                }
+
+
+                switch (alt9) {
+            	case 1 :
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:282:4: '0' .. '9'
+            	    {
+            	    matchRange('0','9'); 
+
+            	    }
+            	    break;
+
+            	default :
+            	    if ( cnt9 >= 1 ) break loop9;
+                        EarlyExitException eee =
+                            new EarlyExitException(9, input);
+                        throw eee;
+                }
+                cnt9++;
+            } while (true);
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "NUMBER"
+
+    // $ANTLR start "NAME"
+    public final void mNAME() throws RecognitionException {
+        try {
+            int _type = NAME;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:284:6: ( ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:284:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' )+
+            {
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:284:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' )+
             int cnt10=0;
             loop10:
             do {
                 int alt10=2;
                 int LA10_0 = input.LA(1);
 
-                if ( ((LA10_0>='0' && LA10_0<='9')) ) {
+                if ( (LA10_0=='\''||LA10_0=='-'||(LA10_0>='0' && LA10_0<='9')||(LA10_0>='A' && LA10_0<='Z')) ) {
                     alt10=1;
                 }
 
 
                 switch (alt10) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:4: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:
             	    {
-            	    matchRange('0','9'); 
+            	    if ( input.LA(1)=='\''||input.LA(1)=='-'||(input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z') ) {
+            	        input.consume();
+
+            	    }
+            	    else {
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;}
+
 
             	    }
             	    break;
@@ -823,24 +831,24 @@ public class AddressLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end "NUMBER"
+    // $ANTLR end "NAME"
 
-    // $ANTLR start "NAME"
-    public final void mNAME() throws RecognitionException {
+    // $ANTLR start "WS"
+    public final void mWS() throws RecognitionException {
         try {
-            int _type = NAME;
+            int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:271:6: ( ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:271:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:287:4: ( ( ' ' | '\\t' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:287:6: ( ' ' | '\\t' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:271:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:287:6: ( ' ' | '\\t' )+
             int cnt11=0;
             loop11:
             do {
                 int alt11=2;
                 int LA11_0 = input.LA(1);
 
-                if ( (LA11_0=='\''||LA11_0=='-'||(LA11_0>='0' && LA11_0<='9')||(LA11_0>='A' && LA11_0<='Z')) ) {
+                if ( (LA11_0=='\t'||LA11_0==' ') ) {
                     alt11=1;
                 }
 
@@ -849,7 +857,7 @@ public class AddressLexer extends Lexer {
             	case 1 :
             	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:
             	    {
-            	    if ( input.LA(1)=='\''||input.LA(1)=='-'||(input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z') ) {
+            	    if ( input.LA(1)=='\t'||input.LA(1)==' ' ) {
             	        input.consume();
 
             	    }
@@ -871,63 +879,6 @@ public class AddressLexer extends Lexer {
                 cnt11++;
             } while (true);
 
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "NAME"
-
-    // $ANTLR start "WS"
-    public final void mWS() throws RecognitionException {
-        try {
-            int _type = WS;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:274:4: ( ( ' ' | '\\t' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:274:6: ( ' ' | '\\t' )+
-            {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:274:6: ( ' ' | '\\t' )+
-            int cnt12=0;
-            loop12:
-            do {
-                int alt12=2;
-                int LA12_0 = input.LA(1);
-
-                if ( (LA12_0=='\t'||LA12_0==' ') ) {
-                    alt12=1;
-                }
-
-
-                switch (alt12) {
-            	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:
-            	    {
-            	    if ( input.LA(1)=='\t'||input.LA(1)==' ' ) {
-            	        input.consume();
-
-            	    }
-            	    else {
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        recover(mse);
-            	        throw mse;}
-
-
-            	    }
-            	    break;
-
-            	default :
-            	    if ( cnt12 >= 1 ) break loop12;
-                        EarlyExitException eee =
-                            new EarlyExitException(12, input);
-                        throw eee;
-                }
-                cnt12++;
-            } while (true);
-
             skip();
 
             }
@@ -941,110 +892,110 @@ public class AddressLexer extends Lexer {
     // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:8: ( T__18 | SUITEANDSTREETNUM | ROUTESERVICETYPE | LOCKBOXTYPE | GD | DITYPE | SUITE | SUFFIXANDDIR | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME | WS )
-        int alt13=15;
-        alt13 = dfa13.predict(input);
-        switch (alt13) {
+        // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:8: ( T__17 | T__18 | SUITEANDSTREETNUM | ROUTESERVICETYPE | LOCKBOXTYPE | DITYPE | SUITE | SUFFIXANDDIR | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME | WS )
+        int alt12=15;
+        alt12 = dfa12.predict(input);
+        switch (alt12) {
             case 1 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:10: T__18
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:10: T__17
+                {
+                mT__17(); 
+
+                }
+                break;
+            case 2 :
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:16: T__18
                 {
                 mT__18(); 
 
                 }
                 break;
-            case 2 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:16: SUITEANDSTREETNUM
+            case 3 :
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:22: SUITEANDSTREETNUM
                 {
                 mSUITEANDSTREETNUM(); 
 
                 }
                 break;
-            case 3 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:34: ROUTESERVICETYPE
+            case 4 :
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:40: ROUTESERVICETYPE
                 {
                 mROUTESERVICETYPE(); 
 
                 }
                 break;
-            case 4 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:51: LOCKBOXTYPE
+            case 5 :
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:57: LOCKBOXTYPE
                 {
                 mLOCKBOXTYPE(); 
 
                 }
                 break;
-            case 5 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:63: GD
-                {
-                mGD(); 
-
-                }
-                break;
             case 6 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:66: DITYPE
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:69: DITYPE
                 {
                 mDITYPE(); 
 
                 }
                 break;
             case 7 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:73: SUITE
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:76: SUITE
                 {
                 mSUITE(); 
 
                 }
                 break;
             case 8 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:79: SUFFIXANDDIR
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:82: SUFFIXANDDIR
                 {
                 mSUFFIXANDDIR(); 
 
                 }
                 break;
             case 9 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:92: NUMANDSTREETSUFFIX
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:95: NUMANDSTREETSUFFIX
                 {
                 mNUMANDSTREETSUFFIX(); 
 
                 }
                 break;
             case 10 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:111: STREETNUMSUFFIX
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:114: STREETNUMSUFFIX
                 {
                 mSTREETNUMSUFFIX(); 
 
                 }
                 break;
             case 11 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:127: STREETDIR
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:130: STREETDIR
                 {
                 mSTREETDIR(); 
 
                 }
                 break;
             case 12 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:137: NUMANDSUFFIX
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:140: NUMANDSUFFIX
                 {
                 mNUMANDSUFFIX(); 
 
                 }
                 break;
             case 13 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:150: NUMBER
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:153: NUMBER
                 {
                 mNUMBER(); 
 
                 }
                 break;
             case 14 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:157: NAME
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:160: NAME
                 {
                 mNAME(); 
 
                 }
                 break;
             case 15 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:162: WS
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:165: WS
                 {
                 mWS(); 
 
@@ -1056,23 +1007,23 @@ public class AddressLexer extends Lexer {
     }
 
 
+    protected DFA5 dfa5 = new DFA5(this);
     protected DFA6 dfa6 = new DFA6(this);
-    protected DFA7 dfa7 = new DFA7(this);
-    protected DFA13 dfa13 = new DFA13(this);
-    static final String DFA6_eotS =
+    protected DFA12 dfa12 = new DFA12(this);
+    static final String DFA5_eotS =
         "\20\uffff";
-    static final String DFA6_eofS =
+    static final String DFA5_eofS =
         "\20\uffff";
-    static final String DFA6_minS =
+    static final String DFA5_minS =
         "\1\102\1\uffff\1\103\1\uffff\1\104\1\uffff\1\124\11\uffff";
-    static final String DFA6_maxS =
+    static final String DFA5_maxS =
         "\1\123\1\uffff\1\123\1\uffff\1\117\1\uffff\1\125\11\uffff";
-    static final String DFA6_acceptS =
+    static final String DFA5_acceptS =
         "\1\uffff\1\1\1\uffff\1\7\1\uffff\1\12\1\uffff\1\2\1\3\1\4\1\5\1"+
         "\6\1\10\1\11\1\13\1\14";
-    static final String DFA6_specialS =
+    static final String DFA5_specialS =
         "\20\uffff}>";
-    static final String[] DFA6_transitionS = {
+    static final String[] DFA5_transitionS = {
             "\1\1\1\2\10\uffff\1\3\3\uffff\1\4\1\uffff\1\5\1\6",
             "",
             "\1\7\1\10\10\uffff\1\11\2\uffff\1\12\2\uffff\1\13",
@@ -1087,6 +1038,68 @@ public class AddressLexer extends Lexer {
             "",
             "",
             "",
+            "",
+            ""
+    };
+
+    static final short[] DFA5_eot = DFA.unpackEncodedString(DFA5_eotS);
+    static final short[] DFA5_eof = DFA.unpackEncodedString(DFA5_eofS);
+    static final char[] DFA5_min = DFA.unpackEncodedStringToUnsignedChars(DFA5_minS);
+    static final char[] DFA5_max = DFA.unpackEncodedStringToUnsignedChars(DFA5_maxS);
+    static final short[] DFA5_accept = DFA.unpackEncodedString(DFA5_acceptS);
+    static final short[] DFA5_special = DFA.unpackEncodedString(DFA5_specialS);
+    static final short[][] DFA5_transition;
+
+    static {
+        int numStates = DFA5_transitionS.length;
+        DFA5_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA5_transition[i] = DFA.unpackEncodedString(DFA5_transitionS[i]);
+        }
+    }
+
+    class DFA5 extends DFA {
+
+        public DFA5(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 5;
+            this.eot = DFA5_eot;
+            this.eof = DFA5_eof;
+            this.min = DFA5_min;
+            this.max = DFA5_max;
+            this.accept = DFA5_accept;
+            this.special = DFA5_special;
+            this.transition = DFA5_transition;
+        }
+        public String getDescription() {
+            return "260:1: DITYPE : ( 'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC' );";
+        }
+    }
+    static final String DFA6_eotS =
+        "\13\uffff\1\15\2\uffff";
+    static final String DFA6_eofS =
+        "\16\uffff";
+    static final String DFA6_minS =
+        "\1\101\1\116\1\120\2\uffff\1\111\1\101\1\124\3\uffff\1\105\2\uffff";
+    static final String DFA6_maxS =
+        "\1\125\1\116\1\120\2\uffff\1\111\2\124\3\uffff\1\105\2\uffff";
+    static final String DFA6_acceptS =
+        "\3\uffff\1\4\1\6\3\uffff\1\2\1\3\1\5\1\uffff\1\7\1\1";
+    static final String DFA6_specialS =
+        "\16\uffff}>";
+    static final String[] DFA6_transitionS = {
+            "\1\2\1\4\20\uffff\1\3\1\uffff\1\1",
+            "\1\5",
+            "\1\6",
+            "",
+            "",
+            "\1\7",
+            "\1\11\16\uffff\1\12\3\uffff\1\10",
+            "\1\13",
+            "",
+            "",
+            "",
+            "\1\14",
             "",
             ""
     };
@@ -1121,240 +1134,167 @@ public class AddressLexer extends Lexer {
             this.transition = DFA6_transition;
         }
         public String getDescription() {
-            return "247:1: DITYPE : ( 'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC' );";
+            return "263:1: SUITE : ( 'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE' );";
         }
     }
-    static final String DFA7_eotS =
-        "\13\uffff\1\15\2\uffff";
-    static final String DFA7_eofS =
-        "\16\uffff";
-    static final String DFA7_minS =
-        "\1\101\1\116\1\120\2\uffff\1\111\1\101\1\124\3\uffff\1\105\2\uffff";
-    static final String DFA7_maxS =
-        "\1\125\1\116\1\120\2\uffff\1\111\2\124\3\uffff\1\105\2\uffff";
-    static final String DFA7_acceptS =
-        "\3\uffff\1\4\1\6\3\uffff\1\2\1\3\1\5\1\uffff\1\7\1\1";
-    static final String DFA7_specialS =
-        "\16\uffff}>";
-    static final String[] DFA7_transitionS = {
-            "\1\2\1\4\20\uffff\1\3\1\uffff\1\1",
-            "\1\5",
-            "\1\6",
-            "",
-            "",
-            "\1\7",
-            "\1\11\16\uffff\1\12\3\uffff\1\10",
-            "\1\13",
-            "",
-            "",
-            "",
-            "\1\14",
-            "",
-            ""
-    };
-
-    static final short[] DFA7_eot = DFA.unpackEncodedString(DFA7_eotS);
-    static final short[] DFA7_eof = DFA.unpackEncodedString(DFA7_eofS);
-    static final char[] DFA7_min = DFA.unpackEncodedStringToUnsignedChars(DFA7_minS);
-    static final char[] DFA7_max = DFA.unpackEncodedStringToUnsignedChars(DFA7_maxS);
-    static final short[] DFA7_accept = DFA.unpackEncodedString(DFA7_acceptS);
-    static final short[] DFA7_special = DFA.unpackEncodedString(DFA7_specialS);
-    static final short[][] DFA7_transition;
-
-    static {
-        int numStates = DFA7_transitionS.length;
-        DFA7_transition = new short[numStates][];
-        for (int i=0; i<numStates; i++) {
-            DFA7_transition[i] = DFA.unpackEncodedString(DFA7_transitionS[i]);
-        }
-    }
-
-    class DFA7 extends DFA {
-
-        public DFA7(BaseRecognizer recognizer) {
-            this.recognizer = recognizer;
-            this.decisionNumber = 7;
-            this.eot = DFA7_eot;
-            this.eof = DFA7_eof;
-            this.min = DFA7_min;
-            this.max = DFA7_max;
-            this.accept = DFA7_accept;
-            this.special = DFA7_special;
-            this.transition = DFA7_transition;
-        }
-        public String getDescription() {
-            return "250:1: SUITE : ( 'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE' );";
-        }
-    }
-    static final String DFA13_eotS =
-        "\1\uffff\1\23\1\24\1\31\1\40\10\31\1\40\1\64\1\31\1\40\4\uffff\1"+
-        "\65\1\21\1\67\1\21\1\uffff\1\67\2\21\3\74\1\uffff\1\67\1\76\1\77"+
-        "\1\21\1\75\1\76\3\21\1\77\6\21\3\74\2\uffff\1\115\1\uffff\2\76\2"+
-        "\21\4\uffff\5\76\1\21\1\76\1\21\1\76\1\21\1\123\1\21\1\123\1\uffff"+
-        "\1\76\3\21\1\123\1\uffff\1\21\1\123\2\21\1\123\2\21\1\123\4\21\1"+
-        "\123";
-    static final String DFA13_eofS =
-        "\141\uffff";
-    static final String DFA13_minS =
-        "\1\11\20\47\4\uffff\1\47\1\60\1\47\1\117\1\uffff\1\47\1\116\1\103"+
-        "\3\47\1\uffff\1\47\1\40\1\47\1\106\2\47\1\117\1\103\1\120\1\47\1"+
-        "\116\1\120\1\122\1\104\1\111\1\101\3\47\2\uffff\1\47\1\uffff\2\47"+
-        "\1\103\1\124\4\uffff\5\47\1\105\1\47\1\105\1\47\1\124\1\47\1\122"+
-        "\1\47\1\uffff\1\47\1\105\1\122\1\101\1\47\1\uffff\1\124\1\47\1\101"+
-        "\1\125\1\47\1\115\1\114\1\47\1\105\1\40\1\116\1\124\1\47";
-    static final String DFA13_maxS =
-        "\21\132\4\uffff\1\132\1\71\1\132\1\117\1\uffff\1\132\1\116\1\111"+
-        "\3\132\1\uffff\3\132\1\106\2\132\1\117\1\103\1\120\1\132\1\116\1"+
+    static final String DFA12_eotS =
+        "\1\uffff\1\23\1\uffff\1\25\1\31\1\40\7\31\1\40\1\61\1\31\1\40\3"+
+        "\uffff\1\62\1\uffff\1\21\1\64\1\21\1\uffff\1\64\2\21\3\71\1\uffff"+
+        "\1\64\1\73\1\21\1\72\1\73\10\21\3\71\2\uffff\1\110\1\uffff\2\73"+
+        "\2\21\3\uffff\6\73\1\21\1\73\1\21\1\115\1\21\1\115\1\uffff\1\73"+
+        "\2\21\1\115\1\uffff\1\21\1\115\1\21\1\115\1\21\1\115\3\21\1\115";
+    static final String DFA12_eofS =
+        "\130\uffff";
+    static final String DFA12_minS =
+        "\1\11\1\47\1\uffff\16\47\3\uffff\1\47\1\uffff\1\60\1\47\1\117\1"+
+        "\uffff\1\47\1\116\1\103\3\47\1\uffff\1\47\1\40\1\106\2\47\1\117"+
+        "\1\103\2\120\1\122\1\104\1\111\1\101\3\47\2\uffff\1\47\1\uffff\2"+
+        "\47\1\103\1\124\3\uffff\6\47\1\105\1\47\1\124\1\47\1\122\1\47\1"+
+        "\uffff\1\47\1\105\1\101\1\47\1\uffff\1\124\1\47\1\125\1\47\1\115"+
+        "\1\47\1\105\1\116\1\124\1\47";
+    static final String DFA12_maxS =
+        "\2\132\1\uffff\16\132\3\uffff\1\132\1\uffff\1\71\1\132\1\117\1\uffff"+
+        "\1\132\1\116\1\111\3\132\1\uffff\2\132\1\106\2\132\1\117\1\103\2"+
         "\120\1\122\1\104\1\111\1\124\3\132\2\uffff\1\132\1\uffff\2\132\1"+
-        "\103\1\124\4\uffff\5\132\1\105\1\132\1\105\1\132\1\124\1\132\1\122"+
-        "\1\132\1\uffff\1\132\1\105\1\122\1\101\1\132\1\uffff\1\124\1\132"+
-        "\1\101\1\125\1\132\1\115\1\114\1\132\1\105\1\40\1\116\1\124\1\132";
-    static final String DFA13_acceptS =
-        "\21\uffff\1\16\1\17\1\1\1\11\4\uffff\1\12\6\uffff\1\10\23\uffff"+
-        "\1\15\1\14\1\uffff\1\3\4\uffff\1\13\1\4\1\6\1\5\15\uffff\1\2\5\uffff"+
-        "\1\7\15\uffff";
-    static final String DFA13_specialS =
-        "\141\uffff}>";
-    static final String[] DFA13_transitionS = {
-            "\1\22\26\uffff\1\22\6\uffff\1\21\5\uffff\1\1\2\uffff\1\16\3"+
-            "\2\6\16\7\uffff\1\14\1\11\1\7\1\17\1\20\1\17\1\10\4\17\1\12"+
-            "\1\5\1\15\1\17\1\6\1\17\1\3\1\4\1\17\1\13\1\17\1\20\3\17",
+        "\103\1\124\3\uffff\6\132\1\105\1\132\1\124\1\132\1\122\1\132\1\uffff"+
+        "\1\132\1\105\1\101\1\132\1\uffff\1\124\1\132\1\125\1\132\1\115\1"+
+        "\132\1\105\1\116\1\124\1\132";
+    static final String DFA12_acceptS =
+        "\2\uffff\1\2\16\uffff\1\16\1\17\1\1\1\uffff\1\11\3\uffff\1\12\6"+
+        "\uffff\1\10\20\uffff\1\15\1\14\1\uffff\1\4\4\uffff\1\13\1\5\1\6"+
+        "\14\uffff\1\3\4\uffff\1\7\12\uffff";
+    static final String DFA12_specialS =
+        "\130\uffff}>";
+    static final String[] DFA12_transitionS = {
+            "\1\22\26\uffff\1\22\2\uffff\1\2\3\uffff\1\21\5\uffff\1\1\2\uffff"+
+            "\1\16\3\3\6\16\7\uffff\1\14\1\11\1\10\1\17\1\20\6\17\1\12\1"+
+            "\6\1\15\1\17\1\7\1\17\1\4\1\5\1\17\1\13\1\17\1\20\3\17",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\26\2\uffff\12\16\7\uffff\32\25",
+            "",
+            "\1\21\5\uffff\1\26\2\uffff\12\16\7\uffff\32\24",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\17\21\1\30\1\21\1"+
             "\27\10\21",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\4\21\1\35\11\21\1"+
             "\37\3\21\1\32\1\33\1\34\1\21\1\36\3\21",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\21\21\1\41\10\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\3\21\1\44\12\21\1"+
-            "\42\2\21\1\43\10\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\2\21\1\46\1\47\10"+
-            "\21\1\50\2\21\1\45\2\21\1\51\7\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\3\21\1\52\1\53\25"+
-            "\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\3\21\1\54\20\21\1"+
-            "\55\5\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\2\21\1\56\27\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\15\21\1\57\14\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\17\21\1\60\12\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\4\21\1\61\11\21\1"+
-            "\63\7\21\1\62\3\21",
-            "\1\21\5\uffff\1\26\2\uffff\12\16\7\uffff\32\25",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\3\21\1\43\12\21\1"+
+            "\42\13\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\2\21\1\45\1\46\10"+
+            "\21\1\47\2\21\1\44\2\21\1\50\7\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\3\21\1\51\20\21\1"+
+            "\52\5\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\2\21\1\53\27\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\15\21\1\54\14\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\17\21\1\55\12\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\4\21\1\56\11\21\1"+
+            "\60\7\21\1\57\3\21",
+            "\1\21\5\uffff\1\26\2\uffff\12\16\7\uffff\32\24",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "",
             "",
             "",
-            "",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\12\66",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\70",
-            "",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\71",
-            "\1\72\5\uffff\1\73",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "",
+            "\12\63",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\75\6\uffff\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\65",
+            "",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\66",
+            "\1\67\5\uffff\1\70",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\72\6\uffff\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\74",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\2\21\1\75\27\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\76",
+            "\1\77",
             "\1\100",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\2\21\1\101\27\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\101",
             "\1\102",
             "\1\103",
             "\1\104",
+            "\1\106\16\uffff\1\107\3\uffff\1\105",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\105",
-            "\1\106",
-            "\1\107",
-            "\1\110",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "",
+            "",
+            "\1\21\5\uffff\1\21\2\uffff\12\63\7\uffff\32\21",
+            "",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "\1\111",
-            "\1\113\16\uffff\1\114\3\uffff\1\112",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\112",
             "",
             "",
-            "\1\21\5\uffff\1\21\2\uffff\12\66\7\uffff\32\21",
             "",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\113",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\114",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "\1\116",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "\1\117",
-            "",
-            "",
-            "",
-            "",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "\1\120",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\121",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
+            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\4\21\1\121\25\21",
+            "",
             "\1\122",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\124",
+            "\1\123",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "",
+            "\1\124",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
             "\1\125",
             "\1\126",
             "\1\127",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\4\21\1\130\25\21",
-            "",
-            "\1\131",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\132",
-            "\1\133",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\134",
-            "\1\135",
-            "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21",
-            "\1\136",
-            "\1\77",
-            "\1\137",
-            "\1\140",
             "\1\21\5\uffff\1\21\2\uffff\12\21\7\uffff\32\21"
     };
 
-    static final short[] DFA13_eot = DFA.unpackEncodedString(DFA13_eotS);
-    static final short[] DFA13_eof = DFA.unpackEncodedString(DFA13_eofS);
-    static final char[] DFA13_min = DFA.unpackEncodedStringToUnsignedChars(DFA13_minS);
-    static final char[] DFA13_max = DFA.unpackEncodedStringToUnsignedChars(DFA13_maxS);
-    static final short[] DFA13_accept = DFA.unpackEncodedString(DFA13_acceptS);
-    static final short[] DFA13_special = DFA.unpackEncodedString(DFA13_specialS);
-    static final short[][] DFA13_transition;
+    static final short[] DFA12_eot = DFA.unpackEncodedString(DFA12_eotS);
+    static final short[] DFA12_eof = DFA.unpackEncodedString(DFA12_eofS);
+    static final char[] DFA12_min = DFA.unpackEncodedStringToUnsignedChars(DFA12_minS);
+    static final char[] DFA12_max = DFA.unpackEncodedStringToUnsignedChars(DFA12_maxS);
+    static final short[] DFA12_accept = DFA.unpackEncodedString(DFA12_acceptS);
+    static final short[] DFA12_special = DFA.unpackEncodedString(DFA12_specialS);
+    static final short[][] DFA12_transition;
 
     static {
-        int numStates = DFA13_transitionS.length;
-        DFA13_transition = new short[numStates][];
+        int numStates = DFA12_transitionS.length;
+        DFA12_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA13_transition[i] = DFA.unpackEncodedString(DFA13_transitionS[i]);
+            DFA12_transition[i] = DFA.unpackEncodedString(DFA12_transitionS[i]);
         }
     }
 
-    class DFA13 extends DFA {
+    class DFA12 extends DFA {
 
-        public DFA13(BaseRecognizer recognizer) {
+        public DFA12(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 13;
-            this.eot = DFA13_eot;
-            this.eof = DFA13_eof;
-            this.min = DFA13_min;
-            this.max = DFA13_max;
-            this.accept = DFA13_accept;
-            this.special = DFA13_special;
-            this.transition = DFA13_transition;
+            this.decisionNumber = 12;
+            this.eot = DFA12_eot;
+            this.eof = DFA12_eof;
+            this.min = DFA12_min;
+            this.max = DFA12_max;
+            this.accept = DFA12_accept;
+            this.special = DFA12_special;
+            this.transition = DFA12_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__18 | SUITEANDSTREETNUM | ROUTESERVICETYPE | LOCKBOXTYPE | GD | DITYPE | SUITE | SUFFIXANDDIR | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME | WS );";
+            return "1:1: Tokens : ( T__17 | T__18 | SUITEANDSTREETNUM | ROUTESERVICETYPE | LOCKBOXTYPE | DITYPE | SUITE | SUFFIXANDDIR | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME | WS );";
         }
     }
  

@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.parse.AddressLexer;
 import ca.sqlpower.matchmaker.address.parse.AddressParser;
+import ca.sqlpower.util.LevenshteinDistance;
 
 import com.sleepycat.je.DatabaseException;
 
@@ -38,6 +39,57 @@ import com.sleepycat.je.DatabaseException;
  */
 public class Address {
 	private static final Logger logger = Logger.getLogger(Address.class);
+	
+	/**
+	 * The french short form for general delivery. This form should replace
+	 * any general delivery term used for a french general delivery. 
+	 */
+	public static final String GENERAL_DELIVERY_FRENCH = "PR";
+	
+	/**
+	 * The english short form for general delivery. This form should replace
+	 * any general delivery term used for a english general delivery. 
+	 */
+	public static final String GENERAL_DELIVERY_ENGLISH = "GD";
+	
+	/**
+	 * This method will return true if the string given is close to an accepted
+	 * string to describe a general delivery. False will be returned otherwise.
+	 */
+	public static boolean isGeneralDelivery(String gdString) {
+		return isGeneralDeliveryEnglish(gdString) || isGeneralDeliveryFrench(gdString);
+	}
+	
+	/**
+	 * This method will return true if the string given is close to an accepted
+	 * string to describe a general delivery in French. False will be returned otherwise.
+	 */
+	static boolean isGeneralDeliveryFrench(String gdString) {
+		if (gdString.equals(GENERAL_DELIVERY_FRENCH)) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * This method will return true if the string given is close to an accepted
+	 * string to describe a general delivery in English. False will be returned otherwise.
+	 */
+	public static boolean isGeneralDeliveryEnglish(String gdString) {
+		if (gdString.equals(GENERAL_DELIVERY_ENGLISH)) {
+			return true;
+		}
+		
+		//TODO: use the levenshtein distance to distinguish between general delivery mispellings.
+		if (LevenshteinDistance.computeLevenshteinDistance("GENERAL DELIVERY", gdString) <= 1) {
+			return true;
+		}
+		if (LevenshteinDistance.computeLevenshteinDistance("GEN DELIVERY", gdString) <= 1) {
+			return true;
+		}
+		return false;
+		
+	}
 
     public static enum Type {
         URBAN, RURAL, LOCK_BOX, GD
@@ -241,7 +293,7 @@ public class Address {
 			} catch (DatabaseException e) {
 				throw new RuntimeException(e);
 			}
-	        p.streetAddress();
+	        p.address();
 	        a = p.getAddress();
     	} else {
     		a = new Address();
@@ -340,7 +392,7 @@ public class Address {
 			sb.append(deliveryInstallationType).append(" ");
 		}
 		if (deliveryInstallationName != null) {
-			sb.append(deliveryInstallationName).append(" ");
+			sb.append(deliveryInstallationName);
 		}
 		return sb.toString();
 	}
