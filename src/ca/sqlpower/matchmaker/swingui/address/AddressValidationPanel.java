@@ -30,13 +30,11 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -60,6 +58,10 @@ import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import com.sleepycat.je.DatabaseException;
 
 public class AddressValidationPanel extends NoEditEditorPane {
@@ -84,19 +86,9 @@ public class AddressValidationPanel extends NoEditEditorPane {
     private JPanel validateResultPane;
 
     /**
-     * This is the right component of the {{@link #horizontalSplitPane}
+     * This builds the right component of the {{@link #horizontalSplitPane}
      */
-    private JPanel editPane;
-    
-    /**
-     * This is the left part of the {@link #editPane}
-     */
-    private JPanel leftPane;
-    
-    /**
-     * This is the right part of the {@link #editPane}
-     */
-    private JPanel rightPane;
+    private DefaultFormBuilder builder;    
     
     /**
      * The result after validation step
@@ -233,40 +225,38 @@ public class AddressValidationPanel extends NoEditEditorPane {
 	class AddressListCellSelectionListener implements ListSelectionListener {
 
 		public void valueChanged(ListSelectionEvent e) {
-			leftPane = new JPanel();
-			leftPane.setLayout(new BoxLayout(leftPane, BoxLayout.Y_AXIS));
-			JButton button = new JButton("Revert");
-			button.addActionListener(new ActionListener() {
+			builder = new DefaultFormBuilder(new FormLayout(
+					"4dlu,fill:pref:grow,4dlu,fill:pref,4dlu",
+			"4dlu,pref,4dlu,pref,4dlu,fill:pref:grow,4dlu"));
+			CellConstraints cc = new CellConstraints();
+
+			JButton revertButton = new JButton("Revert");
+			revertButton.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
 					selectedAddressLabel.setAddress(selectedAddressLabel.getRevertToAddress());
 				}
 				
 			});
-			leftPane.add(button);
-			leftPane.add(Box.createVerticalStrut(20));
-			
-			rightPane = new JPanel();
-			rightPane.setLayout(new BoxLayout(rightPane, BoxLayout.Y_AXIS));
+			//TODO ..save button action to be added
+			JButton saveButton = new JButton("Save");
+			ButtonBarBuilder bbb = new ButtonBarBuilder();
+			bbb.addRelatedGap();
+			bbb.addGridded(revertButton);
+			bbb.addRelatedGap();
+			bbb.addGridded(saveButton);
+			bbb.addRelatedGap();
+			builder.add(bbb.getPanel(), cc.xy(2,2));
+
 			JLabel suggestLabel = new JLabel("Suggestions:");
-			suggestLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 			suggestLabel.setFont(new Font(null, Font.BOLD, 13));
-			rightPane.add(Box.createRigidArea(new Dimension(0,10)));
-			rightPane.add(suggestLabel);
-			rightPane.add(Box.createRigidArea(new Dimension(0,10)));
-			
-			editPane = new JPanel();
-			editPane.setLayout(new BoxLayout(editPane, BoxLayout.X_AXIS));
-			editPane.add(leftPane);
-			editPane.add(Box.createHorizontalStrut(10));
-			editPane.add(rightPane);
-			editPane.add(Box.createHorizontalStrut(10));
+			builder.add(suggestLabel, cc.xy(4, 2));
 			
 			//remember user's choice of the divider's location
 			horizontalSplitPane.setDividerLocation(horizontalSplitPane.getDividerLocation());			
 						
 			final AddressResult selected = (AddressResult) ((JList)e.getSource()).getSelectedValue();
-			horizontalSplitPane.setRightComponent(editPane);	
+			horizontalSplitPane.setRightComponent(builder.getPanel());	
 			
 			if (selected != null) {
 				try {
@@ -279,28 +269,31 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 					selectedAddressLabel = new AddressLabel(address1, false, null);
 					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
-					leftPane.add(selectedAddressLabel);
-					leftPane.add(Box.createVerticalStrut(10));
-					JLabel problems = new JLabel("Problems:");
-					leftPane.add(problems);
-					problems.setFont(new Font(null, Font.BOLD, 13));
+					builder.add(selectedAddressLabel, cc.xy(2, 4));
+					
+					FormLayout problemsLayout = new FormLayout("fill:pref:grow");
+					DefaultFormBuilder problemsBuilder = new DefaultFormBuilder(problemsLayout);
+					JLabel problemsHeading = new JLabel("Problems:");
+					problemsHeading.setFont(new Font(null, Font.BOLD, 13));
+					problemsBuilder.append(problemsHeading);
+					
 					for (ValidateResult vr : validateResult) {
 						logger.debug("THIS IS NOT EMPTY!!!!!!!!!!!!!!!!!");
 						if (vr.getStatus() == Status.FAIL) {
-							leftPane.add(new JLabel("Fail: " + vr.getMessage(),
+							problemsBuilder.append(new JLabel("Fail: " + vr.getMessage(),
 									new ImageIcon(AddressValidationPanel.class
 											.getResource("icons/fail.png")),
 									JLabel.LEFT));
 						} else if (vr.getStatus() == Status.WARN) {
-							leftPane.add(new JLabel("Warning: "
+							problemsBuilder.append(new JLabel("Warning: "
 									+ vr.getMessage(), new ImageIcon(
 									AddressValidationPanel.class
 											.getResource("icons/warn.png")),
 									JLabel.LEFT));
 						}
 					}
-					leftPane.add(Box.createVerticalStrut(200));
-
+					builder.add(problemsBuilder.getPanel(), cc.xy(2, 6));
+					
 					JList suggestionList = new JList(validator.getSuggestions().toArray());
 					suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 					suggestionList.setCellRenderer(new AddressListCellRenderer(address1));
@@ -330,31 +323,8 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						
 					});
 					JScrollPane scrollList = new JScrollPane(suggestionList);
-					scrollList.setPreferredSize(new Dimension(300, 50));
-					rightPane.add(scrollList);
-					rightPane.add(Box.createVerticalStrut(10));
-					rightPane.setMinimumSize(new Dimension(220, 500));
-					rightPane.setMaximumSize(new Dimension(250, 600));
-
-					for (Component comp : leftPane.getComponents()) {
-						if (comp instanceof JComponent) {
-							((JComponent) comp)
-									.setAlignmentX(Component.LEFT_ALIGNMENT);
-						}
-					}
-					for (Component comp : rightPane.getComponents()) {
-						if (comp instanceof JComponent) {
-							((JComponent) comp)
-									.setAlignmentX(Component.LEFT_ALIGNMENT);
-						}
-					}
-					logger.debug("THe size of right pane is "
-							+ rightPane.getBounds().height);
-					logger.debug("The size of left pane is "
-							+ leftPane.getBounds().height);
-					logger.debug(horizontalSplitPane.getBounds().height);
-					logger.debug(horizontalSplitPane.getLeftComponent()
-							.getBounds().height);
+					scrollList.setPreferredSize(new Dimension(200, 50));
+					builder.add(scrollList, cc.xywh(4, 4, 1, 4));
 
 				} catch (RecognitionException e1) {
 					MMSUtils
