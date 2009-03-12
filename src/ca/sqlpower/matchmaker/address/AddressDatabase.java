@@ -47,6 +47,8 @@ import com.sleepycat.persist.StoreConfig;
 public class AddressDatabase {
 
     private static final Logger logger = Logger.getLogger(AddressDatabase.class);
+
+	public static final String QUEBEC_PROVINCE_CODE = "QC";
     
     private final File databaseEnvironmentLocation;
     private Environment env;
@@ -54,17 +56,24 @@ public class AddressDatabase {
     private PrimaryIndex<String, Municipality> municipalityPK;
     private SecondaryIndex<String, String, Municipality> municipalitySK;
     
-    PrimaryIndex<String, PostalCode> postalCodePK;
-    SecondaryIndex<String, String, PostalCode> postalCodeProvince;
-    SecondaryIndex<String, String, PostalCode> postalCodeMunicipality;
-    SecondaryIndex<String, String, PostalCode> postalCodeStreet;
-    private SecondaryIndex<String, String, PostalCode> postalStreetTypeCode;
+    PrimaryIndex<Long, PostalCode> postalCodePK;
+    SecondaryIndex<String, Long, PostalCode> postalCodeSK;
+    SecondaryIndex<String, Long, PostalCode> postalCodeProvince;
+    SecondaryIndex<String, Long, PostalCode> postalCodeMunicipality;
+    SecondaryIndex<String, Long, PostalCode> postalCodeStreet;
+    private SecondaryIndex<String, Long, PostalCode> postalStreetTypeCode;
     
     /**
      * This map stores all valid address types (like STREET and AVENUE) to their short form stored
      * in the database.
      */
     private final Map<String, String> validAddressTypes = new HashMap<String, String>();
+    
+    /**
+     * This set stores all of the address types used in Quebec. This is needed as address types in
+     * french come before the street name instead of after it.
+     */
+    private final Set<String> frenchAddressTypes = new HashSet<String>();
     
     private void open() throws DatabaseException {
         EnvironmentConfig envConfig = new EnvironmentConfig();
@@ -82,7 +91,8 @@ public class AddressDatabase {
         
         store = new EntityStore(env, "PostalCode", storeConfig);
         storesToClose.add(store);
-        postalCodePK = store.getPrimaryIndex(String.class, PostalCode.class);
+        postalCodePK = store.getPrimaryIndex(Long.class, PostalCode.class);
+        postalCodeSK = store.getSecondaryIndex(postalCodePK, String.class, "postalCode");
         postalCodeProvince = store.getSecondaryIndex(postalCodePK, String.class, "provinceCode");
         postalCodeMunicipality = store.getSecondaryIndex(postalCodePK, String.class, "municipalityName");
         postalCodeStreet = store.getSecondaryIndex(postalCodePK, String.class, "streetName");
@@ -126,6 +136,31 @@ public class AddressDatabase {
         this.databaseEnvironmentLocation = databaseEnvironmentLocation;
         open();
         loadFullAddressTypes();
+        loadFrenchStreetTypes();
+    }
+    
+    private void loadFrenchStreetTypes() throws DatabaseException {
+    	BufferedReader reader = null;
+    	try {
+    		reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File("src/ca/sqlpower/matchmaker/address/StreetAddressTypes-French.property"))));
+    		String line = reader.readLine();
+    		while (line != null) {
+    			frenchAddressTypes.add(line);
+    			line = reader.readLine();
+    		}
+    	} catch (FileNotFoundException e) {
+    		throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} finally {
+    		if (reader != null) {
+    			try {
+    				reader.close();
+    			} catch (Exception e) {
+    				//Squishing exception to allow any other exception to make it through.
+    			}
+    		}
+    	}
     }
 
     private void loadFullAddressTypes() throws DatabaseException {
@@ -204,22 +239,40 @@ public class AddressDatabase {
     	logger.debug("Looking for street type " + streetType);
     	return validAddressTypes.keySet().contains(streetType);
     }
+    
+    public boolean isStreetTypeFrench(String streetType) {
+    	return frenchAddressTypes.contains(validAddressTypes.get(streetType));
+    }
+    
+    /**
+     * Returns the short form of the given street type. This will convert street types
+     * like STREET to ST and BOULEVARD to BLVD. This will return null if the street type
+     * given is not a valid street type.
+     */
+    public String getShortFormStreetType(String streetType) {
+    	return validAddressTypes.get(streetType);
+    }
 
     /**
-     * Returns all known information abotu the given postal code.
+     * Returns all known information about the given postal code.
      * 
      * @param postalCode
      *            The code. The lookup is not case sensitive, and all
      *            non-alplanumeric characters are ignored, so the arguments
      *            "A1A1A1" and "a1a 1A1" are equivalent. This argument must not
      *            be null.
-     * @return The PostalCode object for the given code, or null if the given
+     * @return The PostalCode objects for the given code, or an empty set if the given
      *         code does not exist in this database.
      * @throws DatabaseException if the lookup fails due to database problems
      */
-    public PostalCode findPostalCode(String postalCode) throws DatabaseException {
+    public Set<PostalCode> findPostalCode(String postalCode) throws DatabaseException {
         String pcNormalized = postalCode.toUpperCase().replaceAll("[^A-Z0-9]", "");
-        PostalCode pc = postalCodePK.get(pcNormalized);
-        return pc;
+        EntityCursor<PostalCode> pcCursor = postalCodeSK.entities(pcNormalized, true, pcNormalized, true);
+        Set<PostalCode> postalCodes = new HashSet<PostalCode>();
+        for (PostalCode pc : pcCursor) {
+        	postalCodes.add(pc);
+        }
+        pcCursor.close();
+        return postalCodes;
     }
 }

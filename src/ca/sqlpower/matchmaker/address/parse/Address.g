@@ -12,7 +12,7 @@ package ca.sqlpower.matchmaker.address.parse;
 
 @members {
 
-private PostalCode postalCode;
+private Set<PostalCode> postalCodes;
 
 private AddressDatabase addressDatabase;
 
@@ -31,27 +31,43 @@ public void setAddressDatabase(AddressDatabase addressDatabase) {
 
 public void setPostalCode(String postalCodeString) throws DatabaseException {
    if (addressDatabase == null) throw new NullPointerException("No address database!");
-   postalCode = addressDatabase.findPostalCode(postalCodeString);
+   postalCodes = addressDatabase.findPostalCode(postalCodeString);
 }
 
 private boolean couldBeUrban() {
-   if (postalCode == null) return true;
-   return postalCode.getRecordType() == PostalCode.RecordType.STREET || postalCode.getRecordType() == PostalCode.RecordType.STREET_AND_ROUTE;
+   if (postalCodes.isEmpty()) return true;
+   boolean isUrbanType = false;
+   for (PostalCode postalCode : postalCodes) {
+      isUrbanType |= postalCode.getRecordType() == PostalCode.RecordType.STREET || postalCode.getRecordType() == PostalCode.RecordType.STREET_AND_ROUTE;
+   }
+   return isUrbanType;
 }
 
 private boolean couldBeRural() {
-   if (postalCode == null) return true;
-   return postalCode.getRecordType() == PostalCode.RecordType.ROUTE || postalCode.getRecordType() == PostalCode.RecordType.STREET_AND_ROUTE;
+   if (postalCodes.isEmpty()) return true;
+   boolean isRuralType = false;
+   for (PostalCode postalCode : postalCodes) {
+      isRuralType |= postalCode.getRecordType() == PostalCode.RecordType.ROUTE || postalCode.getRecordType() == PostalCode.RecordType.STREET_AND_ROUTE;
+   }
+   return isRuralType;
 }
 
 private boolean couldBeLockBox() {
-   if (postalCode == null) return true;
-   return postalCode.getRecordType() == PostalCode.RecordType.LOCK_BOX;
+   if (postalCodes.isEmpty()) return true;
+   boolean isLockBoxType = false;
+   for (PostalCode postalCode : postalCodes) {
+      isLockBoxType |= postalCode.getRecordType() == PostalCode.RecordType.LOCK_BOX;
+   }
+   return isLockBoxType;
 }
 
 private boolean couldBeGD() {
-   if (postalCode == null) return true;
-   return postalCode.getRecordType() == PostalCode.RecordType.GENERAL_DELIVERY;
+   if (postalCodes.isEmpty()) return true;
+   boolean isGDType = false;
+   for (PostalCode postalCode : postalCodes) {
+      isGDType |= postalCode.getRecordType() == PostalCode.RecordType.GENERAL_DELIVERY;
+   }
+   return isGDType;
 }
 
 /**
@@ -110,19 +126,21 @@ failedParse
 	;
 
 failedToken
-	:	n=(ROUTESERVICETYPE | LOCKBOXTYPE | GD | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
+	:	n=(ROUTESERVICETYPE | LOCKBOXTYPE | GD | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
 							{
 							 address.setFailedParsingString(address.getFailedParsingString() + n);
 							}
 	;
 	
 streetAddress	
-	:	sn=NUMBER '-' street			{ 
+	:	sn=(NUMBER|NUMANDSTREETSUFFIX) '-' street			
+							{ 
 							  address.setSuitePrefix(true);
 							  address.setSuite($sn.text);
 							  address.setType(Address.Type.URBAN);
 							}
-	|	street s=SUITE sn=NUMBER		{ 
+	|	street s=SUITE sn=(NUMBER|NUMANDSTREETSUFFIX)		
+							{ 
 							  address.setSuitePrefix(false);
 							  address.setSuiteType($s.text);
 							  address.setSuite($sn.text);
@@ -132,7 +150,14 @@ streetAddress
 	;
 	
 street
-	:	n=NUMBER s=(STREETNUMSUFFIX|SUFFIXANDDIR) streetToken+	
+	:	n=SUITEANDSTREETNUM s=(STREETNUMSUFFIX|SUFFIXANDDIR|NUMANDSTREETSUFFIX) streetToken+
+							{String[] numbers = $n.text.split("-");
+							 address.setSuitePrefix(true);
+							 address.setSuite(numbers[0]);
+							 address.setStreetNumber(quietIntParse(numbers[1]));
+							 address.setStreetNumberSuffix($s.text);
+							}
+	|	n=(NUMBER|NUMANDSTREETSUFFIX) s=(STREETNUMSUFFIX|SUFFIXANDDIR|NUMANDSTREETSUFFIX) streetToken+	
 							{address.setStreetNumber(quietIntParse($n.text));
 							 address.setStreetNumberSuffix($s.text);
 							}
@@ -140,7 +165,8 @@ street
 							 address.setStreetNumber(quietIntParse(streetNum.substring(0, streetNum.length() - 1)));
 							 address.setStreetNumberSuffix(streetNum.substring(streetNum.length() - 1, streetNum.length()));
 							}
-	|	n=NUMBER streetToken+			{address.setStreetNumber(quietIntParse($n.text));}
+	|	n=(NUMBER|NUMANDSTREETSUFFIX) streetToken+			
+							{address.setStreetNumber(quietIntParse($n.text));}
 	;
 	
 streetToken
@@ -158,7 +184,8 @@ streetToken
 							 address.setStreetType($t.text);
 							}
 							
-	|	n=(NAME|NUMBER|NUMANDSUFFIX)		{
+	|	n=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX)		
+							{
 							 if (!address.isStreetTypePrefix() && address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
 							    address.setStreetType(null);
@@ -205,6 +232,9 @@ generalDeliveryAddress
 							}
 	;
 	
+SUITEANDSTREETNUM
+	:	('0'..'9')+'-'('0'..'9')+;
+	
 ROUTESERVICETYPE
 	:	'RR' | 'SS' | 'MR';
 
@@ -222,8 +252,11 @@ SUITE	:	'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE';
 SUFFIXANDDIR
 	:	'N' | 'S' | 'E' | 'W'; //Needed because STREETNUMSUFFIX would take the directions from STREETDIR
 	
+NUMANDSTREETSUFFIX
+	:	('1'..'3');
+	
 STREETNUMSUFFIX 
-	:	('A'..'Z' | '1'..'3');
+	:	('A'..'Z');
 
 STREETDIR
 	:	'NE' | 'NW' | 'NO'

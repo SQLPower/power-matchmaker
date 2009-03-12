@@ -66,7 +66,10 @@ public class PostalCode {
      * The postal or ZIP code, formatted in all caps with no spaces (for a
      * Canadian postal code, this means exactly 6 characters).
      */
-    @PrimaryKey
+    @PrimaryKey(sequence="PostalCodePrimaryKey")
+    private Long primaryKey;
+    
+    @SecondaryKey(relate=Relationship.MANY_TO_ONE)
     private String postalCode;
     
     private AddressType addressType;
@@ -439,6 +442,19 @@ public class PostalCode {
 
 	public void setRecordType(RecordType recordType) {
 		this.recordType = recordType;
+	}
+
+
+
+	public void setPrimaryKey(Long primaryKey) {
+			this.primaryKey = primaryKey;
+		
+	}
+
+
+
+	public Long getPrimaryKey() {
+		return primaryKey;
 	}
 
 

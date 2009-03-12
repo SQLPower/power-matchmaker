@@ -44,7 +44,7 @@ public class SERPTest extends TestCase {
 	/**
 	 * Path pointing to the directory containing the address database.
 	 */
-	private static final String ADDRESS_DATABASE_PATH = "";
+	private static final String ADDRESS_DATABASE_PATH = "/Users/thomas/addressdb";
 	
 	/**
 	 * The path to the SERP self test input file.
@@ -84,7 +84,12 @@ public class SERPTest extends TestCase {
     	int numFailed = 0;
     	long before = System.currentTimeMillis();
     	
+    	int i = 0;
     	while (true) {
+    		i++;
+    		if (i % 100 == 0) {
+    			logger.debug("Parsed " + i + " records");
+    		}
     		line = in.readLine();
     		resultLine = result.readLine();
     		if (line == null) break;
@@ -94,15 +99,19 @@ public class SERPTest extends TestCase {
     			String province = line.substring(189, 191).trim();
     			String postalCode = line.substring(214).trim();
     			
-    			logger.debug("Next address is '" + streetAddress + ", " + municipality + ", " + province + ", " + postalCode);
+//    			logger.debug("Next address is '" + streetAddress + ", " + municipality + ", " + province + ", " + postalCode);
     			
     			address = Address.parse(streetAddress, municipality, province, postalCode, "CA", addressDB);
     			
     			AddressValidator validator = new AddressValidator(addressDB, address);
     			List<ValidateResult> results = validator.getResults();
+    			List<Address> suggestedAddresses = validator.getSuggestions();
+    			if (suggestedAddresses.size() > 0) {
+    				address = suggestedAddresses.get(0);
+    			}
     			
     			for (ValidateResult validateResult: results) {
-    				logger.debug(validateResult);
+//    				logger.debug(validateResult);
     			}
     			
     			String resultStreetAddress = resultLine.substring(109,159).trim();
@@ -115,7 +124,7 @@ public class SERPTest extends TestCase {
     			final String add = address.getAddress();
 				if (!resultStreetAddress.equals(add)) {
     				logger.debug("Street Address is wrong: Expected '" + resultStreetAddress 
-    						+ "' Got '" + address.getAddress() + "'");
+    						+ "' Got '" + add + "'");
     				failed = true;
     			}
     			
@@ -138,12 +147,14 @@ public class SERPTest extends TestCase {
     			}
     			
     			if (failed) {
+    				logger.debug("Failed to parse '" + streetAddress + ", " + municipality + ", " + province + ", " + postalCode);
+    				logger.debug("");
     				numFailed++;
     			} else {
     				numPassed++;
     			}
     			
-    			logger.debug("");
+//    			logger.debug("");
     			
 //    			assertEquals(resultStreetAddress, address.getStreetAddress());
 //    			assertEquals(resultMunicipality, address.getMunicipality());
