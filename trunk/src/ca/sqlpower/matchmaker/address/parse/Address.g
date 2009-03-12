@@ -126,7 +126,7 @@ failedParse
 	;
 
 failedToken
-	:	n=(ROUTESERVICETYPE | LOCKBOXTYPE | GD | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
+	:	n=(ROUTESERVICETYPE | LOCKBOXTYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
 							{
 							 address.setFailedParsingString(address.getFailedParsingString() + n);
 							}
@@ -184,7 +184,7 @@ streetToken
 							 address.setStreetType($t.text);
 							}
 							
-	|	n=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX)		
+	|	n=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX)		
 							{
 							 if (!address.isStreetTypePrefix() && address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
@@ -213,22 +213,38 @@ ruralRouteAddress
 	;
 	
 lockBoxAddress
-	:	lb=LOCKBOXTYPE n=NUMBER di=DITYPE? stn=NAME?
+	:	lb=LOCKBOXTYPE '#'? n=NUMBER di=DITYPE diName+
 							{
 							 address.setLockBoxType($lb.text);
 							 address.setLockBoxNumber(quietIntParse($n.text));
 							 address.setDeliveryInstallationType($di.text);
-							 address.setDeliveryInstallationName($stn.text);
 							 address.setType(Address.Type.LOCK_BOX);
 							}
 	;
 	
 generalDeliveryAddress
-	:	gd=GD t=DITYPE? n=NAME?			{
+	:	{Address.isGeneralDelivery(input.LT(1).getText())}? gd=NAME t=DITYPE diName+
+							{
 							 address.setGeneralDeliveryName($gd.text);
 							 address.setDeliveryInstallationType($t.text);
-							 address.setDeliveryInstallationName($n.text);
 							 address.setType(Address.Type.GD);
+							}
+	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}? gd1=NAME gd2=NAME t=DITYPE diName+
+							{
+							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text);
+							 address.setDeliveryInstallationType($t.text);
+							 address.setType(Address.Type.GD);
+							}
+	;
+
+diName
+	:	stn=(DITYPE|NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX|SUITE)
+							{
+							 if (address.getDeliveryInstallationName() == null) {
+							    address.setDeliveryInstallationName($stn.text);
+							 } else {
+							    address.setDeliveryInstallationName(address.getDeliveryInstallationName() + " " + $stn.text);
+							 }
 							}
 	;
 	
@@ -240,9 +256,6 @@ ROUTESERVICETYPE
 
 LOCKBOXTYPE
 	:	'PO BOX' | 'CP' ;
-
-GD
-	:	'GD' | 'GENERAL DELIVERY' | 'PR' ;
 
 DITYPE
 	:	'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC';
