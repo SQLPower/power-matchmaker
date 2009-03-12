@@ -93,9 +93,8 @@ public class AddressLabel extends JComponent {
 			setPreferredSize(new Dimension(fm.charWidth('m') * 35 , fm.getHeight() * 5));
 			setMaximumSize(new Dimension(fm.charWidth('m') * 42, fm.getHeight() * 10));
 		}
-		AddressLabelBorderFactory borderFactory = new AddressLabelBorderFactory();
 		EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
-		CompoundBorder border = borderFactory.generateAddressLabelBorder(Color.LIGHT_GRAY, 2, 5, true, emptyBorder);
+		CompoundBorder border = AddressLabelBorderFactory.generateAddressLabelBorder(Color.LIGHT_GRAY, 2, 5, emptyBorder);
 		setBorder(border);
 	}
 	
