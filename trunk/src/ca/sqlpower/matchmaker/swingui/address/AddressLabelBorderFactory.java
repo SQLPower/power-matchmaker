@@ -28,10 +28,31 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+/**
+ * A Factory class that generates rounded-corner borders that we're 
+ * using to represent address labels in the validation GUI.
+ */
 public class AddressLabelBorderFactory {
 
-	private CompoundBorder border;
-	public CompoundBorder generateAddressLabelBorder(Color color, int thickness, final int inset, boolean rounded, EmptyBorder emptyBorder) {
+	// This is a utility class so no need to instantiate it
+	private AddressLabelBorderFactory() {}
+	
+	/**
+	 * Creates a {@link CompoundBorder} with rounded corners
+	 * 
+	 * @param color
+	 *            The colour of the lines in the border
+	 * @param thickness
+	 *            The thickness of the lines in the border
+	 * @param inset
+	 *            The inset of the border. The same inset value will be used on
+	 *            all sides
+	 * @param emptyBorder
+	 *            An {@link EmptyBorder} to add spacing around the line border
+	 * @return A {@link CompoundBorder} with the given colour, thickness, and
+	 *         insets, with the given {@link EmptyBorder} as the outer border.
+	 */
+	public static CompoundBorder generateAddressLabelBorder(Color color, int thickness, final int inset, EmptyBorder emptyBorder) {
 		
 		LineBorder lineBorder = new LineBorder(color, thickness, true) {
 			private int inset1 = inset;
@@ -56,7 +77,7 @@ public class AddressLabelBorderFactory {
 		        g.setColor(oldColor);
 		    }
 		};
-		return border = new CompoundBorder(emptyBorder, lineBorder);
+		return new CompoundBorder(emptyBorder, lineBorder);
 	}
 
 }
