@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.address;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import ca.sqlpower.validation.Status;
@@ -89,10 +91,10 @@ public class AddressValidator {
         // validate street
         
         if (a.getPostalCode() != null) {
-            PostalCode pc = db.findPostalCode(a.getPostalCode());
+            Set<PostalCode> pcSet = db.findPostalCode(a.getPostalCode());
             
             // verify province, municipality, street, type, direction, and street number
-            if (pc == null) {
+            if (pcSet.isEmpty()) {
                 results.add(ValidateResult.createValidateResult(
                         Status.FAIL, "Invalid postal code: " + a.getPostalCode()));
                 
@@ -100,55 +102,81 @@ public class AddressValidator {
                 a.setPostalCode(null);
                 
             } else {
-                Address suggestion = new Address(a);
-                suggestion.setPostalCode(pc.getPostalCode());
-                boolean needSuggestion = false;
-                if (!pc.getProvinceCode().equals(a.getProvince())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Province code does not agree with postal code"));
-                    suggestion.setProvince(pc.getProvinceCode());
-                    needSuggestion = true;
-                }
-                if (different(pc.getMunicipalityName(), a.getMunicipality())) {
-                    if (municipality != null) {
-                        // it might be a valid alternate name
-                        if (!municipality.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
-                            results.add(ValidateResult.createValidateResult(
-                                    Status.FAIL, "Municipality is not a valid alternate within postal code"));
-                            suggestion.setMunicipality(municipality.getOfficialName());
-                            needSuggestion = true;
-                        }
-                    } else {
-                        results.add(ValidateResult.createValidateResult(
-                                Status.FAIL, "Municipality does not agree with postal code"));
-                        suggestion.setMunicipality(pc.getMunicipalityName());
-                        needSuggestion = true;
-                    }
-                }
-                if (different(pc.getStreetName(), a.getStreet())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Street name does not agree with postal code"));
-                    suggestion.setStreet(pc.getStreetName());
-                    needSuggestion = true;
-                }
-                if (different(pc.getStreetTypeCode(), a.getStreetType())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Street type does not agree with postal code"));
-                    suggestion.setStreetType(pc.getStreetTypeCode());
-                    needSuggestion = true;
-                }
-                if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
-                    results.add(ValidateResult.createValidateResult(
-                            Status.FAIL, "Street direction does not agree with postal code"));
-                    suggestion.setStreetDirection(pc.getStreetDirectionCode());
-                    needSuggestion = true;
-                }
-                
-                // TODO all the other fields
-                
-                if (needSuggestion) {
-                    suggestions.add(suggestion);
-                }
+            	Map<Integer, List<Address>> addressSuggestionsByError = new HashMap<Integer, List<Address>>();
+            	for (PostalCode pc : pcSet) {
+            		int errorCount = 0;
+            		Address suggestion = new Address(a);
+            		suggestion.setPostalCode(pc.getPostalCode());
+            		if (!pc.getProvinceCode().equals(a.getProvince())) {
+            			results.add(ValidateResult.createValidateResult(
+            					Status.FAIL, "Province code does not agree with postal code"));
+            			suggestion.setProvince(pc.getProvinceCode());
+            			errorCount++;
+            		}
+            		if (different(pc.getMunicipalityName(), a.getMunicipality())) {
+            			if (municipality != null) {
+            				// it might be a valid alternate name
+            				if (!municipality.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
+            					results.add(ValidateResult.createValidateResult(
+            							Status.FAIL, "Municipality is not a valid alternate within postal code"));
+            					suggestion.setMunicipality(municipality.getOfficialName());
+            					errorCount++;
+            				}
+            			} else {
+            				results.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "Municipality does not agree with postal code"));
+            				suggestion.setMunicipality(pc.getMunicipalityName());
+            				errorCount++;
+            			}
+            		}
+            		if (different(pc.getStreetName(), a.getStreet())) {
+            			results.add(ValidateResult.createValidateResult(
+            					Status.FAIL, "Street name does not agree with postal code"));
+            			suggestion.setStreet(pc.getStreetName());
+            			errorCount++;
+            		}
+            		if (different(pc.getStreetTypeCode(), a.getStreetType())) {
+            			results.add(ValidateResult.createValidateResult(
+            					Status.FAIL, "Street type does not agree with postal code"));
+            			suggestion.setStreetType(pc.getStreetTypeCode());
+            			errorCount++;
+            		}
+            		if (a.isStreetTypePrefix() != isStreetTypePrefix(suggestion, pc)) {
+            			results.add(ValidateResult.createValidateResult(
+            					Status.FAIL, "Street type prefix does not agree with postal code"));
+            			suggestion.setStreetTypePrefix(isStreetTypePrefix(suggestion, pc));
+            			errorCount++;
+            		}
+            		if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
+            			results.add(ValidateResult.createValidateResult(
+            					Status.FAIL, "Street direction does not agree with postal code"));
+            			suggestion.setStreetDirection(pc.getStreetDirectionCode());
+            			errorCount++;
+            		}
+
+            		// TODO all the other fields
+
+            		if (errorCount > 0) {
+            			List<Address> addresses = addressSuggestionsByError.get(errorCount);
+            			if (addresses == null) {
+            				addresses = new ArrayList<Address>();
+            				addresses.add(suggestion);
+            				addressSuggestionsByError.put(errorCount, addresses);
+            			} else {
+            				addresses.add(suggestion);
+            			}
+            		} else {
+            			suggestions.clear();
+            			return;
+            		}
+            	}
+            	final ArrayList<Integer> errorCounts = new ArrayList<Integer>(addressSuggestionsByError.keySet());
+				Collections.sort(errorCounts);
+				for (Integer errorCount : errorCounts) {
+					for (Address suggestion : addressSuggestionsByError.get(errorCount)) {
+						suggestions.add(suggestion);
+					}
+				}
             }
             
         }
@@ -157,7 +185,7 @@ public class AddressValidator {
             results.add(ValidateResult.createValidateResult(Status.FAIL, "Postal Code is missing"));
             
             // try to find unique postal code match TODO extract to public method
-            EntityJoin<String, PostalCode> join = new EntityJoin<String, PostalCode>(db.postalCodePK);
+            EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
             
             boolean allNulls = true;
             
@@ -207,6 +235,55 @@ public class AddressValidator {
             }
         }
         
+    }
+    
+    /**
+     * Given an address that has a corrected street name and the postal code retrieved by
+     * the addresses's postal code this method will decide if the street type should
+     * be appended before or after the street name.
+     * @param suggestion The suggested street address.
+     * @param pc The postal code retrieved by the address being corrected.
+     * @return True if the address street type should be placed before the street name, false otherwise.
+     */
+    boolean isStreetTypePrefix(Address suggestion, PostalCode pc) {
+    	if (!db.isStreetTypeFrench(suggestion.getStreetType())) {
+    		return false;
+    	}
+    	if (suggestion.getStreetType() == null) {
+    		return false;
+    	}
+    	String typeShortForm = db.getShortFormStreetType(suggestion.getStreetType());
+    	if (typeShortForm == null) {
+    		typeShortForm = suggestion.getStreetType();
+    	}
+    	//French people like to put the street type after the street name if it is numeric and is followed
+    	//by 'e', 're' or if the street name is an ordinal number.
+    	String street = suggestion.getStreet();
+    	if (street != null) {
+    		try {
+    			Integer.parseInt(street);
+    			return false;
+    		} catch (NumberFormatException e) {
+    			//street type goes in front still.
+    		}
+    		try {
+    			Integer.parseInt(street.substring(0, street.length() - 1));
+    			if (street.substring(street.length() - 1).equals("E")) {
+    				return false;
+    			}
+    		} catch (NumberFormatException e) {
+    			//street type goes in front still.
+    		}
+    		try {
+    			Integer.parseInt(street.substring(0, street.length() - 2));
+    			if (street.substring(street.length() - 2).equals("RE")) {
+    				return false;
+    			}
+    		} catch (NumberFormatException e) {
+    			//street type goes in front still.
+    		}
+    	}
+    	return true;
     }
 
     /**

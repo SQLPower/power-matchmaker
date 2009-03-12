@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.address;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import junit.framework.AssertionFailedError;
@@ -88,7 +89,7 @@ public class AddressDatabaseTest extends TestCase {
     
     @Override
     protected void setUp() throws Exception {
-        addressDB = new AddressDatabase(new File("/Users/fuerth/addressdb"));
+        addressDB = new AddressDatabase(new File("/Users/thomas/addressdb"));
         
         address = new Address();
     }
@@ -212,5 +213,15 @@ public class AddressDatabaseTest extends TestCase {
         }
         
         assertEquals(0, results.size());
+    }
+    
+    /**
+     * Tests that we still allow a postal code to cover multiple streets.
+     * A previous assumption was each postal code covered only one street
+     * which caused validation errors.
+     */
+    public void testPostalCodeHasMultipleStreets() throws Exception {
+    	Set<PostalCode> postalCodes = addressDB.findPostalCode("S4Y1A1");
+    	assertEquals(4, postalCodes.size());
     }
 }

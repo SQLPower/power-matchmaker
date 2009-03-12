@@ -163,4 +163,21 @@ public class AddressTest extends TestCase {
     	assertEquals("BC", address.getProvince());
     	assertEquals("CA", address.getCountry());
     }
+    
+    /**
+     * Test to ensure the parser can deal with street addresses 
+     * containing extra info.
+     * 
+     * Input: 56 RUE SAINT-JEAN-BAPTISTE O, RIMOUSKI, QC, G5L4J3
+     */
+    public void testAddressWithExtraInfo() throws Exception {
+    	Address address = Address.parse("56 RUE SAINT-JEAN-BAPTISTE 0", "RIMOUSKI", "QC", "G5L4J3", "CA", addressDatabase);
+    	assertEquals(Integer.valueOf(56), address.getStreetNumber());
+    	assertEquals("SAINT-JEAN-BAPTISTE 0", address.getStreet());
+    	assertEquals("RUE", address.getStreetType());
+    	assertEquals("RIMOUSKI", address.getMunicipality());
+    	assertEquals("G5L4J3", address.getPostalCode());
+    	assertEquals("QC", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    }
 }
