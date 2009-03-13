@@ -517,7 +517,6 @@ public class PostalCode {
         if (from != null && to != null && (a.getStreetNumber() < from || a.getStreetNumber() > to)) {
             return false;
         }
-        if (!nullSafeEquals(getStreetTypeCode(), a.getStreetType())) return false;
         
         return true;
     }

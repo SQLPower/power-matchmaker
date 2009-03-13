@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.address.Address.Type;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -35,6 +37,8 @@ import com.sleepycat.persist.EntityJoin;
 import com.sleepycat.persist.ForwardCursor;
 
 public class AddressValidator {
+	
+	private static final Logger logger = Logger.getLogger(AddressValidator.class);
 
     private final AddressDatabase db;
     private final Address address;
@@ -165,6 +169,7 @@ public class AddressValidator {
             				suggestion.setStreetNumber(pc.getStreetAddressFromNumber() + 1);
             				errorCount++;
             			}
+//            			Partial implementation of how street suffixs are supposed to be appended but is not consistent with the test data.
 //            			if (pc.getStreetAddressFromNumber() == a.getStreetNumber() && pc.getStreetAddressNumberSuffixFromCode() != null) {
 //            				if (a.getStreetNumberSuffix() == null) {
 //            					errorList.add(ValidateResult.createValidateResult(
@@ -182,6 +187,13 @@ public class AddressValidator {
 //            					}
 //            				}
 //            			}
+            			
+            			if (!a.isSuitePrefix()) {
+            				errorList.add(ValidateResult.createValidateResult(
+            						Status.FAIL, "Suite number should be a prefix."));
+            				suggestion.setSuitePrefix(true);
+            				errorCount++;
+            			}
 
             			// TODO all the other fields
             		} else if (a.getType() == Type.GD) {
@@ -272,6 +284,7 @@ public class AddressValidator {
                 ForwardCursor<PostalCode> matches = null;
                 try {
                     matches = join.entities();
+                    logger.debug("Checking address " + a);
                     for (PostalCode pc : matches) {
                         if (pc.containsAddress(a)) {
                             Address suggestion = new Address(a);

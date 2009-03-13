@@ -182,6 +182,25 @@ public class AddressTest extends TestCase {
     }
     
     /**
+     * Test to ensure the parser can deal with street addresses 
+     * with a suite suffixed and misspelled.
+     * 
+     * Input: 29 TORONTO ISLAND AIRPT SUITS 210, TORONTO, ON, M5V1A1
+     */
+    public void testAddressWithMisspelledSuite() throws Exception {
+    	Address address = Address.parse("29 TORONTO ISLAND AIRPT SUITS 210", "TORONTO", "ON", "M5V1A1", "CA", addressDatabase);
+    	assertEquals("210", address.getSuite());
+    	assertFalse(address.isSuitePrefix());
+    	assertEquals("SUITS", address.getSuiteType());
+    	assertEquals(Integer.valueOf(29), address.getStreetNumber());
+    	assertEquals("TORONTO ISLAND AIRPT", address.getStreet());
+    	assertEquals("TORONTO", address.getMunicipality());
+    	assertEquals("M5V1A1", address.getPostalCode());
+    	assertEquals("ON", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    }
+    
+    /**
      * Simple test to prove we can parse a lock box.
      */
     public void testLockBox() throws Exception {

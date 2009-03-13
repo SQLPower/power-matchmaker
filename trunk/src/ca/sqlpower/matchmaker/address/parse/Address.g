@@ -133,7 +133,7 @@ failedParse
 	;
 
 failedToken
-	:	n=(ROUTESERVICETYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
+	:	n=(ROUTESERVICETYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME)
 							{
 							 address.setFailedParsingString(address.getFailedParsingString() + n);
 							}
@@ -143,13 +143,6 @@ streetAddress
 	:	sn=(NUMBER|NUMANDSTREETSUFFIX) '-' street			
 							{ 
 							  address.setSuitePrefix(true);
-							  address.setSuite($sn.text);
-							  address.setType(Address.Type.URBAN);
-							}
-	|	street s=SUITE sn=(NUMBER|NUMANDSTREETSUFFIX)		
-							{ 
-							  address.setSuitePrefix(false);
-							  address.setSuiteType($s.text);
 							  address.setSuite($sn.text);
 							  address.setType(Address.Type.URBAN);
 							}
@@ -177,7 +170,13 @@ street
 	;
 	
 streetToken
-	:	{hasStreetNameStarted}? d=(STREETDIR|SUFFIXANDDIR)	
+	:	{hasStreetNameStarted && Address.isSuiteType(input.LT(1).getText())}? s=NAME sn=(NUMBER|NUMANDSTREETSUFFIX)
+							{
+							 address.setSuitePrefix(false);
+							 address.setSuiteType($s.text);
+							 address.setSuite($sn.text);
+							}
+	|	{hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText())}? d=(NAME|SUFFIXANDDIR)	
 							{
 							 address.setStreetDirection($d.text);
 							}
@@ -281,10 +280,6 @@ NUMANDSTREETSUFFIX
 	
 STREETNUMSUFFIX 
 	:	('A'..'Z');
-
-STREETDIR
-	:	'NE' | 'NW' | 'NO'
-	|	'SE' | 'SW' | 'SO';
 	
 NUMANDSUFFIX
 	:	('0'..'9')+ ('A'..'Z');
