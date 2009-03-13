@@ -123,6 +123,11 @@ public class AddressValidationPanel extends NoEditEditorPane {
      */
     private AddressLabel selectedAddressLabel;
     
+    /**
+     * The font for the selected address label 
+     */
+    private final Font SELECTED_ADDRESS_LABEL_FONT = new Font("Times New Roman", Font.PLAIN, 16);
+    
     public AddressValidationPanel(MatchMakerSwingSession session, Collection<AddressResult> results) {
 		try {
 			addressDatabase = new AddressDatabase(new File(session.getContext().getAddressCorrectionDataPath()));
@@ -216,6 +221,8 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				
 				public void actionPerformed(ActionEvent e) {
 					selectedAddressLabel.setAddress(selectedAddressLabel.getRevertToAddress());
+					selectedAddressLabel.updateTextFields(null);
+					selectedAddressLabel.setFont(SELECTED_ADDRESS_LABEL_FONT);
 				}
 				
 			});
@@ -257,7 +264,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				    validateResult = validator.getResults();
 
 					selectedAddressLabel = new AddressLabel(address1, false, null, addressDatabase);
-					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
+					selectedAddressLabel.setFont(SELECTED_ADDRESS_LABEL_FONT);
 					builder.add(selectedAddressLabel, cc.xy(1, 3));
 					
 					FormLayout problemsLayout = new FormLayout("fill:pref:grow");
