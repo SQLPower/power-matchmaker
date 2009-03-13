@@ -109,6 +109,11 @@ public class AddressLabel extends JComponent {
 		this.addressDatabase = addressDatabase;
 		this.setOpaque(true);
 		
+		updateTextFields(list);
+
+	}
+
+	void updateTextFields(JList list) {
 		addressTextField = new JTextField(currentAddress.getAddress());
 		add(addressTextField);		
 		municipalityTextField = new JTextField(currentAddress.getMunicipality());
@@ -137,6 +142,8 @@ public class AddressLabel extends JComponent {
 		if (list == null) {
 			addMouseListener(new MouseListener() {
 				public void mouseClicked(MouseEvent e) {
+					currentAddress = saveAddressChanges();
+					repaint();
 					if (isClickingRightArea(e, addressLine1Hotspot)) {
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 						addressTextField.setVisible(true);
@@ -153,6 +160,8 @@ public class AddressLabel extends JComponent {
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 						postalCodeTextField.setVisible(true);
 						postalCodeTextField.requestFocus();
+					} else {
+						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 					}
 					addressTextField.addKeyListener(new AddressKeyAdapter());
 					municipalityTextField.addKeyListener(new AddressKeyAdapter());
@@ -310,7 +319,7 @@ public class AddressLabel extends JComponent {
 		}
 	}
 	
-	private Address saveAddressChanges() {
+	Address saveAddressChanges() {
 		try {
 			return Address.parse(addressTextField.getText(), municipalityTextField.getText(),
 										   provinceTextField.getText(), postalCodeTextField.getText(), "Canada", addressDatabase);
