@@ -232,7 +232,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Storing matches";
 			setCurrentProcessor(pool);
 			logger.info(progressMessage);
-			pool.store(getProject().getMungeSettings().isUseBatchExecute(), inDebugMode);
+			pool.store(getProject().getMungeSettings().isUseBatchExecution(), inDebugMode);
             checkCancelled();
             progress += rowCount;
             setCurrentProcessor(null);
