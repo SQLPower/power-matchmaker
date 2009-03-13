@@ -181,6 +181,21 @@ public class AddressTest extends TestCase {
     	assertEquals("CA", address.getCountry());
     }
     
+    /**
+     * Simple test to prove we can parse a lock box.
+     */
+    public void testLockBox() throws Exception {
+    	Address address = Address.parse("PO BOX #736 STN CENTRAL", "CHARLOTTETOWN", "PE", "C1A7L3", "CA", addressDatabase);
+    	System.out.println(address.getAddress());
+    	assertEquals("PO BOX", address.getLockBoxType());
+    	assertEquals(736, address.getLockBoxNumber().intValue());
+    	assertEquals("STN", address.getDeliveryInstallationType());
+    	assertEquals("CENTRAL", address.getDeliveryInstallationName());
+    }
+    
+    /**
+     * Simple test to prove we can parse a general delivery.
+     */
     public void testGeneralDelivery() throws Exception {
     	Address address = Address.parse("GENERAL DELIVERY STN MAIN", "ST THOMAS", "ON", "N5P3T4", "CA", addressDatabase);
     	assertEquals("GENERAL DELIVERY", address.getGeneralDeliveryName());

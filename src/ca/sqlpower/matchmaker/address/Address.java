@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import java.util.Arrays;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -52,6 +54,22 @@ public class Address implements AddressInterface {
 	 */
 	public static final String GENERAL_DELIVERY_ENGLISH = "GD";
 	
+	public static final String LOCK_BOX_ENGLISH = "PO BOX";
+	
+	public static final String LOCK_BOX_FRENCH = "CP";
+	
+	public static final String[] PO_BOX_VALID_ALT = new String[]{"BP", "POBX", "BOX"};
+	
+	public static boolean isLockBox(String s) {
+		if (s.equals(LOCK_BOX_ENGLISH) || s.equals(LOCK_BOX_FRENCH) || Arrays.asList(PO_BOX_VALID_ALT).contains(s)) {
+			return true;
+		}
+		if (LevenshteinDistance.computeLevenshteinDistance("CASE POSTALE", s) <= 2) {
+			return true;
+		}
+		return false;
+	}
+	
 	/**
 	 * This method will return true if the string given is close to an accepted
 	 * string to describe a general delivery. False will be returned otherwise.
@@ -80,8 +98,7 @@ public class Address implements AddressInterface {
 			return true;
 		}
 		
-		//TODO: use the levenshtein distance to distinguish between general delivery mispellings.
-		if (LevenshteinDistance.computeLevenshteinDistance("GENERAL DELIVERY", gdString) <= 1) {
+		if (LevenshteinDistance.computeLevenshteinDistance("GENERAL DELIVERY", gdString) <= 2) {
 			return true;
 		}
 		if (LevenshteinDistance.computeLevenshteinDistance("GEN DELIVERY", gdString) <= 1) {

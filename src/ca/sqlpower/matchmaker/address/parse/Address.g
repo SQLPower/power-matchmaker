@@ -78,6 +78,13 @@ private Integer quietIntParse(String s) {
   try {
     return Integer.valueOf(s);
   } catch (NumberFormatException ex) {
+    if (s.charAt(0) == '#') {
+      try {
+        return Integer.valueOf(s.substring(1, s.length()));
+      } catch (NumberFormatException ex1) {
+        //return default value
+      }
+    }
     return null;
   }
 }
@@ -126,7 +133,7 @@ failedParse
 	;
 
 failedToken
-	:	n=(ROUTESERVICETYPE | LOCKBOXTYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
+	:	n=(ROUTESERVICETYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | STREETDIR | NUMANDSUFFIX | NUMBER | NAME)
 							{
 							 address.setFailedParsingString(address.getFailedParsingString() + n);
 							}
@@ -197,7 +204,7 @@ streetToken
 	;
 	
 ruralRouteAddress
-	:	rs=ROUTESERVICETYPE n=NUMBER? di=DITYPE? stn=NAME?
+	:	rs=ROUTESERVICETYPE n=NUMBER di=DITYPE? stn=NAME?
 							{
 							 address.setRuralRouteType($rs.text);
 							 address.setRuralRouteNumber(quietIntParse($rs.text));
@@ -213,9 +220,16 @@ ruralRouteAddress
 	;
 	
 lockBoxAddress
-	:	lb=LOCKBOXTYPE '#'? n=NUMBER di=DITYPE diName+
+	:	{Address.isLockBox(input.LT(1).getText())}? lb=NAME '#'? n=NUMBER di=DITYPE diName+
 							{
 							 address.setLockBoxType($lb.text);
+							 address.setLockBoxNumber(quietIntParse($n.text));
+							 address.setDeliveryInstallationType($di.text);
+							 address.setType(Address.Type.LOCK_BOX);
+							}
+	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}? lb1=(NAME | DITYPE) lb2=NAME '#'? n=NUMBER di=DITYPE diName+
+							{
+							 address.setLockBoxType($lb1.text + " " + $lb2.text);
 							 address.setLockBoxNumber(quietIntParse($n.text));
 							 address.setDeliveryInstallationType($di.text);
 							 address.setType(Address.Type.LOCK_BOX);
@@ -229,7 +243,7 @@ generalDeliveryAddress
 							 address.setDeliveryInstallationType($t.text);
 							 address.setType(Address.Type.GD);
 							}
-	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}? gd1=NAME gd2=NAME t=DITYPE diName+
+	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}? gd1=(NAME | DITYPE) gd2=NAME t=DITYPE diName+
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text);
 							 address.setDeliveryInstallationType($t.text);
@@ -254,9 +268,6 @@ SUITEANDSTREETNUM
 ROUTESERVICETYPE
 	:	'RR' | 'SS' | 'MR';
 
-LOCKBOXTYPE
-	:	'PO BOX' | 'CP' ;
-
 DITYPE
 	:	'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC';
 
@@ -279,9 +290,9 @@ NUMANDSUFFIX
 	:	('0'..'9')+ ('A'..'Z');
 	
 NUMBER
-	:	'0'..'9'+;
+	:	'#'?('0'..'9')+;
 	
-NAME	:	('A'..'Z' | '0'..'9' | '\'' | '-')+;
+NAME	:	('A'..'Z' | '0'..'9' | '\'' | '-' | '.' | '/')+;
 		/* TODO: allow multiple words (spaces!) */
 	
 WS	:	(' ' | '\t')+ {skip();};
