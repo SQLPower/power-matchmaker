@@ -76,8 +76,8 @@ import com.jgoodies.forms.layout.FormLayout;
 public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<Project, MatchMakerFolder> {
 
 	private static final String ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS = 
-		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu";
-		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21             22   23   24   25 	
+		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
+		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23             24   25 	 26   27
 
 	private static final String MATCH_ENGINE_PANEL_ROW_SPECS = 
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
@@ -157,6 +157,20 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 * running insert and update statements into the match/address pool.
 	 */
 	private JCheckBox useBatchExecute;
+	
+	/**
+	 * A flag specific to the Address Correcton Engine.
+	 * <p>
+	 * If checked, then the engine should automatically correct the results
+	 * and then write these corrections directly to the source table without
+	 * requiring user intervention.
+	 * <p>
+	 * If not checked, then the engine should write the results of the Address
+	 * Correction Munge Step to the project's result table and then allow the
+	 * user to manually correct the addresses before writing them back to the
+	 * source table.
+	 */
+	private JCheckBox skipValidation;
 	
 	/**
 	 * The frame that this editor lives in.
@@ -375,9 +389,13 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		}
 		
 		if (engineSettings instanceof MungeSettings) {
-			useBatchExecute = new JCheckBox("Batch execute SQL statments", ((MungeSettings)engineSettings).isUseBatchExecute());
+			useBatchExecute = new JCheckBox("Batch execute SQL statments", ((MungeSettings)engineSettings).isUseBatchExecution());
 		}
 
+		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			skipValidation = new JCheckBox("Skip address validation", ((MungeSettings)engineSettings).isSkipValidation());
+		}
+		
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
 		messageLevel.setSelectedItem(engine.getMessageLevel());
 		messageLevel.setRenderer(new DefaultListCellRenderer(){
@@ -458,6 +476,11 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			pb.add(useBatchExecute, cc.xyw(4, y, 2, "l,c"));
 		}
 		
+		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			y += 2;
+			pb.add(skipValidation, cc.xyw(4, y, 2, "l,c"));
+		}
+		
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			y += 2;
 			pb.add(clearMatchPool, cc.xyw(4, y, 2, "l,c"));
@@ -515,7 +538,10 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
 		}
 		if (engineSettings instanceof MungeSettings) {
-			((MungeSettings)engineSettings).setUseBatchExecute(useBatchExecute.isSelected());
+			((MungeSettings)engineSettings).setUseBatchExecution(useBatchExecute.isSelected());
+		}
+		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			((MungeSettings)engineSettings).setSkipValidation(skipValidation.isSelected());
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());

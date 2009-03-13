@@ -336,6 +336,10 @@ public class ProjectSAXHandler extends DefaultHandler {
                         ms.setAutoMatchThreshold(Short.parseShort(aval));
                     } else if (aname.equals("last-backup-number")) {
                         ms.setLastBackupNo(Long.parseLong(aval));
+                    } else if (aname.equals("use-batch-execution")) {
+                        ms.setUseBatchExecution(Boolean.valueOf(aval));
+                    } else if (aname.equals("skip-validation")) {
+                        ms.setSkipValidation(Boolean.valueOf(aval));
                     } else {
                         logger.warn("Unexpected attribute of <munge-settings>: " + aname + "=" + aval + " at " + locationAsString());
                     }

@@ -34,7 +34,8 @@ public class MungeSettings extends MatchMakerSettings {
         result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
         result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
         result = PRIME * result + ((clearMatchPool == true) ? 345 : 456);
-        result = PRIME * result + ((useBatchExecute == true) ? 1 : 0);
+        result = PRIME * result + ((useBatchExecution == true) ? 1 : 0);
+        result = PRIME * result + ((skipValidation == true) ? 1 : 0);
         return result;
     }
 
@@ -61,7 +62,9 @@ public class MungeSettings extends MatchMakerSettings {
         
         if (clearMatchPool != other.clearMatchPool ) return false;
         
-        if (useBatchExecute != other.useBatchExecute ) return false;
+        if (useBatchExecution != other.useBatchExecution ) return false;
+        
+        if (skipValidation != other.skipValidation) return false;
         
         return true;
     }
@@ -85,8 +88,25 @@ public class MungeSettings extends MatchMakerSettings {
 	 * Set whether or not to use batch updates when running SQL statements to
 	 * update the Match/Address Pool
 	 */
-	private boolean useBatchExecute = false;
+	private boolean useBatchExecution = false;
 
+	/**
+	 * Currently, setting is specific to the Address Correction Engine, although
+	 * it could be used in other engines where we may want to skip a validation
+	 * step.
+	 * <p>
+	 * If true, then the Address Correction Process will automatically decide
+	 * what the appropriate address should be and will write this correct
+	 * address back into the database without requiring any intervention from
+	 * the user.
+	 * <p>
+	 * If false, then the Address Correction process will include the validation
+	 * procedure. This involves writing suspected invalid addresses to a
+	 * temporary table (called the result table) and then having the user
+	 * validate the addresses manually using the validation screen.
+	 */
+	private boolean skipValidation = false;
+	
 	public boolean getClearMatchPool() {
 		return clearMatchPool;
 	}
@@ -95,15 +115,26 @@ public class MungeSettings extends MatchMakerSettings {
 		return clearMatchPool;
 	}
 
-	public boolean isUseBatchExecute() {
-		return useBatchExecute ;
+	public boolean isUseBatchExecution() {
+		return useBatchExecution ;
 	}
 	
-	public void setUseBatchExecute(boolean useBatchExecute) {
-		boolean oldValue = this.useBatchExecute;
-		this.useBatchExecute = useBatchExecute;
-		getEventSupport().firePropertyChange("useBatchExecute", oldValue,
-				this.useBatchExecute);
+	public void setUseBatchExecution(boolean useBatchExecute) {
+		boolean oldValue = this.useBatchExecution;
+		this.useBatchExecution = useBatchExecute;
+		getEventSupport().firePropertyChange("useBatchExecution", oldValue,
+				this.useBatchExecution);
+	}
+	
+	public boolean isSkipValidation() {
+		return skipValidation;
+	}
+
+	public void setSkipValidation(boolean validateAddresses) {
+		boolean oldValue = this.skipValidation;
+		this.skipValidation = validateAddresses;
+		getEventSupport().firePropertyChange("skipValidation", oldValue,
+				this.skipValidation);
 	}
 	
 	public void setClearMatchPool(boolean clearMatchPool) {
@@ -141,7 +172,8 @@ public class MungeSettings extends MatchMakerSettings {
         buf.append("autoMatchThreshold->"+autoMatchThreshold+", ");
         buf.append("lastBackupNo->"+lastBackupNo+", ");
         buf.append("clearMatchPool->"+clearMatchPool+", ");
-        buf.append("useBatchExecute->"+useBatchExecute+", ");
+        buf.append("useBatchExecution->"+useBatchExecution+", ");
+        buf.append("skipValidation->"+skipValidation+", ");
         buf.append(super.toString());
         buf.append("]");
         return buf.toString();
@@ -167,7 +199,8 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setSession(s);
 		settings.setClearMatchPool(isClearMatchPool());
 		settings.setVisible(isVisible());
-		settings.setUseBatchExecute(isUseBatchExecute());
+		settings.setUseBatchExecution(isUseBatchExecution());
+		settings.setSkipValidation(isSkipValidation());
 		return settings;
 	}
 }

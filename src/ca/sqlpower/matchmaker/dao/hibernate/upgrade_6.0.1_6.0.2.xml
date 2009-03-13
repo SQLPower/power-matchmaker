@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sql-script>
+  <statement>
+    <sql platform=".*">
+      ALTER TABLE <table name="mm_project"/> ADD use_batch_execution_ind VARCHAR(1) DEFAULT 'N' NOT NULL
+    </sql>
+  </statement>
+  <statement>
+    <sql platform=".*">
+      ALTER TABLE <table name="mm_project"/> ADD skip_validation_ind VARCHAR(1) DEFAULT 'N' NOT NULL
+    </sql>
+  </statement>
+  <statement>
+    <sql platform=".*">
+      UPDATE <table name="mm_schema_info"/> SET param_value = '6.0.2' WHERE param_name = 'schema_version' 
+    </sql>
+  </statement>
+</sql-script>

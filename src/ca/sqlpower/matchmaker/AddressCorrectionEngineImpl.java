@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeProcessor;
 import ca.sqlpower.matchmaker.munge.ValidatingAddressCorrectionMungeProcessor;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Monitorable;
@@ -90,7 +91,12 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			}
 
 			numRowsToProcess = getNumRowsToProcess();
-			jobSize = numRowsToProcess * (mungeProcesses.size() + 1);
+			jobSize = numRowsToProcess * (mungeProcesses.size());
+			// If we're going to be validating addresses, then add some more to
+			// the jobsize for writing the invalid addresses to the result table
+			if (!getProject().getMungeSettings().isSkipValidation()) {
+				jobSize += numRowsToProcess;
+			}
 
 			if (getProject().getMungeSettings().getDebug()) {
 				message = "Engine is running in debug mode so changes will be rolled back";
@@ -121,7 +127,12 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 				checkCancelled();
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
-				ValidatingAddressCorrectionMungeProcessor munger = new ValidatingAddressCorrectionMungeProcessor(process, pool, logger);
+				MungeProcessor munger;
+				if (getProject().getMungeSettings().isSkipValidation()) {
+					munger = new MungeProcessor(process, logger);
+				} else {
+					munger = new ValidatingAddressCorrectionMungeProcessor(process, pool, logger);
+				}
 				setCurrentProcessor(munger);
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
@@ -133,7 +144,7 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			MungeSettings settings = getProject().getMungeSettings();
 			setCurrentProcessor(pool);
 			logger.info("Storing invalid addresses");
-			pool.store(getLogger(), settings.isUseBatchExecute(), settings.getDebug());
+			pool.store(getLogger(), settings.isUseBatchExecution(), settings.getDebug());
 			progress += pool.getProgress();
 			setCurrentProcessor(null);
 			
