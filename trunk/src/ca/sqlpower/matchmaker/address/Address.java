@@ -37,7 +37,7 @@ import com.sleepycat.je.DatabaseException;
  * validation and correction logic. Methods are provided so client code can discover any
  * changes made to the address fields by validation and correction code.
  */
-public class Address {
+public class Address implements AddressInterface {
 	private static final Logger logger = Logger.getLogger(Address.class);
 	
 	/**
