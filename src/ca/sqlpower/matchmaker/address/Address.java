@@ -19,7 +19,9 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -54,14 +56,64 @@ public class Address implements AddressInterface {
 	 */
 	public static final String GENERAL_DELIVERY_ENGLISH = "GD";
 	
+	/**
+	 * The accepted english translation for a lock box.
+	 */
 	public static final String LOCK_BOX_ENGLISH = "PO BOX";
 	
+	/**
+	 * The accepted french translation for a lock box.
+	 */
 	public static final String LOCK_BOX_FRENCH = "CP";
 	
-	public static final String[] PO_BOX_VALID_ALT = new String[]{"BP", "POBX", "BOX"};
+	/**
+	 * Other possible lock box options that are accepted. Stored here instead of using Levenshtein
+	 * as if the distance defined is 2 or more then they will match almost anything. These also
+	 * need to be translated to their accepted french or english translation.
+	 */
+	public static final List<String> PO_BOX_VALID_ALT = new ArrayList<String>(Arrays.asList(new String[]{"BP", "POBX", "BOX"}));
+	
+	/**
+	 * The list of accepted street directions.
+	 */
+	public static final List<String> STREET_DIRECTIONS = new ArrayList<String>(Arrays.asList(new String[]{"N", "S", "E", "W", "NW", "NE", "SW", "SE", "NO", "SO"}));
+	
+	/**
+	 * The list of long forms of street direction names.
+	 */
+	public static final List<String> STREET_DIRECTIONS_LONG = new ArrayList<String>(Arrays.asList(new String[]{"NORTH", "EAST", "SOUTH", "WEST", "NORTH-WEST", "NORTH-EAST", "SOUTH-WEST", "SOUTH-EAST", "NORD-OUEST", "SUD-OUEST", "NORD-EST", "SUD-EST"}));
+	
+	/**
+	 * If an address's suite type matches one of these exactly is an accepted symbol.
+	 */
+	public static final List<String> SUITE_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"APT", "SUITE", "UINT", "APP", "BUREAU", "UNITE", "PH", "RM", "TH", "TWNHSE", "PIECE", "SALLE"}));
+	
+	/**
+	 * The list of long forms of suite types. These can be matched with minor spelling mistakes.
+	 */
+	public static final List<String> SUITE_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"APARTMENT", "SUITE", "UINT", "APPARTEMENT", "BUREAU", "UNITE", "PENTHOUSE", "ROOM", "TOWNHOUSE", "PIECE", "SALLE"}));
+	
+	public static boolean isSuiteType(String s) {
+		if (s == null) return false;
+		for (String suiteType : SUITE_TYPES) {
+			if (LevenshteinDistance.computeLevenshteinDistance(s, suiteType) <= 2) return true;
+		}
+		for (String suiteType : SUITE_TYPES_LONG) {
+			if (LevenshteinDistance.computeLevenshteinDistance(s, suiteType) <= suiteType.length()/4) return true;
+		}
+		return false;
+	}
+	
+	public static boolean isStreetDirection(String s) {
+		if (STREET_DIRECTIONS.contains(s)) return true;
+		for (String direction : STREET_DIRECTIONS_LONG) {
+			if (LevenshteinDistance.computeLevenshteinDistance(direction, s) <= direction.length()/4) return true;
+		}
+		return false;
+	}
 	
 	public static boolean isLockBox(String s) {
-		if (s.equals(LOCK_BOX_ENGLISH) || s.equals(LOCK_BOX_FRENCH) || Arrays.asList(PO_BOX_VALID_ALT).contains(s)) {
+		if (s.equals(LOCK_BOX_ENGLISH) || s.equals(LOCK_BOX_FRENCH) || PO_BOX_VALID_ALT.contains(s)) {
 			return true;
 		}
 		if (LevenshteinDistance.computeLevenshteinDistance("CASE POSTALE", s) <= 2) {

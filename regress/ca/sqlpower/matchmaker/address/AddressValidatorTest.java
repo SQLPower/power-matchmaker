@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.address;
 
 import java.io.File;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -95,5 +96,28 @@ public class AddressValidatorTest extends TestCase {
 		AddressValidator validator = new AddressValidator(addressDB, a);
 		assertTrue(validator.isStreetTypePrefix(a, pc));
 	}
+	
+    /**
+     * Test to ensure the validator can deal with well formed street information
+     * missing a postal code.
+     * 
+     * Input: 1817 QUEEN E, TORONTO, ON,
+     */
+    public void testAddressWithNoPostalCode() throws Exception {
+    	Address a = new Address();
+    	a.setStreetNumber(1817);
+    	a.setStreet("QUEEN");
+    	a.setStreetDirection("E");
+    	a.setMunicipality("TORONTO");
+    	a.setProvince("ON");
+    	a.setCountry("CA");
+    	
+    	AddressValidator validator = new AddressValidator(addressDB, a);
+    	List<Address> suggestions = validator.getSuggestions();
+    	assertFalse(suggestions.isEmpty());
+    	Address bestSuggestion = suggestions.get(0);
+    	assertEquals("M4L3Z6", bestSuggestion.getPostalCode());
+    	assertEquals("ST", bestSuggestion.getStreetType());
+    }
 
 }
