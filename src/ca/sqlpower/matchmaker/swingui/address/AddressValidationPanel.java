@@ -24,8 +24,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -293,29 +293,12 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					JList suggestionList = new JList(validator.getSuggestions().toArray());
 					suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 					suggestionList.setCellRenderer(new AddressListCellRenderer(address1));
-					suggestionList.addMouseListener(new MouseListener() {
-
+					suggestionList.addMouseListener(new MouseAdapter() {
+						@Override
 						public void mouseClicked(MouseEvent e) {
 							final Address selected = (Address) ((JList)e.getSource()).getSelectedValue();
 							selectedAddressLabel.setAddress(selected);
 						}
-
-						public void mouseEntered(MouseEvent e) {
-							// Do nothing							
-						}
-
-						public void mouseExited(MouseEvent e) {
-							// Do nothing							
-						}
-
-						public void mousePressed(MouseEvent e) {
-							// Do nothing
-						}
-
-						public void mouseReleased(MouseEvent e) {
-							// Do nothing
-						}
-						
 					});
 					JScrollPane scrollList = new JScrollPane(suggestionList);
 					scrollList.setPreferredSize(new Dimension(200, 50));
