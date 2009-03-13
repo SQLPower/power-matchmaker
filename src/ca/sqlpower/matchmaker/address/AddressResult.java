@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
  * An object representation of an invalid address record
  * as stored in the Address Correction Result table.
  */
-public class AddressResult {
+public class AddressResult implements AddressInterface {
 	
 	private static final Logger logger = Logger.getLogger(AddressResult.class); 
 
@@ -101,6 +101,20 @@ public class AddressResult {
 		return keyValues;
 	}
 
+	public String getAddress() {
+		StringBuilder sb = new StringBuilder();
+		if (addressLine1 != null) {
+			sb.append(addressLine1);
+		} 
+		if (addressLine2 != null) {
+			if (addressLine1 != null) {
+				sb.append(" ");
+			}
+			sb.append(addressLine2);
+		}
+		return sb.toString();
+	}
+	
 	public String getAddressLine1() {
 		return addressLine1;
 	}
@@ -143,48 +157,6 @@ public class AddressResult {
 	
 	StorageState getStorageState() {
 		return storageState;
-	}
-	
-	/**
-	 * Returns a String which is a HTML format so that Street Lines and 
-	 * Municipality,Province,Country and Postal code can show on 3 different lines but 
-	 * within the same item.  
-	 *  
-	 * @return a HTML formatted String of the address.
-	 */
-	public String htmlToString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append("<html><p align=left>");
-		sb.append(getAddressLine1() != null ? getAddressLine1() : "");
-		if (addressLine1 != null && !addressLine1.trim().equals("")) {
-			sb.append(" ");
-		}
-		sb.append(getAddressLine2() != null ? getAddressLine2() : "");
-		
-		if ( !isThisLineExist(addressLine1) && !isThisLineExist(addressLine2) ) {
-			sb.append("<font color=\"FF0000\">Address Line Missing</font>");
-		}
-		sb.append("<br>");
-		sb.append(isThisLineExist(municipality) ? getMunicipality() : "<font color=\"FF0000\">Municipality Missing</font>");
-		sb.append(" ");
-		sb.append(isThisLineExist(province) ? getProvince() : "<font color=\"FF0000\">Province Missing</font>");
-		sb.append(" ");
-		sb.append(isThisLineExist(country) ? getCountry() : "<font color=\"FF0000\">Country Missing</font>");
-		sb.append("<br>");
-		sb.append(isThisLineExist(postalCode) ? postalCode : "<font color=\"FF0000\">Postal Code Missing</font>");
-		sb.append("</p>" + "</html>");
-		return sb.toString();
-	}
-	/**
-	 * Determine whether the first line of htmlToString(addressline1 and addressline2
-	 * should exist or not. If they are nulls or empty Strings or either, the first line
-	 * of htmlToString should be the next line( municipality,province and country).
-	 * @return true if the first line of address has meaning, false otherwise.
-	 */
-	private boolean isThisLineExist(String str) {
-		boolean line = (str == null || str.trim().equals(""));
-		return !line;
-
 	}
 	
 	public String toString() {

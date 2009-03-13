@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
+import ca.sqlpower.matchmaker.address.AddressInterface;
 import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
@@ -128,14 +129,12 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			addressResults = results;
 
 			Object[] addressArray = addressResults.toArray();
-			int k = 0;
-			int j = 0;
 			for (int i = 0; i < addressArray.length; i++) {
 				allResults.add(0, addressArray[i]);
 				if (((AddressResult)addressArray[i]).isValidated()) {
-					validResults.add(j, addressArray[i]);
+					validResults.add(0, addressArray[i]);
 				} else {
-					invalidResults.add(k, addressArray[i]);
+					invalidResults.add(0, addressArray[i]);
 				}
 			}
 			
@@ -148,7 +147,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			
 			validateResultPane = new JPanel();
 			validateResultPane.setLayout(new BoxLayout(validateResultPane, BoxLayout.Y_AXIS));
-			String[] comboBoxOptions = { "show all", "show invalid result only", "Show valid result only" }; 
+			String[] comboBoxOptions = { "Show All", "Show Invalid Results Only", "Show Valid Result Only" }; 
 			displayComboBox = new JComboBox(comboBoxOptions);
 			displayComboBox.addActionListener(new ActionListener() {
 
@@ -198,26 +197,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
         
 		public Component getListCellRendererComponent(JList list, Object value,
 				int index, boolean isSelected, boolean cellHasFocus) {
-			AddressLabel address;
-			if (value instanceof Address) {
-				address = new AddressLabel((Address) value, comparisonAddress, isSelected, list);
-				address.setOpaque(true);
-				return address;
-			} else {
-				// TODO improve this (have address and addressresult implement a common interface)
-				AddressResult selected = (AddressResult) value;
-				Address address1;
-				try {
-					address1 = Address.parse(
-							selected.getAddressLine1(), selected
-									.getMunicipality(), selected.getProvince(),
-							selected.getPostalCode(), selected.getCountry(), addressDatabase);
-				} catch (RecognitionException e) {
-					throw new RuntimeException(e);
-				}
-				address = new AddressLabel(address1, comparisonAddress, isSelected, list);
-				return address;
-			}
+			return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase);
 		}
 
 	}
@@ -226,8 +206,9 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 		public void valueChanged(ListSelectionEvent e) {
 			builder = new DefaultFormBuilder(new FormLayout(
-					"4dlu,fill:pref:grow,4dlu,fill:pref,4dlu",
-			"4dlu,pref,4dlu,pref,4dlu,fill:pref:grow,4dlu"));
+					"fill:pref:grow,4dlu,fill:pref",
+			"pref,4dlu,pref,4dlu,fill:pref:grow"));
+			builder.setDefaultDialogBorder();
 			CellConstraints cc = new CellConstraints();
 
 			JButton revertButton = new JButton("Revert");
@@ -240,17 +221,25 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			});
 			//TODO ..save button action to be added
 			JButton saveButton = new JButton("Save");
+			saveButton.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					logger.debug("Stub call: ActionListener.actionPerformed()");
+				}
+				
+			});
 			ButtonBarBuilder bbb = new ButtonBarBuilder();
 			bbb.addRelatedGap();
 			bbb.addGridded(revertButton);
 			bbb.addRelatedGap();
 			bbb.addGridded(saveButton);
 			bbb.addRelatedGap();
-			builder.add(bbb.getPanel(), cc.xy(2,2));
+			builder.add(bbb.getPanel(), cc.xy(1, 1));
 
 			JLabel suggestLabel = new JLabel("Suggestions:");
 			suggestLabel.setFont(new Font(null, Font.BOLD, 13));
-			builder.add(suggestLabel, cc.xy(4, 2));
+			builder.add(suggestLabel, cc.xy(3, 1));
 			
 			//remember user's choice of the divider's location
 			horizontalSplitPane.setDividerLocation(horizontalSplitPane.getDividerLocation());			
@@ -267,9 +256,9 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					AddressValidator validator = new AddressValidator(addressDatabase, address1);
 				    validateResult = validator.getResults();
 
-					selectedAddressLabel = new AddressLabel(address1, false, null);
+					selectedAddressLabel = new AddressLabel(address1, false, null, addressDatabase);
 					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
-					builder.add(selectedAddressLabel, cc.xy(2, 4));
+					builder.add(selectedAddressLabel, cc.xy(1, 3));
 					
 					FormLayout problemsLayout = new FormLayout("fill:pref:grow");
 					DefaultFormBuilder problemsBuilder = new DefaultFormBuilder(problemsLayout);
@@ -292,12 +281,11 @@ public class AddressValidationPanel extends NoEditEditorPane {
 									JLabel.LEFT));
 						}
 					}
-					builder.add(problemsBuilder.getPanel(), cc.xy(2, 6));
+					builder.add(problemsBuilder.getPanel(), cc.xy(1, 5));
 					
 					JList suggestionList = new JList(validator.getSuggestions().toArray());
 					suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 					suggestionList.setCellRenderer(new AddressListCellRenderer(address1));
-					//suggestionList.addListSelectionListener(new SuggestionListCellSelectionListener());
 					suggestionList.addMouseListener(new MouseListener() {
 
 						public void mouseClicked(MouseEvent e) {
@@ -324,7 +312,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					});
 					JScrollPane scrollList = new JScrollPane(suggestionList);
 					scrollList.setPreferredSize(new Dimension(200, 50));
-					builder.add(scrollList, cc.xywh(4, 4, 1, 4));
+					builder.add(scrollList, cc.xywh(3, 3, 1, 3));
 
 				} catch (RecognitionException e1) {
 					MMSUtils
