@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-13 16:33:50
+// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-16 12:32:08
 
 package ca.sqlpower.matchmaker.address.parse;
 
@@ -27,22 +27,18 @@ import com.sleepycat.je.DatabaseException;
 
 public class AddressParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ROUTESERVICETYPE", "DITYPE", "SUITE", "SUFFIXANDDIR", "STREETNUMSUFFIX", "NUMANDSTREETSUFFIX", "NUMANDSUFFIX", "NUMBER", "NAME", "SUITEANDSTREETNUM", "WS", "'-'", "'#'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "STREETNUMSUFFIX", "NUMANDSTREETSUFFIX", "NUMANDSUFFIX", "NUMBER", "NAME", "SUITEANDSTREETNUM", "WS", "'-'", "'#'"
     };
-    public static final int SUITEANDSTREETNUM=13;
-    public static final int NAME=12;
-    public static final int WS=14;
-    public static final int T__16=16;
-    public static final int T__15=15;
-    public static final int ROUTESERVICETYPE=4;
-    public static final int SUFFIXANDDIR=7;
-    public static final int NUMBER=11;
-    public static final int NUMANDSTREETSUFFIX=9;
-    public static final int NUMANDSUFFIX=10;
+    public static final int SUITEANDSTREETNUM=9;
+    public static final int NAME=8;
+    public static final int WS=10;
+    public static final int T__12=12;
+    public static final int T__11=11;
+    public static final int NUMBER=7;
+    public static final int NUMANDSTREETSUFFIX=5;
+    public static final int NUMANDSUFFIX=6;
     public static final int EOF=-1;
-    public static final int SUITE=6;
-    public static final int DITYPE=5;
-    public static final int STREETNUMSUFFIX=8;
+    public static final int STREETNUMSUFFIX=4;
 
     // delegates
     // delegators
@@ -125,6 +121,7 @@ public class AddressParser extends Parser {
      * null if the value is not parseable.
      */
     private Integer quietIntParse(String s) {
+      if (s == null) return null;
       try {
         return Integer.valueOf(s);
       } catch (NumberFormatException ex) {
@@ -171,15 +168,15 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "address"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:123:1: address : ({...}? => streetAddress | {...}? => ruralRouteAddress | {...}? => lockBoxAddress | {...}? => generalDeliveryAddress | failedParse );
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:124:1: address : ({...}? => streetAddress | {...}? => ruralRouteAddress | {...}? => lockBoxAddress | {...}? => generalDeliveryAddress | failedParse );
     public final void address() throws RecognitionException {
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:124:2: ({...}? => streetAddress | {...}? => ruralRouteAddress | {...}? => lockBoxAddress | {...}? => generalDeliveryAddress | failedParse )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:125:2: ({...}? => streetAddress | {...}? => ruralRouteAddress | {...}? => lockBoxAddress | {...}? => generalDeliveryAddress | failedParse )
             int alt1=5;
             alt1 = dfa1.predict(input);
             switch (alt1) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:124:4: {...}? => streetAddress
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:125:4: {...}? => streetAddress
                     {
                     if ( !((couldBeUrban())) ) {
                         throw new FailedPredicateException(input, "address", "couldBeUrban()");
@@ -193,7 +190,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:125:4: {...}? => ruralRouteAddress
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:126:4: {...}? => ruralRouteAddress
                     {
                     if ( !((couldBeRural())) ) {
                         throw new FailedPredicateException(input, "address", "couldBeRural()");
@@ -207,7 +204,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:126:4: {...}? => lockBoxAddress
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:127:4: {...}? => lockBoxAddress
                     {
                     if ( !((couldBeLockBox())) ) {
                         throw new FailedPredicateException(input, "address", "couldBeLockBox()");
@@ -221,7 +218,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:127:4: {...}? => generalDeliveryAddress
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:128:4: {...}? => generalDeliveryAddress
                     {
                     if ( !((couldBeGD())) ) {
                         throw new FailedPredicateException(input, "address", "couldBeGD()");
@@ -235,7 +232,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 5 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:128:4: failedParse
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:129:4: failedParse
                     {
                     pushFollow(FOLLOW_failedParse_in_address67);
                     failedParse();
@@ -260,26 +257,26 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "failedParse"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:131:1: failedParse : ( failedToken )* ;
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:132:1: failedParse : ( failedToken )* ;
     public final void failedParse() throws RecognitionException {
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:132:2: ( ( failedToken )* )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:132:4: ( failedToken )*
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:133:2: ( ( failedToken )* )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:133:4: ( failedToken )*
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:132:4: ( failedToken )*
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:133:4: ( failedToken )*
             loop2:
             do {
                 int alt2=2;
                 int LA2_0 = input.LA(1);
 
-                if ( ((LA2_0>=ROUTESERVICETYPE && LA2_0<=NAME)) ) {
+                if ( ((LA2_0>=STREETNUMSUFFIX && LA2_0<=NAME)) ) {
                     alt2=1;
                 }
 
 
                 switch (alt2) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:132:4: failedToken
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:133:4: failedToken
             	    {
             	    pushFollow(FOLLOW_failedToken_in_failedParse83);
             	    failedToken();
@@ -311,16 +308,16 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "failedToken"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:135:1: failedToken : n= ( ROUTESERVICETYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME ) ;
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:136:1: failedToken : n= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME ) ;
     public final void failedToken() throws RecognitionException {
         Token n=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:136:2: (n= ( ROUTESERVICETYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:136:4: n= ( ROUTESERVICETYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:137:2: (n= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:137:4: n= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME )
             {
             n=(Token)input.LT(1);
-            if ( (input.LA(1)>=ROUTESERVICETYPE && input.LA(1)<=NAME) ) {
+            if ( (input.LA(1)>=STREETNUMSUFFIX && input.LA(1)<=NAME) ) {
                 input.consume();
                 state.errorRecovery=false;
             }
@@ -348,22 +345,22 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "streetAddress"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:142:1: streetAddress : (sn= ( NUMBER | NUMANDSTREETSUFFIX ) '-' street | street );
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:143:1: streetAddress : (sn= ( NUMBER | NUMANDSTREETSUFFIX ) '-' street | street );
     public final void streetAddress() throws RecognitionException {
         Token sn=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:143:2: (sn= ( NUMBER | NUMANDSTREETSUFFIX ) '-' street | street )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:144:2: (sn= ( NUMBER | NUMANDSTREETSUFFIX ) '-' street | street )
             int alt3=2;
             int LA3_0 = input.LA(1);
 
             if ( (LA3_0==NUMANDSTREETSUFFIX||LA3_0==NUMBER) ) {
                 int LA3_1 = input.LA(2);
 
-                if ( (LA3_1==15) ) {
+                if ( (LA3_1==11) ) {
                     alt3=1;
                 }
-                else if ( ((LA3_1>=SUFFIXANDDIR && LA3_1<=NAME)) ) {
+                else if ( ((LA3_1>=STREETNUMSUFFIX && LA3_1<=NAME)) ) {
                     alt3=2;
                 }
                 else {
@@ -384,7 +381,7 @@ public class AddressParser extends Parser {
             }
             switch (alt3) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:143:4: sn= ( NUMBER | NUMANDSTREETSUFFIX ) '-' street
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:144:4: sn= ( NUMBER | NUMANDSTREETSUFFIX ) '-' street
                     {
                     sn=(Token)input.LT(1);
                     if ( input.LA(1)==NUMANDSTREETSUFFIX||input.LA(1)==NUMBER ) {
@@ -396,8 +393,8 @@ public class AddressParser extends Parser {
                         throw mse;
                     }
 
-                    match(input,15,FOLLOW_15_in_streetAddress161); 
-                    pushFollow(FOLLOW_street_in_streetAddress163);
+                    match(input,11,FOLLOW_11_in_streetAddress145); 
+                    pushFollow(FOLLOW_street_in_streetAddress147);
                     street();
 
                     state._fsp--;
@@ -411,9 +408,9 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:149:4: street
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:150:4: street
                     {
-                    pushFollow(FOLLOW_street_in_streetAddress180);
+                    pushFollow(FOLLOW_street_in_streetAddress164);
                     street();
 
                     state._fsp--;
@@ -437,22 +434,22 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "street"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:152:1: street : (n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= NUMANDSUFFIX ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+ );
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:153:1: street : (n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= NUMANDSUFFIX ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+ );
     public final void street() throws RecognitionException {
         Token n=null;
         Token s=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:153:2: (n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= NUMANDSUFFIX ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:154:2: (n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= NUMANDSUFFIX ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+ )
             int alt8=4;
             alt8 = dfa8.predict(input);
             switch (alt8) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:153:4: n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:154:4: n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+
                     {
-                    n=(Token)match(input,SUITEANDSTREETNUM,FOLLOW_SUITEANDSTREETNUM_in_street200); 
+                    n=(Token)match(input,SUITEANDSTREETNUM,FOLLOW_SUITEANDSTREETNUM_in_street184); 
                     s=(Token)input.LT(1);
-                    if ( (input.LA(1)>=SUFFIXANDDIR && input.LA(1)<=NUMANDSTREETSUFFIX) ) {
+                    if ( (input.LA(1)>=STREETNUMSUFFIX && input.LA(1)<=NUMANDSTREETSUFFIX) ) {
                         input.consume();
                         state.errorRecovery=false;
                     }
@@ -461,23 +458,23 @@ public class AddressParser extends Parser {
                         throw mse;
                     }
 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:153:76: ( streetToken )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:154:63: ( streetToken )+
                     int cnt4=0;
                     loop4:
                     do {
                         int alt4=2;
                         int LA4_0 = input.LA(1);
 
-                        if ( ((LA4_0>=SUFFIXANDDIR && LA4_0<=NAME)) ) {
+                        if ( ((LA4_0>=STREETNUMSUFFIX && LA4_0<=NAME)) ) {
                             alt4=1;
                         }
 
 
                         switch (alt4) {
                     	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:153:76: streetToken
+                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:154:63: streetToken
                     	    {
-                    	    pushFollow(FOLLOW_streetToken_in_street212);
+                    	    pushFollow(FOLLOW_streetToken_in_street194);
                     	    streetToken();
 
                     	    state._fsp--;
@@ -505,7 +502,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:160:4: n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:161:4: n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+
                     {
                     n=(Token)input.LT(1);
                     if ( input.LA(1)==NUMANDSTREETSUFFIX||input.LA(1)==NUMBER ) {
@@ -518,7 +515,7 @@ public class AddressParser extends Parser {
                     }
 
                     s=(Token)input.LT(1);
-                    if ( (input.LA(1)>=SUFFIXANDDIR && input.LA(1)<=NUMANDSTREETSUFFIX) ) {
+                    if ( (input.LA(1)>=STREETNUMSUFFIX && input.LA(1)<=NUMANDSTREETSUFFIX) ) {
                         input.consume();
                         state.errorRecovery=false;
                     }
@@ -527,23 +524,23 @@ public class AddressParser extends Parser {
                         throw mse;
                     }
 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:160:86: ( streetToken )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:161:73: ( streetToken )+
                     int cnt5=0;
                     loop5:
                     do {
                         int alt5=2;
                         int LA5_0 = input.LA(1);
 
-                        if ( ((LA5_0>=SUFFIXANDDIR && LA5_0<=NAME)) ) {
+                        if ( ((LA5_0>=STREETNUMSUFFIX && LA5_0<=NAME)) ) {
                             alt5=1;
                         }
 
 
                         switch (alt5) {
                     	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:160:86: streetToken
+                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:161:73: streetToken
                     	    {
-                    	    pushFollow(FOLLOW_streetToken_in_street245);
+                    	    pushFollow(FOLLOW_streetToken_in_street225);
                     	    streetToken();
 
                     	    state._fsp--;
@@ -568,26 +565,26 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:164:4: n= NUMANDSUFFIX ( streetToken )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:165:4: n= NUMANDSUFFIX ( streetToken )+
                     {
-                    n=(Token)match(input,NUMANDSUFFIX,FOLLOW_NUMANDSUFFIX_in_street263); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:164:19: ( streetToken )+
+                    n=(Token)match(input,NUMANDSUFFIX,FOLLOW_NUMANDSUFFIX_in_street243); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:165:19: ( streetToken )+
                     int cnt6=0;
                     loop6:
                     do {
                         int alt6=2;
                         int LA6_0 = input.LA(1);
 
-                        if ( ((LA6_0>=SUFFIXANDDIR && LA6_0<=NAME)) ) {
+                        if ( ((LA6_0>=STREETNUMSUFFIX && LA6_0<=NAME)) ) {
                             alt6=1;
                         }
 
 
                         switch (alt6) {
                     	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:164:19: streetToken
+                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:165:19: streetToken
                     	    {
-                    	    pushFollow(FOLLOW_streetToken_in_street265);
+                    	    pushFollow(FOLLOW_streetToken_in_street245);
                     	    streetToken();
 
                     	    state._fsp--;
@@ -613,7 +610,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:168:4: n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:169:4: n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+
                     {
                     n=(Token)input.LT(1);
                     if ( input.LA(1)==NUMANDSTREETSUFFIX||input.LA(1)==NUMBER ) {
@@ -625,23 +622,23 @@ public class AddressParser extends Parser {
                         throw mse;
                     }
 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:168:34: ( streetToken )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:169:34: ( streetToken )+
                     int cnt7=0;
                     loop7:
                     do {
                         int alt7=2;
                         int LA7_0 = input.LA(1);
 
-                        if ( ((LA7_0>=SUFFIXANDDIR && LA7_0<=NAME)) ) {
+                        if ( ((LA7_0>=STREETNUMSUFFIX && LA7_0<=NAME)) ) {
                             alt7=1;
                         }
 
 
                         switch (alt7) {
                     	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:168:34: streetToken
+                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:169:34: streetToken
                     	    {
-                    	    pushFollow(FOLLOW_streetToken_in_street282);
+                    	    pushFollow(FOLLOW_streetToken_in_street262);
                     	    streetToken();
 
                     	    state._fsp--;
@@ -678,7 +675,7 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "streetToken"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:172:1: streetToken : ({...}?s= NAME sn= ( NUMBER | NUMANDSTREETSUFFIX ) | {...}?d= ( NAME | SUFFIXANDDIR ) | {...}?t= NAME | n= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX ) );
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:173:1: streetToken : ({...}? =>s= NAME sn= ( NUMBER | NUMANDSTREETSUFFIX ) | {...}?d= ( NAME | STREETNUMSUFFIX ) | {...}?t= NAME | n= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX ) );
     public final void streetToken() throws RecognitionException {
         Token s=null;
         Token sn=null;
@@ -687,14 +684,14 @@ public class AddressParser extends Parser {
         Token n=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:173:2: ({...}?s= NAME sn= ( NUMBER | NUMANDSTREETSUFFIX ) | {...}?d= ( NAME | SUFFIXANDDIR ) | {...}?t= NAME | n= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:174:2: ({...}? =>s= NAME sn= ( NUMBER | NUMANDSTREETSUFFIX ) | {...}?d= ( NAME | STREETNUMSUFFIX ) | {...}?t= NAME | n= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX ) )
             int alt9=4;
             switch ( input.LA(1) ) {
             case NAME:
                 {
                 int LA9_1 = input.LA(2);
 
-                if ( (LA9_1==NUMANDSTREETSUFFIX||LA9_1==NUMBER) ) {
+                if ( (LA9_1==NUMANDSTREETSUFFIX||LA9_1==NUMBER) && ((Address.isSuiteType(input.LT(1).getText())))) {
                     alt9=1;
                 }
                 else if ( ((hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText()))) ) {
@@ -714,12 +711,24 @@ public class AddressParser extends Parser {
                 }
                 }
                 break;
-            case SUFFIXANDDIR:
+            case STREETNUMSUFFIX:
                 {
-                alt9=2;
+                int LA9_2 = input.LA(2);
+
+                if ( ((hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText()))) ) {
+                    alt9=2;
+                }
+                else if ( (true) ) {
+                    alt9=4;
+                }
+                else {
+                    NoViableAltException nvae =
+                        new NoViableAltException("", 9, 2, input);
+
+                    throw nvae;
+                }
                 }
                 break;
-            case STREETNUMSUFFIX:
             case NUMANDSTREETSUFFIX:
             case NUMANDSUFFIX:
             case NUMBER:
@@ -736,12 +745,12 @@ public class AddressParser extends Parser {
 
             switch (alt9) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:173:4: {...}?s= NAME sn= ( NUMBER | NUMANDSTREETSUFFIX )
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:174:4: {...}? =>s= NAME sn= ( NUMBER | NUMANDSTREETSUFFIX )
                     {
-                    if ( !((hasStreetNameStarted && Address.isSuiteType(input.LT(1).getText()))) ) {
-                        throw new FailedPredicateException(input, "streetToken", "hasStreetNameStarted && Address.isSuiteType(input.LT(1).getText())");
+                    if ( !((Address.isSuiteType(input.LT(1).getText()))) ) {
+                        throw new FailedPredicateException(input, "streetToken", "Address.isSuiteType(input.LT(1).getText())");
                     }
-                    s=(Token)match(input,NAME,FOLLOW_NAME_in_streetToken311); 
+                    s=(Token)match(input,NAME,FOLLOW_NAME_in_streetToken292); 
                     sn=(Token)input.LT(1);
                     if ( input.LA(1)==NUMANDSTREETSUFFIX||input.LA(1)==NUMBER ) {
                         input.consume();
@@ -761,13 +770,13 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:179:4: {...}?d= ( NAME | SUFFIXANDDIR )
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:180:4: {...}?d= ( NAME | STREETNUMSUFFIX )
                     {
                     if ( !((hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText()))) ) {
                         throw new FailedPredicateException(input, "streetToken", "hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText())");
                     }
                     d=(Token)input.LT(1);
-                    if ( input.LA(1)==SUFFIXANDDIR||input.LA(1)==NAME ) {
+                    if ( input.LA(1)==STREETNUMSUFFIX||input.LA(1)==NAME ) {
                         input.consume();
                         state.errorRecovery=false;
                     }
@@ -783,12 +792,12 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:184:4: {...}?t= NAME
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:185:4: {...}?t= NAME
                     {
                     if ( !((!address.isStreetTypePrefix() && addressDatabase.containsStreetType(input.LT(1).getText()))) ) {
                         throw new FailedPredicateException(input, "streetToken", "!address.isStreetTypePrefix() && addressDatabase.containsStreetType(input.LT(1).getText())");
                     }
-                    t=(Token)match(input,NAME,FOLLOW_NAME_in_streetToken368); 
+                    t=(Token)match(input,NAME,FOLLOW_NAME_in_streetToken349); 
 
                     							 if (address.getStreetType() != null) {
                     							    appendStreetName(address.getStreetType());
@@ -800,7 +809,7 @@ public class AddressParser extends Parser {
                     }
                     break;
                 case 4 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:193:4: n= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX )
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:194:4: n= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX )
                     {
                     n=(Token)input.LT(1);
                     if ( (input.LA(1)>=STREETNUMSUFFIX && input.LA(1)<=NAME) ) {
@@ -839,29 +848,29 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "ruralRouteAddress"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:205:1: ruralRouteAddress : (rs= ROUTESERVICETYPE n= NUMBER (di= DITYPE )? (stn= NAME )? | rs= ROUTESERVICETYPE n= NUMBER street );
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:206:1: ruralRouteAddress : ({...}?rs= NAME (n= NUMBER )? ruralRouteSuffix | {...}?rs1= NAME rs2= NAME (n= NUMBER )? ruralRouteSuffix );
     public final void ruralRouteAddress() throws RecognitionException {
         Token rs=null;
         Token n=null;
-        Token di=null;
-        Token stn=null;
+        Token rs1=null;
+        Token rs2=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:206:2: (rs= ROUTESERVICETYPE n= NUMBER (di= DITYPE )? (stn= NAME )? | rs= ROUTESERVICETYPE n= NUMBER street )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:207:2: ({...}?rs= NAME (n= NUMBER )? ruralRouteSuffix | {...}?rs1= NAME rs2= NAME (n= NUMBER )? ruralRouteSuffix )
             int alt12=2;
             int LA12_0 = input.LA(1);
 
-            if ( (LA12_0==ROUTESERVICETYPE) ) {
+            if ( (LA12_0==NAME) ) {
                 int LA12_1 = input.LA(2);
 
-                if ( (LA12_1==NUMBER) ) {
+                if ( (LA12_1==NAME) ) {
                     int LA12_2 = input.LA(3);
 
-                    if ( ((LA12_2>=NUMANDSTREETSUFFIX && LA12_2<=NUMBER)||LA12_2==SUITEANDSTREETNUM) ) {
-                        alt12=2;
-                    }
-                    else if ( (LA12_2==EOF||LA12_2==DITYPE||LA12_2==NAME) ) {
+                    if ( ((Address.isRuralRoute(input.LT(1).getText()))) ) {
                         alt12=1;
+                    }
+                    else if ( ((Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText()))) ) {
+                        alt12=2;
                     }
                     else {
                         NoViableAltException nvae =
@@ -869,6 +878,9 @@ public class AddressParser extends Parser {
 
                         throw nvae;
                     }
+                }
+                else if ( (LA12_1==EOF||(LA12_1>=NUMANDSTREETSUFFIX && LA12_1<=NUMBER)||LA12_1==SUITEANDSTREETNUM) ) {
+                    alt12=1;
                 }
                 else {
                     NoViableAltException nvae =
@@ -885,69 +897,69 @@ public class AddressParser extends Parser {
             }
             switch (alt12) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:206:4: rs= ROUTESERVICETYPE n= NUMBER (di= DITYPE )? (stn= NAME )?
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:207:4: {...}?rs= NAME (n= NUMBER )? ruralRouteSuffix
                     {
-                    rs=(Token)match(input,ROUTESERVICETYPE,FOLLOW_ROUTESERVICETYPE_in_ruralRouteAddress427); 
-                    n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_ruralRouteAddress431); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:206:35: (di= DITYPE )?
-                    int alt10=2;
-                    int LA10_0 = input.LA(1);
-
-                    if ( (LA10_0==DITYPE) ) {
-                        alt10=1;
+                    if ( !((Address.isRuralRoute(input.LT(1).getText()))) ) {
+                        throw new FailedPredicateException(input, "ruralRouteAddress", "Address.isRuralRoute(input.LT(1).getText())");
                     }
+                    rs=(Token)match(input,NAME,FOLLOW_NAME_in_ruralRouteAddress410); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:207:60: (n= NUMBER )?
+                    int alt10=2;
+                    alt10 = dfa10.predict(input);
                     switch (alt10) {
                         case 1 :
-                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:206:35: di= DITYPE
+                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:207:60: n= NUMBER
                             {
-                            di=(Token)match(input,DITYPE,FOLLOW_DITYPE_in_ruralRouteAddress435); 
+                            n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_ruralRouteAddress414); 
 
                             }
                             break;
 
                     }
 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:206:47: (stn= NAME )?
-                    int alt11=2;
-                    int LA11_0 = input.LA(1);
+                    pushFollow(FOLLOW_ruralRouteSuffix_in_ruralRouteAddress417);
+                    ruralRouteSuffix();
 
-                    if ( (LA11_0==NAME) ) {
-                        alt11=1;
-                    }
-                    switch (alt11) {
-                        case 1 :
-                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:206:47: stn= NAME
-                            {
-                            stn=(Token)match(input,NAME,FOLLOW_NAME_in_ruralRouteAddress440); 
-
-                            }
-                            break;
-
-                    }
+                    state._fsp--;
 
 
                     							 address.setRuralRouteType((rs!=null?rs.getText():null));
-                    							 address.setRuralRouteNumber(quietIntParse((rs!=null?rs.getText():null)));
-                    							 address.setDeliveryInstallationType((di!=null?di.getText():null));
-                    							 address.setDeliveryInstallationName((stn!=null?stn.getText():null));
+                    							 address.setRuralRouteNumber(quietIntParse((n!=null?n.getText():null)));
                     							 address.setType(Address.Type.RURAL);
                     							
 
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:214:4: rs= ROUTESERVICETYPE n= NUMBER street
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:213:4: {...}?rs1= NAME rs2= NAME (n= NUMBER )? ruralRouteSuffix
                     {
-                    rs=(Token)match(input,ROUTESERVICETYPE,FOLLOW_ROUTESERVICETYPE_in_ruralRouteAddress457); 
-                    n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_ruralRouteAddress461); 
-                    pushFollow(FOLLOW_street_in_ruralRouteAddress463);
-                    street();
+                    if ( !((Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText()))) ) {
+                        throw new FailedPredicateException(input, "ruralRouteAddress", "Address.isRuralRoute(input.LT(1).getText() + \" \" + input.LT(2).getText())");
+                    }
+                    rs1=(Token)match(input,NAME,FOLLOW_NAME_in_ruralRouteAddress435); 
+                    rs2=(Token)match(input,NAME,FOLLOW_NAME_in_ruralRouteAddress439); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:213:100: (n= NUMBER )?
+                    int alt11=2;
+                    alt11 = dfa11.predict(input);
+                    switch (alt11) {
+                        case 1 :
+                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:213:100: n= NUMBER
+                            {
+                            n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_ruralRouteAddress443); 
+
+                            }
+                            break;
+
+                    }
+
+                    pushFollow(FOLLOW_ruralRouteSuffix_in_ruralRouteAddress446);
+                    ruralRouteSuffix();
 
                     state._fsp--;
 
 
-                    							 address.setRuralRouteType((rs!=null?rs.getText():null));
-                    							 address.setRuralRouteNumber(quietIntParse((rs!=null?rs.getText():null)));
+                    							 address.setRuralRouteType((rs1!=null?rs1.getText():null) + " " + (rs2!=null?rs2.getText():null));
+                    							 address.setRuralRouteNumber(quietIntParse((n!=null?n.getText():null)));
                     							 address.setType(Address.Type.RURAL);
                     							
 
@@ -967,17 +979,90 @@ public class AddressParser extends Parser {
     // $ANTLR end "ruralRouteAddress"
 
 
+    // $ANTLR start "ruralRouteSuffix"
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:221:1: ruralRouteSuffix : ( ( diTypeAndName )? | street );
+    public final void ruralRouteSuffix() throws RecognitionException {
+        try {
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:2: ( ( diTypeAndName )? | street )
+            int alt14=2;
+            int LA14_0 = input.LA(1);
+
+            if ( (LA14_0==EOF||LA14_0==NAME) ) {
+                alt14=1;
+            }
+            else if ( ((LA14_0>=NUMANDSTREETSUFFIX && LA14_0<=NUMBER)||LA14_0==SUITEANDSTREETNUM) ) {
+                alt14=2;
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 14, 0, input);
+
+                throw nvae;
+            }
+            switch (alt14) {
+                case 1 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:4: ( diTypeAndName )?
+                    {
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:4: ( diTypeAndName )?
+                    int alt13=2;
+                    int LA13_0 = input.LA(1);
+
+                    if ( (LA13_0==NAME) ) {
+                        alt13=1;
+                    }
+                    switch (alt13) {
+                        case 1 :
+                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:4: diTypeAndName
+                            {
+                            pushFollow(FOLLOW_diTypeAndName_in_ruralRouteSuffix466);
+                            diTypeAndName();
+
+                            state._fsp--;
+
+
+                            }
+                            break;
+
+                    }
+
+
+                    }
+                    break;
+                case 2 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:223:4: street
+                    {
+                    pushFollow(FOLLOW_street_in_ruralRouteSuffix472);
+                    street();
+
+                    state._fsp--;
+
+
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end "ruralRouteSuffix"
+
+
     // $ANTLR start "lockBoxAddress"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:221:1: lockBoxAddress : ({...}?lb= NAME ( '#' )? n= NUMBER di= DITYPE ( diName )+ | {...}?lb1= ( NAME | DITYPE ) lb2= NAME ( '#' )? n= NUMBER di= DITYPE ( diName )+ );
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:226:1: lockBoxAddress : ({...}?lb= NAME ( '#' )? n= NUMBER diTypeAndName | {...}?lb1= NAME lb2= NAME ( '#' )? n= NUMBER diTypeAndName );
     public final void lockBoxAddress() throws RecognitionException {
         Token lb=null;
         Token n=null;
-        Token di=null;
         Token lb1=null;
         Token lb2=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:2: ({...}?lb= NAME ( '#' )? n= NUMBER di= DITYPE ( diName )+ | {...}?lb1= ( NAME | DITYPE ) lb2= NAME ( '#' )? n= NUMBER di= DITYPE ( diName )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:227:2: ({...}?lb= NAME ( '#' )? n= NUMBER diTypeAndName | {...}?lb1= NAME lb2= NAME ( '#' )? n= NUMBER diTypeAndName )
             int alt17=2;
             int LA17_0 = input.LA(1);
 
@@ -987,7 +1072,7 @@ public class AddressParser extends Parser {
                 if ( (LA17_1==NAME) ) {
                     alt17=2;
                 }
-                else if ( (LA17_1==NUMBER||LA17_1==16) ) {
+                else if ( (LA17_1==NUMBER||LA17_1==12) ) {
                     alt17=1;
                 }
                 else {
@@ -997,9 +1082,6 @@ public class AddressParser extends Parser {
                     throw nvae;
                 }
             }
-            else if ( (LA17_0==DITYPE) ) {
-                alt17=2;
-            }
             else {
                 NoViableAltException nvae =
                     new NoViableAltException("", 17, 0, input);
@@ -1008,150 +1090,79 @@ public class AddressParser extends Parser {
             }
             switch (alt17) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:4: {...}?lb= NAME ( '#' )? n= NUMBER di= DITYPE ( diName )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:227:4: {...}?lb= NAME ( '#' )? n= NUMBER diTypeAndName
                     {
                     if ( !((Address.isLockBox(input.LT(1).getText()))) ) {
                         throw new FailedPredicateException(input, "lockBoxAddress", "Address.isLockBox(input.LT(1).getText())");
                     }
-                    lb=(Token)match(input,NAME,FOLLOW_NAME_in_lockBoxAddress481); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:56: ( '#' )?
-                    int alt13=2;
-                    int LA13_0 = input.LA(1);
+                    lb=(Token)match(input,NAME,FOLLOW_NAME_in_lockBoxAddress489); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:227:56: ( '#' )?
+                    int alt15=2;
+                    int LA15_0 = input.LA(1);
 
-                    if ( (LA13_0==16) ) {
-                        alt13=1;
+                    if ( (LA15_0==12) ) {
+                        alt15=1;
                     }
-                    switch (alt13) {
+                    switch (alt15) {
                         case 1 :
-                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:56: '#'
+                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:227:56: '#'
                             {
-                            match(input,16,FOLLOW_16_in_lockBoxAddress483); 
+                            match(input,12,FOLLOW_12_in_lockBoxAddress491); 
 
                             }
                             break;
 
                     }
 
-                    n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_lockBoxAddress488); 
-                    di=(Token)match(input,DITYPE,FOLLOW_DITYPE_in_lockBoxAddress492); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:80: ( diName )+
-                    int cnt14=0;
-                    loop14:
-                    do {
-                        int alt14=2;
-                        int LA14_0 = input.LA(1);
+                    n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_lockBoxAddress496); 
+                    pushFollow(FOLLOW_diTypeAndName_in_lockBoxAddress498);
+                    diTypeAndName();
 
-                        if ( ((LA14_0>=DITYPE && LA14_0<=SUITE)||(LA14_0>=STREETNUMSUFFIX && LA14_0<=NAME)) ) {
-                            alt14=1;
-                        }
-
-
-                        switch (alt14) {
-                    	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:222:80: diName
-                    	    {
-                    	    pushFollow(FOLLOW_diName_in_lockBoxAddress494);
-                    	    diName();
-
-                    	    state._fsp--;
-
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    if ( cnt14 >= 1 ) break loop14;
-                                EarlyExitException eee =
-                                    new EarlyExitException(14, input);
-                                throw eee;
-                        }
-                        cnt14++;
-                    } while (true);
+                    state._fsp--;
 
 
                     							 address.setLockBoxType((lb!=null?lb.getText():null));
                     							 address.setLockBoxNumber(quietIntParse((n!=null?n.getText():null)));
-                    							 address.setDeliveryInstallationType((di!=null?di.getText():null));
                     							 address.setType(Address.Type.LOCK_BOX);
                     							
 
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:229:4: {...}?lb1= ( NAME | DITYPE ) lb2= NAME ( '#' )? n= NUMBER di= DITYPE ( diName )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:233:4: {...}?lb1= NAME lb2= NAME ( '#' )? n= NUMBER diTypeAndName
                     {
                     if ( !((Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText()))) ) {
                         throw new FailedPredicateException(input, "lockBoxAddress", "Address.isLockBox(input.LT(1).getText() + \" \" + input.LT(2).getText())");
                     }
-                    lb1=(Token)input.LT(1);
-                    if ( input.LA(1)==DITYPE||input.LA(1)==NAME ) {
-                        input.consume();
-                        state.errorRecovery=false;
-                    }
-                    else {
-                        MismatchedSetException mse = new MismatchedSetException(null,input);
-                        throw mse;
-                    }
+                    lb1=(Token)match(input,NAME,FOLLOW_NAME_in_lockBoxAddress516); 
+                    lb2=(Token)match(input,NAME,FOLLOW_NAME_in_lockBoxAddress520); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:233:96: ( '#' )?
+                    int alt16=2;
+                    int LA16_0 = input.LA(1);
 
-                    lb2=(Token)match(input,NAME,FOLLOW_NAME_in_lockBoxAddress523); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:229:107: ( '#' )?
-                    int alt15=2;
-                    int LA15_0 = input.LA(1);
-
-                    if ( (LA15_0==16) ) {
-                        alt15=1;
+                    if ( (LA16_0==12) ) {
+                        alt16=1;
                     }
-                    switch (alt15) {
+                    switch (alt16) {
                         case 1 :
-                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:229:107: '#'
+                            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:233:96: '#'
                             {
-                            match(input,16,FOLLOW_16_in_lockBoxAddress525); 
+                            match(input,12,FOLLOW_12_in_lockBoxAddress522); 
 
                             }
                             break;
 
                     }
 
-                    n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_lockBoxAddress530); 
-                    di=(Token)match(input,DITYPE,FOLLOW_DITYPE_in_lockBoxAddress534); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:229:131: ( diName )+
-                    int cnt16=0;
-                    loop16:
-                    do {
-                        int alt16=2;
-                        int LA16_0 = input.LA(1);
+                    n=(Token)match(input,NUMBER,FOLLOW_NUMBER_in_lockBoxAddress527); 
+                    pushFollow(FOLLOW_diTypeAndName_in_lockBoxAddress529);
+                    diTypeAndName();
 
-                        if ( ((LA16_0>=DITYPE && LA16_0<=SUITE)||(LA16_0>=STREETNUMSUFFIX && LA16_0<=NAME)) ) {
-                            alt16=1;
-                        }
-
-
-                        switch (alt16) {
-                    	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:229:131: diName
-                    	    {
-                    	    pushFollow(FOLLOW_diName_in_lockBoxAddress536);
-                    	    diName();
-
-                    	    state._fsp--;
-
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    if ( cnt16 >= 1 ) break loop16;
-                                EarlyExitException eee =
-                                    new EarlyExitException(16, input);
-                                throw eee;
-                        }
-                        cnt16++;
-                    } while (true);
+                    state._fsp--;
 
 
                     							 address.setLockBoxType((lb1!=null?lb1.getText():null) + " " + (lb2!=null?lb2.getText():null));
                     							 address.setLockBoxNumber(quietIntParse((n!=null?n.getText():null)));
-                    							 address.setDeliveryInstallationType((di!=null?di.getText():null));
                     							 address.setType(Address.Type.LOCK_BOX);
                     							
 
@@ -1172,102 +1183,118 @@ public class AddressParser extends Parser {
 
 
     // $ANTLR start "generalDeliveryAddress"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:238:1: generalDeliveryAddress : ({...}?gd= NAME t= DITYPE ( diName )+ | {...}?gd1= ( NAME | DITYPE ) gd2= NAME t= DITYPE ( diName )+ );
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:241:1: generalDeliveryAddress : ({...}?gd= NAME diTypeAndName | {...}?gd1= NAME gd2= NAME diTypeAndName | {...}?gd1= NAME gd2= ( STREETNUMSUFFIX | NAME ) gd3= NAME diTypeAndName );
     public final void generalDeliveryAddress() throws RecognitionException {
         Token gd=null;
-        Token t=null;
         Token gd1=null;
         Token gd2=null;
+        Token gd3=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:2: ({...}?gd= NAME t= DITYPE ( diName )+ | {...}?gd1= ( NAME | DITYPE ) gd2= NAME t= DITYPE ( diName )+ )
-            int alt20=2;
-            int LA20_0 = input.LA(1);
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:242:2: ({...}?gd= NAME diTypeAndName | {...}?gd1= NAME gd2= NAME diTypeAndName | {...}?gd1= NAME gd2= ( STREETNUMSUFFIX | NAME ) gd3= NAME diTypeAndName )
+            int alt18=3;
+            int LA18_0 = input.LA(1);
 
-            if ( (LA20_0==NAME) ) {
-                int LA20_1 = input.LA(2);
+            if ( (LA18_0==NAME) ) {
+                int LA18_1 = input.LA(2);
 
-                if ( (LA20_1==DITYPE) ) {
-                    alt20=1;
+                if ( (LA18_1==NAME) ) {
+                    int LA18_2 = input.LA(3);
+
+                    if ( (LA18_2==NAME) ) {
+                        int LA18_4 = input.LA(4);
+
+                        if ( (LA18_4==NAME) ) {
+                            alt18=3;
+                        }
+                        else if ( ((Address.isGeneralDelivery(input.LT(1).getText()))) ) {
+                            alt18=1;
+                        }
+                        else if ( ((Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText()))) ) {
+                            alt18=2;
+                        }
+                        else {
+                            NoViableAltException nvae =
+                                new NoViableAltException("", 18, 4, input);
+
+                            throw nvae;
+                        }
+                    }
+                    else if ( (LA18_2==EOF||(LA18_2>=STREETNUMSUFFIX && LA18_2<=NUMBER)) ) {
+                        alt18=1;
+                    }
+                    else {
+                        NoViableAltException nvae =
+                            new NoViableAltException("", 18, 2, input);
+
+                        throw nvae;
+                    }
                 }
-                else if ( (LA20_1==NAME) ) {
-                    alt20=2;
+                else if ( (LA18_1==STREETNUMSUFFIX) ) {
+                    alt18=3;
                 }
                 else {
                     NoViableAltException nvae =
-                        new NoViableAltException("", 20, 1, input);
+                        new NoViableAltException("", 18, 1, input);
 
                     throw nvae;
                 }
             }
-            else if ( (LA20_0==DITYPE) ) {
-                alt20=2;
-            }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 20, 0, input);
+                    new NoViableAltException("", 18, 0, input);
 
                 throw nvae;
             }
-            switch (alt20) {
+            switch (alt18) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:4: {...}?gd= NAME t= DITYPE ( diName )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:242:4: {...}?gd= NAME diTypeAndName
                     {
                     if ( !((Address.isGeneralDelivery(input.LT(1).getText()))) ) {
                         throw new FailedPredicateException(input, "generalDeliveryAddress", "Address.isGeneralDelivery(input.LT(1).getText())");
                     }
-                    gd=(Token)match(input,NAME,FOLLOW_NAME_in_generalDeliveryAddress562); 
-                    t=(Token)match(input,DITYPE,FOLLOW_DITYPE_in_generalDeliveryAddress566); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:73: ( diName )+
-                    int cnt18=0;
-                    loop18:
-                    do {
-                        int alt18=2;
-                        int LA18_0 = input.LA(1);
+                    gd=(Token)match(input,NAME,FOLLOW_NAME_in_generalDeliveryAddress554); 
+                    pushFollow(FOLLOW_diTypeAndName_in_generalDeliveryAddress556);
+                    diTypeAndName();
 
-                        if ( ((LA18_0>=DITYPE && LA18_0<=SUITE)||(LA18_0>=STREETNUMSUFFIX && LA18_0<=NAME)) ) {
-                            alt18=1;
-                        }
-
-
-                        switch (alt18) {
-                    	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:239:73: diName
-                    	    {
-                    	    pushFollow(FOLLOW_diName_in_generalDeliveryAddress568);
-                    	    diName();
-
-                    	    state._fsp--;
-
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    if ( cnt18 >= 1 ) break loop18;
-                                EarlyExitException eee =
-                                    new EarlyExitException(18, input);
-                                throw eee;
-                        }
-                        cnt18++;
-                    } while (true);
+                    state._fsp--;
 
 
                     							 address.setGeneralDeliveryName((gd!=null?gd.getText():null));
-                    							 address.setDeliveryInstallationType((t!=null?t.getText():null));
                     							 address.setType(Address.Type.GD);
                     							
 
                     }
                     break;
                 case 2 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:245:4: {...}?gd1= ( NAME | DITYPE ) gd2= NAME t= DITYPE ( diName )+
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:247:4: {...}?gd1= NAME gd2= NAME diTypeAndName
                     {
                     if ( !((Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText()))) ) {
                         throw new FailedPredicateException(input, "generalDeliveryAddress", "Address.isGeneralDelivery(input.LT(1).getText() + \" \" + input.LT(2).getText())");
                     }
-                    gd1=(Token)input.LT(1);
-                    if ( input.LA(1)==DITYPE||input.LA(1)==NAME ) {
+                    gd1=(Token)match(input,NAME,FOLLOW_NAME_in_generalDeliveryAddress574); 
+                    gd2=(Token)match(input,NAME,FOLLOW_NAME_in_generalDeliveryAddress578); 
+                    pushFollow(FOLLOW_diTypeAndName_in_generalDeliveryAddress580);
+                    diTypeAndName();
+
+                    state._fsp--;
+
+
+                    							 address.setGeneralDeliveryName((gd1!=null?gd1.getText():null) + " " + (gd2!=null?gd2.getText():null));
+                    							 address.setType(Address.Type.GD);
+                    							
+
+                    }
+                    break;
+                case 3 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:252:4: {...}?gd1= NAME gd2= ( STREETNUMSUFFIX | NAME ) gd3= NAME diTypeAndName
+                    {
+                    if ( !((Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText()))) ) {
+                        throw new FailedPredicateException(input, "generalDeliveryAddress", "Address.isGeneralDelivery(input.LT(1).getText() + \" \" + input.LT(2).getText() + \" \" + input.LT(3).getText())");
+                    }
+                    gd1=(Token)match(input,NAME,FOLLOW_NAME_in_generalDeliveryAddress602); 
+                    gd2=(Token)input.LT(1);
+                    if ( input.LA(1)==STREETNUMSUFFIX||input.LA(1)==NAME ) {
                         input.consume();
                         state.errorRecovery=false;
                     }
@@ -1276,45 +1303,14 @@ public class AddressParser extends Parser {
                         throw mse;
                     }
 
-                    gd2=(Token)match(input,NAME,FOLLOW_NAME_in_generalDeliveryAddress597); 
-                    t=(Token)match(input,DITYPE,FOLLOW_DITYPE_in_generalDeliveryAddress601); 
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:245:124: ( diName )+
-                    int cnt19=0;
-                    loop19:
-                    do {
-                        int alt19=2;
-                        int LA19_0 = input.LA(1);
+                    gd3=(Token)match(input,NAME,FOLLOW_NAME_in_generalDeliveryAddress614); 
+                    pushFollow(FOLLOW_diTypeAndName_in_generalDeliveryAddress616);
+                    diTypeAndName();
 
-                        if ( ((LA19_0>=DITYPE && LA19_0<=SUITE)||(LA19_0>=STREETNUMSUFFIX && LA19_0<=NAME)) ) {
-                            alt19=1;
-                        }
+                    state._fsp--;
 
 
-                        switch (alt19) {
-                    	case 1 :
-                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:245:124: diName
-                    	    {
-                    	    pushFollow(FOLLOW_diName_in_generalDeliveryAddress603);
-                    	    diName();
-
-                    	    state._fsp--;
-
-
-                    	    }
-                    	    break;
-
-                    	default :
-                    	    if ( cnt19 >= 1 ) break loop19;
-                                EarlyExitException eee =
-                                    new EarlyExitException(19, input);
-                                throw eee;
-                        }
-                        cnt19++;
-                    } while (true);
-
-
-                    							 address.setGeneralDeliveryName((gd1!=null?gd1.getText():null) + " " + (gd2!=null?gd2.getText():null));
-                    							 address.setDeliveryInstallationType((t!=null?t.getText():null));
+                    							 address.setGeneralDeliveryName((gd1!=null?gd1.getText():null) + " " + (gd2!=null?gd2.getText():null) + " " + (gd3!=null?gd3.getText():null));
                     							 address.setType(Address.Type.GD);
                     							
 
@@ -1334,17 +1330,212 @@ public class AddressParser extends Parser {
     // $ANTLR end "generalDeliveryAddress"
 
 
+    // $ANTLR start "diTypeAndName"
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:260:1: diTypeAndName : ({...}?dt= NAME ( diName )* | {...}?dt1= NAME dt2= NAME ( diName )* | {...}?dt1= NAME dt2= NAME dt3= NAME ( diName )* );
+    public final void diTypeAndName() throws RecognitionException {
+        Token dt=null;
+        Token dt1=null;
+        Token dt2=null;
+        Token dt3=null;
+
+        try {
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:2: ({...}?dt= NAME ( diName )* | {...}?dt1= NAME dt2= NAME ( diName )* | {...}?dt1= NAME dt2= NAME dt3= NAME ( diName )* )
+            int alt22=3;
+            int LA22_0 = input.LA(1);
+
+            if ( (LA22_0==NAME) ) {
+                int LA22_1 = input.LA(2);
+
+                if ( (LA22_1==NAME) ) {
+                    int LA22_2 = input.LA(3);
+
+                    if ( (LA22_2==NAME) ) {
+                        alt22=3;
+                    }
+                    else if ( ((Address.isDeliveryInstallationType(input.LT(1).getText()))) ) {
+                        alt22=1;
+                    }
+                    else if ( ((Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText()))) ) {
+                        alt22=2;
+                    }
+                    else {
+                        NoViableAltException nvae =
+                            new NoViableAltException("", 22, 2, input);
+
+                        throw nvae;
+                    }
+                }
+                else if ( (LA22_1==EOF||(LA22_1>=STREETNUMSUFFIX && LA22_1<=NUMBER)) ) {
+                    alt22=1;
+                }
+                else {
+                    NoViableAltException nvae =
+                        new NoViableAltException("", 22, 1, input);
+
+                    throw nvae;
+                }
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 22, 0, input);
+
+                throw nvae;
+            }
+            switch (alt22) {
+                case 1 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:4: {...}?dt= NAME ( diName )*
+                    {
+                    if ( !((Address.isDeliveryInstallationType(input.LT(1).getText()))) ) {
+                        throw new FailedPredicateException(input, "diTypeAndName", "Address.isDeliveryInstallationType(input.LT(1).getText())");
+                    }
+                    dt=(Token)match(input,NAME,FOLLOW_NAME_in_diTypeAndName641); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:73: ( diName )*
+                    loop19:
+                    do {
+                        int alt19=2;
+                        int LA19_0 = input.LA(1);
+
+                        if ( ((LA19_0>=STREETNUMSUFFIX && LA19_0<=NAME)) ) {
+                            alt19=1;
+                        }
+
+
+                        switch (alt19) {
+                    	case 1 :
+                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:261:73: diName
+                    	    {
+                    	    pushFollow(FOLLOW_diName_in_diTypeAndName643);
+                    	    diName();
+
+                    	    state._fsp--;
+
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop19;
+                        }
+                    } while (true);
+
+
+                    							 address.setDeliveryInstallationType((dt!=null?dt.getText():null));
+                    							
+
+                    }
+                    break;
+                case 2 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:265:4: {...}?dt1= NAME dt2= NAME ( diName )*
+                    {
+                    if ( !((Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText()))) ) {
+                        throw new FailedPredicateException(input, "diTypeAndName", "Address.isDeliveryInstallationType(input.LT(1).getText() + \" \" + input.LT(2).getText())");
+                    }
+                    dt1=(Token)match(input,NAME,FOLLOW_NAME_in_diTypeAndName662); 
+                    dt2=(Token)match(input,NAME,FOLLOW_NAME_in_diTypeAndName666); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:265:113: ( diName )*
+                    loop20:
+                    do {
+                        int alt20=2;
+                        int LA20_0 = input.LA(1);
+
+                        if ( ((LA20_0>=STREETNUMSUFFIX && LA20_0<=NAME)) ) {
+                            alt20=1;
+                        }
+
+
+                        switch (alt20) {
+                    	case 1 :
+                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:265:113: diName
+                    	    {
+                    	    pushFollow(FOLLOW_diName_in_diTypeAndName668);
+                    	    diName();
+
+                    	    state._fsp--;
+
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop20;
+                        }
+                    } while (true);
+
+
+                    							 address.setDeliveryInstallationType((dt1!=null?dt1.getText():null) + " " + (dt2!=null?dt2.getText():null));
+                    							
+
+                    }
+                    break;
+                case 3 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:4: {...}?dt1= NAME dt2= NAME dt3= NAME ( diName )*
+                    {
+                    if ( !((Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText()))) ) {
+                        throw new FailedPredicateException(input, "diTypeAndName", "Address.isDeliveryInstallationType(input.LT(1).getText() + \" \" + input.LT(2).getText() + \" \" + input.LT(3).getText())");
+                    }
+                    dt1=(Token)match(input,NAME,FOLLOW_NAME_in_diTypeAndName687); 
+                    dt2=(Token)match(input,NAME,FOLLOW_NAME_in_diTypeAndName691); 
+                    dt3=(Token)match(input,NAME,FOLLOW_NAME_in_diTypeAndName695); 
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:152: ( diName )*
+                    loop21:
+                    do {
+                        int alt21=2;
+                        int LA21_0 = input.LA(1);
+
+                        if ( ((LA21_0>=STREETNUMSUFFIX && LA21_0<=NAME)) ) {
+                            alt21=1;
+                        }
+
+
+                        switch (alt21) {
+                    	case 1 :
+                    	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:269:152: diName
+                    	    {
+                    	    pushFollow(FOLLOW_diName_in_diTypeAndName697);
+                    	    diName();
+
+                    	    state._fsp--;
+
+
+                    	    }
+                    	    break;
+
+                    	default :
+                    	    break loop21;
+                        }
+                    } while (true);
+
+
+                    							 address.setDeliveryInstallationType((dt1!=null?dt1.getText():null) + " " + (dt2!=null?dt2.getText():null) + " " + (dt3!=null?dt3.getText():null));
+                    							
+
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return ;
+    }
+    // $ANTLR end "diTypeAndName"
+
+
     // $ANTLR start "diName"
-    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:253:1: diName : stn= ( DITYPE | NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | SUITE ) ;
+    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:275:1: diName : stn= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX ) ;
     public final void diName() throws RecognitionException {
         Token stn=null;
 
         try {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:254:2: (stn= ( DITYPE | NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | SUITE ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:254:4: stn= ( DITYPE | NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | SUITE )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:276:2: (stn= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:276:4: stn= ( NAME | NUMBER | NUMANDSUFFIX | NUMANDSTREETSUFFIX | STREETNUMSUFFIX )
             {
             stn=(Token)input.LT(1);
-            if ( (input.LA(1)>=DITYPE && input.LA(1)<=SUITE)||(input.LA(1)>=STREETNUMSUFFIX && input.LA(1)<=NAME) ) {
+            if ( (input.LA(1)>=STREETNUMSUFFIX && input.LA(1)<=NAME) ) {
                 input.consume();
                 state.errorRecovery=false;
             }
@@ -1379,30 +1570,27 @@ public class AddressParser extends Parser {
 
     protected DFA1 dfa1 = new DFA1(this);
     protected DFA8 dfa8 = new DFA8(this);
+    protected DFA10 dfa10 = new DFA10(this);
+    protected DFA11 dfa11 = new DFA11(this);
     static final String DFA1_eotS =
-        "\36\uffff";
+        "\23\uffff";
     static final String DFA1_eofS =
-        "\2\7\1\uffff\4\7\11\uffff\3\7\2\uffff\2\7\1\uffff\1\7\1\uffff\1"+
-        "\7\3\uffff";
+        "\2\5\1\uffff\1\5\11\uffff\1\16\3\uffff\1\16\1\uffff";
     static final String DFA1_minS =
-        "\2\4\1\uffff\4\4\1\uffff\10\0\3\4\2\uffff\2\4\1\0\1\4\1\0\1\4\1"+
-        "\uffff\2\0";
+        "\2\4\1\uffff\2\4\1\uffff\7\0\1\4\3\uffff\1\4\1\0";
     static final String DFA1_maxS =
-        "\1\15\1\17\1\uffff\2\14\1\20\1\14\1\uffff\10\0\1\20\2\14\2\uffff"+
-        "\2\14\1\0\1\14\1\0\1\14\1\uffff\2\0";
+        "\1\11\1\13\1\uffff\1\10\1\14\1\uffff\7\0\1\14\3\uffff\1\10\1\0";
     static final String DFA1_acceptS =
-        "\2\uffff\1\1\4\uffff\1\5\13\uffff\1\3\1\2\6\uffff\1\4\2\uffff";
+        "\2\uffff\1\1\2\uffff\1\5\10\uffff\1\4\1\3\1\2\2\uffff";
     static final String DFA1_specialS =
-        "\1\16\1\14\3\uffff\1\17\2\uffff\1\11\1\2\1\4\1\13\1\7\1\0\1\3\1"+
-        "\12\1\5\6\uffff\1\15\1\uffff\1\10\2\uffff\1\6\1\1}>";
+        "\1\14\1\2\2\uffff\1\3\1\uffff\1\11\1\0\1\13\1\1\1\12\1\6\1\7\1\10"+
+        "\3\uffff\1\5\1\4}>";
     static final String[] DFA1_transitionS = {
-            "\1\4\1\6\3\7\1\1\1\3\1\1\1\5\1\2",
-            "\3\7\1\10\2\13\2\12\1\11\2\uffff\1\2",
+            "\1\5\1\1\1\3\1\1\1\4\1\2",
+            "\1\6\1\10\2\11\1\7\2\uffff\1\2",
             "",
-            "\3\7\1\15\4\16\1\14",
-            "\7\7\1\17\1\7",
-            "\1\7\1\21\5\7\1\22\1\20\3\uffff\1\23",
-            "\10\7\1\20",
+            "\1\13\3\14\1\12",
+            "\1\16\2\uffff\1\17\1\15\3\uffff\1\17",
             "",
             "\1\uffff",
             "\1\uffff",
@@ -1411,20 +1599,11 @@ public class AddressParser extends Parser {
             "\1\uffff",
             "\1\uffff",
             "\1\uffff",
-            "\1\uffff",
-            "\1\7\1\25\5\7\1\26\1\7\3\uffff\1\23",
-            "\1\7\2\27\1\7\5\27",
-            "\1\7\1\30\7\7",
+            "\3\16\1\21\1\16\3\uffff\1\17",
             "",
             "",
-            "\1\7\2\31\1\7\5\31",
-            "\1\7\1\32\7\7",
-            "\1\uffff",
-            "\1\7\2\34\1\7\5\34",
-            "\1\uffff",
-            "\1\7\2\35\1\7\5\35",
             "",
-            "\1\uffff",
+            "\4\16\1\22",
             "\1\uffff"
     };
 
@@ -1458,43 +1637,28 @@ public class AddressParser extends Parser {
             this.transition = DFA1_transition;
         }
         public String getDescription() {
-            return "123:1: address : ({...}? => streetAddress | {...}? => ruralRouteAddress | {...}? => lockBoxAddress | {...}? => generalDeliveryAddress | failedParse );";
+            return "124:1: address : ({...}? => streetAddress | {...}? => ruralRouteAddress | {...}? => lockBoxAddress | {...}? => generalDeliveryAddress | failedParse );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA1_13 = input.LA(1);
+                        int LA1_7 = input.LA(1);
 
                          
-                        int index1_13 = input.index();
+                        int index1_7 = input.index();
                         input.rewind();
                         s = -1;
                         if ( ((couldBeUrban())) ) {s = 2;}
 
-                        else if ( (true) ) {s = 7;}
+                        else if ( (true) ) {s = 5;}
 
                          
-                        input.seek(index1_13);
+                        input.seek(index1_7);
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA1_29 = input.LA(1);
-
-                         
-                        int index1_29 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (((couldBeLockBox())&&(Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())))) ) {s = 19;}
-
-                        else if ( (true) ) {s = 7;}
-
-                         
-                        input.seek(index1_29);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
                         int LA1_9 = input.LA(1);
 
                          
@@ -1503,74 +1667,99 @@ public class AddressParser extends Parser {
                         s = -1;
                         if ( ((couldBeUrban())) ) {s = 2;}
 
-                        else if ( (true) ) {s = 7;}
+                        else if ( (true) ) {s = 5;}
 
                          
                         input.seek(index1_9);
                         if ( s>=0 ) return s;
                         break;
-                    case 3 : 
-                        int LA1_14 = input.LA(1);
+                    case 2 : 
+                        int LA1_1 = input.LA(1);
 
                          
-                        int index1_14 = input.index();
+                        int index1_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((couldBeUrban())) ) {s = 2;}
+                        if ( (LA1_1==11) && ((couldBeUrban()))) {s = 2;}
 
-                        else if ( (true) ) {s = 7;}
+                        else if ( (LA1_1==STREETNUMSUFFIX) ) {s = 6;}
+
+                        else if ( (LA1_1==NAME) ) {s = 7;}
+
+                        else if ( (LA1_1==NUMANDSTREETSUFFIX) ) {s = 8;}
+
+                        else if ( ((LA1_1>=NUMANDSUFFIX && LA1_1<=NUMBER)) ) {s = 9;}
+
+                        else if ( (LA1_1==EOF) ) {s = 5;}
 
                          
-                        input.seek(index1_14);
+                        input.seek(index1_1);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 3 : 
+                        int LA1_4 = input.LA(1);
+
+                         
+                        int index1_4 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_4==NAME) && (((couldBeLockBox())||(couldBeGD())))) {s = 13;}
+
+                        else if ( (LA1_4==STREETNUMSUFFIX) && ((couldBeGD()))) {s = 14;}
+
+                        else if ( (LA1_4==NUMBER||LA1_4==12) && ((couldBeLockBox()))) {s = 15;}
+
+                        else if ( ((((couldBeRural())&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())))||((couldBeRural())&&(Address.isRuralRoute(input.LT(1).getText()))))) ) {s = 16;}
+
+                        else if ( (true) ) {s = 5;}
+
+                         
+                        input.seek(index1_4);
                         if ( s>=0 ) return s;
                         break;
                     case 4 : 
-                        int LA1_10 = input.LA(1);
+                        int LA1_18 = input.LA(1);
 
                          
-                        int index1_10 = input.index();
+                        int index1_18 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (((couldBeLockBox())&&(Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())))) ) {s = 15;}
+
+                        else if ( (((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText())))) ) {s = 14;}
+
+                         
+                        input.seek(index1_18);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 5 : 
+                        int LA1_17 = input.LA(1);
+
+                         
+                        int index1_17 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA1_17==NAME) && (((couldBeLockBox())||(couldBeGD())))) {s = 18;}
+
+                        else if ( (LA1_17==EOF||(LA1_17>=STREETNUMSUFFIX && LA1_17<=NUMBER)) && ((couldBeGD()))) {s = 14;}
+
+                         
+                        input.seek(index1_17);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 6 : 
+                        int LA1_11 = input.LA(1);
+
+                         
+                        int index1_11 = input.index();
                         input.rewind();
                         s = -1;
                         if ( ((couldBeUrban())) ) {s = 2;}
 
-                        else if ( (true) ) {s = 7;}
+                        else if ( (true) ) {s = 5;}
 
                          
-                        input.seek(index1_10);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 5 : 
-                        int LA1_16 = input.LA(1);
-
-                         
-                        int index1_16 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_16==DITYPE) ) {s = 21;}
-
-                        else if ( (LA1_16==EOF||LA1_16==ROUTESERVICETYPE||(LA1_16>=SUITE && LA1_16<=NUMANDSUFFIX)||LA1_16==NAME) ) {s = 7;}
-
-                        else if ( (LA1_16==NUMBER) ) {s = 22;}
-
-                        else if ( (LA1_16==16) && ((couldBeLockBox()))) {s = 19;}
-
-                         
-                        input.seek(index1_16);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 6 : 
-                        int LA1_28 = input.LA(1);
-
-                         
-                        int index1_28 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (((couldBeLockBox())&&(Address.isLockBox(input.LT(1).getText())))) ) {s = 19;}
-
-                        else if ( (true) ) {s = 7;}
-
-                         
-                        input.seek(index1_28);
+                        input.seek(index1_11);
                         if ( s>=0 ) return s;
                         break;
                     case 7 : 
@@ -1582,28 +1771,60 @@ public class AddressParser extends Parser {
                         s = -1;
                         if ( ((couldBeUrban())) ) {s = 2;}
 
-                        else if ( (true) ) {s = 7;}
+                        else if ( (true) ) {s = 5;}
 
                          
                         input.seek(index1_12);
                         if ( s>=0 ) return s;
                         break;
                     case 8 : 
-                        int LA1_25 = input.LA(1);
+                        int LA1_13 = input.LA(1);
 
                          
-                        int index1_25 = input.index();
+                        int index1_13 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())))) ) {s = 27;}
+                        if ( (LA1_13==EOF||(LA1_13>=STREETNUMSUFFIX && LA1_13<=NUMANDSUFFIX)||LA1_13==NAME) && ((couldBeGD()))) {s = 14;}
 
-                        else if ( (true) ) {s = 7;}
+                        else if ( (LA1_13==NUMBER) && (((couldBeLockBox())||(couldBeGD())))) {s = 17;}
+
+                        else if ( (LA1_13==12) && ((couldBeLockBox()))) {s = 15;}
 
                          
-                        input.seek(index1_25);
+                        input.seek(index1_13);
                         if ( s>=0 ) return s;
                         break;
                     case 9 : 
+                        int LA1_6 = input.LA(1);
+
+                         
+                        int index1_6 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((couldBeUrban())) ) {s = 2;}
+
+                        else if ( (true) ) {s = 5;}
+
+                         
+                        input.seek(index1_6);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 10 : 
+                        int LA1_10 = input.LA(1);
+
+                         
+                        int index1_10 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((couldBeUrban())) ) {s = 2;}
+
+                        else if ( (true) ) {s = 5;}
+
+                         
+                        input.seek(index1_10);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 11 : 
                         int LA1_8 = input.LA(1);
 
                          
@@ -1612,81 +1833,13 @@ public class AddressParser extends Parser {
                         s = -1;
                         if ( ((couldBeUrban())) ) {s = 2;}
 
-                        else if ( (true) ) {s = 7;}
+                        else if ( (true) ) {s = 5;}
 
                          
                         input.seek(index1_8);
                         if ( s>=0 ) return s;
                         break;
-                    case 10 : 
-                        int LA1_15 = input.LA(1);
-
-                         
-                        int index1_15 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((couldBeRural())) ) {s = 20;}
-
-                        else if ( (true) ) {s = 7;}
-
-                         
-                        input.seek(index1_15);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 11 : 
-                        int LA1_11 = input.LA(1);
-
-                         
-                        int index1_11 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((couldBeUrban())) ) {s = 2;}
-
-                        else if ( (true) ) {s = 7;}
-
-                         
-                        input.seek(index1_11);
-                        if ( s>=0 ) return s;
-                        break;
                     case 12 : 
-                        int LA1_1 = input.LA(1);
-
-                         
-                        int index1_1 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_1==15) && ((couldBeUrban()))) {s = 2;}
-
-                        else if ( (LA1_1==SUFFIXANDDIR) ) {s = 8;}
-
-                        else if ( (LA1_1==EOF||(LA1_1>=ROUTESERVICETYPE && LA1_1<=SUITE)) ) {s = 7;}
-
-                        else if ( (LA1_1==NAME) ) {s = 9;}
-
-                        else if ( ((LA1_1>=NUMANDSUFFIX && LA1_1<=NUMBER)) ) {s = 10;}
-
-                        else if ( ((LA1_1>=STREETNUMSUFFIX && LA1_1<=NUMANDSTREETSUFFIX)) ) {s = 11;}
-
-                         
-                        input.seek(index1_1);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 13 : 
-                        int LA1_23 = input.LA(1);
-
-                         
-                        int index1_23 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText())))) ) {s = 27;}
-
-                        else if ( (true) ) {s = 7;}
-
-                         
-                        input.seek(index1_23);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 14 : 
                         int LA1_0 = input.LA(1);
 
                          
@@ -1699,37 +1852,12 @@ public class AddressParser extends Parser {
 
                         else if ( (LA1_0==NUMANDSUFFIX) ) {s = 3;}
 
-                        else if ( (LA1_0==ROUTESERVICETYPE) ) {s = 4;}
+                        else if ( (LA1_0==NAME) ) {s = 4;}
 
-                        else if ( (LA1_0==NAME) ) {s = 5;}
-
-                        else if ( (LA1_0==DITYPE) ) {s = 6;}
-
-                        else if ( (LA1_0==EOF||(LA1_0>=SUITE && LA1_0<=STREETNUMSUFFIX)) ) {s = 7;}
+                        else if ( (LA1_0==EOF||LA1_0==STREETNUMSUFFIX) ) {s = 5;}
 
                          
                         input.seek(index1_0);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 15 : 
-                        int LA1_5 = input.LA(1);
-
-                         
-                        int index1_5 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA1_5==NAME) ) {s = 16;}
-
-                        else if ( (LA1_5==DITYPE) ) {s = 17;}
-
-                        else if ( (LA1_5==EOF||LA1_5==ROUTESERVICETYPE||(LA1_5>=SUITE && LA1_5<=NUMANDSUFFIX)) ) {s = 7;}
-
-                        else if ( (LA1_5==NUMBER) ) {s = 18;}
-
-                        else if ( (LA1_5==16) && ((couldBeLockBox()))) {s = 19;}
-
-                         
-                        input.seek(index1_5);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -1744,9 +1872,9 @@ public class AddressParser extends Parser {
     static final String DFA8_eofS =
         "\4\uffff\1\5\1\uffff\1\5\3\uffff";
     static final String DFA8_minS =
-        "\1\11\1\uffff\1\7\1\uffff\1\7\1\uffff\1\7\3\uffff";
+        "\1\5\1\uffff\1\4\1\uffff\1\4\1\uffff\1\4\3\uffff";
     static final String DFA8_maxS =
-        "\1\15\1\uffff\1\14\1\uffff\1\14\1\uffff\1\14\3\uffff";
+        "\1\11\1\uffff\1\10\1\uffff\1\10\1\uffff\1\10\3\uffff";
     static final String DFA8_acceptS =
         "\1\uffff\1\1\1\uffff\1\3\1\uffff\1\4\1\uffff\3\2";
     static final String DFA8_specialS =
@@ -1754,11 +1882,11 @@ public class AddressParser extends Parser {
     static final String[] DFA8_transitionS = {
             "\1\2\1\3\1\2\1\uffff\1\1",
             "",
-            "\1\4\2\6\3\5",
+            "\1\4\1\6\3\5",
             "",
-            "\1\10\4\11\1\7",
+            "\1\10\3\11\1\7",
             "",
-            "\1\10\4\11\1\7",
+            "\1\10\3\11\1\7",
             "",
             "",
             ""
@@ -1794,7 +1922,123 @@ public class AddressParser extends Parser {
             this.transition = DFA8_transition;
         }
         public String getDescription() {
-            return "152:1: street : (n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | SUFFIXANDDIR | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= NUMANDSUFFIX ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+ );";
+            return "153:1: street : (n= SUITEANDSTREETNUM s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) s= ( STREETNUMSUFFIX | NUMANDSTREETSUFFIX ) ( streetToken )+ | n= NUMANDSUFFIX ( streetToken )+ | n= ( NUMBER | NUMANDSTREETSUFFIX ) ( streetToken )+ );";
+        }
+    }
+    static final String DFA10_eotS =
+        "\12\uffff";
+    static final String DFA10_eofS =
+        "\1\2\1\5\4\uffff\1\2\3\uffff";
+    static final String DFA10_minS =
+        "\1\5\1\4\4\uffff\1\4\3\uffff";
+    static final String DFA10_maxS =
+        "\2\11\4\uffff\1\10\3\uffff";
+    static final String DFA10_acceptS =
+        "\2\uffff\1\2\3\1\1\uffff\3\1";
+    static final String DFA10_specialS =
+        "\12\uffff}>";
+    static final String[] DFA10_transitionS = {
+            "\2\2\1\1\2\2",
+            "\1\2\1\4\1\6\1\5\1\3\1\5",
+            "",
+            "",
+            "",
+            "",
+            "\1\10\3\11\1\7",
+            "",
+            "",
+            ""
+    };
+
+    static final short[] DFA10_eot = DFA.unpackEncodedString(DFA10_eotS);
+    static final short[] DFA10_eof = DFA.unpackEncodedString(DFA10_eofS);
+    static final char[] DFA10_min = DFA.unpackEncodedStringToUnsignedChars(DFA10_minS);
+    static final char[] DFA10_max = DFA.unpackEncodedStringToUnsignedChars(DFA10_maxS);
+    static final short[] DFA10_accept = DFA.unpackEncodedString(DFA10_acceptS);
+    static final short[] DFA10_special = DFA.unpackEncodedString(DFA10_specialS);
+    static final short[][] DFA10_transition;
+
+    static {
+        int numStates = DFA10_transitionS.length;
+        DFA10_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA10_transition[i] = DFA.unpackEncodedString(DFA10_transitionS[i]);
+        }
+    }
+
+    class DFA10 extends DFA {
+
+        public DFA10(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 10;
+            this.eot = DFA10_eot;
+            this.eof = DFA10_eof;
+            this.min = DFA10_min;
+            this.max = DFA10_max;
+            this.accept = DFA10_accept;
+            this.special = DFA10_special;
+            this.transition = DFA10_transition;
+        }
+        public String getDescription() {
+            return "207:60: (n= NUMBER )?";
+        }
+    }
+    static final String DFA11_eotS =
+        "\12\uffff";
+    static final String DFA11_eofS =
+        "\1\2\1\5\4\uffff\1\2\3\uffff";
+    static final String DFA11_minS =
+        "\1\5\1\4\4\uffff\1\4\3\uffff";
+    static final String DFA11_maxS =
+        "\2\11\4\uffff\1\10\3\uffff";
+    static final String DFA11_acceptS =
+        "\2\uffff\1\2\3\1\1\uffff\3\1";
+    static final String DFA11_specialS =
+        "\12\uffff}>";
+    static final String[] DFA11_transitionS = {
+            "\2\2\1\1\2\2",
+            "\1\2\1\4\1\6\1\5\1\3\1\5",
+            "",
+            "",
+            "",
+            "",
+            "\1\10\3\11\1\7",
+            "",
+            "",
+            ""
+    };
+
+    static final short[] DFA11_eot = DFA.unpackEncodedString(DFA11_eotS);
+    static final short[] DFA11_eof = DFA.unpackEncodedString(DFA11_eofS);
+    static final char[] DFA11_min = DFA.unpackEncodedStringToUnsignedChars(DFA11_minS);
+    static final char[] DFA11_max = DFA.unpackEncodedStringToUnsignedChars(DFA11_maxS);
+    static final short[] DFA11_accept = DFA.unpackEncodedString(DFA11_acceptS);
+    static final short[] DFA11_special = DFA.unpackEncodedString(DFA11_specialS);
+    static final short[][] DFA11_transition;
+
+    static {
+        int numStates = DFA11_transitionS.length;
+        DFA11_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA11_transition[i] = DFA.unpackEncodedString(DFA11_transitionS[i]);
+        }
+    }
+
+    class DFA11 extends DFA {
+
+        public DFA11(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 11;
+            this.eot = DFA11_eot;
+            this.eof = DFA11_eof;
+            this.min = DFA11_min;
+            this.max = DFA11_max;
+            this.accept = DFA11_accept;
+            this.special = DFA11_special;
+            this.transition = DFA11_transition;
+        }
+        public String getDescription() {
+            return "213:100: (n= NUMBER )?";
         }
     }
  
@@ -1804,52 +2048,63 @@ public class AddressParser extends Parser {
     public static final BitSet FOLLOW_lockBoxAddress_in_address53 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_generalDeliveryAddress_in_address61 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_failedParse_in_address67 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_failedToken_in_failedParse83 = new BitSet(new long[]{0x0000000000001FF2L});
+    public static final BitSet FOLLOW_failedToken_in_failedParse83 = new BitSet(new long[]{0x00000000000001F2L});
     public static final BitSet FOLLOW_set_in_failedToken97 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_streetAddress155 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_15_in_streetAddress161 = new BitSet(new long[]{0x0000000000002E00L});
-    public static final BitSet FOLLOW_street_in_streetAddress163 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_street_in_streetAddress180 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SUITEANDSTREETNUM_in_street200 = new BitSet(new long[]{0x0000000000000380L});
-    public static final BitSet FOLLOW_set_in_street204 = new BitSet(new long[]{0x0000000000001F80L});
-    public static final BitSet FOLLOW_streetToken_in_street212 = new BitSet(new long[]{0x0000000000001F82L});
-    public static final BitSet FOLLOW_set_in_street229 = new BitSet(new long[]{0x0000000000000380L});
-    public static final BitSet FOLLOW_set_in_street237 = new BitSet(new long[]{0x0000000000001F80L});
-    public static final BitSet FOLLOW_streetToken_in_street245 = new BitSet(new long[]{0x0000000000001F82L});
-    public static final BitSet FOLLOW_NUMANDSUFFIX_in_street263 = new BitSet(new long[]{0x0000000000001F80L});
-    public static final BitSet FOLLOW_streetToken_in_street265 = new BitSet(new long[]{0x0000000000001F82L});
-    public static final BitSet FOLLOW_set_in_street276 = new BitSet(new long[]{0x0000000000001F80L});
-    public static final BitSet FOLLOW_streetToken_in_street282 = new BitSet(new long[]{0x0000000000001F82L});
-    public static final BitSet FOLLOW_NAME_in_streetToken311 = new BitSet(new long[]{0x0000000000000A00L});
-    public static final BitSet FOLLOW_set_in_streetToken315 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_streetToken337 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_NAME_in_streetToken368 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_set_in_streetToken392 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ROUTESERVICETYPE_in_ruralRouteAddress427 = new BitSet(new long[]{0x0000000000000800L});
-    public static final BitSet FOLLOW_NUMBER_in_ruralRouteAddress431 = new BitSet(new long[]{0x0000000000001022L});
-    public static final BitSet FOLLOW_DITYPE_in_ruralRouteAddress435 = new BitSet(new long[]{0x0000000000001002L});
-    public static final BitSet FOLLOW_NAME_in_ruralRouteAddress440 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_ROUTESERVICETYPE_in_ruralRouteAddress457 = new BitSet(new long[]{0x0000000000000800L});
-    public static final BitSet FOLLOW_NUMBER_in_ruralRouteAddress461 = new BitSet(new long[]{0x0000000000002E00L});
-    public static final BitSet FOLLOW_street_in_ruralRouteAddress463 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_NAME_in_lockBoxAddress481 = new BitSet(new long[]{0x0000000000010800L});
-    public static final BitSet FOLLOW_16_in_lockBoxAddress483 = new BitSet(new long[]{0x0000000000000800L});
-    public static final BitSet FOLLOW_NUMBER_in_lockBoxAddress488 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_DITYPE_in_lockBoxAddress492 = new BitSet(new long[]{0x0000000000001F60L});
-    public static final BitSet FOLLOW_diName_in_lockBoxAddress494 = new BitSet(new long[]{0x0000000000001F62L});
-    public static final BitSet FOLLOW_set_in_lockBoxAddress513 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_NAME_in_lockBoxAddress523 = new BitSet(new long[]{0x0000000000010800L});
-    public static final BitSet FOLLOW_16_in_lockBoxAddress525 = new BitSet(new long[]{0x0000000000000800L});
-    public static final BitSet FOLLOW_NUMBER_in_lockBoxAddress530 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_DITYPE_in_lockBoxAddress534 = new BitSet(new long[]{0x0000000000001F60L});
-    public static final BitSet FOLLOW_diName_in_lockBoxAddress536 = new BitSet(new long[]{0x0000000000001F62L});
-    public static final BitSet FOLLOW_NAME_in_generalDeliveryAddress562 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_DITYPE_in_generalDeliveryAddress566 = new BitSet(new long[]{0x0000000000001F60L});
-    public static final BitSet FOLLOW_diName_in_generalDeliveryAddress568 = new BitSet(new long[]{0x0000000000001F62L});
-    public static final BitSet FOLLOW_set_in_generalDeliveryAddress587 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_NAME_in_generalDeliveryAddress597 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_DITYPE_in_generalDeliveryAddress601 = new BitSet(new long[]{0x0000000000001F60L});
-    public static final BitSet FOLLOW_diName_in_generalDeliveryAddress603 = new BitSet(new long[]{0x0000000000001F62L});
-    public static final BitSet FOLLOW_set_in_diName626 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_streetAddress139 = new BitSet(new long[]{0x0000000000000800L});
+    public static final BitSet FOLLOW_11_in_streetAddress145 = new BitSet(new long[]{0x00000000000002E0L});
+    public static final BitSet FOLLOW_street_in_streetAddress147 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_street_in_streetAddress164 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SUITEANDSTREETNUM_in_street184 = new BitSet(new long[]{0x0000000000000030L});
+    public static final BitSet FOLLOW_set_in_street188 = new BitSet(new long[]{0x00000000000001F0L});
+    public static final BitSet FOLLOW_streetToken_in_street194 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_set_in_street211 = new BitSet(new long[]{0x0000000000000030L});
+    public static final BitSet FOLLOW_set_in_street219 = new BitSet(new long[]{0x00000000000001F0L});
+    public static final BitSet FOLLOW_streetToken_in_street225 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_NUMANDSUFFIX_in_street243 = new BitSet(new long[]{0x00000000000001F0L});
+    public static final BitSet FOLLOW_streetToken_in_street245 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_set_in_street256 = new BitSet(new long[]{0x00000000000001F0L});
+    public static final BitSet FOLLOW_streetToken_in_street262 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_NAME_in_streetToken292 = new BitSet(new long[]{0x00000000000000A0L});
+    public static final BitSet FOLLOW_set_in_streetToken296 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_streetToken318 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_streetToken349 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_set_in_streetToken373 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_ruralRouteAddress410 = new BitSet(new long[]{0x00000000000003E0L});
+    public static final BitSet FOLLOW_NUMBER_in_ruralRouteAddress414 = new BitSet(new long[]{0x00000000000003E0L});
+    public static final BitSet FOLLOW_ruralRouteSuffix_in_ruralRouteAddress417 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_ruralRouteAddress435 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_NAME_in_ruralRouteAddress439 = new BitSet(new long[]{0x00000000000003E0L});
+    public static final BitSet FOLLOW_NUMBER_in_ruralRouteAddress443 = new BitSet(new long[]{0x00000000000003E0L});
+    public static final BitSet FOLLOW_ruralRouteSuffix_in_ruralRouteAddress446 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_diTypeAndName_in_ruralRouteSuffix466 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_street_in_ruralRouteSuffix472 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_lockBoxAddress489 = new BitSet(new long[]{0x0000000000001080L});
+    public static final BitSet FOLLOW_12_in_lockBoxAddress491 = new BitSet(new long[]{0x0000000000000080L});
+    public static final BitSet FOLLOW_NUMBER_in_lockBoxAddress496 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_diTypeAndName_in_lockBoxAddress498 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_lockBoxAddress516 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_NAME_in_lockBoxAddress520 = new BitSet(new long[]{0x0000000000001080L});
+    public static final BitSet FOLLOW_12_in_lockBoxAddress522 = new BitSet(new long[]{0x0000000000000080L});
+    public static final BitSet FOLLOW_NUMBER_in_lockBoxAddress527 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_diTypeAndName_in_lockBoxAddress529 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_generalDeliveryAddress554 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_diTypeAndName_in_generalDeliveryAddress556 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_generalDeliveryAddress574 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_NAME_in_generalDeliveryAddress578 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_diTypeAndName_in_generalDeliveryAddress580 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_generalDeliveryAddress602 = new BitSet(new long[]{0x0000000000000110L});
+    public static final BitSet FOLLOW_set_in_generalDeliveryAddress606 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_NAME_in_generalDeliveryAddress614 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_diTypeAndName_in_generalDeliveryAddress616 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NAME_in_diTypeAndName641 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_diName_in_diTypeAndName643 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_NAME_in_diTypeAndName662 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_NAME_in_diTypeAndName666 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_diName_in_diTypeAndName668 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_NAME_in_diTypeAndName687 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_NAME_in_diTypeAndName691 = new BitSet(new long[]{0x0000000000000100L});
+    public static final BitSet FOLLOW_NAME_in_diTypeAndName695 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_diName_in_diTypeAndName697 = new BitSet(new long[]{0x00000000000001F2L});
+    public static final BitSet FOLLOW_set_in_diName720 = new BitSet(new long[]{0x0000000000000002L});
 
 }

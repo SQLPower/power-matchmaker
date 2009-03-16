@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.address;
 import java.io.File;
 import java.util.List;
 
+import ca.sqlpower.matchmaker.address.Address.Type;
+
 import junit.framework.TestCase;
 
 public class AddressValidatorTest extends TestCase {
@@ -105,6 +107,7 @@ public class AddressValidatorTest extends TestCase {
      */
     public void testAddressWithNoPostalCode() throws Exception {
     	Address a = new Address();
+    	a.setType(Type.URBAN);
     	a.setStreetNumber(1817);
     	a.setStreet("QUEEN");
     	a.setStreetDirection("E");
@@ -119,5 +122,50 @@ public class AddressValidatorTest extends TestCase {
     	assertEquals("M4L3Z6", bestSuggestion.getPostalCode());
     	assertEquals("ST", bestSuggestion.getStreetType());
     }
-
+    
+    /**
+     * Test to ensure the validator can deal with well formed street information
+     * missing a postal code. and has additional information
+     * 
+     * Input: 1817 QUEEN 0, TORONTO, ON,
+     */
+    public void testAddressWithNoPostalCodeAndAddInfo() throws Exception {
+    	Address a = new Address();
+    	a.setStreetNumber(1817);
+    	a.setType(Type.URBAN);
+    	a.setStreet("QUEEN 0");
+    	a.setMunicipality("TORONTO");
+    	a.setProvince("ON");
+    	a.setCountry("CA");
+    	
+    	AddressValidator validator = new AddressValidator(addressDB, a);
+    	List<Address> suggestions = validator.getSuggestions();
+    	assertFalse(suggestions.isEmpty());
+    	Address bestSuggestion = suggestions.get(0);
+    	assertEquals("M4L3Z6", bestSuggestion.getPostalCode());
+    	assertEquals("ST", bestSuggestion.getStreetType());
+    }
+    
+    /**
+     * Test to ensure the validator can deal with rural route with no station name.
+     * 
+     * Input: RR 4 STN, DUNDAS, ON, L9H5E4
+     */
+    public void testRuralRouteNoDIName() throws Exception {
+    	Address a = new Address();
+    	a.setRuralRouteType("RR");
+    	a.setRuralRouteNumber(4);
+    	a.setDeliveryInstallationType("STN");
+    	a.setType(Type.RURAL);
+    	a.setMunicipality("DUNDAS");
+    	a.setProvince("ON");
+    	a.setCountry("CA");
+    	
+    	AddressValidator validator = new AddressValidator(addressDB, a);
+    	List<Address> suggestions = validator.getSuggestions();
+    	assertFalse(suggestions.isEmpty());
+    	Address bestSuggestion = suggestions.get(0);
+    	assertEquals("DUNDAS", bestSuggestion.getDeliveryInstallationName());
+    }
+    
 }
