@@ -28,16 +28,19 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
@@ -48,8 +51,14 @@ import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressInterface;
 import ca.sqlpower.matchmaker.address.AddressResult;
+import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.swingui.ColourScheme;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
 
 public class AddressLabel extends JComponent {
 	
@@ -63,7 +72,7 @@ public class AddressLabel extends JComponent {
 	 * If non-null, fields in {@link #currentAddress} that differ from fields in this
 	 * address will be rendered in a different colour.
 	 */
-	private Address comparisonAddress;
+	private AddressInterface comparisonAddress;
 	
 	/**
 	 * if list is null, then this AddressLabel is not editable.
@@ -71,8 +80,13 @@ public class AddressLabel extends JComponent {
 	 */
 	private JList list;
 	private boolean isSelected;
-	
 	private AddressDatabase addressDatabase;
+	private JList suggestionList;
+	 
+    /**
+     * The result after validation step
+     */
+    private List<ValidateResult> validateResult;
 	
 	/**
 	 * The colour "differing" fields will be rendered in. Non-differing fields
@@ -96,24 +110,45 @@ public class AddressLabel extends JComponent {
     private Color missingFieldColour = ColourScheme.BREWER_SET19.get(0);
     
     private boolean isAddressValid = false;
+    private AddressValidator addressValidator;
+    
+    private	DefaultFormBuilder problemsBuilder;
 	
     public AddressLabel(AddressInterface address, boolean isSelected, JList list, AddressDatabase addressDatabase) {
         this(address, null, isSelected, list, addressDatabase);
     }
     
-    public AddressLabel(AddressInterface address, Address comparisonAddress, boolean isSelected, JList list, AddressDatabase addressDatabase) {
+    public AddressLabel(AddressInterface address, AddressInterface comparisonAddress, 
+    					boolean isSelected, JList list, final AddressDatabase addressDatabase) {
+    	
 		this.currentAddress = this.revertToAddress = address;
         this.comparisonAddress = comparisonAddress;
 		this.isSelected = isSelected;
 		this.list = list;
 		this.addressDatabase = addressDatabase;
+		// Generate the related suggestionList for the middle bigger addressLabel only
+		if (currentAddress instanceof Address  && list == null) {
+			this.addressValidator = new AddressValidator(addressDatabase, (Address) currentAddress);
+			problemsBuilder = new DefaultFormBuilder(new FormLayout("fill:pref:grow"));
+			updateProblemDetails(addressValidator);
+			suggestionList = new JList(addressValidator.getSuggestions().toArray());
+			suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			suggestionList.setCellRenderer(new AddressListCellRenderer(currentAddress, addressDatabase));
+			suggestionList.addMouseListener(new MouseAdapter() {
+
+				public void mouseClicked(MouseEvent e) {
+					logger.debug("Mouse Clicked on suggestion list " + ((JList)e.getSource()).getSelectedValue());
+					final Address selected = (Address) ((JList) e.getSource()).getSelectedValue();
+					setAddress(selected);
+					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
+					updateTextFields();
+					updateProblemDetails(addressValidator);
+				}
+
+			});
+		}
 		this.setOpaque(true);
 		
-		updateTextFields(list);
-
-	}
-
-	void updateTextFields(JList list) {
 		addressTextField = new JTextField(currentAddress.getAddress());
 		add(addressTextField);		
 		municipalityTextField = new JTextField(currentAddress.getMunicipality());
@@ -140,23 +175,26 @@ public class AddressLabel extends JComponent {
 		// Add a MouseListener for the bigger selected label in the center
 		// of the Validation screen.
 		if (list == null) {
-			addMouseListener(new MouseListener() {
+			addMouseListener(new MouseAdapter() {
+				
 				public void mouseClicked(MouseEvent e) {
-					currentAddress = saveAddressChanges();
-					repaint();
 					if (isClickingRightArea(e, addressLine1Hotspot)) {
+						addressTextField.setText(currentAddress.getAddress());
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 						addressTextField.setVisible(true);
 						addressTextField.requestFocus();
 					} else if (isClickingRightArea(e, municipalityHotspot)) {
+						municipalityTextField.setText(currentAddress.getMunicipality());
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 						municipalityTextField.setVisible(true);
 						municipalityTextField.requestFocus();
 					} else if (isClickingRightArea(e, provinceHotsopt)) {
+						provinceTextField.setText(currentAddress.getProvince());
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 						provinceTextField.setVisible(true);
 						provinceTextField.requestFocus();
 					} else if (isClickingRightArea(e, postalCodeHotspot)) {
+						postalCodeTextField.setText(currentAddress.getPostalCode());
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 						postalCodeTextField.setVisible(true);
 						postalCodeTextField.requestFocus();
@@ -168,23 +206,7 @@ public class AddressLabel extends JComponent {
 					provinceTextField.addKeyListener(new AddressKeyAdapter());
 					postalCodeTextField.addKeyListener(new AddressKeyAdapter());
 				}
-
-				public void mouseEntered(MouseEvent e) {
-					//Do nothing
-				}
-
-				public void mouseExited(MouseEvent e) {
-					//Do nothing
-				}
-
-				public void mousePressed(MouseEvent e) {
-					//Do nothing
-				}
-
-				public void mouseReleased(MouseEvent e) {
-					//Do nothing
-				}
-
+				
 			});
 		}
 
@@ -221,7 +243,7 @@ public class AddressLabel extends JComponent {
 			}
 		}
 		if (!isFieldMissing(currentAddress.getAddress())) {
-		    if (comparisonAddress != null && different(currentAddress.getAddress(), comparisonAddress.getStreetAddress())) {
+		    if (comparisonAddress != null && different(currentAddress.getAddress(), comparisonAddress.getAddress())) {
 		        g2.setColor(comparisonColour);
 		    } else {
                 g2.setColor(getForeground());
@@ -290,6 +312,28 @@ public class AddressLabel extends JComponent {
 		repaint();
 	}
 	
+	public Address getAddress() {
+		try {
+			return (Address)currentAddress;
+		} catch (ClassCastException e) {
+			MMSUtils.showExceptionDialog(this.getParent(), "Current address is AddressResult type, expecting Address Type ", e);
+		}
+		return null;
+	}
+	
+	public JList getSuggestionList() {
+		return suggestionList;
+	}
+	
+	public void setSuggestionList(JList suggestionList) {
+		this.suggestionList.setModel(suggestionList.getModel());
+		repaint();
+	}
+	
+	public DefaultFormBuilder getProblemBuilder() {
+		return problemsBuilder;
+	}
+	
 	private boolean isFieldMissing(String str) {
 		if (str == null) {
 			return true;
@@ -319,10 +363,10 @@ public class AddressLabel extends JComponent {
 		}
 	}
 	
-	Address saveAddressChanges() {
+	private Address getChangedAddress() {
 		try {
 			return Address.parse(addressTextField.getText(), municipalityTextField.getText(),
-										   provinceTextField.getText(), postalCodeTextField.getText(), "Canada", addressDatabase);
+										   provinceTextField.getText(), postalCodeTextField.getText(), "CANADA", addressDatabase);
 		} catch (RecognitionException e) {
 			MMSUtils.showExceptionDialog(
 					getParent(),
@@ -332,27 +376,60 @@ public class AddressLabel extends JComponent {
 		return new Address();
 	}
 	
-	class AddressKeyAdapter implements KeyListener {
+	class AddressKeyAdapter extends KeyAdapter {
 
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 				logger.debug("Enter Key Received");
 				logger.debug(e.getSource());
 				if (e.getSource() instanceof JTextField) {
+					// hide the text field 
 					((JTextField)e.getSource()).setVisible(false);
-					currentAddress = saveAddressChanges();
+					//update the suggestionList
+					currentAddress = getChangedAddress();
+					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
+					suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
+					//update the problem details
+					updateProblemDetails(addressValidator);
 					repaint();
 				}
 			}
 		}
-
-		public void keyReleased(KeyEvent e) {
-			// Do nothing
-		}
-
-		public void keyTyped(KeyEvent e) {
-			// Do nothing
-		}
 		
+	}
+	
+	private void updateProblemDetails(AddressValidator addressValidator) {
+		validateResult = addressValidator.getResults();
+		logger.debug(validateResult.size());
+		problemsBuilder.getPanel().removeAll();
+		problemsBuilder.getPanel().repaint();
+    	problemsBuilder = new DefaultFormBuilder(new FormLayout("fill:pref:grow"), problemsBuilder.getPanel());
+		JLabel problemsHeading = new JLabel("Problems:");
+		problemsHeading.setFont(new Font(null, Font.BOLD, 13));
+		problemsBuilder.append(problemsHeading);
+		for (ValidateResult vr : validateResult) {
+			logger.debug("The Problem details are: " + vr);
+			if (vr.getStatus() == Status.FAIL) {
+				problemsBuilder.append(new JLabel("Fail: "
+						+ vr.getMessage(), new ImageIcon(
+						AddressValidationPanel.class
+								.getResource("icons/fail.png")),
+						JLabel.LEFT));
+			} else if (vr.getStatus() == Status.WARN) {
+				problemsBuilder.append(new JLabel("Warning: "
+						+ vr.getMessage(), new ImageIcon(
+						AddressValidationPanel.class
+								.getResource("icons/warn.png")),
+						JLabel.LEFT));
+			}
+			problemsBuilder.getPanel().repaint();
+		}
+	}
+	
+	private void updateTextFields() {
+		addressTextField.setText(currentAddress.getAddress());
+		municipalityTextField.setText(currentAddress.getMunicipality());
+		provinceTextField.setText(currentAddress.getProvince());
+		postalCodeTextField.setText(currentAddress.getPostalCode());
 	}
 }
