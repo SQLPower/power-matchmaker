@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-16 14:48:48
+// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-16 16:21:33
 
 package ca.sqlpower.matchmaker.address.parse;
 
@@ -82,10 +82,10 @@ public class AddressLexer extends Lexer {
         try {
             int _type = SUITEANDSTREETNUM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:309:2: ( ( '0' .. '9' )+ '-' ( '0' .. '9' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:309:4: ( '0' .. '9' )+ '-' ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:349:2: ( ( '0' .. '9' )+ '-' ( '0' .. '9' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:349:4: ( '0' .. '9' )+ '-' ( '0' .. '9' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:309:4: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:349:4: ( '0' .. '9' )+
             int cnt1=0;
             loop1:
             do {
@@ -99,7 +99,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:309:5: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:349:5: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -116,7 +116,7 @@ public class AddressLexer extends Lexer {
             } while (true);
 
             match('-'); 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:309:18: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:349:18: ( '0' .. '9' )+
             int cnt2=0;
             loop2:
             do {
@@ -130,7 +130,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:309:19: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:349:19: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -162,11 +162,11 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NUMANDSTREETSUFFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:312:2: ( ( '1' .. '3' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:312:4: ( '1' .. '3' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:352:2: ( ( '1' .. '3' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:352:4: ( '1' .. '3' )
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:312:4: ( '1' .. '3' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:312:5: '1' .. '3'
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:352:4: ( '1' .. '3' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:352:5: '1' .. '3'
             {
             matchRange('1','3'); 
 
@@ -188,11 +188,11 @@ public class AddressLexer extends Lexer {
         try {
             int _type = STREETNUMSUFFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:315:2: ( ( 'A' .. 'Z' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:315:4: ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:355:2: ( ( 'A' .. 'Z' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:355:4: ( 'A' .. 'Z' )
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:315:4: ( 'A' .. 'Z' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:315:5: 'A' .. 'Z'
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:355:4: ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:355:5: 'A' .. 'Z'
             {
             matchRange('A','Z'); 
 
@@ -214,10 +214,10 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NUMANDSUFFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:318:2: ( ( '0' .. '9' )+ ( 'A' .. 'Z' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:318:4: ( '0' .. '9' )+ ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:358:2: ( ( '0' .. '9' )+ ( 'A' .. 'Z' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:358:4: ( '0' .. '9' )+ ( 'A' .. 'Z' )
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:318:4: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:358:4: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -231,7 +231,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:318:5: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:358:5: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -247,8 +247,8 @@ public class AddressLexer extends Lexer {
                 cnt3++;
             } while (true);
 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:318:16: ( 'A' .. 'Z' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:318:17: 'A' .. 'Z'
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:358:16: ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:358:17: 'A' .. 'Z'
             {
             matchRange('A','Z'); 
 
@@ -270,10 +270,10 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NUMBER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:321:2: ( ( '#' )? ( '0' .. '9' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:321:4: ( '#' )? ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:361:2: ( ( '#' )? ( '0' .. '9' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:361:4: ( '#' )? ( '0' .. '9' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:321:4: ( '#' )?
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:361:4: ( '#' )?
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -282,7 +282,7 @@ public class AddressLexer extends Lexer {
             }
             switch (alt4) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:321:4: '#'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:361:4: '#'
                     {
                     match('#'); 
 
@@ -291,7 +291,7 @@ public class AddressLexer extends Lexer {
 
             }
 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:321:8: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:361:8: ( '0' .. '9' )+
             int cnt5=0;
             loop5:
             do {
@@ -305,7 +305,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt5) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:321:9: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:361:9: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -337,10 +337,10 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NAME;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:323:6: ( ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:323:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:363:6: ( ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:363:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:323:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:363:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
             int cnt6=0;
             loop6:
             do {
@@ -394,10 +394,10 @@ public class AddressLexer extends Lexer {
         try {
             int _type = WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:326:4: ( ( ' ' | '\\t' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:326:6: ( ' ' | '\\t' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:4: ( ( ' ' | '\\t' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:6: ( ' ' | '\\t' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:326:6: ( ' ' | '\\t' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:6: ( ' ' | '\\t' )+
             int cnt7=0;
             loop7:
             do {
