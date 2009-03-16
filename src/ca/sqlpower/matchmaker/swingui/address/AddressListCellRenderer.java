@@ -43,7 +43,7 @@ public class AddressListCellRenderer implements ListCellRenderer {
     
 	public Component getListCellRendererComponent(JList list, Object value,
 			int index, boolean isSelected, boolean cellHasFocus) {
-		return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase);
+		return new AddressLabel((AddressInterface)value, comparisonAddress, false, isSelected, list, addressDatabase);
 	}
 
 }

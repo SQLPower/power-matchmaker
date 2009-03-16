@@ -143,8 +143,16 @@ public class AddressResult implements AddressInterface {
 		return isValidated;
 	}
 
+	public void setValidated(boolean validated) {
+		this.isValidated = validated;
+	}
+	
 	public Address getOutputAddress() {
 		return outputAddress;
+	}
+	
+	public void setOutputAddress(Address address) {
+		this.outputAddress = address;
 	}
 	
 	public void markClean() {

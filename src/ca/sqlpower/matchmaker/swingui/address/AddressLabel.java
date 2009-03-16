@@ -109,20 +109,27 @@ public class AddressLabel extends JComponent {
 	private ImageIcon checkIcon = new ImageIcon(getClass().getResource("icons/check.png"));
     private Color missingFieldColour = ColourScheme.BREWER_SET19.get(0);
     
-    private boolean isAddressValid = false;
     private AddressValidator addressValidator;
     
     private	DefaultFormBuilder problemsBuilder;
+    
+    /**
+     * This is the flag for the bigger label in the center 
+     * of the validation screen. You should only use it
+     * for this addressLabel.
+     */
+    private boolean isValid;
 	
     public AddressLabel(AddressInterface address, boolean isSelected, JList list, AddressDatabase addressDatabase) {
-        this(address, null, isSelected, list, addressDatabase);
+        this(address, null, false, isSelected, list, addressDatabase);
     }
     
-    public AddressLabel(AddressInterface address, AddressInterface comparisonAddress, 
+    public AddressLabel(AddressInterface address, AddressInterface comparisonAddress, boolean isValid,
     					boolean isSelected, JList list, final AddressDatabase addressDatabase) {
     	
 		this.currentAddress = this.revertToAddress = address;
         this.comparisonAddress = comparisonAddress;
+        this.isValid = isValid;
 		this.isSelected = isSelected;
 		this.list = list;
 		this.addressDatabase = addressDatabase;
@@ -237,7 +244,14 @@ public class AddressLabel extends JComponent {
 		}
 		// set the check icon for validated address results
 		if (currentAddress instanceof AddressResult) {
-			if (isAddressValid) {
+			if (((AddressResult)currentAddress).isValidated()) {
+				checkIcon.paintIcon(this, g2, x, y);
+				x += checkIcon.getIconWidth() + 4;
+				repaint();
+			}
+		}
+		if (list == null) {
+			if (isValid) {
 				checkIcon.paintIcon(this, g2, x, y);
 				x += checkIcon.getIconWidth() + 4;
 			}
@@ -341,6 +355,10 @@ public class AddressLabel extends JComponent {
 		return str.trim().equals("null") || str.trim().equals("");
 	}
 	
+	public void setIsValid(boolean isValid) {
+		this.isValid = isValid;
+	}
+	
 	private boolean isClickingRightArea(MouseEvent e, Rectangle2D rec) {
 		logger.info(e.getPoint());
 		logger.info((rec.getX() + BORDER_SPACE) + "  " + rec.getY());
@@ -391,18 +409,16 @@ public class AddressLabel extends JComponent {
 					suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
 					//update the problem details
 					updateProblemDetails(addressValidator);
-					repaint();
 				}
 			}
 		}
 		
 	}
 	
-	private void updateProblemDetails(AddressValidator addressValidator) {
+	public void updateProblemDetails(AddressValidator addressValidator) {
 		validateResult = addressValidator.getResults();
-		logger.debug(validateResult.size());
+		logger.debug("The size of the Problems is : " + validateResult.size());
 		problemsBuilder.getPanel().removeAll();
-		problemsBuilder.getPanel().repaint();
     	problemsBuilder = new DefaultFormBuilder(new FormLayout("fill:pref:grow"), problemsBuilder.getPanel());
 		JLabel problemsHeading = new JLabel("Problems:");
 		problemsHeading.setFont(new Font(null, Font.BOLD, 13));
@@ -422,8 +438,9 @@ public class AddressLabel extends JComponent {
 								.getResource("icons/warn.png")),
 						JLabel.LEFT));
 			}
-			problemsBuilder.getPanel().repaint();
 		}
+		problemsBuilder.getPanel().revalidate();
+		problemsBuilder.getPanel().repaint();
 	}
 	
 	private void updateTextFields() {

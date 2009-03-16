@@ -190,12 +190,16 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				}
 				
 			});
+			
+			JButton changeValidButton = new JButton("Change Valid Status");
+			
 			ButtonBarBuilder bbb = new ButtonBarBuilder();
 			bbb.addRelatedGap();
 			bbb.addGridded(revertButton);
 			bbb.addRelatedGap();
 			bbb.addGridded(saveButton);
 			bbb.addRelatedGap();
+			bbb.addGridded(changeValidButton);
 			builder.add(bbb.getPanel(), cc.xy(1, 1));
 
 			JLabel suggestLabel = new JLabel("Suggestions:");
@@ -215,7 +219,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 									.getMunicipality(), selected.getProvince(),
 							selected.getPostalCode(), selected.getCountry(), addressDatabase);
 
-					selectedAddressLabel = new AddressLabel(address1, false, null, addressDatabase);
+					selectedAddressLabel = new AddressLabel(address1, null, selected.isValidated(), false, null, addressDatabase);
 					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
 					builder.add(selectedAddressLabel, cc.xy(1, 3));
 					
@@ -226,6 +230,22 @@ public class AddressValidationPanel extends NoEditEditorPane {
 							AddressValidator addressValidator = new AddressValidator(addressDatabase,selectedAddressLabel.getAddress());
 							JList suggestionList = new JList(addressValidator.getSuggestions().toArray());
 							selectedAddressLabel.setSuggestionList(suggestionList);
+							selectedAddressLabel.updateProblemDetails(addressValidator);
+						}
+						
+					});
+					
+					changeValidButton.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							if (selected.isValidated()) {
+								selected.setValidated(false);
+								selectedAddressLabel.setIsValid(false);
+							} else {
+								selected.setValidated(true);
+								selectedAddressLabel.setIsValid(true);
+							}
+							selectedAddressLabel.repaint();
 						}
 						
 					});
