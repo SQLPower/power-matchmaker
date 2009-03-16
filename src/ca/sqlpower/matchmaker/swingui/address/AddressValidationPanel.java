@@ -19,20 +19,15 @@
 
 package ca.sqlpower.matchmaker.swingui.address;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
-import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -40,7 +35,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -50,14 +44,11 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
-import ca.sqlpower.matchmaker.address.AddressInterface;
 import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
-import ca.sqlpower.validation.Status;
-import ca.sqlpower.validation.ValidateResult;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -92,11 +83,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
     private DefaultFormBuilder builder;    
     
     /**
-     * The result after validation step
-     */
-    private List<ValidateResult> validateResult;
-    
-    /**
      * This is the comboBox with 3 addresses display options :
      * Show all, Show Invalid only and Show Valid only
      */
@@ -123,11 +109,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
      */
     private AddressLabel selectedAddressLabel;
     
-    /**
-     * The font for the selected address label 
-     */
-    private final Font SELECTED_ADDRESS_LABEL_FONT = new Font("Times New Roman", Font.PLAIN, 16);
-    
     public AddressValidationPanel(MatchMakerSwingSession session, Collection<AddressResult> results) {
 		try {
 			addressDatabase = new AddressDatabase(new File(session.getContext().getAddressCorrectionDataPath()));
@@ -146,7 +127,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			final JList needsValidationList = new JList(allResults);
 			needsValidationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			needsValidationList.addListSelectionListener(new AddressListCellSelectionListener());
-			needsValidationList.setCellRenderer(new AddressListCellRenderer(null));
+			needsValidationList.setCellRenderer(new AddressListCellRenderer(null, addressDatabase));
 			JScrollPane addressPane = new JScrollPane(needsValidationList);
 			addressPane.setPreferredSize(new Dimension(250, 1000));
 			
@@ -188,25 +169,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 		return (JSplitPane) super.getPanel();
 	}
 
-	class AddressListCellRenderer implements ListCellRenderer {
-
-	    /**
-	     * The address to compare against when rendering the label. If null,
-	     * no comparison will be made.
-	     */
-	    private final Address comparisonAddress;
-	    
-        public AddressListCellRenderer(Address comparisonAddress) {
-            this.comparisonAddress = comparisonAddress;
-	    }
-        
-		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
-			return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase);
-		}
-
-	}
-	
 	class AddressListCellSelectionListener implements ListSelectionListener {
 
 		public void valueChanged(ListSelectionEvent e) {
@@ -217,15 +179,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			CellConstraints cc = new CellConstraints();
 
 			JButton revertButton = new JButton("Revert");
-			revertButton.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					selectedAddressLabel.setAddress(selectedAddressLabel.getRevertToAddress());
-					selectedAddressLabel.updateTextFields(null);
-					selectedAddressLabel.setFont(SELECTED_ADDRESS_LABEL_FONT);
-				}
-				
-			});
+			
 			//TODO ..save button action to be added
 			JButton saveButton = new JButton("Save");
 			saveButton.addActionListener(new ActionListener() {
@@ -260,48 +214,26 @@ public class AddressValidationPanel extends NoEditEditorPane {
 							selected.getAddressLine1(), selected
 									.getMunicipality(), selected.getProvince(),
 							selected.getPostalCode(), selected.getCountry(), addressDatabase);
-					AddressValidator validator = new AddressValidator(addressDatabase, address1);
-				    validateResult = validator.getResults();
 
 					selectedAddressLabel = new AddressLabel(address1, false, null, addressDatabase);
-					selectedAddressLabel.setFont(SELECTED_ADDRESS_LABEL_FONT);
+					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
 					builder.add(selectedAddressLabel, cc.xy(1, 3));
 					
-					FormLayout problemsLayout = new FormLayout("fill:pref:grow");
-					DefaultFormBuilder problemsBuilder = new DefaultFormBuilder(problemsLayout);
-					JLabel problemsHeading = new JLabel("Problems:");
-					problemsHeading.setFont(new Font(null, Font.BOLD, 13));
-					problemsBuilder.append(problemsHeading);
-					
-					for (ValidateResult vr : validateResult) {
-						logger.debug("THIS IS NOT EMPTY!!!!!!!!!!!!!!!!!");
-						if (vr.getStatus() == Status.FAIL) {
-							problemsBuilder.append(new JLabel("Fail: " + vr.getMessage(),
-									new ImageIcon(AddressValidationPanel.class
-											.getResource("icons/fail.png")),
-									JLabel.LEFT));
-						} else if (vr.getStatus() == Status.WARN) {
-							problemsBuilder.append(new JLabel("Warning: "
-									+ vr.getMessage(), new ImageIcon(
-									AddressValidationPanel.class
-											.getResource("icons/warn.png")),
-									JLabel.LEFT));
+					revertButton.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							selectedAddressLabel.setAddress(selectedAddressLabel.getRevertToAddress());
+							AddressValidator addressValidator = new AddressValidator(addressDatabase,selectedAddressLabel.getAddress());
+							JList suggestionList = new JList(addressValidator.getSuggestions().toArray());
+							selectedAddressLabel.setSuggestionList(suggestionList);
 						}
-					}
-					builder.add(problemsBuilder.getPanel(), cc.xy(1, 5));
-					
-					JList suggestionList = new JList(validator.getSuggestions().toArray());
-					suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-					suggestionList.setCellRenderer(new AddressListCellRenderer(address1));
-					suggestionList.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							final Address selected = (Address) ((JList)e.getSource()).getSelectedValue();
-							selectedAddressLabel.setAddress(selected);
-						}
+						
 					});
-					JScrollPane scrollList = new JScrollPane(suggestionList);
-					scrollList.setPreferredSize(new Dimension(200, 50));
+					
+					builder.add(selectedAddressLabel.getProblemBuilder().getPanel(), cc.xy(1, 5));
+					
+					JScrollPane scrollList = new JScrollPane(selectedAddressLabel.getSuggestionList());
+					scrollList.setPreferredSize(new Dimension(200, 500));
 					builder.add(scrollList, cc.xywh(3, 3, 1, 3));
 
 				} catch (RecognitionException e1) {
