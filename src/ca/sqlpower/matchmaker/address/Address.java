@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.address;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -86,7 +88,7 @@ public class Address implements AddressInterface {
 	/**
 	 * If an address's suite type matches one of these exactly is an accepted symbol.
 	 */
-	public static final List<String> SUITE_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"APT", "SUITE", "UINT", "APP", "BUREAU", "UNITE", "PH", "RM", "TH", "TWNHSE", "PIECE", "SALLE"}));
+	public static final List<String> SUITE_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"APT", "SUITE", "UNIT", "APP", "BUREAU", "UNITE", "PH", "RM", "TH", "TWNHSE", "PIECE", "SALLE"}));
 	
 	/**
 	 * The list of long forms of suite types. These can be matched with minor spelling mistakes.
@@ -99,9 +101,20 @@ public class Address implements AddressInterface {
 	public static final List<String> RURAL_ROUTE_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"RR", "SS", "MR"}));
 	
 	/**
-	 * The list of long forms of accepted rural route types. Can be matched with minor spelling mistakes.
+	 * The map of long forms of accepted rural route types. Can be matched with minor spelling mistakes.
+	 * The keys are the accepted long format of the rural route types. The values are what the long formats
+	 * map to for a valid address.
 	 */
-	public static final List<String> RURAL_ROUTE_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"RURAL ROUTE", "SUBURBAN SERVICE", "MOBILE ROUTE"}));
+	public static final Map<String, String> RURAL_ROUTE_TYPES_LONG = new HashMap<String, String>();
+	
+	static {
+		RURAL_ROUTE_TYPES_LONG.put("RURAL ROUTE", "RR");
+		RURAL_ROUTE_TYPES_LONG.put("ROUTE RURALE", "RR");
+		RURAL_ROUTE_TYPES_LONG.put("SUBURBAN SERVICE", "SS");
+		RURAL_ROUTE_TYPES_LONG.put("SERVICE SUBURBAN", "SS");
+		RURAL_ROUTE_TYPES_LONG.put("MOBILE ROUTE", "MR");
+		RURAL_ROUTE_TYPES_LONG.put("RTE", "RR");
+	}
 	
 	/**
 	 * List of accepted short forms for DI types.
@@ -122,10 +135,23 @@ public class Address implements AddressInterface {
 	public static boolean isRuralRoute(String s) {
 		if (s == null) return false;
 		if (RURAL_ROUTE_TYPES.contains(s)) return true;
-		for (String routeType : RURAL_ROUTE_TYPES_LONG) {
+		for (String routeType : RURAL_ROUTE_TYPES_LONG.keySet()) {
 			if (LevenshteinDistance.computeLevenshteinDistance(s, routeType) <= routeType.length()/4) return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Returns the short form of a rural route string. The rural route
+	 * string can have some misspelling and be matched. If nothing is matched
+	 * the rural route type will be null.
+	 */
+	public static String getRuralRouteShortForm(String s) {
+		if (s == null) return null;
+		for (String routeType : RURAL_ROUTE_TYPES_LONG.keySet()) {
+			if (LevenshteinDistance.computeLevenshteinDistance(s, routeType) <= routeType.length()/4) return RURAL_ROUTE_TYPES_LONG.get(routeType);
+		}
+		return null;
 	}
 	
 	public static boolean isSuiteType(String s) {

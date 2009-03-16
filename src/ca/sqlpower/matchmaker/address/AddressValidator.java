@@ -276,10 +276,16 @@ public class AddressValidator {
 					}
 				}
 			
-				if (!a.isSuitePrefix() && !Address.isSuiteTypeExactMatch(a.getSuiteType())) {
+				if (!a.isSuitePrefix() && a.getSuite() != null && !Address.isSuiteTypeExactMatch(a.getSuiteType())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Suite number should be a prefix if the suite type is invalid."));
 					suggestion.setSuitePrefix(true);
+					errorCount++;
+				}
+				if (a.getSuite() != null && a.getSuite().length() > 0 && a.getSuite().charAt(0) == '#') {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Suite numbers should not have # prepended."));
+					suggestion.setSuite(a.getSuite().substring(1));
 					errorCount++;
 				}
 
@@ -325,6 +331,13 @@ public class AddressValidator {
 					errorCount++;
 				}
 			} else if (a.getType() == Type.RURAL) {
+				//TODO: expand this case, probably
+				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Invalid rural route type."));
+					suggestion.setRuralRouteType(Address.getRuralRouteShortForm(a.getRuralRouteType()));
+					errorCount++;
+				}
 				if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Invalid delivery installation type."));
