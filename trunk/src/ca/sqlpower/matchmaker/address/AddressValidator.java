@@ -276,13 +276,12 @@ public class AddressValidator {
 					}
 				}
 			
-				//XXX This is not always true, need to figure out when
-//				if (!a.isSuitePrefix()) {
-//					errorList.add(ValidateResult.createValidateResult(
-//							Status.FAIL, "Suite number should be a prefix."));
-//					suggestion.setSuitePrefix(true);
-//					errorCount++;
-//				}
+				if (!a.isSuitePrefix() && !Address.isSuiteTypeExactMatch(a.getSuiteType())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Suite number should be a prefix if the suite type is invalid."));
+					suggestion.setSuitePrefix(true);
+					errorCount++;
+				}
 
 				// TODO all the other fields
 			} else if (a.getType() == Type.GD) {
@@ -369,8 +368,8 @@ public class AddressValidator {
 			}
 		}
 	}
-    
-    /**
+
+	/**
      * Given an address that has a corrected street name and the postal code retrieved by
      * the addresses's postal code this method will decide if the street type should
      * be appended before or after the street name.

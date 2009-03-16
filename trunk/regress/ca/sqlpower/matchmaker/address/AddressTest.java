@@ -172,6 +172,7 @@ public class AddressTest extends TestCase {
      */
     public void testAddressWithExtraInfo() throws Exception {
     	Address address = Address.parse("56 RUE SAINT-JEAN-BAPTISTE 0", "RIMOUSKI", "QC", "G5L4J3", "CA", addressDatabase);
+    	System.out.println("address with extra info " + address);
     	assertEquals(Integer.valueOf(56), address.getStreetNumber());
     	assertEquals("SAINT-JEAN-BAPTISTE 0", address.getStreet());
     	assertEquals("RUE", address.getStreetType());
@@ -201,16 +202,52 @@ public class AddressTest extends TestCase {
     }
     
     /**
+     * Test to ensure the parser can deal with street addresses 
+     * with a suite suffixed containing a # sign and the street name
+     * is a number.
+     * 
+     * Input: 11181 80 AVE UNIT #8410, DELTA, BC, V4C1W6
+     */
+    public void testAddressWithNumberSignSuite() throws Exception {
+    	Address address = Address.parse("11181 80 AVE UNIT #8410", "DELTA", "BC", "V4C1W6", "CA", addressDatabase);
+    	System.out.println(address.getAddress());
+    	assertEquals(Integer.valueOf(11181), address.getStreetNumber());
+    	assertEquals("80", address.getStreet());
+    	assertEquals("AVE", address.getStreetType());
+    	assertEquals("DELTA", address.getMunicipality());
+    	assertEquals("V4C1W6", address.getPostalCode());
+    	assertEquals("BC", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    	
+    	assertEquals("#8410", address.getSuite());
+    	assertFalse(address.isSuitePrefix());
+    	assertEquals("UNIT", address.getSuiteType());
+    }
+    
+    /**
      * Simple test to prove we can parse a lock box.
      */
     public void testLockBox() throws Exception {
     	Address address = Address.parse("PO BOX #736 STN CENTRAL", "CHARLOTTETOWN", "PE", "C1A7L3", "CA", addressDatabase);
-    	System.out.println(address.getAddress());
+    	System.out.println("Lock box test " + address.getAddress());
     	assertEquals("PO BOX", address.getLockBoxType());
     	assertEquals(736, address.getLockBoxNumber().intValue());
     	assertEquals("STN", address.getDeliveryInstallationType());
     	assertEquals("CENTRAL", address.getDeliveryInstallationName());
     }
+    
+    /**
+     * Test for parsing a rural route with no station name
+     * 
+     * INPUT: RR 4 STN, DUNDAS, ON, L9H5E4
+     */
+    public void testRuralRouteNoStation() throws Exception {
+    	Address address = Address.parse("RR 4 STN", "DUNDAS", "ON", "L9H5E4", "CA", addressDatabase);
+    	assertEquals("RR", address.getRuralRouteType());
+    	assertEquals(4, address.getRuralRouteNumber().intValue());
+    	assertEquals("STN", address.getDeliveryInstallationType());
+    }
+    
     
     /**
      * Simple test to prove we can parse a general delivery.
@@ -220,5 +257,17 @@ public class AddressTest extends TestCase {
     	assertEquals("GENERAL DELIVERY", address.getGeneralDeliveryName());
     	assertEquals("STN", address.getDeliveryInstallationType());
     	assertEquals("MAIN", address.getDeliveryInstallationName());
+    }
+    
+    /**
+     * Test general delivery with misspelling and additional information
+     * 
+     * Input: GENERAL DEIVER SUCC BUCKINGHAM 3905 36TH AVE W, GATINEAU, QC, J8L1T7
+     */
+    public void testGeneralDeliveryAdditionalInfo() throws Exception {
+    	Address address = Address.parse("GENERAL DEIVER SUCC BUCKINGHAM 3905 36TH AVE W", "GATINEAU", "QC", "J8L1T7", "CA", addressDatabase);
+    	assertEquals("GENERAL DEIVER", address.getGeneralDeliveryName());
+    	assertEquals("SUCC", address.getDeliveryInstallationType());
+    	assertEquals("BUCKINGHAM 3905 36TH AVE W", address.getDeliveryInstallationName());
     }
 }

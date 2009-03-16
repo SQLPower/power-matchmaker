@@ -139,6 +139,11 @@ public class Address implements AddressInterface {
 		return false;
 	}
 	
+	public static boolean isSuiteTypeExactMatch(String s) {
+		if (SUITE_TYPES.contains(s) || SUITE_TYPES_LONG.contains(s)) return true;
+		return false;
+	}
+	
 	public static boolean isStreetDirection(String s) {
 		if (STREET_DIRECTIONS.contains(s)) return true;
 		for (String direction : STREET_DIRECTIONS_LONG) {
@@ -399,6 +404,16 @@ public class Address implements AddressInterface {
 			}
 	        p.address();
 	        a = p.getAddress();
+	        
+	        if (a.getSuite() == null && a.getStreetNumber() != null && a.getStreet() != null &&
+					a.getStreet().contains(" ") && isInteger(a.getStreet().substring(0, a.getStreet().indexOf(' ')))) {
+				//Parser has trouble with #suite #streetNumber streetName vs #streetNumber #streetName.
+				//If the case is #suite #streetNumber streetName the street number ends up in the street name
+				a.setSuite(a.getStreetNumber().toString());
+				a.setStreetNumber(Integer.parseInt(a.getStreet().substring(0, a.getStreet().indexOf(' '))));
+				a.setStreet(a.getStreet().substring(a.getStreet().indexOf(' ') + 1));
+				a.setSuitePrefix(true);
+			}
     	} else {
     		a = new Address();
     	}
@@ -409,7 +424,16 @@ public class Address implements AddressInterface {
         a.resetChangeFlags();
         return a;
     }
-
+    
+    private static boolean isInteger(String substring) {
+    	try {
+    		Integer.parseInt(substring);
+    		return true;
+    	} catch (Exception e) {
+    		//string was not an int
+    	}
+		return false;
+	}
 
 
     /**
