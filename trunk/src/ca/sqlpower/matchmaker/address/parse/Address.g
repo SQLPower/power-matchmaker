@@ -190,12 +190,27 @@ streetToken
 							 address.setStreetTypePrefix(!hasStreetNameStarted);
 							 address.setStreetType($t.text);
 							}
+	|	{hasStreetNameStarted}?	n=(NUMBER|NUMANDSTREETSUFFIX)
+							{
+							 address.setSuitePrefix(false);
+							 address.setSuite($n.text);
+							}
 							
 	|	n=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX)		
 							{
 							 if (!address.isStreetTypePrefix() && address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
 							    address.setStreetType(null);
+							 }
+							 if (!address.isSuitePrefix()) {
+							    if (address.getSuiteType() != null) {
+							       appendStreetName(address.getSuiteType());
+							       address.setSuiteType(null);
+							    }
+							    if (address.getSuite() != null) {
+							       appendStreetName(address.getSuite());
+							       address.setSuite(null);
+							    }
 							 }
 							 
 							 hasStreetNameStarted = true;
@@ -204,17 +219,24 @@ streetToken
 	;
 	
 ruralRouteAddress
+	:	ruralRoute				{address.setType(Address.Type.RURAL);}
+	;
+	
+ruralRoute
 	:	{Address.isRuralRoute(input.LT(1).getText())}? rs=NAME n=NUMBER? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs.text);
 							 address.setRuralRouteNumber(quietIntParse($n.text));
-							 address.setType(Address.Type.RURAL);
 							}
 	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}? rs1=NAME rs2=NAME n=NUMBER? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs1.text + " " + $rs2.text);
 							 address.setRuralRouteNumber(quietIntParse($n.text));
-							 address.setType(Address.Type.RURAL);
+							}
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? rs1=NAME rs2=NAME rs3=NAME n=NUMBER? ruralRouteSuffix
+							{
+							 address.setRuralRouteType($rs1.text + " " + $rs2.text + " " + $rs3.text);
+							 address.setRuralRouteNumber(quietIntParse($n.text));
 							}
 	;
 
