@@ -146,10 +146,13 @@ public class AddressLabel extends JComponent {
 				public void mouseClicked(MouseEvent e) {
 					logger.debug("Mouse Clicked on suggestion list " + ((JList)e.getSource()).getSelectedValue());
 					final Address selected = (Address) ((JList) e.getSource()).getSelectedValue();
-					setAddress(selected);
-					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
-					updateTextFields();
-					updateProblemDetails(addressValidator);
+					if (selected != null) {
+						setAddress(selected);
+						addressValidator = new AddressValidator(addressDatabase, (Address) currentAddress);
+						suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
+						updateTextFields();
+						updateProblemDetails(addressValidator);
+					}
 				}
 
 			});
@@ -165,7 +168,6 @@ public class AddressLabel extends JComponent {
 		postalCodeTextField = new JTextField(currentAddress.getPostalCode());
 		add(postalCodeTextField);
 		
-		//setBackground(Color.WHITE);
 		setFont(Font.decode("plain 12"));
 		FontMetrics fm = getFontMetrics(getFont());
 		if (list != null) {
@@ -242,7 +244,7 @@ public class AddressLabel extends JComponent {
 				g2.fillRect(0, 0, getWidth(), getHeight());
 			}
 		}
-		// set the check icon for validated address results
+		// set the check icon for validated addressResult labels
 		if (currentAddress instanceof AddressResult) {
 			if (((AddressResult)currentAddress).isValidated()) {
 				checkIcon.paintIcon(this, g2, x, y);
@@ -250,6 +252,7 @@ public class AddressLabel extends JComponent {
 				repaint();
 			}
 		}
+		// set the check icon for the validated bigger selected icon
 		if (list == null) {
 			if (isValid) {
 				checkIcon.paintIcon(this, g2, x, y);
@@ -355,14 +358,21 @@ public class AddressLabel extends JComponent {
 		return str.trim().equals("null") || str.trim().equals("");
 	}
 	
+	/**
+	 * This should only be called if this addressLabel is the 
+	 * bigger addressLabel in the center of the validation screen
+	 * @param isValid the value to indicate whether the address  
+	 * 		  label is valid or not
+	 * see {@link #isValid}
+	 */
 	public void setIsValid(boolean isValid) {
 		this.isValid = isValid;
 	}
 	
 	private boolean isClickingRightArea(MouseEvent e, Rectangle2D rec) {
-		logger.info(e.getPoint());
-		logger.info((rec.getX() + BORDER_SPACE) + "  " + rec.getY());
-		logger.info(rec.getWidth() + "  " + rec.getHeight());
+		logger.debug(e.getPoint());
+		logger.debug((rec.getX() + BORDER_SPACE) + "  " + rec.getY());
+		logger.debug(rec.getWidth() + "  " + rec.getHeight());
 		if (e.getX() >= rec.getX() && e.getX() <= rec.getX() + rec.getWidth()) {
 			if (e.getY() >= rec.getY() && e.getY() <= rec.getY() + rec.getHeight()) {
 				return true;
@@ -381,6 +391,11 @@ public class AddressLabel extends JComponent {
 		}
 	}
 	
+	/**
+	 * This method should be called after user edit the addressLabel 
+	 * manually to parse the address again
+	 * @return The new parsed user edited address
+	 */
 	private Address getChangedAddress() {
 		try {
 			return Address.parse(addressTextField.getText(), municipalityTextField.getText(),
@@ -394,6 +409,10 @@ public class AddressLabel extends JComponent {
 		return new Address();
 	}
 	
+	/**
+	 * This is the AddressKeyAdapter for all 4 textFields.
+	 * It updates currentAddress, suggestionList and problem details
+	 */
 	class AddressKeyAdapter extends KeyAdapter {
 
 		public void keyPressed(KeyEvent e) {
@@ -403,12 +422,14 @@ public class AddressLabel extends JComponent {
 				if (e.getSource() instanceof JTextField) {
 					// hide the text field 
 					((JTextField)e.getSource()).setVisible(false);
-					//update the suggestionList
+					// update currentAddress
 					currentAddress = getChangedAddress();
+					// update the suggestionList
 					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
 					suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
-					//update the problem details
+					// update the problem details
 					updateProblemDetails(addressValidator);
+					repaint();
 				}
 			}
 		}
