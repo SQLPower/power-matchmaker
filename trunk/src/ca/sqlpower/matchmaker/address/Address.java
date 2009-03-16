@@ -157,7 +157,7 @@ public class Address implements AddressInterface {
 	public static boolean isSuiteType(String s) {
 		if (s == null) return false;
 		for (String suiteType : SUITE_TYPES) {
-			if (LevenshteinDistance.computeLevenshteinDistance(s, suiteType) <= 2) return true;
+			if (LevenshteinDistance.computeLevenshteinDistance(s, suiteType) <= suiteType.length()/4) return true;
 		}
 		for (String suiteType : SUITE_TYPES_LONG) {
 			if (LevenshteinDistance.computeLevenshteinDistance(s, suiteType) <= suiteType.length()/4) return true;
@@ -227,7 +227,7 @@ public class Address implements AddressInterface {
 	}
 
     public static enum Type {
-        URBAN, RURAL, LOCK_BOX, GD
+        URBAN, MIXED, RURAL, LOCK_BOX, GD
     }
     
     /**
@@ -341,6 +341,12 @@ public class Address implements AddressInterface {
     private Integer ruralRouteNumber;
     
     /**
+     * This is a boolean for mixed types. For each address the urban street name could come before
+     * the rural route number or the rural route number could come before the street name.
+     */
+    private Boolean urbanBeforeRural = null; 
+    
+    /**
      * If the parser cannot correctly separate the address line the whole address line will
      * be placed here to keep the input address line the same for output.
      */
@@ -383,7 +389,7 @@ public class Address implements AddressInterface {
         suiteType = source.suiteType;
         type = source.type;
         unparsedAddress = source.unparsedAddress;
-        
+        urbanBeforeRural = source.urbanBeforeRural;
     }
     
     /**
@@ -501,6 +507,12 @@ public class Address implements AddressInterface {
     		return getLockBoxAddress();
     	case GD:
     		return getGeneralDeliveryAddress();
+    	case MIXED:
+    		if (urbanBeforeRural) {
+    			return getStreetAddress() + " " + getRuralRouteAddress();
+    		} else {
+    			return getRuralRouteAddress() + " " + getStreetAddress();
+    		}
    		default:
    			throw new IllegalStateException("Address type " + type + " is unknown");
     	}
@@ -512,15 +524,11 @@ public class Address implements AddressInterface {
 		if (ruralRouteNumber != null) {
 			sb.append(" ").append(ruralRouteNumber);
 		}
-		if (street != null) {
-			sb.append(" ").append(getStreetAddress());
-		} else {
-			if (deliveryInstallationType != null) {
-				sb.append(" ").append(deliveryInstallationType);
-			}
-			if (deliveryInstallationName != null) {
-				sb.append(" ").append(deliveryInstallationName);
-			}
+		if (deliveryInstallationType != null) {
+			sb.append(" ").append(deliveryInstallationType);
+		}
+		if (deliveryInstallationName != null) {
+			sb.append(" ").append(deliveryInstallationName);
 		}
 		return sb.toString();
 	}
@@ -802,6 +810,15 @@ public class Address implements AddressInterface {
 
 	public String getFailedParsingString() {
 		return failedParsingString;
+	}
+
+	public void setUrbanBeforeRural(Boolean urbanBeforeRural) {
+			this.urbanBeforeRural = urbanBeforeRural;
+		
+	}
+
+	public Boolean isUrbanBeforeRural() {
+		return urbanBeforeRural;
 	}
 
 	public void normalize() {

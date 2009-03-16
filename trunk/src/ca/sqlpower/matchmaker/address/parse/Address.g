@@ -12,6 +12,16 @@ package ca.sqlpower.matchmaker.address.parse;
 
 @members {
 
+/**
+ *  This is an odd tri state boolean. It will be null if the address starts as
+ *  anything but an urban or rural address. It will be true if it starts as an
+ *  urban address and false if it starts as a rural address. Only urban and rural
+ *  addresses should care about this as it is used to distinguish between rural,
+ *  urban, and mixed addresses. The fun part is mixed addresses can start as urban
+ *  or rural and some parts from one could possiblly come up in the other.
+ */
+private Boolean startsUrbanNotRural = null;
+
 private Set<PostalCode> postalCodes;
 
 private AddressDatabase addressDatabase;
@@ -118,11 +128,18 @@ return stack+" "+msg;
 public String getTokenErrorDisplay(Token t) { 
 return t.toString(); 
 } 
+
+//XXX: might be able to use a variable in some kind of global scope
+public boolean setStartsUrbanNotRural(boolean b) {
+  startsUrbanNotRural = b;
+  return true;
+}
+
 }
 
 
 address
-	:	{couldBeUrban()}?=> streetAddress	
+	:	{couldBeUrban()}?=> streetAddressStart	
 	|	{couldBeRural()}?=> ruralRouteAddress
 	|	{couldBeLockBox()}?=> lockBoxAddress
 	|	{couldBeGD()}?=> generalDeliveryAddress	
@@ -139,15 +156,24 @@ failedToken
 							 address.setFailedParsingString(address.getFailedParsingString() + n);
 							}
 	;
+streetAddressStart
+	:	{setStartsUrbanNotRural(true)}? streetAddress				
+							{
+							  address.setType(Address.Type.URBAN);
+							  if (address.isUrbanBeforeRural() != null) {
+							    address.setType(Address.Type.MIXED);
+							  }
+							}
+	;
 	
 streetAddress	
 	:	sn=(NUMBER|NUMANDSTREETSUFFIX) '-' street			
 							{ 
 							  address.setSuitePrefix(true);
 							  address.setSuite($sn.text);
-							  address.setType(Address.Type.URBAN);
+
 							}
-	|	street					{address.setType(Address.Type.URBAN);}
+	|	street
 	;
 	
 street
@@ -195,6 +221,11 @@ streetToken
 							 address.setSuitePrefix(false);
 							 address.setSuite($n.text);
 							}
+	|	{hasStreetNameStarted && startsUrbanNotRural}?	ruralRoute      
+							{
+							 address.setType(Address.Type.MIXED);
+							 address.setUrbanBeforeRural(true);
+							}
 							
 	|	n=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX)		
 							{
@@ -219,21 +250,26 @@ streetToken
 	;
 	
 ruralRouteAddress
-	:	ruralRoute				{address.setType(Address.Type.RURAL);}
+	:	{setStartsUrbanNotRural(false)}? ruralRoute				
+							{address.setType(Address.Type.RURAL);
+							  if (address.isUrbanBeforeRural() != null) {
+							    address.setType(Address.Type.MIXED);
+							  }
+							}
 	;
 	
 ruralRoute
-	:	{Address.isRuralRoute(input.LT(1).getText())}? rs=NAME n=NUMBER? ruralRouteSuffix
+	:	{Address.isRuralRoute(input.LT(1).getText())}? rs=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs.text);
 							 address.setRuralRouteNumber(quietIntParse($n.text));
 							}
-	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}? rs1=NAME rs2=NAME n=NUMBER? ruralRouteSuffix
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}? rs1=NAME rs2=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs1.text + " " + $rs2.text);
 							 address.setRuralRouteNumber(quietIntParse($n.text));
 							}
-	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? rs1=NAME rs2=NAME rs3=NAME n=NUMBER? ruralRouteSuffix
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? rs1=NAME rs2=NAME rs3=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs1.text + " " + $rs2.text + " " + $rs3.text);
 							 address.setRuralRouteNumber(quietIntParse($n.text));
@@ -242,7 +278,11 @@ ruralRoute
 
 ruralRouteSuffix
 	:	diTypeAndName?
-	|	street	
+	|	{!startsUrbanNotRural}? streetAddress				
+							{
+							 address.setType(Address.Type.MIXED);
+							 address.setUrbanBeforeRural(false);
+							}
 	;
 	
 lockBoxAddress

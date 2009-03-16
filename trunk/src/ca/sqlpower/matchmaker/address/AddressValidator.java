@@ -209,7 +209,7 @@ public class AddressValidator {
 					errorCount++;
 				}
 			}
-			if (a.getType() == Type.URBAN) {
+			if (a.getType() == Type.URBAN || a.getType() == Type.MIXED) {
 				if (different(pc.getStreetName(), a.getStreet())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street name does not agree with postal code"));
@@ -330,7 +330,7 @@ public class AddressValidator {
 					suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
 					errorCount++;
 				}
-			} else if (a.getType() == Type.RURAL) {
+			} else if (a.getType() == Type.RURAL || a.getType() == Type.MIXED) {
 				//TODO: expand this case, probably
 				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
 					errorList.add(ValidateResult.createValidateResult(
