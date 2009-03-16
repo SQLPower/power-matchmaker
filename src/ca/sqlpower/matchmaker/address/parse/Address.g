@@ -75,6 +75,7 @@ private boolean couldBeGD() {
  * null if the value is not parseable.
  */
 private Integer quietIntParse(String s) {
+  if (s == null) return null;
   try {
     return Integer.valueOf(s);
   } catch (NumberFormatException ex) {
@@ -133,7 +134,7 @@ failedParse
 	;
 
 failedToken
-	:	n=(ROUTESERVICETYPE | DITYPE | SUITE | SUFFIXANDDIR | STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME)
+	:	n=(STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME)
 							{
 							 address.setFailedParsingString(address.getFailedParsingString() + n);
 							}
@@ -150,14 +151,14 @@ streetAddress
 	;
 	
 street
-	:	n=SUITEANDSTREETNUM s=(STREETNUMSUFFIX|SUFFIXANDDIR|NUMANDSTREETSUFFIX) streetToken+
+	:	n=SUITEANDSTREETNUM s=(STREETNUMSUFFIX|NUMANDSTREETSUFFIX) streetToken+
 							{String[] numbers = $n.text.split("-");
 							 address.setSuitePrefix(true);
 							 address.setSuite(numbers[0]);
 							 address.setStreetNumber(quietIntParse(numbers[1]));
 							 address.setStreetNumberSuffix($s.text);
 							}
-	|	n=(NUMBER|NUMANDSTREETSUFFIX) s=(STREETNUMSUFFIX|SUFFIXANDDIR|NUMANDSTREETSUFFIX) streetToken+	
+	|	n=(NUMBER|NUMANDSTREETSUFFIX) s=(STREETNUMSUFFIX|NUMANDSTREETSUFFIX) streetToken+	
 							{address.setStreetNumber(quietIntParse($n.text));
 							 address.setStreetNumberSuffix($s.text);
 							}
@@ -170,13 +171,13 @@ street
 	;
 	
 streetToken
-	:	{hasStreetNameStarted && Address.isSuiteType(input.LT(1).getText())}? s=NAME sn=(NUMBER|NUMANDSTREETSUFFIX)
+	:	{Address.isSuiteType(input.LT(1).getText())}?=> s=NAME sn=(NUMBER|NUMANDSTREETSUFFIX)
 							{
 							 address.setSuitePrefix(false);
 							 address.setSuiteType($s.text);
 							 address.setSuite($sn.text);
 							}
-	|	{hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText())}? d=(NAME|SUFFIXANDDIR)	
+	|	{hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText())}? d=(NAME|STREETNUMSUFFIX)	
 							{
 							 address.setStreetDirection($d.text);
 							}
@@ -203,55 +204,76 @@ streetToken
 	;
 	
 ruralRouteAddress
-	:	rs=ROUTESERVICETYPE n=NUMBER di=DITYPE? stn=NAME?
+	:	{Address.isRuralRoute(input.LT(1).getText())}? rs=NAME n=NUMBER? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs.text);
-							 address.setRuralRouteNumber(quietIntParse($rs.text));
-							 address.setDeliveryInstallationType($di.text);
-							 address.setDeliveryInstallationName($stn.text);
+							 address.setRuralRouteNumber(quietIntParse($n.text));
 							 address.setType(Address.Type.RURAL);
 							}
-	|	rs=ROUTESERVICETYPE n=NUMBER street	{
-							 address.setRuralRouteType($rs.text);
-							 address.setRuralRouteNumber(quietIntParse($rs.text));
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}? rs1=NAME rs2=NAME n=NUMBER? ruralRouteSuffix
+							{
+							 address.setRuralRouteType($rs1.text + " " + $rs2.text);
+							 address.setRuralRouteNumber(quietIntParse($n.text));
 							 address.setType(Address.Type.RURAL);
 							}
 	;
+
+ruralRouteSuffix
+	:	diTypeAndName?
+	|	street	
+	;
 	
 lockBoxAddress
-	:	{Address.isLockBox(input.LT(1).getText())}? lb=NAME '#'? n=NUMBER di=DITYPE diName+
+	:	{Address.isLockBox(input.LT(1).getText())}? lb=NAME '#'? n=NUMBER diTypeAndName
 							{
 							 address.setLockBoxType($lb.text);
 							 address.setLockBoxNumber(quietIntParse($n.text));
-							 address.setDeliveryInstallationType($di.text);
 							 address.setType(Address.Type.LOCK_BOX);
 							}
-	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}? lb1=(NAME | DITYPE) lb2=NAME '#'? n=NUMBER di=DITYPE diName+
+	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}? lb1=NAME lb2=NAME '#'? n=NUMBER diTypeAndName
 							{
 							 address.setLockBoxType($lb1.text + " " + $lb2.text);
 							 address.setLockBoxNumber(quietIntParse($n.text));
-							 address.setDeliveryInstallationType($di.text);
 							 address.setType(Address.Type.LOCK_BOX);
 							}
 	;
 	
 generalDeliveryAddress
-	:	{Address.isGeneralDelivery(input.LT(1).getText())}? gd=NAME t=DITYPE diName+
+	:	{Address.isGeneralDelivery(input.LT(1).getText())}? gd=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd.text);
-							 address.setDeliveryInstallationType($t.text);
 							 address.setType(Address.Type.GD);
 							}
-	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}? gd1=(NAME | DITYPE) gd2=NAME t=DITYPE diName+
+	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}? gd1=NAME gd2=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text);
-							 address.setDeliveryInstallationType($t.text);
 							 address.setType(Address.Type.GD);
+							}
+	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? 
+			gd1=NAME gd2=(STREETNUMSUFFIX|NAME) gd3=NAME diTypeAndName
+							{
+							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text + " " + $gd3.text);
+							 address.setType(Address.Type.GD);
+							}
+	;
+	
+diTypeAndName
+	:	{Address.isDeliveryInstallationType(input.LT(1).getText())}? dt=NAME diName*
+							{
+							 address.setDeliveryInstallationType($dt.text);
+							}
+	|	{Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText())}? dt1=NAME dt2=NAME diName*
+							{
+							 address.setDeliveryInstallationType($dt1.text + " " + $dt2.text);
+							}
+	|	{Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? dt1=NAME dt2=NAME dt3=NAME diName*
+							{
+							 address.setDeliveryInstallationType($dt1.text + " " + $dt2.text + " " + $dt3.text);
 							}
 	;
 
 diName
-	:	stn=(DITYPE|NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX|SUITE)
+	:	stn=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX)
 							{
 							 if (address.getDeliveryInstallationName() == null) {
 							    address.setDeliveryInstallationName($stn.text);
@@ -263,17 +285,6 @@ diName
 	
 SUITEANDSTREETNUM
 	:	('0'..'9')+'-'('0'..'9')+;
-	
-ROUTESERVICETYPE
-	:	'RR' | 'SS' | 'MR';
-
-DITYPE
-	:	'BDP' | 'CC' | 'CDO' | 'CMC' | 'CPC' | 'CSP' | 'LCD' | 'PDF' | 'PO' | 'RPO' | 'STN' | 'SUCC';
-
-SUITE	:	'UNIT' | 'APT' | 'APARTMENT' | 'SUITE' | 'APP' | 'BUREAU' | 'UNITE';
-
-SUFFIXANDDIR
-	:	'N' | 'S' | 'E' | 'W'; //Needed because STREETNUMSUFFIX would take the directions from STREETDIR
 	
 NUMANDSTREETSUFFIX
 	:	('1'..'3');

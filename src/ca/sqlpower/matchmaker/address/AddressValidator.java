@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.address;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,150 +108,7 @@ public class AddressValidator {
                 a.setPostalCode(null);
                 
             } else {
-            	Map<Integer, List<Address>> addressSuggestionsByError = new HashMap<Integer, List<Address>>();
-            	List<ValidateResult> smallestErrorList = new ArrayList<ValidateResult>();
-            	int smallestErrorCount = Integer.MAX_VALUE;
-            	for (PostalCode pc : pcSet) {
-            		List<ValidateResult> errorList = new ArrayList<ValidateResult>();
-            		int errorCount = 0;
-            		Address suggestion = new Address(a);
-            		suggestion.setPostalCode(pc.getPostalCode());
-            		if (!pc.getProvinceCode().equals(a.getProvince())) {
-            			errorList.add(ValidateResult.createValidateResult(
-            					Status.FAIL, "Province code does not agree with postal code"));
-            			suggestion.setProvince(pc.getProvinceCode());
-            			errorCount++;
-            		}
-            		if (different(pc.getMunicipalityName(), a.getMunicipality())) {
-            			if (municipality != null) {
-            				// it might be a valid alternate name
-            				if (!municipality.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
-            					errorList.add(ValidateResult.createValidateResult(
-            							Status.FAIL, "Municipality is not a valid alternate within postal code"));
-            					suggestion.setMunicipality(municipality.getOfficialName());
-            					errorCount++;
-            				}
-            			} else {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "Municipality does not agree with postal code"));
-            				suggestion.setMunicipality(pc.getMunicipalityName());
-            				errorCount++;
-            			}
-            		}
-            		if (a.getType() == Type.URBAN) {
-            			if (different(pc.getStreetName(), a.getStreet())) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "Street name does not agree with postal code"));
-            				suggestion.setStreet(pc.getStreetName());
-            				errorCount++;
-            			}
-            			if (different(pc.getStreetTypeCode(), a.getStreetType())) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "Street type does not agree with postal code"));
-            				suggestion.setStreetType(pc.getStreetTypeCode());
-            				errorCount++;
-            			}
-            			if (a.isStreetTypePrefix() != isStreetTypePrefix(suggestion, pc)) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "Street type prefix does not agree with postal code"));
-            				suggestion.setStreetTypePrefix(isStreetTypePrefix(suggestion, pc));
-            				errorCount++;
-            			}
-            			if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "Street direction does not agree with postal code"));
-            				suggestion.setStreetDirection(pc.getStreetDirectionCode());
-            				errorCount++;
-            			}
-            			if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
-            					(pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "Street number does not fall into the range of allowed street numbers for this postal code."));
-            				suggestion.setStreetNumber(pc.getStreetAddressFromNumber() + 1);
-            				errorCount++;
-            			}
-//            			Partial implementation of how street suffixs are supposed to be appended but is not consistent with the test data.
-//            			if (pc.getStreetAddressFromNumber() == a.getStreetNumber() && pc.getStreetAddressNumberSuffixFromCode() != null) {
-//            				if (a.getStreetNumberSuffix() == null) {
-//            					errorList.add(ValidateResult.createValidateResult(
-//                						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
-//                				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
-//                				errorCount++;
-//            				} else {
-//            					char pcSuffix = pc.getStreetAddressNumberSuffixFromCode().charAt(0);
-//            					char aSuffix = a.getStreetNumberSuffix().charAt(0);
-//            					if (!(pcSuffix >= 65 && (aSuffix >= pcSuffix || aSuffix == 49 || aSuffix == 50 || aSuffix == 51))) {
-//            						errorList.add(ValidateResult.createValidateResult(
-//                    						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
-//                    				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
-//                    				errorCount++;
-//            					}
-//            				}
-//            			}
-            			
-            			if (!a.isSuitePrefix()) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "Suite number should be a prefix."));
-            				suggestion.setSuitePrefix(true);
-            				errorCount++;
-            			}
-
-            			// TODO all the other fields
-            		} else if (a.getType() == Type.GD) {
-            			if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
-            					&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
-            				suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
-            				errorCount++;
-            			} else if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
-            					&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
-            				suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
-            				errorCount++;
-            			}
-            		} else if (a.getType() == Type.LOCK_BOX) {
-            			if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
-            				suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
-            				errorCount++;
-            			} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
-            				errorList.add(ValidateResult.createValidateResult(
-            						Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
-            				suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
-            				errorCount++;
-            			}
-            		}
-            		
-
-            		if (errorCount > 0) {
-            			List<Address> addresses = addressSuggestionsByError.get(errorCount);
-            			if (addresses == null) {
-            				addresses = new ArrayList<Address>();
-            				addresses.add(suggestion);
-            				addressSuggestionsByError.put(errorCount, addresses);
-            			} else {
-            				addresses.add(suggestion);
-            			}
-            		} else {
-            			suggestions.clear();
-            			return;
-            		}
-            		if (errorCount < smallestErrorCount) {
-            			smallestErrorList = errorList;
-            			smallestErrorCount = errorCount;
-            		}
-            	}
-            	results.addAll(smallestErrorList);
-            	final ArrayList<Integer> errorCounts = new ArrayList<Integer>(addressSuggestionsByError.keySet());
-				Collections.sort(errorCounts);
-				for (Integer errorCount : errorCounts) {
-					for (Address suggestion : addressSuggestionsByError.get(errorCount)) {
-						suggestions.add(suggestion);
-					}
-				}
+            	generateSuggestions(a, municipality, pcSet);
             }
             
         }
@@ -285,18 +143,13 @@ public class AddressValidator {
                 try {
                     matches = join.entities();
                     logger.debug("Checking address " + a);
+                    Set<PostalCode> pcSet = new HashSet<PostalCode>();
                     for (PostalCode pc : matches) {
                         if (pc.containsAddress(a)) {
-                            Address suggestion = new Address(a);
-                            suggestion.setPostalCode(pc.getPostalCode());
-                            suggestion.setProvince(pc.getProvinceCode());
-                            suggestion.setStreet(pc.getStreetName());
-                            suggestion.setStreetDirection(pc.getStreetDirectionCode());
-                            suggestion.setStreetType(pc.getStreetTypeCode());
-                            suggestions.add(suggestion);
-                            // don't break--multiple matches can differ by street type and direction
+                            pcSet.add(pc);
                         }
                     }
+                    generateSuggestions(a, municipality, pcSet);
                 } finally {
                     if (matches != null) matches.close();
                 }
@@ -311,6 +164,211 @@ public class AddressValidator {
         }
         
     }
+
+	/**
+	 * This method will generate the suggestions for a given address.
+	 * 
+	 * @param a
+	 *            An address to correct.
+	 * @param municipality
+	 *            A municipality taken from the address to correct. Allows
+	 *            checking for older or alternate municipality names.
+	 * @param pcSet
+	 *            A set of postal codes to compare the address to and try to
+	 *            generate suggestions from.
+	 */
+	private void generateSuggestions(Address a, Municipality municipality,
+			Set<PostalCode> pcSet) {
+		Map<Integer, List<Address>> addressSuggestionsByError = new HashMap<Integer, List<Address>>();
+		List<ValidateResult> smallestErrorList = new ArrayList<ValidateResult>();
+		int smallestErrorCount = Integer.MAX_VALUE;
+		for (PostalCode pc : pcSet) {
+			List<ValidateResult> errorList = new ArrayList<ValidateResult>();
+			int errorCount = 0;
+			Address suggestion = new Address(a);
+			suggestion.setPostalCode(pc.getPostalCode());
+			if (!pc.getProvinceCode().equals(a.getProvince())) {
+				errorList.add(ValidateResult.createValidateResult(
+						Status.FAIL, "Province code does not agree with postal code"));
+				suggestion.setProvince(pc.getProvinceCode());
+				errorCount++;
+			}
+			if (different(pc.getMunicipalityName(), a.getMunicipality())) {
+				if (municipality != null) {
+					// it might be a valid alternate name
+					if (!municipality.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "Municipality is not a valid alternate within postal code"));
+						suggestion.setMunicipality(municipality.getOfficialName());
+						errorCount++;
+					}
+				} else {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Municipality does not agree with postal code"));
+					suggestion.setMunicipality(pc.getMunicipalityName());
+					errorCount++;
+				}
+			}
+			if (a.getType() == Type.URBAN) {
+				if (different(pc.getStreetName(), a.getStreet())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street name does not agree with postal code"));
+					suggestion.setStreet(pc.getStreetName());
+					errorCount++;
+				}
+				if (different(pc.getStreetTypeCode(), a.getStreetType())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street type does not agree with postal code"));
+					suggestion.setStreetType(pc.getStreetTypeCode());
+					errorCount++;
+				}
+				if (a.isStreetTypePrefix() != isStreetTypePrefix(suggestion, pc)) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street type prefix does not agree with postal code"));
+					suggestion.setStreetTypePrefix(isStreetTypePrefix(suggestion, pc));
+					errorCount++;
+				}
+				if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street direction does not agree with postal code"));
+					suggestion.setStreetDirection(pc.getStreetDirectionCode());
+					errorCount++;
+				}
+				if (a.getStreetNumber() == null) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street number missing from urban address."));
+					errorCount++;
+					//XXX Remove this line, need to see why a street number in an urban address is not being parsed
+					System.err.println("Urban address missing street number is " + a.getAddress());
+				} else if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
+						(pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street number does not fall into the range of allowed street numbers for this postal code."));
+					errorCount++;
+				}
+//            			Partial implementation of how street suffixs are supposed to be appended but is not consistent with the test data.
+//            			if (pc.getStreetAddressFromNumber() == a.getStreetNumber() && pc.getStreetAddressNumberSuffixFromCode() != null) {
+//            				if (a.getStreetNumberSuffix() == null) {
+//            					errorList.add(ValidateResult.createValidateResult(
+//                						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
+//                				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
+//                				errorCount++;
+//            				} else {
+//            					char pcSuffix = pc.getStreetAddressNumberSuffixFromCode().charAt(0);
+//            					char aSuffix = a.getStreetNumberSuffix().charAt(0);
+//            					if (!(pcSuffix >= 65 && (aSuffix >= pcSuffix || aSuffix == 49 || aSuffix == 50 || aSuffix == 51))) {
+//            						errorList.add(ValidateResult.createValidateResult(
+//                    						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
+//                    				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
+//                    				errorCount++;
+//            					}
+//            				}
+//            			}
+				if (a.getStreetNumber() != null) {
+					if (pc.getStreetAddressSequenceType() == AddressSequenceType.ODD && a.getStreetNumber() % 2 == 0) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "Street number is even when it should be odd."));
+						errorCount++;
+					} else if (pc.getStreetAddressSequenceType() == AddressSequenceType.EVEN && a.getStreetNumber() % 2 == 1) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "Street number is odd when it should be even."));
+						errorCount++;
+					}
+				}
+			
+				//XXX This is not always true, need to figure out when
+//				if (!a.isSuitePrefix()) {
+//					errorList.add(ValidateResult.createValidateResult(
+//							Status.FAIL, "Suite number should be a prefix."));
+//					suggestion.setSuitePrefix(true);
+//					errorCount++;
+//				}
+
+				// TODO all the other fields
+			} else if (a.getType() == Type.GD) {
+				if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
+						&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
+					suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
+					errorCount++;
+				} else if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
+						&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
+					suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
+					errorCount++;
+				}
+			} else if (a.getType() == Type.LOCK_BOX) {
+				if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
+					suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
+					errorCount++;
+				} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
+					suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
+					errorCount++;
+				}
+				
+				if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Invalid delivery installation type."));
+					suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
+					errorCount++;
+				}
+				
+				if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Invalid delivery installation name."));
+					suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
+					errorCount++;
+				}
+			} else if (a.getType() == Type.RURAL) {
+				if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Invalid delivery installation type."));
+					suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
+					errorCount++;
+				}
+				
+				if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Invalid delivery installation name."));
+					suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
+					errorCount++;
+				}
+			}
+			
+
+			if (errorCount > 0) {
+				List<Address> addresses = addressSuggestionsByError.get(errorCount);
+				if (addresses == null) {
+					addresses = new ArrayList<Address>();
+					addresses.add(suggestion);
+					addressSuggestionsByError.put(errorCount, addresses);
+				} else {
+					addresses.add(suggestion);
+				}
+			} else {
+				suggestions.clear();
+				return;
+			}
+			if (errorCount < smallestErrorCount) {
+				smallestErrorList = errorList;
+				smallestErrorCount = errorCount;
+			}
+		}
+		results.addAll(smallestErrorList);
+		final ArrayList<Integer> errorCounts = new ArrayList<Integer>(addressSuggestionsByError.keySet());
+		Collections.sort(errorCounts);
+		for (Integer errorCount : errorCounts) {
+			for (Address suggestion : addressSuggestionsByError.get(errorCount)) {
+				suggestions.add(suggestion);
+			}
+		}
+	}
     
     /**
      * Given an address that has a corrected street name and the postal code retrieved by

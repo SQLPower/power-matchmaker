@@ -93,6 +93,41 @@ public class Address implements AddressInterface {
 	 */
 	public static final List<String> SUITE_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"APARTMENT", "SUITE", "UINT", "APPARTEMENT", "BUREAU", "UNITE", "PENTHOUSE", "ROOM", "TOWNHOUSE", "PIECE", "SALLE"}));
 	
+	/**
+	 * The list of short forms of rural route types that are valid.
+	 */
+	public static final List<String> RURAL_ROUTE_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"RR", "SS", "MR"}));
+	
+	/**
+	 * The list of long forms of accepted rural route types. Can be matched with minor spelling mistakes.
+	 */
+	public static final List<String> RURAL_ROUTE_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"RURAL ROUTE", "SUBURBAN SERVICE", "MOBILE ROUTE"}));
+	
+	/**
+	 * List of accepted short forms for DI types.
+	 */
+	public static final List<String> DELIVERY_INSTALLATION_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"BDP", "CC", "CDO", "CMC", "CPC", "CSP", "LCD", "PDF", "PO", "RPO", "STN", "SUCC"}));
+	
+	public static final List<String> DELIVERY_INSTALLATION_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"BUREAU DE POSTE", "CONCESSION COMMERCIALE", "COMMERCIAL DEALERSHIP OUTLET", "COMMUNITY MAIL CENTRE", "CENTRE POSTAL COMMUNAUTAIRE", "COMPTOIR SERVICE POSTAL", "LETTER CARRIER DEPOT", "POSTE DE FACTEURS", "POST OFFICE", "RETAIL POSTAL OUTLET", "STATION", "SUCCURSALE"}));
+	
+	public static boolean isDeliveryInstallationType(String s) {
+		if (s == null) return false;
+		if (DELIVERY_INSTALLATION_TYPES.contains(s)) return true;
+		for (String diType : DELIVERY_INSTALLATION_TYPES_LONG) {
+			if (LevenshteinDistance.computeLevenshteinDistance(s, diType) <= diType.length()/4) return true;
+		}
+		return false;
+	}
+	
+	public static boolean isRuralRoute(String s) {
+		if (s == null) return false;
+		if (RURAL_ROUTE_TYPES.contains(s)) return true;
+		for (String routeType : RURAL_ROUTE_TYPES_LONG) {
+			if (LevenshteinDistance.computeLevenshteinDistance(s, routeType) <= routeType.length()/4) return true;
+		}
+		return false;
+	}
+	
 	public static boolean isSuiteType(String s) {
 		if (s == null) return false;
 		for (String suiteType : SUITE_TYPES) {

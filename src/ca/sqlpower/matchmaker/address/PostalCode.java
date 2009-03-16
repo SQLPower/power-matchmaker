@@ -115,6 +115,10 @@ public class PostalCode {
 
     private RecordType recordType;
     
+    private String deliveryInstallationAreaName;
+    private String deliveryInstallationQualifierName;
+    private String deliveryInstallationTypeDescription;
+    
     public String getPostalCode() {
         return postalCode;
     }
@@ -455,6 +459,44 @@ public class PostalCode {
 
 	public Long getPrimaryKey() {
 		return primaryKey;
+	}
+
+
+
+	public String getDeliveryInstallationAreaName() {
+		return deliveryInstallationAreaName;
+	}
+
+
+
+	public void setDeliveryInstallationAreaName(String deliveryInstallationAreaName) {
+		this.deliveryInstallationAreaName = deliveryInstallationAreaName;
+	}
+
+
+
+	public String getDeliveryInstallationQualifierName() {
+		return deliveryInstallationQualifierName;
+	}
+
+
+
+	public void setDeliveryInstallationQualifierName(
+			String deliveryInstallationQualifierName) {
+		this.deliveryInstallationQualifierName = deliveryInstallationQualifierName;
+	}
+
+
+
+	public String getDeliveryInstallationTypeDescription() {
+		return deliveryInstallationTypeDescription;
+	}
+
+
+
+	public void setDeliveryInstallationTypeDescription(
+			String deliveryInstallationTypeDescription) {
+		this.deliveryInstallationTypeDescription = deliveryInstallationTypeDescription;
 	}
 
 
