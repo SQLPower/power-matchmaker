@@ -221,6 +221,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					JButton saveButton = new JButton("Save");
 					saveButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
+							selected.setOutputAddress(selectedAddressLabel.getAddress());
 							pool.addAddress(selected, logger);
 							try {
 								pool.store(logger, false, false);
