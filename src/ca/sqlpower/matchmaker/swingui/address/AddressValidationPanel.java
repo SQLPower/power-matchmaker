@@ -196,10 +196,16 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 				
 				try {
-					Address address1 = Address.parse(
+					Address address1;
+					
+					if (selected.getOutputAddress().isEmptyAddress()) {
+						address1 = Address.parse(
 							selected.getAddressLine1(), selected
 							.getMunicipality(), selected.getProvince(),
 							selected.getPostalCode(), selected.getCountry(), addressDatabase);
+					} else {
+						address1 = selected.getOutputAddress();
+					}
 					
 					selectedAddressLabel = new AddressLabel(address1, null, false, null, addressDatabase);
 					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
