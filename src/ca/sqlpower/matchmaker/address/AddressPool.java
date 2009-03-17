@@ -55,25 +55,40 @@ import ca.sqlpower.util.MonitorableImpl;
  */
 public class AddressPool extends MonitorableImpl{
 
-	private static final String SOURCE_ADDRESS_KEY_COLUMN_BASE 	= "src_addr_key_col_";
-	private static final String INPUT_ADDRESS_LINE1 			= "input_address_line1";
-	private static final String INPUT_ADDRESS_LINE2 			= "input_address_line2";
-	private static final String INPUT_MUNICIPALITY		 		= "input_municipality";
-	private static final String INPUT_PROVINCE 					= "input_province";
-	private static final String INPUT_COUNTRY 					= "input_country";
-	private static final String INPUT_POSTAL_CODE 				= "input_postal_code";
-	private static final String OUTPUT_SUITE 					= "output_suite";
-	private static final String OUTPUT_STREET_NUMBER 			= "output_street_number";
-	private static final String OUTPUT_STREET_NUMBER_SUFFIX 	= "output_street_number_suffix";
-	private static final String OUTPUT_STREET_NAME	 			= "output_street_name";
-	private static final String OUTPUT_STREET_TYPE 				= "output_street_type";
-	private static final String OUTPUT_STREET_DIRECTION 		= "output_street_direction";
-	private static final String OUTPUT_MUNICIPALITY 			= "output_municipality";
-	private static final String OUTPUT_PROVINCE 				= "output_province";
-	private static final String OUTPUT_COUNTRY				 	= "output_country";
-	private static final String OUTPUT_POSTAL_CODE		 		= "output_postal_code";
-	private static final String STATUS 							= "status";
-
+	private static final String SOURCE_ADDRESS_KEY_COLUMN_BASE 		= "src_addr_key_col_";
+	private static final String INPUT_ADDRESS_LINE1 				= "input_address_line1";
+	private static final String INPUT_ADDRESS_LINE2 				= "input_address_line2";
+	private static final String INPUT_MUNICIPALITY		 			= "input_municipality";
+	private static final String INPUT_PROVINCE 						= "input_province";
+	private static final String INPUT_COUNTRY 						= "input_country";
+	private static final String INPUT_POSTAL_CODE 					= "input_postal_code";
+	private static final String OUTPUT_COUNTRY						= "output_country";
+	private static final String OUTPUT_DELIVERY_INSTALLATION_NAME 	= "output_delivery_installation_name";
+	private static final String OUTPUT_DELIVERY_INSTALLATION_TYPE 	= "output_delivery_installation_name";
+	private static final String OUTPUT_DIRECTION_PREFIX				= "output_direction_prefix";
+	private static final String OUTPUT_FAILED_PARSING_STRING		= "output_failed_parsing_string";
+	private static final String OUTPUT_GENERAL_DELIVERY_NAME		= "output_general_delivery_name";
+	private static final String OUTPUT_LOCK_BOX_NUMBER				= "output_lock_box_number";
+	private static final String OUTPUT_LOCK_BOX_TYPE				= "output_lock_box_type";
+	private static final String OUTPUT_MUNICIPALITY 				= "output_municipality";
+	private static final String OUTPUT_POSTAL_CODE		 			= "output_postal_code";
+	private static final String OUTPUT_PROVINCE 					= "output_province";
+	private static final String OUTPUT_RURAL_ROUTE_NUMBER			= "output_rural_route_number";
+	private static final String OUTPUT_RURAL_ROUTE_TYPE				= "output_rural_route_type";
+	private static final String OUTPUT_STREET_NAME	 				= "output_street_name";
+	private static final String OUTPUT_STREET_DIRECTION 			= "output_street_direction";
+	private static final String OUTPUT_STREET_NUMBER 				= "output_street_number";
+	private static final String OUTPUT_STREET_NUMBER_SUFFIX 		= "output_street_number_suffix";
+	private static final String OUTPUT_STREET_TYPE 					= "output_street_type";
+	private static final String OUTPUT_STREET_TYPE_PREFIX			= "output_street_type_prefix";
+	private static final String OUTPUT_SUITE 						= "output_suite";
+	private static final String OUTPUT_SUITE_PREFIX					= "output_suite_prefix";
+	private static final String OUTPUT_SUITE_TYPE					= "output_suite_type";
+	private	static final String OUTPUT_TYPE							= "output_type";
+	private static final String OUTPUT_UNPARSED_ADDRESS				= "output_unparsed_address";
+	private static final String OUTPUT_URBAN_BEFORE_RURAL			= "output_urban_before_rural";
+	private static final String STATUS 								= "status";
+	
 	private Map<List<Object>, AddressResult> addresses;
 	
 	private final Project project;
