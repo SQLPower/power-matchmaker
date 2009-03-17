@@ -32,9 +32,22 @@ public class AddressResult implements AddressInterface {
 	private static final Logger logger = Logger.getLogger(AddressResult.class); 
 
 	static enum StorageState {
-		NEW("NEW"),
+		/**
+		 * Address doesn't exist yet in the database
+		 */
+		NEW("NEW"),		
+		
+		/**
+		 * Address exists in the database and hasn't been changed in the
+		 * AddressPool since the last load or store call.
+		 */
 		CLEAN("CLEAN"),
-		DIRTY("DIRTY");
+		
+		/**
+		 * Address exists in the database, but has been changed in the
+		 * AddressPool since the last load or store call.
+		 */
+		DIRTY("DIRTY"); 
 		
 		private String name;
 		
