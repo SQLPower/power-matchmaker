@@ -201,7 +201,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 							.getMunicipality(), selected.getProvince(),
 							selected.getPostalCode(), selected.getCountry(), addressDatabase);
 					
-					selectedAddressLabel = new AddressLabel(address1, null, selected.isValidated(), false, null, addressDatabase);
+					selectedAddressLabel = new AddressLabel(address1, null, false, null, addressDatabase);
 					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
 					JButton revertButton = new JButton("Revert");
 					
@@ -217,7 +217,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						
 					});
 					
-					//TODO ..save button action to be added
 					JButton saveButton = new JButton("Save");
 					saveButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
@@ -233,28 +232,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						}
 					});
 					
-					JButton changeValidButton = new JButton("Change Valid Status");
-					changeValidButton.addActionListener(new ActionListener() {
-						
-						public void actionPerformed(ActionEvent e) {
-							if (selected.isValidated()) {
-								selected.setValidated(false);
-								selectedAddressLabel.setIsValid(false);
-								invalidResults.add(0, selected);
-								validResults.removeElement(selected);
-							} else {
-								selected.setValidated(true);
-								selectedAddressLabel.setIsValid(true);
-								validResults.add(0, selected);
-								invalidResults.removeElement(selected);
-							}
-							selectedAddressLabel.repaint();
-							needsValidationList.repaint();
-						}
-						
-					});
-					
-					
 					JLabel suggestLabel = new JLabel("Suggestions:");
 					suggestLabel.setFont(new Font(null, Font.BOLD, 13));
 					
@@ -267,7 +244,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					bbb.addRelatedGap();
 					bbb.addGridded(saveButton);
 					bbb.addRelatedGap();
-					bbb.addGridded(changeValidButton);
 					builder.add(bbb.getPanel(), cc.xy(1, 1));
 					builder.add(suggestLabel, cc.xy(3, 1));
 					builder.add(selectedAddressLabel, cc.xy(1, 3));
