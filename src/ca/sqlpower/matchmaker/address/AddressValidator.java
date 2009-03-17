@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address.Type;
+import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -138,6 +139,19 @@ public class AddressValidator {
             // TODO check how many fields match these criteria
             // (for example, if more than 1000 records match, just emit an error)
             
+            RecordType pcType = null;
+            if (a.getType() == Type.URBAN) {
+            	pcType = RecordType.STREET;
+            } else if (a.getType() == Type.RURAL) {
+            	pcType = RecordType.ROUTE;
+            } else if (a.getType() == Type.MIXED) {
+            	pcType = RecordType.STREET_AND_ROUTE;
+            } else if (a.getType() == Type.LOCK_BOX) {
+            	pcType = RecordType.LOCK_BOX;
+            } else if (a.getType() == Type.GD) {
+            	pcType = RecordType.GENERAL_DELIVERY;
+            }
+            
             if (!allNulls) {
                 ForwardCursor<PostalCode> matches = null;
                 try {
@@ -145,7 +159,7 @@ public class AddressValidator {
                     logger.debug("Checking address " + a);
                     Set<PostalCode> pcSet = new HashSet<PostalCode>();
                     for (PostalCode pc : matches) {
-                        if (pc.containsAddress(a)) {
+                        if ((pcType == null || pc.getRecordType() == pcType) && pc.containsAddress(a)) {
                             pcSet.add(pc);
                         }
                     }
@@ -209,7 +223,17 @@ public class AddressValidator {
 					errorCount++;
 				}
 			}
-			if (a.getType() == Type.URBAN || a.getType() == Type.MIXED) {
+			if (pc.getRecordType() == RecordType.STREET || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+				if (suggestion.getType() == null) {
+					if (pc.getRecordType() == RecordType.STREET) {
+						suggestion.setType(Type.URBAN);
+					} else if (pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+						suggestion.setType(Type.MIXED);
+						if (suggestion.isUrbanBeforeRural() == null) {
+							suggestion.setUrbanBeforeRural(true);
+						}
+					}
+				}
 				if (different(pc.getStreetName(), a.getStreet())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street name does not agree with postal code"));
@@ -238,8 +262,7 @@ public class AddressValidator {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street number missing from urban address."));
 					errorCount++;
-					//XXX Remove this line, need to see why a street number in an urban address is not being parsed
-					System.err.println("Urban address missing street number is " + a.getAddress());
+					logger.debug("Urban address missing street number is " + a.getAddress());
 				} else if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
 						(pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -290,7 +313,9 @@ public class AddressValidator {
 				}
 
 				// TODO all the other fields
-			} else if (a.getType() == Type.GD) {
+			}
+			if (pc.getRecordType() == RecordType.GENERAL_DELIVERY) {
+				suggestion.setType(Type.GD);
 				if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
 						&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -304,7 +329,11 @@ public class AddressValidator {
 					suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
 					errorCount++;
 				}
-			} else if (a.getType() == Type.LOCK_BOX) {
+				
+				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+			}
+			if (pc.getRecordType() == RecordType.LOCK_BOX) {
+				suggestion.setType(Type.LOCK_BOX);
 				if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
@@ -317,38 +346,44 @@ public class AddressValidator {
 					errorCount++;
 				}
 				
-				if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Invalid delivery installation type."));
-					suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
-					errorCount++;
+				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+			}
+			if (pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+				if (suggestion.getType() == null) {
+					if (pc.getRecordType() == RecordType.ROUTE) {
+						suggestion.setType(Type.RURAL);
+					} else if (pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+						suggestion.setType(Type.MIXED);
+						if (suggestion.isUrbanBeforeRural() == null) {
+							suggestion.setUrbanBeforeRural(false);
+						}
+					}
 				}
-				
-				if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Invalid delivery installation name."));
-					suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
-					errorCount++;
-				}
-			} else if (a.getType() == Type.RURAL || a.getType() == Type.MIXED) {
-				//TODO: expand this case, probably
 				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Invalid rural route type."));
 					suggestion.setRuralRouteType(Address.getRuralRouteShortForm(a.getRuralRouteType()));
 					errorCount++;
 				}
-				if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
+				
+				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+				
+				if (a.getRuralRouteNumber() == null && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
 					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Invalid delivery installation type."));
-					suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
+							Status.FAIL, "Missing rural route number."));
+					suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
 					errorCount++;
 				}
-				
-				if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
+				if (a.getRuralRouteNumber() != null && a.getRuralRouteNumber().length() > 0 && a.getRuralRouteNumber().charAt(0) == '#') {
 					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Invalid delivery installation name."));
-					suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
+							Status.FAIL, "Rural route number should not start with a #."));
+					suggestion.setRuralRouteNumber(a.getRuralRouteNumber().substring(1));
+					errorCount++;
+				}
+				if (different(suggestion.getRuralRouteNumber(), pc.getRouteServiceNumber()) && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Incorrect rural route number."));
+					suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
 					errorCount++;
 				}
 			}
@@ -380,6 +415,30 @@ public class AddressValidator {
 				suggestions.add(suggestion);
 			}
 		}
+	}
+	
+	/**
+	 * Given an address to correct, a postal code to correct to and a partially validated suggestion,
+	 * this method will check the delivery installation information and update the suggestion accordingly.
+	 * If there are corrections to be made errors will be added to the given error list and the number
+	 * of errors will be returned.
+	 */
+	private int correctDeliveryInstallation(Address a, PostalCode pc, Address suggestion, List<ValidateResult> errorList) {
+		int errorCount = 0;
+		if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
+			errorList.add(ValidateResult.createValidateResult(
+					Status.FAIL, "Invalid delivery installation type."));
+			suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
+			errorCount++;
+		}
+		
+		if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
+			errorList.add(ValidateResult.createValidateResult(
+					Status.FAIL, "Invalid delivery installation name."));
+			suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
+			errorCount++;
+		}
+		return errorCount;
 	}
 
 	/**

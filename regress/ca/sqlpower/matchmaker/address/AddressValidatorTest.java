@@ -154,7 +154,7 @@ public class AddressValidatorTest extends TestCase {
     public void testRuralRouteNoDIName() throws Exception {
     	Address a = new Address();
     	a.setRuralRouteType("RR");
-    	a.setRuralRouteNumber(4);
+    	a.setRuralRouteNumber("4");
     	a.setDeliveryInstallationType("STN");
     	a.setType(Type.RURAL);
     	a.setMunicipality("DUNDAS");

@@ -173,7 +173,7 @@ public class Address implements AddressInterface {
 	public static boolean isStreetDirection(String s) {
 		if (STREET_DIRECTIONS.contains(s)) return true;
 		for (String direction : STREET_DIRECTIONS_LONG) {
-			if (LevenshteinDistance.computeLevenshteinDistance(direction, s) <= direction.length()/4) return true;
+			if (LevenshteinDistance.computeLevenshteinDistance(direction, s) <= Math.max(direction.length()/3, 2)) return true;
 		}
 		return false;
 	}
@@ -201,7 +201,12 @@ public class Address implements AddressInterface {
 	 * string to describe a general delivery in French. False will be returned otherwise.
 	 */
 	static boolean isGeneralDeliveryFrench(String gdString) {
+		if (gdString == null) return false;
 		if (gdString.equals(GENERAL_DELIVERY_FRENCH)) {
+			return true;
+		}
+		String prType = "POSTE RESTANTE";
+		if (LevenshteinDistance.computeLevenshteinDistance(prType, gdString) <= prType.length()/4) {
 			return true;
 		}
 		return false;
@@ -212,6 +217,7 @@ public class Address implements AddressInterface {
 	 * string to describe a general delivery in English. False will be returned otherwise.
 	 */
 	public static boolean isGeneralDeliveryEnglish(String gdString) {
+		if (gdString == null) return false;
 		if (gdString.equals(GENERAL_DELIVERY_ENGLISH)) {
 			return true;
 		}
@@ -338,7 +344,7 @@ public class Address implements AddressInterface {
     
     private String ruralRouteType;
     
-    private Integer ruralRouteNumber;
+    private String ruralRouteNumber;
     
     /**
      * This is a boolean for mixed types. For each address the urban street name could come before
@@ -585,10 +591,10 @@ public class Address implements AddressInterface {
             sb.append(streetType).append(" ");
         }
         sb.append(street);
-        if (streetType != null && !streetTypePrefix) {
+        if (streetType != null && streetType.trim().length() > 0 && !streetTypePrefix) {
             sb.append(" ").append(streetType);
         }
-        if (streetDirection != null && !directionPrefix) {
+        if (streetDirection != null && streetDirection.trim().length() > 0 && !directionPrefix) {
             sb.append(" ").append(streetDirection);
         }
         if (suite != null && !suitePrefix) {
@@ -794,12 +800,12 @@ public class Address implements AddressInterface {
 		return ruralRouteType;
 	}
 
-	public void setRuralRouteNumber(Integer ruralRouteNumber) {
+	public void setRuralRouteNumber(String ruralRouteNumber) {
 			this.ruralRouteNumber = ruralRouteNumber;
 		
 	}
 
-	public Integer getRuralRouteNumber() {
+	public String getRuralRouteNumber() {
 		return ruralRouteNumber;
 	}
 
