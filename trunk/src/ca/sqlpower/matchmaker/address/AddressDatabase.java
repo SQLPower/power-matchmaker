@@ -241,7 +241,9 @@ public class AddressDatabase {
     	logger.debug("Looking for street type " + streetType);
     	if (streetType == null) return false;
     	for (String type : validAddressTypes.keySet()) {
-    		if (LevenshteinDistance.computeLevenshteinDistance(streetType, type) <= type.length()/3) return true;
+    		if (LevenshteinDistance.computeLevenshteinDistance(streetType, type) <= type.length()/3) {
+    			return true;
+    		}
     	}
     	return false;
     }

@@ -340,7 +340,7 @@ public class Address implements AddressInterface {
     
     private String lockBoxType;
     
-    private Integer lockBoxNumber;
+    private String lockBoxNumber;
     
     private String ruralRouteType;
     
@@ -578,7 +578,14 @@ public class Address implements AddressInterface {
         }
         if (streetNumber != null) {
             sb.append(streetNumber);
-            if (streetNumberSuffix != null) {
+            if (streetNumberSuffix != null && streetNumberSuffix.trim().length() > 0) {
+            	try {
+            		Integer.parseInt(streetNumberSuffix.substring(0, 1));
+            		sb.append(" ");
+            	} catch (NumberFormatException e) {
+            		//If the street number suffix does not start with a number place it
+            		//directly behind the street number without a space.
+            	}
                 sb.append(streetNumberSuffix);
             }
             sb.append(" ");
@@ -782,12 +789,12 @@ public class Address implements AddressInterface {
 		return lockBoxType;
 	}
 
-	public void setLockBoxNumber(Integer lockBoxNumber) {
+	public void setLockBoxNumber(String lockBoxNumber) {
 			this.lockBoxNumber = lockBoxNumber;
 		
 	}
 
-	public Integer getLockBoxNumber() {
+	public String getLockBoxNumber() {
 		return lockBoxNumber;
 	}
 
@@ -838,43 +845,234 @@ public class Address implements AddressInterface {
         if (postalCode != null) setPostalCode(postalCode.toUpperCase());
         if (country != null) setCountry(country.toUpperCase());
     }
- 
-	 /**
-	 * Determines equality based on the municipality, province, postalCode,
-	 * country and address fields of an Address object.
-	 */
+	
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof Address) {
-			Address other = (Address) obj;
-			return (((this.getMunicipality() == null && other.getMunicipality() == null) || ((this
-					.getMunicipality() != null && other.getMunicipality() != null) && (this
-					.getMunicipality().equals(other.getMunicipality()))))
-					&& ((this.getProvince() == null && other.getProvince() == null) || ((this
-							.getProvince() != null && other.getProvince() != null) && (this
-							.getProvince().equals(other.getProvince()))))
-					&& ((this.getPostalCode() == null && other.getPostalCode() == null) || ((this
-							.getPostalCode() != null && other.getPostalCode() != null) && (this
-							.getPostalCode().equals(other.getPostalCode())))) && ((this
-					.getAddress() == null && other.getAddress() == null) || ((this
-					.getAddress() != null && other.getAddress() != null) && (this
-					.getAddress().equals(other.getAddress())))));
-		} else {
+		if (!(obj instanceof Address)) {
 			return false;
 		}
+		Address a = (Address) obj;
+		if ((country == null && a.getCountry() != null) || (country != null && !country.equals(a.getCountry()))) {
+			return false;
+		}
+		if ((deliveryInstallationName == null && a.getDeliveryInstallationName() != null) 
+				|| (deliveryInstallationName != null && !deliveryInstallationName.equals(a.getDeliveryInstallationName()))) {
+			return false;
+		}
+		if ((deliveryInstallationType == null && a.getDeliveryInstallationType() != null) 
+				|| (deliveryInstallationType != null && !deliveryInstallationType.equals(a.getDeliveryInstallationType()))) {
+			return false;
+		}
+		if (directionPrefix != a.isDirectionPrefix()) {
+			return false;
+		}
+		if ((failedParsingString == null && a.getFailedParsingString() != null) 
+				|| (failedParsingString != null && !failedParsingString.equals(a.getFailedParsingString()))) {
+			return false;
+		}
+		if ((generalDeliveryName == null && a.getGeneralDeliveryName() != null) 
+				|| (generalDeliveryName != null && !generalDeliveryName.equals(a.getGeneralDeliveryName()))) {
+			return false;
+		}
+		if ((lockBoxNumber == null && a.getLockBoxNumber() != null) 
+				|| (lockBoxNumber != null && !lockBoxNumber.equals(a.getLockBoxNumber()))) {
+			return false;
+		}
+		if ((lockBoxType == null && a.getLockBoxType() != null) 
+				|| (lockBoxType != null && !lockBoxType.equals(a.getLockBoxType()))) {
+			return false;
+		}
+		if ((municipality == null && a.getMunicipality() != null) 
+				|| (municipality != null && !municipality.equals(a.getMunicipality()))) {
+			return false;
+		}
+		if ((postalCode == null && a.getPostalCode() != null) 
+				|| (postalCode != null && !postalCode.equals(a.getPostalCode()))) {
+			return false;
+		}
+		if ((province == null && a.getProvince() != null) 
+				|| (province != null && !province.equals(a.getProvince()))) {
+			return false;
+		}
+		if ((ruralRouteNumber == null && a.getRuralRouteNumber() != null) 
+				|| (ruralRouteNumber != null && !ruralRouteNumber.equals(a.getRuralRouteNumber()))) {
+			return false;
+		}
+		if ((ruralRouteType == null && a.getRuralRouteType() != null) 
+				|| (ruralRouteType != null && !ruralRouteType.equals(a.getRuralRouteType()))) {
+			return false;
+		}
+		if ((street == null && a.getStreet() != null) 
+				|| (street != null && !street.equals(a.getStreet()))) {
+			return false;
+		}
+		if ((streetDirection == null && a.getStreetDirection() != null) 
+				|| (streetDirection != null && !streetDirection.equals(a.getStreetDirection()))) {
+			return false;
+		}
+		if ((streetNumber == null && a.getStreetNumber() != null) 
+				|| (streetNumber != null && !streetNumber.equals(a.getStreetNumber()))) {
+			return false;
+		}
+		if ((streetNumberSuffix == null && a.getStreetNumberSuffix() != null) 
+				|| (streetNumberSuffix != null && !streetNumberSuffix.equals(a.getStreetNumberSuffix()))) {
+			return false;
+		}
+		if ((streetType == null && a.getStreetType() != null) 
+				|| (streetType != null && !streetType.equals(a.getStreetType()))) {
+			return false;
+		}
+		if (streetTypePrefix != a.isStreetTypePrefix()) {
+			return false;
+		}
+		if ((suite == null && a.getSuite() != null) 
+				|| (suite != null && !suite.equals(a.getSuite()))) {
+			return false;
+		}
+		if (suitePrefix != a.isSuitePrefix()) {
+			return false;
+		}
+		if ((suiteType == null && a.getSuiteType() != null) 
+				|| (suiteType != null && !suiteType.equals(a.getSuiteType()))) {
+			return false;
+		}
+		if ((type == null && a.getType() != null) 
+				|| (type != null && !type.equals(a.getType()))) {
+			return false;
+		}
+		if ((urbanBeforeRural == null && a.isUrbanBeforeRural() != null) 
+				|| (urbanBeforeRural != null && !urbanBeforeRural.equals(a.isUrbanBeforeRural()))) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	@Override
 	public int hashCode() {
 		int result = 17;
-		result = 31 * result + (municipality == null ? 0 : municipality.hashCode());
-		result = 31 * result + (province == null ? 0 : province.hashCode());
-		result = 31 * result + (postalCode == null ? 0 : postalCode.hashCode());
-		result = 31 * result + (getAddress() == null ? 0 : getAddress().hashCode());
+		int addValue = 0;
+		if (country != null) {
+			addValue = country.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (deliveryInstallationName != null) {
+			addValue = deliveryInstallationName.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (deliveryInstallationType != null) {
+			addValue = deliveryInstallationType.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (directionPrefix) {
+			addValue = 1;
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (failedParsingString != null) {
+			addValue = failedParsingString.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (generalDeliveryName != null) {
+			addValue = generalDeliveryName.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (lockBoxNumber != null) {
+			addValue = lockBoxNumber.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (lockBoxType != null) {
+			addValue = lockBoxType.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (municipality!= null) {
+			addValue = municipality.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (postalCode != null) {
+			addValue = postalCode.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (province != null) {
+			addValue = province.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (ruralRouteNumber != null) {
+			addValue = ruralRouteNumber.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (ruralRouteType != null) {
+			addValue = ruralRouteType.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (street != null) {
+			addValue = street.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (streetDirection != null) {
+			addValue = streetDirection.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (streetNumber != null) {
+			addValue = streetNumber.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (streetNumberSuffix != null) {
+			addValue = streetNumberSuffix.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (streetType != null) {
+			addValue = streetType.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (streetTypePrefix) {
+			addValue = 1;
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (suite != null) {
+			addValue = suite.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (suitePrefix) {
+			addValue = 1;
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (suiteType != null) {
+			addValue = suiteType.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (type != null) {
+			addValue = type.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (urbanBeforeRural != null) {
+			addValue = urbanBeforeRural.hashCode();
+		}
+		result = 31 * result + addValue;
+		
 		return result;
 	}
-
+    
 }

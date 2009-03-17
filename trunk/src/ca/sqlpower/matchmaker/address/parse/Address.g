@@ -137,7 +137,6 @@ public boolean setStartsUrbanNotRural(boolean b) {
 
 }
 
-
 address
 	:	{couldBeUrban()}?=> streetAddressStart	
 	|	{couldBeRural()}?=> ruralRouteAddress
@@ -151,9 +150,13 @@ failedParse
 	;
 
 failedToken
-	:	n=(STREETNUMSUFFIX | NUMANDSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME)
+	:	n=(STREETNUMSUFFIX | NUMERICSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME)
 							{
-							 address.setFailedParsingString(address.getFailedParsingString() + n);
+							 if (address.getFailedParsingString() == null) {
+							    address.setFailedParsingString($n.text);
+							 } else {
+							    address.setFailedParsingString(address.getFailedParsingString() + " " + $n.text);
+							 }
 							}
 	;
 streetAddressStart
@@ -167,7 +170,7 @@ streetAddressStart
 	;
 	
 streetAddress	
-	:	sn=(NUMBER|NUMANDSTREETSUFFIX) '-' street			
+	:	sn=NUMBER '-' street			
 							{ 
 							  address.setSuitePrefix(true);
 							  address.setSuite($sn.text);
@@ -177,14 +180,14 @@ streetAddress
 	;
 	
 street
-	:	n=SUITEANDSTREETNUM s=(STREETNUMSUFFIX|NUMANDSTREETSUFFIX) streetToken+
+	:	n=SUITEANDSTREETNUM s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX) streetToken+
 							{String[] numbers = $n.text.split("-");
 							 address.setSuitePrefix(true);
 							 address.setSuite(numbers[0]);
 							 address.setStreetNumber(quietIntParse(numbers[1]));
 							 address.setStreetNumberSuffix($s.text);
 							}
-	|	n=(NUMBER|NUMANDSTREETSUFFIX) s=(STREETNUMSUFFIX|NUMANDSTREETSUFFIX) streetToken+	
+	|	n=NUMBER s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX) streetToken+	
 							{address.setStreetNumber(quietIntParse($n.text));
 							 address.setStreetNumberSuffix($s.text);
 							}
@@ -192,12 +195,12 @@ street
 							 address.setStreetNumber(quietIntParse(streetNum.substring(0, streetNum.length() - 1)));
 							 address.setStreetNumberSuffix(streetNum.substring(streetNum.length() - 1, streetNum.length()));
 							}
-	|	n=(NUMBER|NUMANDSTREETSUFFIX) streetToken+			
+	|	n=NUMBER streetToken+			
 							{address.setStreetNumber(quietIntParse($n.text));}
 	;
 	
 streetToken
-	:	{Address.isSuiteType(input.LT(1).getText())}?=> s=NAME sn=(NUMBER|NUMANDSTREETSUFFIX)
+	:	{Address.isSuiteType(input.LT(1).getText())}?=> s=NAME sn=NUMBER
 							{
 							 address.setSuitePrefix(false);
 							 address.setSuiteType($s.text);
@@ -224,7 +227,7 @@ streetToken
 							 address.setStreetTypePrefix(!hasStreetNameStarted);
 							 address.setStreetType($t.text);
 							}
-	|	{hasStreetNameStarted}?	n=(NUMBER|NUMANDSTREETSUFFIX)
+	|	{hasStreetNameStarted}?	n=NUMBER
 							{
 							 address.setSuitePrefix(false);
 							 address.setSuite($n.text);
@@ -235,7 +238,7 @@ streetToken
 							 address.setUrbanBeforeRural(true);
 							}
 							
-	|	n=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX)		
+	|	n=(NAME|NUMBER|NUMANDSUFFIX|NUMERICSTREETSUFFIX|STREETNUMSUFFIX)		
 							{
 							 if (!address.isStreetTypePrefix() && address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
@@ -267,17 +270,17 @@ ruralRouteAddress
 	;
 	
 ruralRoute
-	:	{Address.isRuralRoute(input.LT(1).getText())}?=> rs=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
+	:	{Address.isRuralRoute(input.LT(1).getText())}?=> rs=NAME n=NUMBER? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs.text);
 							 address.setRuralRouteNumber($n.text);
 							}
-	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}?=> rs1=NAME rs2=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}?=> rs1=NAME rs2=NAME n=NUMBER? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs1.text + " " + $rs2.text);
 							 address.setRuralRouteNumber($n.text);
 							}
-	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}?=> rs1=NAME rs2=NAME rs3=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}?=> rs1=NAME rs2=NAME rs3=NAME n=NUMBER? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs1.text + " " + $rs2.text + " " + $rs3.text);
 							 address.setRuralRouteNumber($n.text);
@@ -297,13 +300,13 @@ lockBoxAddress
 	:	{Address.isLockBox(input.LT(1).getText())}? lb=NAME '#'? n=NUMBER diTypeAndName?
 							{
 							 address.setLockBoxType($lb.text);
-							 address.setLockBoxNumber(quietIntParse($n.text));
+							 address.setLockBoxNumber($n.text);
 							 address.setType(Address.Type.LOCK_BOX);
 							}
 	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}? lb1=NAME lb2=NAME '#'? n=NUMBER diTypeAndName?
 							{
 							 address.setLockBoxType($lb1.text + " " + $lb2.text);
-							 address.setLockBoxNumber(quietIntParse($n.text));
+							 address.setLockBoxNumber($n.text);
 							 address.setType(Address.Type.LOCK_BOX);
 							}
 	;
@@ -343,7 +346,7 @@ diTypeAndName
 	;
 
 diName
-	:	stn=(NAME|NUMBER|NUMANDSUFFIX|NUMANDSTREETSUFFIX|STREETNUMSUFFIX)
+	:	stn=(NAME|NUMBER|NUMANDSUFFIX|NUMERICSTREETSUFFIX|STREETNUMSUFFIX)
 							{
 							 if (address.getDeliveryInstallationName() == null) {
 							    address.setDeliveryInstallationName($stn.text);
@@ -356,11 +359,11 @@ diName
 SUITEANDSTREETNUM
 	:	('0'..'9')+'-'('0'..'9')+;
 	
-NUMANDSTREETSUFFIX
-	:	('1'..'3');
-	
 STREETNUMSUFFIX 
 	:	('A'..'Z');
+
+NUMERICSTREETSUFFIX
+	:	('1/4'|'1/2'|'3/4');
 	
 NUMANDSUFFIX
 	:	('0'..'9')+ ('A'..'Z');

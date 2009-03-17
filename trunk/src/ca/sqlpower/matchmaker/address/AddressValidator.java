@@ -59,6 +59,14 @@ public class AddressValidator {
      * {@link #getSuggestions()}.
      */
     private List<Address> suggestions;
+    
+    /**
+     * If true the first suggestion in the suggestions list is a valid postal code
+     * that is accurate for the given address. If false then either there is too many
+     * conflicts between the data given in the address or the address is missing too
+     * much information to accurately give a valid suggestion.
+     */
+    private boolean validSuggestion = true;
 
     
     /**
@@ -130,26 +138,26 @@ public class AddressValidator {
                 join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
                 allNulls = false;
             }
-            if (a.getStreet() != null) {
-                join.addCondition(db.postalCodeStreet, a.getStreet());
-                allNulls = false;
-            }
             
             
             // TODO check how many fields match these criteria
             // (for example, if more than 1000 records match, just emit an error)
             
-            RecordType pcType = null;
+            List<RecordType> validRecordTypes = new ArrayList<RecordType>();
             if (a.getType() == Type.URBAN) {
-            	pcType = RecordType.STREET;
+            	if (a.getStreet() != null) {
+            		join.addCondition(db.postalCodeStreet, a.getStreet());
+            		allNulls = false;
+            	}
+            	validRecordTypes.add(RecordType.STREET);
             } else if (a.getType() == Type.RURAL) {
-            	pcType = RecordType.ROUTE;
+            	validRecordTypes.add(RecordType.ROUTE);
             } else if (a.getType() == Type.MIXED) {
-            	pcType = RecordType.STREET_AND_ROUTE;
+            	validRecordTypes.add(RecordType.STREET_AND_ROUTE);
             } else if (a.getType() == Type.LOCK_BOX) {
-            	pcType = RecordType.LOCK_BOX;
+            	validRecordTypes.add(RecordType.LOCK_BOX);
             } else if (a.getType() == Type.GD) {
-            	pcType = RecordType.GENERAL_DELIVERY;
+            	validRecordTypes.add(RecordType.GENERAL_DELIVERY);
             }
             
             if (!allNulls) {
@@ -159,7 +167,7 @@ public class AddressValidator {
                     logger.debug("Checking address " + a);
                     Set<PostalCode> pcSet = new HashSet<PostalCode>();
                     for (PostalCode pc : matches) {
-                        if ((pcType == null || pc.getRecordType() == pcType) && pc.containsAddress(a)) {
+                        if (validRecordTypes.contains(pc.getRecordType()) && pc.containsAddress(a)) {
                             pcSet.add(pc);
                         }
                     }
@@ -193,15 +201,28 @@ public class AddressValidator {
 	 */
 	private void generateSuggestions(Address a, Municipality municipality,
 			Set<PostalCode> pcSet) {
-		Map<Integer, List<Address>> addressSuggestionsByError = new HashMap<Integer, List<Address>>();
+		Map<Integer, Set<Address>> addressSuggestionsByError = new HashMap<Integer, Set<Address>>();
 		List<ValidateResult> smallestErrorList = new ArrayList<ValidateResult>();
+		boolean smallestErrorIsValid = true;
 		int smallestErrorCount = Integer.MAX_VALUE;
 		for (PostalCode pc : pcSet) {
 			List<ValidateResult> errorList = new ArrayList<ValidateResult>();
 			int errorCount = 0;
+			boolean isValid = true;
 			Address suggestion = new Address(a);
-			suggestion.setPostalCode(pc.getPostalCode());
+			if (different(pc.getPostalCode(), a.getPostalCode())) {
+				if (a.getPostalCode() != null) {
+					isValid = false;
+				}
+				errorList.add(ValidateResult.createValidateResult(
+						Status.FAIL, "Postal codes do not agree"));
+				suggestion.setPostalCode(pc.getPostalCode());
+				errorCount++;
+			}
 			if (!pc.getProvinceCode().equals(a.getProvince())) {
+				if (a.getProvince() != null) {
+					isValid = false;
+				}
 				errorList.add(ValidateResult.createValidateResult(
 						Status.FAIL, "Province code does not agree with postal code"));
 				suggestion.setProvince(pc.getProvinceCode());
@@ -259,12 +280,14 @@ public class AddressValidator {
 					errorCount++;
 				}
 				if (a.getStreetNumber() == null) {
+					isValid = false;
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street number missing from urban address."));
 					errorCount++;
 					logger.debug("Urban address missing street number is " + a.getAddress());
 				} else if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
 						(pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
+					isValid = false;
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street number does not fall into the range of allowed street numbers for this postal code."));
 					errorCount++;
@@ -289,10 +312,12 @@ public class AddressValidator {
 //            			}
 				if (a.getStreetNumber() != null) {
 					if (pc.getStreetAddressSequenceType() == AddressSequenceType.ODD && a.getStreetNumber() % 2 == 0) {
+						isValid = false;
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "Street number is even when it should be odd."));
 						errorCount++;
 					} else if (pc.getStreetAddressSequenceType() == AddressSequenceType.EVEN && a.getStreetNumber() % 2 == 1) {
+						isValid = false;
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "Street number is odd when it should be even."));
 						errorCount++;
@@ -390,9 +415,9 @@ public class AddressValidator {
 			
 
 			if (errorCount > 0) {
-				List<Address> addresses = addressSuggestionsByError.get(errorCount);
+				Set<Address> addresses = addressSuggestionsByError.get(errorCount);
 				if (addresses == null) {
-					addresses = new ArrayList<Address>();
+					addresses = new HashSet<Address>();
 					addresses.add(suggestion);
 					addressSuggestionsByError.put(errorCount, addresses);
 				} else {
@@ -405,11 +430,16 @@ public class AddressValidator {
 			if (errorCount < smallestErrorCount) {
 				smallestErrorList = errorList;
 				smallestErrorCount = errorCount;
+				smallestErrorIsValid = isValid;
 			}
 		}
 		results.addAll(smallestErrorList);
 		final ArrayList<Integer> errorCounts = new ArrayList<Integer>(addressSuggestionsByError.keySet());
 		Collections.sort(errorCounts);
+		//If there is only one suggestion at the lowest error count then that is a valid suggestion, otherwise invalid
+		if (!smallestErrorIsValid || (addressSuggestionsByError.get(smallestErrorCount) != null && addressSuggestionsByError.get(smallestErrorCount).size() > 1)) {
+			validSuggestion = false;
+		}
 		for (Integer errorCount : errorCounts) {
 			for (Address suggestion : addressSuggestionsByError.get(errorCount)) {
 				suggestions.add(suggestion);
@@ -546,4 +576,8 @@ public class AddressValidator {
         }
         return Collections.unmodifiableList(suggestions);
     }
+    
+    public boolean isValidSuggestion() {
+		return validSuggestion;
+	}
 }

@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import ca.sqlpower.matchmaker.address.Address.Type;
+
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.Relationship;
@@ -118,6 +120,15 @@ public class PostalCode {
     private String deliveryInstallationAreaName;
     private String deliveryInstallationQualifierName;
     private String deliveryInstallationTypeDescription;
+    
+    /**
+     * This value can contain non-numeric values
+     */
+    private String lockBoxBagFromNumber;
+    /**
+     * This value can contain non-numeric values
+     */
+    private String lockBoxBagToNumber;
     
     public String getPostalCode() {
         return postalCode;
@@ -501,6 +512,30 @@ public class PostalCode {
 
 
 
+	public String getLockBoxBagFromNumber() {
+		return lockBoxBagFromNumber;
+	}
+
+
+
+	public void setLockBoxBagFromNumber(String lockBoxBagFromNumber) {
+		this.lockBoxBagFromNumber = lockBoxBagFromNumber;
+	}
+
+
+
+	public String getLockBoxBagToNumber() {
+		return lockBoxBagToNumber;
+	}
+
+
+
+	public void setLockBoxBagToNumber(String lockBoxBagToNumber) {
+		this.lockBoxBagToNumber = lockBoxBagToNumber;
+	}
+
+
+
 	@Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -550,14 +585,37 @@ public class PostalCode {
     public boolean containsAddress(Address a) {
         if (!nullSafeEquals(getProvinceCode(), a.getProvince())) return false;
         if (!nullSafeEquals(getMunicipalityName(), a.getMunicipality())) return false;
-        if (!nullSafeEquals(getStreetName(), a.getStreet())) return false;
-        
-        Integer from = getStreetAddressFromNumber();
-        Integer to = getStreetAddressToNumber();
-        
-        // in English: if there is a from and to street number, but the address falls outside it, FAIL!
-        if (from != null && to != null && (a.getStreetNumber() < from || a.getStreetNumber() > to)) {
-            return false;
+        if (a.getType() == Type.URBAN) {
+        	if (!nullSafeEquals(getStreetName(), a.getStreet())) return false;
+
+        	Integer from = getStreetAddressFromNumber();
+        	Integer to = getStreetAddressToNumber();
+
+        	// in English: if there is a from and to street number, but the address falls outside it, FAIL!
+        	if (from != null && to != null && (a.getStreetNumber() < from || a.getStreetNumber() > to)) {
+        		return false;
+        	}
+        }
+        if (a.getType() == Type.RURAL) {
+        	if (a.getRuralRouteNumber() != null && getRouteServiceNumber() != null 
+        			&& !getRouteServiceNumber().equals(a.getRuralRouteNumber())) {
+        		return false;
+        	}
+        }
+        if (a.getType() == Type.LOCK_BOX) {
+        	try {
+        		int from = Integer.parseInt(getLockBoxBagFromNumber());
+            	int to = Integer.parseInt(getLockBoxBagToNumber());
+            	int addressNumber = Integer.parseInt(a.getLockBoxNumber());
+
+            	// in English: if there is a from and to lock box number, but the address falls outside it, FAIL!
+            	if (addressNumber < from || addressNumber > to) {
+            		return false;
+            	}
+        	} catch (NumberFormatException e) {
+        		//Lock box numbers can be non-numeric, only checking the range
+        		//at current if it is numeric.
+        	}
         }
         
         return true;
