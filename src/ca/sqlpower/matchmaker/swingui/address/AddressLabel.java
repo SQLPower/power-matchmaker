@@ -28,8 +28,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -115,23 +115,14 @@ public class AddressLabel extends JComponent {
     
     private	DefaultFormBuilder problemsBuilder;
     
-    /**
-     * This is the flag for the bigger label in the center 
-     * of the validation screen. You should only use it
-     * for this addressLabel.
-     */
-    private boolean isValid;
-	
     public AddressLabel(AddressInterface address, boolean isSelected, JList list, AddressDatabase addressDatabase) {
-        this(address, null, false, isSelected, list, addressDatabase);
+        this(address, null, isSelected, list, addressDatabase);
     }
     
-    public AddressLabel(AddressInterface address, AddressInterface comparisonAddress, boolean isValid,
+    public AddressLabel(AddressInterface address, AddressInterface comparisonAddress, 
     					boolean isSelected, JList list, final AddressDatabase addressDatabase) {
-    	
-		this.currentAddress = this.revertToAddress = address;
+    	this.currentAddress = this.revertToAddress = address;
         this.comparisonAddress = comparisonAddress;
-        this.isValid = isValid;
 		this.isSelected = isSelected;
 		this.list = list;
 		this.addressDatabase = addressDatabase;
@@ -144,9 +135,7 @@ public class AddressLabel extends JComponent {
 			suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			suggestionList.setCellRenderer(new AddressListCellRenderer(currentAddress, addressDatabase));
 			suggestionList.addMouseListener(new MouseAdapter() {
-
 				public void mouseClicked(MouseEvent e) {
-					setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 					logger.debug("Mouse Clicked on suggestion list " + ((JList)e.getSource()).getSelectedValue());
 					final Address selected = (Address) ((JList) e.getSource()).getSelectedValue();
 					if (selected != null) {
@@ -214,13 +203,13 @@ public class AddressLabel extends JComponent {
 					}
 					//TODO Figure out where to remove these listeners
 					addressTextField.addKeyListener(new AddressKeyAdapter());
-					addressTextField.addFocusListener(TextFieldFocusListener);
+					addressTextField.addFocusListener(new TextFieldFocusAdapter());
 					municipalityTextField.addKeyListener(new AddressKeyAdapter());
-					municipalityTextField.addFocusListener(TextFieldFocusListener);
+					municipalityTextField.addFocusListener(new TextFieldFocusAdapter());
 					provinceTextField.addKeyListener(new AddressKeyAdapter());
-					provinceTextField.addFocusListener(TextFieldFocusListener);
+					provinceTextField.addFocusListener(new TextFieldFocusAdapter());
 					postalCodeTextField.addKeyListener(new AddressKeyAdapter());
-					postalCodeTextField.addFocusListener(TextFieldFocusListener);
+					postalCodeTextField.addFocusListener(new TextFieldFocusAdapter());
 				}
 				
 			});
@@ -257,13 +246,6 @@ public class AddressLabel extends JComponent {
 				checkIcon.paintIcon(this, g2, x, y);
 				x += checkIcon.getIconWidth() + 4;
 				repaint();
-			}
-		}
-		// set the check icon for the validated bigger selected icon
-		if (list == null) {
-			if (isValid) {
-				checkIcon.paintIcon(this, g2, x, y);
-				x += checkIcon.getIconWidth() + 4;
 			}
 		}
 		if (!isFieldMissing(currentAddress.getAddress())) {
@@ -365,17 +347,6 @@ public class AddressLabel extends JComponent {
 		return str.trim().equals("null") || str.trim().equals("");
 	}
 	
-	/**
-	 * This should only be called if this addressLabel is the 
-	 * bigger addressLabel in the center of the validation screen
-	 * @param isValid the value to indicate whether the address  
-	 * 		  label is valid or not
-	 * see {@link #isValid}
-	 */
-	public void setIsValid(boolean isValid) {
-		this.isValid = isValid;
-	}
-	
 	private boolean isClickingRightArea(MouseEvent e, Rectangle2D rec) {
 		logger.debug(e.getPoint());
 		logger.debug((rec.getX() + BORDER_SPACE) + "  " + rec.getY());
@@ -417,13 +388,7 @@ public class AddressLabel extends JComponent {
 	}
 	
 	
-	FocusListener TextFieldFocusListener = new FocusListener() {
-
-		public void focusGained(FocusEvent e) {
-			// TODO Auto-generated method stub
-			logger.debug("Stub call: FocusListener.focusGained()");
-			
-		}
+	class TextFieldFocusAdapter extends FocusAdapter {
 
 		public void focusLost(FocusEvent e) {
 			((JTextField)e.getSource()).setVisible(false);
@@ -439,7 +404,6 @@ public class AddressLabel extends JComponent {
 					repaint();
 				}
 			}
-		
 		
 	};
 	
