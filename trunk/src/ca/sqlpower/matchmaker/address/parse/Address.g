@@ -213,6 +213,14 @@ streetToken
 							 if (address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
 							 }
+							 if (!address.isSuitePrefix() && address.getSuite() != null) {
+							    if (address.getSuiteType() != null) {
+							       appendStreetName(address.getSuiteType());
+							       address.setSuiteType(null);
+							    }
+							    appendStreetName(address.getSuite());
+							    address.setSuite(null);
+							 }
 							 address.setStreetTypePrefix(!hasStreetNameStarted);
 							 address.setStreetType($t.text);
 							}
@@ -259,20 +267,20 @@ ruralRouteAddress
 	;
 	
 ruralRoute
-	:	{Address.isRuralRoute(input.LT(1).getText())}? rs=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
+	:	{Address.isRuralRoute(input.LT(1).getText())}?=> rs=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs.text);
-							 address.setRuralRouteNumber(quietIntParse($n.text));
+							 address.setRuralRouteNumber($n.text);
 							}
-	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}? rs1=NAME rs2=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())}?=> rs1=NAME rs2=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs1.text + " " + $rs2.text);
-							 address.setRuralRouteNumber(quietIntParse($n.text));
+							 address.setRuralRouteNumber($n.text);
 							}
-	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? rs1=NAME rs2=NAME rs3=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
+	|	{Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}?=> rs1=NAME rs2=NAME rs3=NAME n=(NUMBER|NUMANDSTREETSUFFIX)? ruralRouteSuffix
 							{
 							 address.setRuralRouteType($rs1.text + " " + $rs2.text + " " + $rs3.text);
-							 address.setRuralRouteNumber(quietIntParse($n.text));
+							 address.setRuralRouteNumber($n.text);
 							}
 	;
 
@@ -286,13 +294,13 @@ ruralRouteSuffix
 	;
 	
 lockBoxAddress
-	:	{Address.isLockBox(input.LT(1).getText())}? lb=NAME '#'? n=NUMBER diTypeAndName
+	:	{Address.isLockBox(input.LT(1).getText())}? lb=NAME '#'? n=NUMBER diTypeAndName?
 							{
 							 address.setLockBoxType($lb.text);
 							 address.setLockBoxNumber(quietIntParse($n.text));
 							 address.setType(Address.Type.LOCK_BOX);
 							}
-	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}? lb1=NAME lb2=NAME '#'? n=NUMBER diTypeAndName
+	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}? lb1=NAME lb2=NAME '#'? n=NUMBER diTypeAndName?
 							{
 							 address.setLockBoxType($lb1.text + " " + $lb2.text);
 							 address.setLockBoxNumber(quietIntParse($n.text));
@@ -301,17 +309,17 @@ lockBoxAddress
 	;
 	
 generalDeliveryAddress
-	:	{Address.isGeneralDelivery(input.LT(1).getText())}? gd=NAME diTypeAndName
+	:	{Address.isGeneralDelivery(input.LT(1).getText())}?=> gd=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd.text);
 							 address.setType(Address.Type.GD);
 							}
-	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}? gd1=NAME gd2=NAME diTypeAndName
+	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}?=> gd1=NAME gd2=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text);
 							 address.setType(Address.Type.GD);
 							}
-	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? 
+	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}?=> 
 			gd1=NAME gd2=(STREETNUMSUFFIX|NAME) gd3=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text + " " + $gd3.text);
@@ -320,15 +328,15 @@ generalDeliveryAddress
 	;
 	
 diTypeAndName
-	:	{Address.isDeliveryInstallationType(input.LT(1).getText())}? dt=NAME diName*
+	:	{Address.isDeliveryInstallationType(input.LT(1).getText())}?=> dt=NAME diName*
 							{
 							 address.setDeliveryInstallationType($dt.text);
 							}
-	|	{Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText())}? dt1=NAME dt2=NAME diName*
+	|	{Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText())}?=> dt1=NAME dt2=NAME diName*
 							{
 							 address.setDeliveryInstallationType($dt1.text + " " + $dt2.text);
 							}
-	|	{Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}? dt1=NAME dt2=NAME dt3=NAME diName*
+	|	{Address.isDeliveryInstallationType(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}?=> dt1=NAME dt2=NAME dt3=NAME diName*
 							{
 							 address.setDeliveryInstallationType($dt1.text + " " + $dt2.text + " " + $dt3.text);
 							}

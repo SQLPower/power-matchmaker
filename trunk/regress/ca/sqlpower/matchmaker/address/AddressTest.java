@@ -225,6 +225,28 @@ public class AddressTest extends TestCase {
     }
     
     /**
+     * Test to ensure the parser can deal with street addresses 
+     * where the street name is a number, and there is a street number
+     * and suite number.
+     * 
+     * Input: 3 9903 240 ST, MAPLE RIDGE, BC, V2W1G2
+     */
+    public void testAddressWithNumberStreetNameAndSuite() throws Exception {
+    	Address address = Address.parse("3 9903 240 ST", "MAPLE RIDGE", "BC", "V2W1G2", "CA", addressDatabase);
+    	System.out.println(address.getAddress());
+    	assertEquals(Integer.valueOf(9903), address.getStreetNumber());
+    	assertEquals("240", address.getStreet());
+    	assertEquals("ST", address.getStreetType());
+    	assertEquals("MAPLE RIDGE", address.getMunicipality());
+    	assertEquals("V2W1G2", address.getPostalCode());
+    	assertEquals("BC", address.getProvince());
+    	assertEquals("CA", address.getCountry());
+    	
+    	assertEquals("3", address.getSuite());
+    	assertTrue(address.isSuitePrefix());
+    }
+    
+    /**
      * Simple test to prove we can parse a lock box.
      */
     public void testLockBox() throws Exception {
@@ -244,7 +266,7 @@ public class AddressTest extends TestCase {
     public void testRuralRouteNoStation() throws Exception {
     	Address address = Address.parse("RR 4 STN", "DUNDAS", "ON", "L9H5E4", "CA", addressDatabase);
     	assertEquals("RR", address.getRuralRouteType());
-    	assertEquals(4, address.getRuralRouteNumber().intValue());
+    	assertEquals("4", address.getRuralRouteNumber());
     	assertEquals("STN", address.getDeliveryInstallationType());
     }
     

@@ -35,6 +35,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.util.LevenshteinDistance;
+
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
@@ -237,7 +239,11 @@ public class AddressDatabase {
     
     public boolean containsStreetType(String streetType) {
     	logger.debug("Looking for street type " + streetType);
-    	return validAddressTypes.keySet().contains(streetType);
+    	if (streetType == null) return false;
+    	for (String type : validAddressTypes.keySet()) {
+    		if (LevenshteinDistance.computeLevenshteinDistance(streetType, type) <= type.length()/3) return true;
+    	}
+    	return false;
     }
     
     public boolean isStreetTypeFrench(String streetType) {
