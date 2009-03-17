@@ -1119,5 +1119,22 @@ public class Address implements AddressInterface {
 		
 		return result;
 	}
-    
+	
+	/**
+	 * An 'empty' address is one that was loaded from the address result table
+	 * with all null fields. This is currently being used to determine if a
+	 * particular {@link AddressResult} has an empty output address.
+	 */
+	public boolean isEmptyAddress() {
+		return country == null &&
+				municipality == null &&
+				postalCode == null &&
+				province == null &&
+				street == null &&
+				streetDirection == null &&
+				streetNumberSuffix == null &&
+				streetNumber == 0 &&
+				streetType == null &&
+				suite == null;
+	}
 }

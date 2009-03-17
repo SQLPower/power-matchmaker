@@ -24,8 +24,12 @@ import java.awt.Component;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
+import org.antlr.runtime.RecognitionException;
+
+import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressInterface;
+import ca.sqlpower.matchmaker.address.AddressResult;
 
 public class AddressListCellRenderer implements ListCellRenderer {
 
@@ -43,6 +47,22 @@ public class AddressListCellRenderer implements ListCellRenderer {
     
 	public Component getListCellRendererComponent(JList list, Object value,
 			int index, boolean isSelected, boolean cellHasFocus) {
+		if (value instanceof AddressResult) {
+			AddressResult result = (AddressResult) value;
+			Address address;
+			if (!(result.getOutputAddress().isEmptyAddress())) {
+				address = result.getOutputAddress();
+			} else {
+				try {
+					address = Address.parse(
+							result.getAddressLine1(), result.getMunicipality(), result.getProvince(),
+							result.getPostalCode(), result.getCountry(), addressDatabase);
+				} catch (RecognitionException e) {
+					throw new RuntimeException("An error occured while trying to parse the address", e);
+				}
+			}
+			return new AddressLabel(address, comparisonAddress, isSelected, list, addressDatabase);
+		}
 		return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase);
 	}
 

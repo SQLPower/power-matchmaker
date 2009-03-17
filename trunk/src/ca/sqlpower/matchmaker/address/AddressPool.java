@@ -373,7 +373,11 @@ public class AddressPool extends MonitorableImpl{
 					Address outputAddress = result.getOutputAddress();
 					ps.setString(7, outputAddress.getSuite());
 					Integer streetNumber = outputAddress.getStreetNumber();
-					ps.setInt(8, streetNumber != null ? streetNumber : -1);
+					if (streetNumber == null) {
+						ps.setNull(8, Types.INTEGER);
+					} else {
+						ps.setInt(8,  streetNumber);
+					}
 					ps.setString(9, outputAddress.getStreetNumberSuffix());
 					ps.setString(10, outputAddress.getStreet());
 					ps.setString(11, outputAddress.getStreetType());
@@ -470,7 +474,11 @@ public class AddressPool extends MonitorableImpl{
 					Address outputAddress = result.getOutputAddress();
 					ps.setString(j + 6, outputAddress.getSuite());
 					Integer streetNumber = outputAddress.getStreetNumber();
-					ps.setInt(j + 7, streetNumber != null ? streetNumber : -1);
+					if (streetNumber == null) {
+						ps.setNull(j + 7, Types.INTEGER);
+					} else {
+						ps.setInt(j + 7,  streetNumber);
+					}
 					ps.setString(j + 8, outputAddress.getStreetNumberSuffix());
 					ps.setString(j + 9, outputAddress.getStreet());
 					ps.setString(j + 10, outputAddress.getStreetType());
