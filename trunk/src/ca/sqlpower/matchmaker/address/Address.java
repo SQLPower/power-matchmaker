@@ -48,15 +48,27 @@ public class Address implements AddressInterface {
 	
 	/**
 	 * The french short form for general delivery. This form should replace
-	 * any general delivery term used for a french general delivery. 
+	 * any general delivery term used for a french general delivery unless
+	 * it is an exact match to the long form. 
 	 */
 	public static final String GENERAL_DELIVERY_FRENCH = "PR";
 	
 	/**
 	 * The english short form for general delivery. This form should replace
-	 * any general delivery term used for a english general delivery. 
+	 * any general delivery term used for a english general delivery unless
+	 * it is an exact match to the long form. 
 	 */
 	public static final String GENERAL_DELIVERY_ENGLISH = "GD";
+	
+	/**
+	 * The french long form for general delivery. 
+	 */
+	public static final String GENERAL_DELIVERY_FRENCH_LONG = "POSTE RESTANTE";
+	
+	/**
+	 * The english long form for general delivery. 
+	 */
+	public static final String GENERAL_DELIVERY_ENGLISH_LONG = "GENERAL DELIVERY";
 	
 	/**
 	 * The accepted english translation for a lock box.
@@ -205,8 +217,7 @@ public class Address implements AddressInterface {
 		if (gdString.equals(GENERAL_DELIVERY_FRENCH)) {
 			return true;
 		}
-		String prType = "POSTE RESTANTE";
-		if (LevenshteinDistance.computeLevenshteinDistance(prType, gdString) <= prType.length()/4) {
+		if (LevenshteinDistance.computeLevenshteinDistance(GENERAL_DELIVERY_FRENCH_LONG, gdString) <= GENERAL_DELIVERY_FRENCH_LONG.length()/4) {
 			return true;
 		}
 		return false;
@@ -222,7 +233,7 @@ public class Address implements AddressInterface {
 			return true;
 		}
 		
-		if (LevenshteinDistance.computeLevenshteinDistance("GENERAL DELIVERY", gdString) <= 2) {
+		if (LevenshteinDistance.computeLevenshteinDistance(GENERAL_DELIVERY_ENGLISH_LONG, gdString) <= 2) {
 			return true;
 		}
 		if (LevenshteinDistance.computeLevenshteinDistance("GEN DELIVERY", gdString) <= 1) {
@@ -230,6 +241,14 @@ public class Address implements AddressInterface {
 		}
 		return false;
 		
+	}
+	
+	public static boolean isGeneralDeliveryExactMatch(String gdString) {
+		if (gdString == null) return false;
+		if (gdString.equals(GENERAL_DELIVERY_ENGLISH) || gdString.equals(GENERAL_DELIVERY_FRENCH) || gdString.equals(GENERAL_DELIVERY_FRENCH_LONG) || gdString.equals(GENERAL_DELIVERY_ENGLISH_LONG)) {
+			return true;
+		}
+		return false;
 	}
 
     public static enum Type {

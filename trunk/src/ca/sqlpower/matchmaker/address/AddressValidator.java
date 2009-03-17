@@ -351,18 +351,20 @@ public class AddressValidator {
 			}
 			if (pc.getRecordType() == RecordType.GENERAL_DELIVERY) {
 				suggestion.setType(Type.GD);
-				if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
-						&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
-					suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
-					errorCount++;
-				} else if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
-						&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
-					suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
-					errorCount++;
+				if (!Address.isGeneralDeliveryExactMatch(a.getGeneralDeliveryName())) {
+					if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
+							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
+						suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
+						errorCount++;
+					} else if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
+							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
+						suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
+						errorCount++;
+					}
 				}
 				
 				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
@@ -407,9 +409,7 @@ public class AddressValidator {
 					errorCount++;
 				}
 				
-				if (suggestion.getType() != Type.MIXED || a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
-					errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
-				}
+				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
 				
 				if (a.getRuralRouteNumber() == null && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -473,11 +473,20 @@ public class AddressValidator {
 	 */
 	private int correctDeliveryInstallation(Address a, PostalCode pc, Address suggestion, List<ValidateResult> errorList) {
 		int errorCount = 0;
+		if (a.getDeliveryInstallationName() == null && a.getDeliveryInstallationType() == null) {
+			return 0;
+		}
 		if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
-			errorList.add(ValidateResult.createValidateResult(
-					Status.FAIL, "Invalid delivery installation type."));
-			suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
-			errorCount++;
+			if (a.getDeliveryInstallationType() != null && pc.getDeliveryInstallationTypeDescription() != null &&
+					((a.getDeliveryInstallationType().equals("STN") && pc.getDeliveryInstallationTypeDescription().equals("SUCC"))
+							|| (a.getDeliveryInstallationType().equals("SUCC") && pc.getDeliveryInstallationTypeDescription().equals("STN")))) {
+				//no problem
+			} else {
+				errorList.add(ValidateResult.createValidateResult(
+						Status.FAIL, "Invalid delivery installation type."));
+				suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
+				errorCount++;
+			}
 		}
 		
 		if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
