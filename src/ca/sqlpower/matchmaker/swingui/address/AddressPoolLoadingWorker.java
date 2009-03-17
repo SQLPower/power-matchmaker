@@ -19,12 +19,9 @@
 
 package ca.sqlpower.matchmaker.swingui.address;
 
-import java.util.Collection;
-
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.AddressPool;
-import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.MonitorableWorker;
 
@@ -71,8 +68,7 @@ public class AddressPoolLoadingWorker extends MonitorableWorker {
 		started = true;
 		message = "Loading invalid addresses";
 		pool.load(logger);
-		Collection<AddressResult> results = pool.getAddressResults(logger);
-		panel = new AddressValidationPanel(session, results);
+		panel = new AddressValidationPanel(session, pool);
 	}
 
 	public Integer getJobSize() {
