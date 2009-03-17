@@ -173,7 +173,7 @@ public class Address implements AddressInterface {
 	public static boolean isStreetDirection(String s) {
 		if (STREET_DIRECTIONS.contains(s)) return true;
 		for (String direction : STREET_DIRECTIONS_LONG) {
-			if (LevenshteinDistance.computeLevenshteinDistance(direction, s) <= Math.max(direction.length()/3, 2)) return true;
+			if (LevenshteinDistance.computeLevenshteinDistance(direction, s) <= direction.length()/3) return true;
 		}
 		return false;
 	}
