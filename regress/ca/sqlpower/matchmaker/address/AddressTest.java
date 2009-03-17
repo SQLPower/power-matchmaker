@@ -253,7 +253,7 @@ public class AddressTest extends TestCase {
     	Address address = Address.parse("PO BOX #736 STN CENTRAL", "CHARLOTTETOWN", "PE", "C1A7L3", "CA", addressDatabase);
     	System.out.println("Lock box test " + address.getAddress());
     	assertEquals("PO BOX", address.getLockBoxType());
-    	assertEquals(736, address.getLockBoxNumber().intValue());
+    	assertEquals("736", address.getLockBoxNumber());
     	assertEquals("STN", address.getDeliveryInstallationType());
     	assertEquals("CENTRAL", address.getDeliveryInstallationName());
     }

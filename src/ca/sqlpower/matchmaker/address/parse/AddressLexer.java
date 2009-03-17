@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-17 10:32:18
+// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-17 13:06:42
 
 package ca.sqlpower.matchmaker.address.parse;
 
@@ -9,6 +9,7 @@ import org.antlr.runtime.DFA;
 import org.antlr.runtime.EarlyExitException;
 import org.antlr.runtime.Lexer;
 import org.antlr.runtime.MismatchedSetException;
+import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 
@@ -19,8 +20,8 @@ public class AddressLexer extends Lexer {
     public static final int T__12=12;
     public static final int T__11=11;
     public static final int NUMBER=7;
-    public static final int NUMANDSTREETSUFFIX=5;
     public static final int NUMANDSUFFIX=6;
+    public static final int NUMERICSTREETSUFFIX=5;
     public static final int EOF=-1;
     public static final int STREETNUMSUFFIX=4;
 
@@ -82,10 +83,10 @@ public class AddressLexer extends Lexer {
         try {
             int _type = SUITEANDSTREETNUM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:357:2: ( ( '0' .. '9' )+ '-' ( '0' .. '9' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:357:4: ( '0' .. '9' )+ '-' ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:2: ( ( '0' .. '9' )+ '-' ( '0' .. '9' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:4: ( '0' .. '9' )+ '-' ( '0' .. '9' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:357:4: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:4: ( '0' .. '9' )+
             int cnt1=0;
             loop1:
             do {
@@ -99,7 +100,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:357:5: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:5: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -116,7 +117,7 @@ public class AddressLexer extends Lexer {
             } while (true);
 
             match('-'); 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:357:18: ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:18: ( '0' .. '9' )+
             int cnt2=0;
             loop2:
             do {
@@ -130,7 +131,7 @@ public class AddressLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:357:19: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:19: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -156,32 +157,6 @@ public class AddressLexer extends Lexer {
         }
     }
     // $ANTLR end "SUITEANDSTREETNUM"
-
-    // $ANTLR start "NUMANDSTREETSUFFIX"
-    public final void mNUMANDSTREETSUFFIX() throws RecognitionException {
-        try {
-            int _type = NUMANDSTREETSUFFIX;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:2: ( ( '1' .. '3' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:4: ( '1' .. '3' )
-            {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:4: ( '1' .. '3' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:360:5: '1' .. '3'
-            {
-            matchRange('1','3'); 
-
-            }
-
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "NUMANDSTREETSUFFIX"
 
     // $ANTLR start "STREETNUMSUFFIX"
     public final void mSTREETNUMSUFFIX() throws RecognitionException {
@@ -209,29 +184,115 @@ public class AddressLexer extends Lexer {
     }
     // $ANTLR end "STREETNUMSUFFIX"
 
+    // $ANTLR start "NUMERICSTREETSUFFIX"
+    public final void mNUMERICSTREETSUFFIX() throws RecognitionException {
+        try {
+            int _type = NUMERICSTREETSUFFIX;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:2: ( ( '1/4' | '1/2' | '3/4' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:4: ( '1/4' | '1/2' | '3/4' )
+            {
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:4: ( '1/4' | '1/2' | '3/4' )
+            int alt3=3;
+            int LA3_0 = input.LA(1);
+
+            if ( (LA3_0=='1') ) {
+                int LA3_1 = input.LA(2);
+
+                if ( (LA3_1=='/') ) {
+                    int LA3_3 = input.LA(3);
+
+                    if ( (LA3_3=='4') ) {
+                        alt3=1;
+                    }
+                    else if ( (LA3_3=='2') ) {
+                        alt3=2;
+                    }
+                    else {
+                        NoViableAltException nvae =
+                            new NoViableAltException("", 3, 3, input);
+
+                        throw nvae;
+                    }
+                }
+                else {
+                    NoViableAltException nvae =
+                        new NoViableAltException("", 3, 1, input);
+
+                    throw nvae;
+                }
+            }
+            else if ( (LA3_0=='3') ) {
+                alt3=3;
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 3, 0, input);
+
+                throw nvae;
+            }
+            switch (alt3) {
+                case 1 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:5: '1/4'
+                    {
+                    match("1/4"); 
+
+
+                    }
+                    break;
+                case 2 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:11: '1/2'
+                    {
+                    match("1/2"); 
+
+
+                    }
+                    break;
+                case 3 :
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:17: '3/4'
+                    {
+                    match("3/4"); 
+
+
+                    }
+                    break;
+
+            }
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "NUMERICSTREETSUFFIX"
+
     // $ANTLR start "NUMANDSUFFIX"
     public final void mNUMANDSUFFIX() throws RecognitionException {
         try {
             int _type = NUMANDSUFFIX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:2: ( ( '0' .. '9' )+ ( 'A' .. 'Z' ) )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:4: ( '0' .. '9' )+ ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:2: ( ( '0' .. '9' )+ ( 'A' .. 'Z' ) )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:4: ( '0' .. '9' )+ ( 'A' .. 'Z' )
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:4: ( '0' .. '9' )+
-            int cnt3=0;
-            loop3:
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:4: ( '0' .. '9' )+
+            int cnt4=0;
+            loop4:
             do {
-                int alt3=2;
-                int LA3_0 = input.LA(1);
+                int alt4=2;
+                int LA4_0 = input.LA(1);
 
-                if ( ((LA3_0>='0' && LA3_0<='9')) ) {
-                    alt3=1;
+                if ( ((LA4_0>='0' && LA4_0<='9')) ) {
+                    alt4=1;
                 }
 
 
-                switch (alt3) {
+                switch (alt4) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:5: '0' .. '9'
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:5: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -239,16 +300,16 @@ public class AddressLexer extends Lexer {
             	    break;
 
             	default :
-            	    if ( cnt3 >= 1 ) break loop3;
+            	    if ( cnt4 >= 1 ) break loop4;
                         EarlyExitException eee =
-                            new EarlyExitException(3, input);
+                            new EarlyExitException(4, input);
                         throw eee;
                 }
-                cnt3++;
+                cnt4++;
             } while (true);
 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:16: ( 'A' .. 'Z' )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:366:17: 'A' .. 'Z'
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:16: ( 'A' .. 'Z' )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:17: 'A' .. 'Z'
             {
             matchRange('A','Z'); 
 
@@ -270,19 +331,19 @@ public class AddressLexer extends Lexer {
         try {
             int _type = NUMBER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:2: ( ( '#' )? ( '0' .. '9' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:4: ( '#' )? ( '0' .. '9' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:372:2: ( ( '#' )? ( '0' .. '9' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:372:4: ( '#' )? ( '0' .. '9' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:4: ( '#' )?
-            int alt4=2;
-            int LA4_0 = input.LA(1);
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:372:4: ( '#' )?
+            int alt5=2;
+            int LA5_0 = input.LA(1);
 
-            if ( (LA4_0=='#') ) {
-                alt4=1;
+            if ( (LA5_0=='#') ) {
+                alt5=1;
             }
-            switch (alt4) {
+            switch (alt5) {
                 case 1 :
-                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:4: '#'
+                    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:372:4: '#'
                     {
                     match('#'); 
 
@@ -291,80 +352,23 @@ public class AddressLexer extends Lexer {
 
             }
 
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:8: ( '0' .. '9' )+
-            int cnt5=0;
-            loop5:
-            do {
-                int alt5=2;
-                int LA5_0 = input.LA(1);
-
-                if ( ((LA5_0>='0' && LA5_0<='9')) ) {
-                    alt5=1;
-                }
-
-
-                switch (alt5) {
-            	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:369:9: '0' .. '9'
-            	    {
-            	    matchRange('0','9'); 
-
-            	    }
-            	    break;
-
-            	default :
-            	    if ( cnt5 >= 1 ) break loop5;
-                        EarlyExitException eee =
-                            new EarlyExitException(5, input);
-                        throw eee;
-                }
-                cnt5++;
-            } while (true);
-
-
-            }
-
-            state.type = _type;
-            state.channel = _channel;
-        }
-        finally {
-        }
-    }
-    // $ANTLR end "NUMBER"
-
-    // $ANTLR start "NAME"
-    public final void mNAME() throws RecognitionException {
-        try {
-            int _type = NAME;
-            int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:371:6: ( ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:371:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
-            {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:371:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:372:8: ( '0' .. '9' )+
             int cnt6=0;
             loop6:
             do {
                 int alt6=2;
                 int LA6_0 = input.LA(1);
 
-                if ( (LA6_0=='\''||(LA6_0>='-' && LA6_0<='9')||(LA6_0>='A' && LA6_0<='Z')) ) {
+                if ( ((LA6_0>='0' && LA6_0<='9')) ) {
                     alt6=1;
                 }
 
 
                 switch (alt6) {
             	case 1 :
-            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:372:9: '0' .. '9'
             	    {
-            	    if ( input.LA(1)=='\''||(input.LA(1)>='-' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z') ) {
-            	        input.consume();
-
-            	    }
-            	    else {
-            	        MismatchedSetException mse = new MismatchedSetException(null,input);
-            	        recover(mse);
-            	        throw mse;}
-
+            	    matchRange('0','9'); 
 
             	    }
             	    break;
@@ -387,24 +391,24 @@ public class AddressLexer extends Lexer {
         finally {
         }
     }
-    // $ANTLR end "NAME"
+    // $ANTLR end "NUMBER"
 
-    // $ANTLR start "WS"
-    public final void mWS() throws RecognitionException {
+    // $ANTLR start "NAME"
+    public final void mNAME() throws RecognitionException {
         try {
-            int _type = WS;
+            int _type = NAME;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:374:4: ( ( ' ' | '\\t' )+ )
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:374:6: ( ' ' | '\\t' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:374:6: ( ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:374:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
             {
-            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:374:6: ( ' ' | '\\t' )+
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:374:8: ( 'A' .. 'Z' | '0' .. '9' | '\\'' | '-' | '.' | '/' )+
             int cnt7=0;
             loop7:
             do {
                 int alt7=2;
                 int LA7_0 = input.LA(1);
 
-                if ( (LA7_0=='\t'||LA7_0==' ') ) {
+                if ( (LA7_0=='\''||(LA7_0>='-' && LA7_0<='9')||(LA7_0>='A' && LA7_0<='Z')) ) {
                     alt7=1;
                 }
 
@@ -413,7 +417,7 @@ public class AddressLexer extends Lexer {
             	case 1 :
             	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:
             	    {
-            	    if ( input.LA(1)=='\t'||input.LA(1)==' ' ) {
+            	    if ( input.LA(1)=='\''||(input.LA(1)>='-' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z') ) {
             	        input.consume();
 
             	    }
@@ -435,6 +439,63 @@ public class AddressLexer extends Lexer {
                 cnt7++;
             } while (true);
 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "NAME"
+
+    // $ANTLR start "WS"
+    public final void mWS() throws RecognitionException {
+        try {
+            int _type = WS;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:377:4: ( ( ' ' | '\\t' )+ )
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:377:6: ( ' ' | '\\t' )+
+            {
+            // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:377:6: ( ' ' | '\\t' )+
+            int cnt8=0;
+            loop8:
+            do {
+                int alt8=2;
+                int LA8_0 = input.LA(1);
+
+                if ( (LA8_0=='\t'||LA8_0==' ') ) {
+                    alt8=1;
+                }
+
+
+                switch (alt8) {
+            	case 1 :
+            	    // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:
+            	    {
+            	    if ( input.LA(1)=='\t'||input.LA(1)==' ' ) {
+            	        input.consume();
+
+            	    }
+            	    else {
+            	        MismatchedSetException mse = new MismatchedSetException(null,input);
+            	        recover(mse);
+            	        throw mse;}
+
+
+            	    }
+            	    break;
+
+            	default :
+            	    if ( cnt8 >= 1 ) break loop8;
+                        EarlyExitException eee =
+                            new EarlyExitException(8, input);
+                        throw eee;
+                }
+                cnt8++;
+            } while (true);
+
             skip();
 
             }
@@ -448,10 +509,10 @@ public class AddressLexer extends Lexer {
     // $ANTLR end "WS"
 
     public void mTokens() throws RecognitionException {
-        // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:8: ( T__11 | T__12 | SUITEANDSTREETNUM | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | NUMANDSUFFIX | NUMBER | NAME | WS )
-        int alt8=9;
-        alt8 = dfa8.predict(input);
-        switch (alt8) {
+        // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:8: ( T__11 | T__12 | SUITEANDSTREETNUM | STREETNUMSUFFIX | NUMERICSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME | WS )
+        int alt9=9;
+        alt9 = dfa9.predict(input);
+        switch (alt9) {
             case 1 :
                 // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:10: T__11
                 {
@@ -474,42 +535,42 @@ public class AddressLexer extends Lexer {
                 }
                 break;
             case 4 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:40: NUMANDSTREETSUFFIX
-                {
-                mNUMANDSTREETSUFFIX(); 
-
-                }
-                break;
-            case 5 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:59: STREETNUMSUFFIX
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:40: STREETNUMSUFFIX
                 {
                 mSTREETNUMSUFFIX(); 
 
                 }
                 break;
+            case 5 :
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:56: NUMERICSTREETSUFFIX
+                {
+                mNUMERICSTREETSUFFIX(); 
+
+                }
+                break;
             case 6 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:75: NUMANDSUFFIX
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:76: NUMANDSUFFIX
                 {
                 mNUMANDSUFFIX(); 
 
                 }
                 break;
             case 7 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:88: NUMBER
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:89: NUMBER
                 {
                 mNUMBER(); 
 
                 }
                 break;
             case 8 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:95: NAME
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:96: NAME
                 {
                 mNAME(); 
 
                 }
                 break;
             case 9 :
-                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:100: WS
+                // /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g:1:101: WS
                 {
                 mWS(); 
 
@@ -521,73 +582,82 @@ public class AddressLexer extends Lexer {
     }
 
 
-    protected DFA8 dfa8 = new DFA8(this);
-    static final String DFA8_eotS =
-        "\1\uffff\1\10\1\12\1\13\1\11\1\16\6\uffff\1\6\1\20\1\uffff\1\21"+
-        "\2\uffff";
-    static final String DFA8_eofS =
-        "\22\uffff";
-    static final String DFA8_minS =
-        "\1\11\1\47\1\60\3\47\6\uffff\1\60\1\47\1\uffff\1\47\2\uffff";
-    static final String DFA8_maxS =
-        "\2\132\1\71\3\132\6\uffff\1\71\1\132\1\uffff\1\132\2\uffff";
-    static final String DFA8_acceptS =
-        "\6\uffff\1\10\1\11\1\1\1\7\1\2\1\4\2\uffff\1\5\1\uffff\1\6\1\3";
-    static final String DFA8_specialS =
-        "\22\uffff}>";
-    static final String[] DFA8_transitionS = {
-            "\1\7\26\uffff\1\7\2\uffff\1\2\3\uffff\1\6\5\uffff\1\1\2\6\1"+
-            "\4\3\3\6\4\7\uffff\32\5",
-            "\1\6\5\uffff\15\6\7\uffff\32\6",
-            "\12\11",
-            "\1\6\5\uffff\1\14\2\6\12\4\7\uffff\32\15",
-            "\1\6\5\uffff\1\14\2\6\12\4\7\uffff\32\15",
-            "\1\6\5\uffff\15\6\7\uffff\32\6",
+    protected DFA9 dfa9 = new DFA9(this);
+    static final String DFA9_eotS =
+        "\1\uffff\1\11\1\13\1\12\1\17\2\12\5\uffff\1\7\1\23\1\7\1\uffff\1"+
+        "\7\2\26\1\uffff\1\27\1\26\2\uffff";
+    static final String DFA9_eofS =
+        "\30\uffff";
+    static final String DFA9_minS =
+        "\1\11\1\47\1\60\4\47\5\uffff\1\62\1\47\1\60\1\uffff\1\64\2\47\1"+
+        "\uffff\2\47\2\uffff";
+    static final String DFA9_maxS =
+        "\2\132\1\71\4\132\5\uffff\1\64\1\132\1\71\1\uffff\1\64\2\132\1\uffff"+
+        "\2\132\2\uffff";
+    static final String DFA9_acceptS =
+        "\7\uffff\1\10\1\11\1\1\1\7\1\2\3\uffff\1\4\3\uffff\1\6\2\uffff\1"+
+        "\5\1\3";
+    static final String DFA9_specialS =
+        "\30\uffff}>";
+    static final String[] DFA9_transitionS = {
+            "\1\10\26\uffff\1\10\2\uffff\1\2\3\uffff\1\7\5\uffff\1\1\2\7"+
+            "\1\6\1\3\1\6\1\5\6\6\7\uffff\32\4",
+            "\1\7\5\uffff\15\7\7\uffff\32\7",
+            "\12\12",
+            "\1\7\5\uffff\1\16\1\7\1\14\12\6\7\uffff\32\15",
+            "\1\7\5\uffff\15\7\7\uffff\32\7",
+            "\1\7\5\uffff\1\16\1\7\1\20\12\6\7\uffff\32\15",
+            "\1\7\5\uffff\1\16\2\7\12\6\7\uffff\32\15",
             "",
             "",
             "",
             "",
             "",
+            "\1\22\1\uffff\1\21",
+            "\1\7\5\uffff\15\7\7\uffff\32\7",
+            "\12\24",
             "",
-            "\12\17",
-            "\1\6\5\uffff\15\6\7\uffff\32\6",
+            "\1\25",
+            "\1\7\5\uffff\15\7\7\uffff\32\7",
+            "\1\7\5\uffff\15\7\7\uffff\32\7",
             "",
-            "\1\6\5\uffff\3\6\12\17\7\uffff\32\6",
+            "\1\7\5\uffff\3\7\12\24\7\uffff\32\7",
+            "\1\7\5\uffff\15\7\7\uffff\32\7",
             "",
             ""
     };
 
-    static final short[] DFA8_eot = DFA.unpackEncodedString(DFA8_eotS);
-    static final short[] DFA8_eof = DFA.unpackEncodedString(DFA8_eofS);
-    static final char[] DFA8_min = DFA.unpackEncodedStringToUnsignedChars(DFA8_minS);
-    static final char[] DFA8_max = DFA.unpackEncodedStringToUnsignedChars(DFA8_maxS);
-    static final short[] DFA8_accept = DFA.unpackEncodedString(DFA8_acceptS);
-    static final short[] DFA8_special = DFA.unpackEncodedString(DFA8_specialS);
-    static final short[][] DFA8_transition;
+    static final short[] DFA9_eot = DFA.unpackEncodedString(DFA9_eotS);
+    static final short[] DFA9_eof = DFA.unpackEncodedString(DFA9_eofS);
+    static final char[] DFA9_min = DFA.unpackEncodedStringToUnsignedChars(DFA9_minS);
+    static final char[] DFA9_max = DFA.unpackEncodedStringToUnsignedChars(DFA9_maxS);
+    static final short[] DFA9_accept = DFA.unpackEncodedString(DFA9_acceptS);
+    static final short[] DFA9_special = DFA.unpackEncodedString(DFA9_specialS);
+    static final short[][] DFA9_transition;
 
     static {
-        int numStates = DFA8_transitionS.length;
-        DFA8_transition = new short[numStates][];
+        int numStates = DFA9_transitionS.length;
+        DFA9_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA8_transition[i] = DFA.unpackEncodedString(DFA8_transitionS[i]);
+            DFA9_transition[i] = DFA.unpackEncodedString(DFA9_transitionS[i]);
         }
     }
 
-    class DFA8 extends DFA {
+    class DFA9 extends DFA {
 
-        public DFA8(BaseRecognizer recognizer) {
+        public DFA9(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 8;
-            this.eot = DFA8_eot;
-            this.eof = DFA8_eof;
-            this.min = DFA8_min;
-            this.max = DFA8_max;
-            this.accept = DFA8_accept;
-            this.special = DFA8_special;
-            this.transition = DFA8_transition;
+            this.decisionNumber = 9;
+            this.eot = DFA9_eot;
+            this.eof = DFA9_eof;
+            this.min = DFA9_min;
+            this.max = DFA9_max;
+            this.accept = DFA9_accept;
+            this.special = DFA9_special;
+            this.transition = DFA9_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__11 | T__12 | SUITEANDSTREETNUM | NUMANDSTREETSUFFIX | STREETNUMSUFFIX | NUMANDSUFFIX | NUMBER | NAME | WS );";
+            return "1:1: Tokens : ( T__11 | T__12 | SUITEANDSTREETNUM | STREETNUMSUFFIX | NUMERICSTREETSUFFIX | NUMANDSUFFIX | NUMBER | NAME | WS );";
         }
     }
  
