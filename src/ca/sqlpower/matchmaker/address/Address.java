@@ -838,5 +838,43 @@ public class Address implements AddressInterface {
         if (postalCode != null) setPostalCode(postalCode.toUpperCase());
         if (country != null) setCountry(country.toUpperCase());
     }
-    
+ 
+	 /**
+	 * Determines equality based on the municipality, province, postalCode,
+	 * country and address fields of an Address object.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof Address) {
+			Address other = (Address) obj;
+			return (((this.getMunicipality() == null && other.getMunicipality() == null) || ((this
+					.getMunicipality() != null && other.getMunicipality() != null) && (this
+					.getMunicipality().equals(other.getMunicipality()))))
+					&& ((this.getProvince() == null && other.getProvince() == null) || ((this
+							.getProvince() != null && other.getProvince() != null) && (this
+							.getProvince().equals(other.getProvince()))))
+					&& ((this.getPostalCode() == null && other.getPostalCode() == null) || ((this
+							.getPostalCode() != null && other.getPostalCode() != null) && (this
+							.getPostalCode().equals(other.getPostalCode())))) && ((this
+					.getAddress() == null && other.getAddress() == null) || ((this
+					.getAddress() != null && other.getAddress() != null) && (this
+					.getAddress().equals(other.getAddress())))));
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 31 * result + (municipality == null ? 0 : municipality.hashCode());
+		result = 31 * result + (province == null ? 0 : province.hashCode());
+		result = 31 * result + (postalCode == null ? 0 : postalCode.hashCode());
+		result = 31 * result + (getAddress() == null ? 0 : getAddress().hashCode());
+		return result;
+	}
+
 }

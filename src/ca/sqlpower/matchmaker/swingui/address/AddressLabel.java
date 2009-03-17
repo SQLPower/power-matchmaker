@@ -28,6 +28,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -144,6 +146,7 @@ public class AddressLabel extends JComponent {
 			suggestionList.addMouseListener(new MouseAdapter() {
 
 				public void mouseClicked(MouseEvent e) {
+					setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 					logger.debug("Mouse Clicked on suggestion list " + ((JList)e.getSource()).getSelectedValue());
 					final Address selected = (Address) ((JList) e.getSource()).getSelectedValue();
 					if (selected != null) {
@@ -154,7 +157,6 @@ public class AddressLabel extends JComponent {
 						updateProblemDetails(addressValidator);
 					}
 				}
-
 			});
 		}
 		this.setOpaque(true);
@@ -210,10 +212,15 @@ public class AddressLabel extends JComponent {
 					} else {
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
 					}
+					//TODO Figure out where to remove these listeners
 					addressTextField.addKeyListener(new AddressKeyAdapter());
+					addressTextField.addFocusListener(TextFieldFocusListener);
 					municipalityTextField.addKeyListener(new AddressKeyAdapter());
+					municipalityTextField.addFocusListener(TextFieldFocusListener);
 					provinceTextField.addKeyListener(new AddressKeyAdapter());
+					provinceTextField.addFocusListener(TextFieldFocusListener);
 					postalCodeTextField.addKeyListener(new AddressKeyAdapter());
+					postalCodeTextField.addFocusListener(TextFieldFocusListener);
 				}
 				
 			});
@@ -408,6 +415,33 @@ public class AddressLabel extends JComponent {
 		}
 		return new Address();
 	}
+	
+	
+	FocusListener TextFieldFocusListener = new FocusListener() {
+
+		public void focusGained(FocusEvent e) {
+			// TODO Auto-generated method stub
+			logger.debug("Stub call: FocusListener.focusGained()");
+			
+		}
+
+		public void focusLost(FocusEvent e) {
+			((JTextField)e.getSource()).setVisible(false);
+			AddressInterface newCurrentAddress = getChangedAddress();
+			logger.debug("Current Address = " + currentAddress.getPostalCode() + "\nHashcode: " + currentAddress.hashCode());
+			logger.debug("New Current Address = " + newCurrentAddress.getPostalCode() + "\nHashcode: " + newCurrentAddress.hashCode());
+			if(!(currentAddress.equals(newCurrentAddress))) {
+					currentAddress = newCurrentAddress;
+					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
+					suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
+					//update the problem details
+					updateProblemDetails(addressValidator);
+					repaint();
+				}
+			}
+		
+		
+	};
 	
 	/**
 	 * This is the AddressKeyAdapter for all 4 textFields.
