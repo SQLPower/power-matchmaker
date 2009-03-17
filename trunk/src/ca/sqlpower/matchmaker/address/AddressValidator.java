@@ -68,6 +68,15 @@ public class AddressValidator {
      */
     private boolean validSuggestion = true;
 
+    /**
+     * This value is used in generating suggestions. If true then the suggestion had to
+     * modify the address in a way that was not an error but created a valid alternative.
+     * This occurs in places where the parser has difficulty like additional information
+     * coming after the delivery installation name (ie: RR 4 STN A 21 YONGE puts A 21 YONGE
+     * as the delivery installation name).
+     */
+	private boolean reparsed;
+
     
     /**
      * 
@@ -209,6 +218,7 @@ public class AddressValidator {
 			List<ValidateResult> errorList = new ArrayList<ValidateResult>();
 			int errorCount = 0;
 			boolean isValid = true;
+			reparsed = false;
 			Address suggestion = new Address(a);
 			if (different(pc.getPostalCode(), a.getPostalCode())) {
 				if (a.getPostalCode() != null) {
@@ -370,6 +380,12 @@ public class AddressValidator {
 					suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
 					errorCount++;
 				}
+				if (a.getLockBoxNumber() != null && a.getLockBoxNumber().length() > 0 && a.getLockBoxNumber().charAt(0) == '#') {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Lock box number should not start with a #."));
+					suggestion.setLockBoxNumber(a.getLockBoxNumber().substring(1));
+					errorCount++;
+				}
 				
 				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
 			}
@@ -391,7 +407,9 @@ public class AddressValidator {
 					errorCount++;
 				}
 				
-				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+				if (suggestion.getType() != Type.MIXED || a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
+					errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+				}
 				
 				if (a.getRuralRouteNumber() == null && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -414,7 +432,7 @@ public class AddressValidator {
 			}
 			
 
-			if (errorCount > 0) {
+			if (errorCount > 0 || reparsed) {
 				Set<Address> addresses = addressSuggestionsByError.get(errorCount);
 				if (addresses == null) {
 					addresses = new HashSet<Address>();
@@ -463,10 +481,26 @@ public class AddressValidator {
 		}
 		
 		if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
-			errorList.add(ValidateResult.createValidateResult(
-					Status.FAIL, "Invalid delivery installation name."));
-			suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
-			errorCount++;
+			if (a.getDeliveryInstallationName() != null) {
+				String diName = a.getDeliveryInstallationName().trim();
+				while (diName.length() > 0) {
+					if (!different(pc.getDeliveryInstallationQualifierName(), diName)) {
+						suggestion.setDeliveryInstallationName(diName);
+						suggestion.setAdditionalInformationSuffix(a.getDeliveryInstallationName().substring(diName.length()).trim());
+						reparsed = true;
+					}
+					if (diName.lastIndexOf(' ') < 0) {
+						break;
+					}
+					diName = diName.substring(0, diName.lastIndexOf(' ')).trim();
+				}
+			}
+			if (!reparsed) {
+				errorList.add(ValidateResult.createValidateResult(
+						Status.FAIL, "Invalid delivery installation name."));
+				suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
+				errorCount++;
+			}
 		}
 		return errorCount;
 	}
