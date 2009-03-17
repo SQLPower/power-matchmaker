@@ -359,6 +359,11 @@ public class Address implements AddressInterface {
     private String failedParsingString;
     
     /**
+     * Additional information is stored here if it comes after the valid street address.
+     */
+    private String additionalInformationSuffix;
+    
+    /**
      * Creates a new Address record with all fields set to their defaults (usually null).
      */
     public Address() {
@@ -504,24 +509,35 @@ public class Address implements AddressInterface {
     	if (type == null) {  //parse failure on address line
     		return failedParsingString;
     	}
+    	String address;
     	switch (type) {
     	case URBAN:
-    		return getStreetAddress();
+    		address = getStreetAddress();
+    		break;
     	case RURAL:
-    		return getRuralRouteAddress();
+    		address = getRuralRouteAddress();
+    		break;
     	case LOCK_BOX:
-    		return getLockBoxAddress();
+    		address = getLockBoxAddress();
+    		break;
     	case GD:
-    		return getGeneralDeliveryAddress();
+    		address = getGeneralDeliveryAddress();
+    		break;
     	case MIXED:
     		if (urbanBeforeRural) {
-    			return getStreetAddress() + " " + getRuralRouteAddress();
+    			address = getStreetAddress() + " " + getRuralRouteAddress();
+    			break;
     		} else {
-    			return getRuralRouteAddress() + " " + getStreetAddress();
+    			address = getRuralRouteAddress() + " " + getStreetAddress();
+    			break;
     		}
    		default:
    			throw new IllegalStateException("Address type " + type + " is unknown");
     	}
+    	if (additionalInformationSuffix != null) {
+			address = address + " " + additionalInformationSuffix;
+		}
+    	return address;
     }
 
 	private String getRuralRouteAddress() {
@@ -832,6 +848,16 @@ public class Address implements AddressInterface {
 
 	public Boolean isUrbanBeforeRural() {
 		return urbanBeforeRural;
+	}
+
+	public void setAdditionalInformationSuffix(
+			String additionalInformationSuffix) {
+			this.additionalInformationSuffix = additionalInformationSuffix;
+		
+	}
+
+	public String getAdditionalInformationSuffix() {
+		return additionalInformationSuffix;
 	}
 
 	public void normalize() {
