@@ -251,6 +251,15 @@ public class AddressValidator {
 					errorCount++;
 				}
 			}
+			
+        	//Special case on D-33 of the SERP handbook. Any address that has a postal code in
+        	//the CPC database with a 0 in the second position is valid. We still need to correct
+			//the province and municipality however.
+        	if (a.getPostalCode() != null && a.getPostalCode().charAt(1) == '0') {
+        		suggestions.add(suggestion);
+        		return;
+        	}
+        	
 			if (pc.getRecordType() == RecordType.STREET || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.STREET) {
@@ -397,6 +406,15 @@ public class AddressValidator {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Lock box number should not start with a #."));
 					suggestion.setLockBoxNumber(a.getLockBoxNumber().substring(1));
+					errorCount++;
+				}
+				
+				if (!pc.containsLockBoxNumber(suggestion)) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Lock box number should does not fall in the postal code lock box range."));
+					if (pc.getLockBoxBagFromNumber().equals(pc.getLockBoxBagToNumber())) {
+						suggestion.setLockBoxNumber(new Integer(pc.getLockBoxBagFromNumber()).toString());
+					}
 					errorCount++;
 				}
 				
