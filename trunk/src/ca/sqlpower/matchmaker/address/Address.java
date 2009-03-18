@@ -201,7 +201,7 @@ public class Address implements AddressInterface {
 	 */
 	public static final List<String> DELIVERY_INSTALLATION_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"BDP", "CC", "CDO", "CMC", "CPC", "CSP", "LCD", "PDF", "PO", "RPO", "STN", "SUCC"}));
 	
-	public static final List<String> DELIVERY_INSTALLATION_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"BUREAU DE POSTE", "CONCESSION COMMERCIALE", "COMMERCIAL DEALERSHIP OUTLET", "COMMUNITY MAIL CENTRE", "CENTRE POSTAL COMMUNAUTAIRE", "COMPTOIR SERVICE POSTAL", "LETTER CARRIER DEPOT", "POSTE DE FACTEURS", "POST OFFICE", "RETAIL POSTAL OUTLET", "STATION", "SUCCURSALE"}));
+	public static final List<String> DELIVERY_INSTALLATION_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"BUREAU DE POSTE", "CONCESSION COMMERCIALE", "COMMERCIAL DEALERSHIP OUTLET", "COMMUNITY MAIL CENTRE", "CENTRE POSTAL COMMUNAUTAIRE", "COMPTOIR SERVICE POSTAL", "COMPTOIR POSTAL", "LETTER CARRIER DEPOT", "LETTER CARRIER", "POSTE DE FACTEURS", "POST OFFICE", "RETAIL POSTAL OUTLET", "POSTAL OUTLET", "STATION", "SUCCURSALE"}));
 	
 	/**
 	 * Given a province code that is not the standard code for a province this 
@@ -222,7 +222,7 @@ public class Address implements AddressInterface {
 		if (s == null) return false;
 		if (DELIVERY_INSTALLATION_TYPES.contains(s)) return true;
 		for (String diType : DELIVERY_INSTALLATION_TYPES_LONG) {
-			if (LevenshteinDistance.computeLevenshteinDistance(s, diType) <= diType.length()/4) return true;
+			if (LevenshteinDistance.computeLevenshteinDistance(s, diType) <= Math.round(diType.length()/4.0d)) return true;
 		}
 		return false;
 	}
@@ -563,6 +563,7 @@ public class Address implements AddressInterface {
     	} else {
     		a = new Address();
     	}
+    	a.setUnparsedAddress(streetAddress);
         a.municipality = municipality;
         a.province = province;
         a.postalCode = postalCode;

@@ -603,23 +603,34 @@ public class PostalCode {
         	}
         }
         if (a.getType() == Type.LOCK_BOX) {
-        	try {
-        		int from = Integer.parseInt(getLockBoxBagFromNumber());
-            	int to = Integer.parseInt(getLockBoxBagToNumber());
-            	int addressNumber = Integer.parseInt(a.getLockBoxNumber());
-
-            	// in English: if there is a from and to lock box number, but the address falls outside it, FAIL!
-            	if (addressNumber < from || addressNumber > to) {
-            		return false;
-            	}
-        	} catch (NumberFormatException e) {
-        		//Lock box numbers can be non-numeric, only checking the range
-        		//at current if it is numeric.
-        	}
+        	return containsLockBoxNumber(a);
         }
         
         return true;
     }
+
+    /**
+     * Returns true if the address given has a lock box number between the to and from
+     * lock box number of this postal code inclusive. If the to or from lock box numbers
+     * on this postal code or the lock box number on the address given is not an integer
+     * then true will also be returned. Returns false otherwise.
+     */
+	public boolean containsLockBoxNumber(Address a) {
+		try {
+			int from = Integer.parseInt(getLockBoxBagFromNumber());
+			int to = Integer.parseInt(getLockBoxBagToNumber());
+			int addressNumber = Integer.parseInt(a.getLockBoxNumber());
+
+			// in English: if there is a from and to lock box number, but the address falls outside it, FAIL!
+			if (addressNumber < from || addressNumber > to) {
+				return false;
+			}
+		} catch (NumberFormatException e) {
+			//Lock box numbers can be non-numeric, only checking the range
+			//at current if it is numeric.
+		}
+		return true;
+	}
     
     /**
      * Returns true if o1.equals(o2) or both o1 and o2 are null.
