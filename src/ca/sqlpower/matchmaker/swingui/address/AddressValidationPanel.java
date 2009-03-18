@@ -229,6 +229,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 							selected.setOutputAddress(selectedAddressLabel.getAddress());
 							pool.addAddress(selected, logger);
 							try {
+								needsValidationList.repaint();
 								pool.store(logger, false, false);
 							} catch (SQLException ex) {
 								throw new RuntimeException("An error occured while trying to save this address, ex");
