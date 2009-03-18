@@ -230,9 +230,6 @@ public class AddressValidator {
 				errorCount++;
 			}
 			if (!pc.getProvinceCode().equals(a.getProvince())) {
-				if (a.getProvince() != null) {
-					isValid = false;
-				}
 				errorList.add(ValidateResult.createValidateResult(
 						Status.FAIL, "Province code does not agree with postal code"));
 				suggestion.setProvince(pc.getProvinceCode());
@@ -264,6 +261,10 @@ public class AddressValidator {
 							suggestion.setUrbanBeforeRural(true);
 						}
 					}
+				} else if (suggestion.getType() != Address.Type.URBAN && suggestion.getType() != Address.Type.MIXED) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Address type does not match best suggestion."));
+					errorCount++;
 				}
 				if (different(pc.getStreetName(), a.getStreet())) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -350,15 +351,20 @@ public class AddressValidator {
 				// TODO all the other fields
 			}
 			if (pc.getRecordType() == RecordType.GENERAL_DELIVERY) {
+				if (suggestion.getType() != Address.Type.GD) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Address type does not match best suggestion."));
+					errorCount++;
+				}
 				suggestion.setType(Type.GD);
 				if (!Address.isGeneralDeliveryExactMatch(a.getGeneralDeliveryName())) {
-					if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
+					if ((Address.isGeneralDelivery(a.getGeneralDeliveryName()) || a.getGeneralDeliveryName() == null) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
 							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
 						suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
 						errorCount++;
-					} else if (Address.isGeneralDelivery(a.getGeneralDeliveryName()) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
+					} else if ((Address.isGeneralDelivery(a.getGeneralDeliveryName()) || a.getGeneralDeliveryName() == null) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
 							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
@@ -370,6 +376,11 @@ public class AddressValidator {
 				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
 			}
 			if (pc.getRecordType() == RecordType.LOCK_BOX) {
+				if (suggestion.getType() != Address.Type.LOCK_BOX) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Address type does not match best suggestion."));
+					errorCount++;
+				}
 				suggestion.setType(Type.LOCK_BOX);
 				if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -401,6 +412,10 @@ public class AddressValidator {
 							suggestion.setUrbanBeforeRural(false);
 						}
 					}
+				} else if (suggestion.getType() != Address.Type.RURAL && suggestion.getType() != Address.Type.MIXED) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Address type does not match best suggestion."));
+					errorCount++;
 				}
 				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -423,7 +438,7 @@ public class AddressValidator {
 					suggestion.setRuralRouteNumber(a.getRuralRouteNumber().substring(1));
 					errorCount++;
 				}
-				if (different(suggestion.getRuralRouteNumber(), pc.getRouteServiceNumber()) && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
+				if (pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0 && different(suggestion.getRuralRouteNumber(), new Integer(pc.getRouteServiceNumber()).toString())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Incorrect rural route number."));
 					suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());

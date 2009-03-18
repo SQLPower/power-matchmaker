@@ -22,8 +22,10 @@ package ca.sqlpower.matchmaker.address;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -118,6 +120,12 @@ public class Address implements AddressInterface {
 	 * map to for a valid address.
 	 */
 	public static final Map<String, String> RURAL_ROUTE_TYPES_LONG = new HashMap<String, String>();
+
+	/**
+	 * This map contains each province code with a list of alternative valid
+	 * abbreviations.
+	 */
+	public static final Map<String, Set<String>> COMMON_PROVINCE_CODE_ABBREV = new HashMap<String, Set<String>>();
 	
 	static {
 		RURAL_ROUTE_TYPES_LONG.put("RURAL ROUTE", "RR");
@@ -126,6 +134,66 @@ public class Address implements AddressInterface {
 		RURAL_ROUTE_TYPES_LONG.put("SERVICE SUBURBAN", "SS");
 		RURAL_ROUTE_TYPES_LONG.put("MOBILE ROUTE", "MR");
 		RURAL_ROUTE_TYPES_LONG.put("RTE", "RR");
+		
+		Set<String> altProvinces = new HashSet<String>();
+		altProvinces.add("TE");
+		altProvinces.add("NF");
+		altProvinces.add("NE");
+		altProvinces.add("NEWFOUNDLAND");
+		altProvinces.add("NEWFOUNDLAND AND LABRADOR");
+		COMMON_PROVINCE_CODE_ABBREV.put("NL", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("NO");
+		altProvinces.add("NOVA SCOTIA");
+		COMMON_PROVINCE_CODE_ABBREV.put("NS", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("IL");
+		altProvinces.add("PR");
+		altProvinces.add("PRINCE EDWARD ISLAND");
+		COMMON_PROVINCE_CODE_ABBREV.put("PE", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("NE");
+		altProvinces.add("NO");
+		altProvinces.add("NEW BRUNSWICK");
+		COMMON_PROVINCE_CODE_ABBREV.put("NB", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("PQ");
+		altProvinces.add("QU");
+		altProvinces.add("QUEBEC");
+		COMMON_PROVINCE_CODE_ABBREV.put("QC", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("ONTARIO");
+		COMMON_PROVINCE_CODE_ABBREV.put("ON", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("MA");
+		altProvinces.add("MANITOBA");
+		COMMON_PROVINCE_CODE_ABBREV.put("MB", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("SA");
+		altProvinces.add("SL");
+		altProvinces.add("SASKATCHEWAN");
+		COMMON_PROVINCE_CODE_ABBREV.put("SK", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("AL");
+		altProvinces.add("ALBERTA");
+		COMMON_PROVINCE_CODE_ABBREV.put("AB", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("CO");
+		altProvinces.add("BR");
+		altProvinces.add("BRITISH COLUMBIA");
+		COMMON_PROVINCE_CODE_ABBREV.put("BC", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("NORTHWEST TERRITORIES");
+		COMMON_PROVINCE_CODE_ABBREV.put("NT", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("YU");
+		altProvinces.add("YN");
+		altProvinces.add("YUKON");
+		COMMON_PROVINCE_CODE_ABBREV.put("YT", new HashSet<String>(altProvinces));
+		altProvinces.clear();
+		altProvinces.add("NUNAVUT");
+		COMMON_PROVINCE_CODE_ABBREV.put("NU", new HashSet<String>(altProvinces));
+		altProvinces.clear();
 	}
 	
 	/**
@@ -134,6 +202,21 @@ public class Address implements AddressInterface {
 	public static final List<String> DELIVERY_INSTALLATION_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"BDP", "CC", "CDO", "CMC", "CPC", "CSP", "LCD", "PDF", "PO", "RPO", "STN", "SUCC"}));
 	
 	public static final List<String> DELIVERY_INSTALLATION_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"BUREAU DE POSTE", "CONCESSION COMMERCIALE", "COMMERCIAL DEALERSHIP OUTLET", "COMMUNITY MAIL CENTRE", "CENTRE POSTAL COMMUNAUTAIRE", "COMPTOIR SERVICE POSTAL", "LETTER CARRIER DEPOT", "POSTE DE FACTEURS", "POST OFFICE", "RETAIL POSTAL OUTLET", "STATION", "SUCCURSALE"}));
+	
+	/**
+	 * Given a province code that is not the standard code for a province this 
+	 * method will return a set of all valid province codes that could match
+	 * the given code. 
+	 */
+	public static Set<String> getValidProvinceCodesFromAlt(String code) {
+		Set<String> validCodes = new HashSet<String>();
+		for (Map.Entry<String, Set<String>> entry : COMMON_PROVINCE_CODE_ABBREV.entrySet()) {
+			if (entry.getValue().contains(code)) {
+				validCodes.add(entry.getKey());
+			}
+		}
+		return validCodes;
+	}
 	
 	public static boolean isDeliveryInstallationType(String s) {
 		if (s == null) return false;
@@ -191,6 +274,7 @@ public class Address implements AddressInterface {
 	}
 	
 	public static boolean isLockBox(String s) {
+		if (s == null) return false;
 		if (s.equals(LOCK_BOX_ENGLISH) || s.equals(LOCK_BOX_FRENCH) || PO_BOX_VALID_ALT.contains(s)) {
 			return true;
 		}
@@ -589,15 +673,15 @@ public class Address implements AddressInterface {
 	public String getGeneralDeliveryAddress() {
 		StringBuilder sb = new StringBuilder();
 		if (generalDeliveryName != null) {
-			sb.append(generalDeliveryName).append(" ");
+			sb.append(generalDeliveryName);
 		}
 		if (deliveryInstallationType != null) {
-			sb.append(deliveryInstallationType).append(" ");
+			sb.append(" ").append(deliveryInstallationType);
 		}
 		if (deliveryInstallationName != null) {
-			sb.append(deliveryInstallationName);
+			sb.append(" ").append(deliveryInstallationName);
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	/**
