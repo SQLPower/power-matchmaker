@@ -287,12 +287,12 @@ public class AddressLabel extends JComponent {
             }
 			g2.drawString(currentAddress.getProvince(), x, y);
 			provinceHotsopt.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getProvince()), fm.getHeight());
-			x += fm.stringWidth(currentAddress.getProvince() + " ");
+			x += fm.stringWidth(currentAddress.getProvince() + "  ");
 		} else {
 			g2.setColor(missingFieldColour);
 			g2.drawString("Province Missing", x, y);
 			provinceHotsopt.setRect(x, y - fm.getAscent(), fm.stringWidth("Province Missing"), fm.getHeight());
-			x += fm.stringWidth("Province Missing" + " ");
+			x += fm.stringWidth("Province Missing" + "  ");
 		}
 		setTextBounds(provinceTextField, provinceHotsopt);
 		if (!isFieldMissing(currentAddress.getPostalCode())) {
@@ -300,10 +300,18 @@ public class AddressLabel extends JComponent {
                 g2.setColor(comparisonColour);
             } else {
                 g2.setColor(getForeground());
+            }        
+            if (currentAddress.getPostalCode().length() == 6) {
+            	postalCodeHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getPostalCode() + " "), fm.getHeight());
+            	g2.drawString(currentAddress.getPostalCode().substring(0, 3), x, y);
+            	x += fm.stringWidth(currentAddress.getPostalCode().substring(0, 3) + " ");
+            	g2.drawString(currentAddress.getPostalCode().substring(3, 6), x, y);
+            	x += fm.stringWidth(currentAddress.getPostalCode().substring(3, 6) + " ");
+            } else {
+            	g2.drawString(currentAddress.getPostalCode(), x, y);
+            	postalCodeHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getPostalCode()), fm.getHeight());
+            	x += fm.stringWidth(currentAddress.getPostalCode() + " ");
             }
-			g2.drawString(currentAddress.getPostalCode(), x, y);
-			postalCodeHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getPostalCode()), fm.getHeight());
-			x += fm.stringWidth(currentAddress.getPostalCode() + " ");
 		} else {
 			g2.setColor(missingFieldColour);
 			g2.drawString("PostalCode Missing", x, y);
