@@ -376,8 +376,9 @@ public class AddressLabel extends JComponent {
 	 */
 	private Address getChangedAddress() {
 		try {
-			return Address.parse(addressTextField.getText(), municipalityTextField.getText(),
-										   provinceTextField.getText(), postalCodeTextField.getText(), "CANADA", addressDatabase);
+			return Address.parse(addressTextField.getText().toUpperCase(), municipalityTextField.getText().toUpperCase(),
+										   provinceTextField.getText().toUpperCase(), postalCodeTextField.getText().toUpperCase(),
+										   "CANADA", addressDatabase);
 		} catch (RecognitionException e) {
 			MMSUtils.showExceptionDialog(
 					getParent(),
