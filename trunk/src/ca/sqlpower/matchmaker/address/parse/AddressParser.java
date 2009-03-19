@@ -1,4 +1,4 @@
-// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-18 10:47:45
+// $ANTLR 3.1.2 /Users/thomas/Documents/workspace/matchmaker/src/ca/sqlpower/matchmaker/address/parse/Address.g 2009-03-18 17:21:33
 
 package ca.sqlpower.matchmaker.address.parse;
 
@@ -381,9 +381,9 @@ public class AddressParser extends Parser {
             state._fsp--;
 
 
-            							  address.setType(Address.Type.URBAN);
+            							  address.setType(PostalCode.RecordType.STREET);
             							  if (address.isUrbanBeforeRural() != null) {
-            							    address.setType(Address.Type.MIXED);
+            							    address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
             							  }
             							
 
@@ -924,7 +924,7 @@ public class AddressParser extends Parser {
                     state._fsp--;
 
 
-                    							 address.setType(Address.Type.MIXED);
+                    							 address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
                     							 address.setUrbanBeforeRural(true);
                     							
 
@@ -994,9 +994,9 @@ public class AddressParser extends Parser {
 
             state._fsp--;
 
-            address.setType(Address.Type.RURAL);
+            address.setType(PostalCode.RecordType.ROUTE);
             							  if (address.isUrbanBeforeRural() != null) {
-            							    address.setType(Address.Type.MIXED);
+            							    address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
             							  }
             							
 
@@ -1303,7 +1303,7 @@ public class AddressParser extends Parser {
                     state._fsp--;
 
 
-                    							 address.setType(Address.Type.MIXED);
+                    							 address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
                     							 address.setUrbanBeforeRural(false);
                     							
 
@@ -1410,7 +1410,7 @@ public class AddressParser extends Parser {
 
                     							 address.setLockBoxType((lb!=null?lb.getText():null));
                     							 address.setLockBoxNumber((n!=null?n.getText():null));
-                    							 address.setType(Address.Type.LOCK_BOX);
+                    							 address.setType(PostalCode.RecordType.LOCK_BOX);
                     							
 
                     }
@@ -1467,7 +1467,7 @@ public class AddressParser extends Parser {
 
                     							 address.setLockBoxType((lb1!=null?lb1.getText():null) + " " + (lb2!=null?lb2.getText():null));
                     							 address.setLockBoxNumber((n!=null?n.getText():null));
-                    							 address.setType(Address.Type.LOCK_BOX);
+                    							 address.setType(PostalCode.RecordType.LOCK_BOX);
                     							
 
                     }
@@ -1572,7 +1572,7 @@ public class AddressParser extends Parser {
 
 
                     							 address.setGeneralDeliveryName((gd!=null?gd.getText():null));
-                    							 address.setType(Address.Type.GD);
+                    							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
                     							
 
                     }
@@ -1609,7 +1609,7 @@ public class AddressParser extends Parser {
 
 
                     							 address.setGeneralDeliveryName((gd1!=null?gd1.getText():null) + " " + (gd2!=null?gd2.getText():null));
-                    							 address.setType(Address.Type.GD);
+                    							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
                     							
 
                     }
@@ -1656,7 +1656,7 @@ public class AddressParser extends Parser {
 
 
                     							 address.setGeneralDeliveryName((gd1!=null?gd1.getText():null) + " " + (gd2!=null?gd2.getText():null) + " " + (gd3!=null?gd3.getText():null));
-                    							 address.setType(Address.Type.GD);
+                    							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
                     							
 
                     }
@@ -2099,9 +2099,9 @@ public class AddressParser extends Parser {
 
                         else if ( (LA1_4==12) && (((couldBeLockBox())&&(Address.isLockBox(input.LT(1).getText()))))) {s = 17;}
 
-                        else if ( (((((couldBeRural())&&(setStartsUrbanNotRural(false)))&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())))||(((couldBeRural())&&(setStartsUrbanNotRural(false)))&&(Address.isRuralRoute(input.LT(1).getText())))||(((couldBeRural())&&(setStartsUrbanNotRural(false)))&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText()))))) ) {s = 18;}
+                        else if ( (((((couldBeRural())&&(setStartsUrbanNotRural(false)))&&(Address.isRuralRoute(input.LT(1).getText())))||(((couldBeRural())&&(setStartsUrbanNotRural(false)))&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())))||(((couldBeRural())&&(setStartsUrbanNotRural(false)))&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText()))))) ) {s = 18;}
 
-                        else if ( ((((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())))||((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText())))||((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText()))))) ) {s = 19;}
+                        else if ( ((((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())))||((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText())))||((couldBeGD())&&(Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText()))))) ) {s = 19;}
 
                         else if ( (true) ) {s = 5;}
 
@@ -2341,7 +2341,7 @@ public class AddressParser extends Parser {
 
                         else if ( ((!address.isStreetTypePrefix() && addressDatabase.containsStreetType(input.LT(1).getText()))) ) {s = 7;}
 
-                        else if ( ((((hasStreetNameStarted && startsUrbanNotRural)&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())))||((hasStreetNameStarted && startsUrbanNotRural)&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())))||((hasStreetNameStarted && startsUrbanNotRural)&&(Address.isRuralRoute(input.LT(1).getText()))))) ) {s = 8;}
+                        else if ( ((((hasStreetNameStarted && startsUrbanNotRural)&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText())))||((hasStreetNameStarted && startsUrbanNotRural)&&(Address.isRuralRoute(input.LT(1).getText())))||((hasStreetNameStarted && startsUrbanNotRural)&&(Address.isRuralRoute(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText()))))) ) {s = 8;}
 
                         else if ( (true) ) {s = 4;}
 

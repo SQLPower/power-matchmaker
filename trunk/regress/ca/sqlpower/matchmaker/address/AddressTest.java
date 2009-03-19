@@ -22,7 +22,7 @@ package ca.sqlpower.matchmaker.address;
 import java.io.File;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.address.Address.Type;
+import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 
 public class AddressTest extends TestCase {
 
@@ -50,7 +50,7 @@ public class AddressTest extends TestCase {
         sqlpWWHQ.setStreetNumber(4950);
         sqlpWWHQ.setStreetType("ST");
         sqlpWWHQ.setSuite("2110");
-        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.setType(RecordType.STREET);
         sqlpWWHQ.resetChangeFlags();
     }
     

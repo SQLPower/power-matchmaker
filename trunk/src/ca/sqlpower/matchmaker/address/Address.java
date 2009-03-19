@@ -33,6 +33,7 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.matchmaker.address.parse.AddressLexer;
 import ca.sqlpower.matchmaker.address.parse.AddressParser;
 import ca.sqlpower.util.LevenshteinDistance;
@@ -285,6 +286,18 @@ public class Address implements AddressInterface {
 	}
 	
 	/**
+	 * Checks if the lock box type is an exact match to one of the accepted
+	 * and valid lock box types.
+	 */
+	public static boolean isLockBoxExactMatch(String s) {
+		if (s == null) return false;
+		if (s.equals(LOCK_BOX_ENGLISH) || s.equals(LOCK_BOX_FRENCH)) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * This method will return true if the string given is close to an accepted
 	 * string to describe a general delivery. False will be returned otherwise.
 	 */
@@ -334,10 +347,6 @@ public class Address implements AddressInterface {
 		}
 		return false;
 	}
-
-    public static enum Type {
-        URBAN, MIXED, RURAL, LOCK_BOX, GD
-    }
     
     /**
      * This is the original input string, as provided by client code.
@@ -433,7 +442,7 @@ public class Address implements AddressInterface {
     /**
      * The address type. See {@link Type} for details.
      */
-    private Type type;
+    private RecordType type;
     
     private String generalDeliveryName;
     
@@ -552,7 +561,8 @@ public class Address implements AddressInterface {
 	        a = p.getAddress();
 	        
 	        if (a.getSuite() == null && a.getStreetNumber() != null && a.getStreet() != null &&
-					a.getStreet().contains(" ") && isInteger(a.getStreet().substring(0, a.getStreet().indexOf(' ')))) {
+					a.getStreet().contains(" ") && isInteger(a.getStreet().substring(0, a.getStreet().indexOf(' '))) &&
+					!addressDatabase.containsStreetName(a.getStreet())) {
 				//Parser has trouble with #suite #streetNumber streetName vs #streetNumber #streetName.
 				//If the case is #suite #streetNumber streetName the street number ends up in the street name
 				a.setSuite(a.getStreetNumber().toString());
@@ -615,19 +625,19 @@ public class Address implements AddressInterface {
     	}
     	String address;
     	switch (type) {
-    	case URBAN:
+    	case STREET:
     		address = getStreetAddress();
     		break;
-    	case RURAL:
+    	case ROUTE:
     		address = getRuralRouteAddress();
     		break;
     	case LOCK_BOX:
     		address = getLockBoxAddress();
     		break;
-    	case GD:
+    	case GENERAL_DELIVERY:
     		address = getGeneralDeliveryAddress();
     		break;
-    	case MIXED:
+    	case STREET_AND_ROUTE:
     		if (urbanBeforeRural) {
     			address = getStreetAddress() + " " + getRuralRouteAddress();
     			break;
@@ -855,11 +865,11 @@ public class Address implements AddressInterface {
         this.country = country;
     }
 
-    public Type getType() {
+    public RecordType getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(RecordType type) {
     	logger.debug("setting type to " + type);
         this.type = type;
     }
