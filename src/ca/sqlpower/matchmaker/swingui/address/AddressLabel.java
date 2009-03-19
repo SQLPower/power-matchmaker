@@ -45,6 +45,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
@@ -115,6 +116,8 @@ public class AddressLabel extends JComponent {
     
     private	DefaultFormBuilder problemsBuilder;
     
+    private CompoundBorder border;
+    
     public AddressLabel(AddressInterface address, boolean isSelected, JList list, AddressDatabase addressDatabase) {
         this(address, null, isSelected, list, addressDatabase);
     }
@@ -162,13 +165,13 @@ public class AddressLabel extends JComponent {
 		setFont(Font.decode("plain 12"));
 		FontMetrics fm = getFontMetrics(getFont());
 		if (list != null) {
-			setPreferredSize(new Dimension(fm.charWidth('m') * 40, fm.getHeight() * 3));
+			setPreferredSize(new Dimension(fm.charWidth('m') * 35, fm.getHeight() * 3));
 		} else {
 			setPreferredSize(new Dimension(fm.charWidth('m') * 35 , fm.getHeight() * 5));
-			setMaximumSize(new Dimension(fm.charWidth('m') * 42, fm.getHeight() * 10));
+			setMaximumSize(new Dimension(fm.charWidth('m') * 40, fm.getHeight() * 10));
 		}
 		EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
-		CompoundBorder border = AddressLabelBorderFactory.generateAddressLabelBorder(Color.LIGHT_GRAY, 2, 5, emptyBorder);
+		border = AddressLabelBorderFactory.generateAddressLabelBorder(Color.LIGHT_GRAY, 2, 5, emptyBorder);
 		setBorder(border);
 		
 		setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
@@ -225,9 +228,14 @@ public class AddressLabel extends JComponent {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		final Graphics2D g2 = (Graphics2D) g;
-		g2.setColor(getBackground());
-		g2.fillRect(0, 0, getWidth(), getHeight());
-		// TODO g2.translate(border.getLeft(), border.getTop())
+		g2.setColor(Color.WHITE);
+		g2.fillRoundRect(((EmptyBorder)border.getOutsideBorder()).getBorderInsets().left,
+			  	         ((EmptyBorder)border.getOutsideBorder()).getBorderInsets().top, 
+			  	         getWidth() - 2 * ((EmptyBorder)border.getOutsideBorder()).getBorderInsets().left, 
+			  	         getHeight() - 2 * ((EmptyBorder)border.getOutsideBorder()).getBorderInsets().top, 
+			  	         ((LineBorder)border.getInsideBorder()).getThickness()*10, 
+			  	         ((LineBorder)border.getInsideBorder()).getThickness()*10);
+
 		FontMetrics fm = getFontMetrics(getFont());
 		int y = fm.getHeight()+fm.stringWidth(" ");
 		int x = 4+fm.stringWidth("  ");
