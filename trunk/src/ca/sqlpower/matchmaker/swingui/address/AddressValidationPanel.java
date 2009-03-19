@@ -124,11 +124,17 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 			Object[] addressArray = addressResults.toArray();
 			for (int i = 0; i < addressArray.length; i++) {
-				allResults.add(0, addressArray[i]);
-				if (((AddressResult)addressArray[i]).isValidated()) {
-					validResults.add(0, addressArray[i]);
+				AddressResult address =(AddressResult)addressArray[i];
+				allResults.add(0, address);
+				if (!address.getOutputAddress().isEmptyAddress()) {
+					AddressValidator validator = new AddressValidator(addressDatabase, address.getOutputAddress());
+					if (validator.getResults().size() == 0) {
+						validResults.add(0, address);
+					} else {
+						invalidResults.add(0, address);
+					}
 				} else {
-					invalidResults.add(0, addressArray[i]);
+					invalidResults.add(0, address);
 				}
 			}
 			

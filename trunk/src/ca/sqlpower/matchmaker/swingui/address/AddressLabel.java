@@ -150,6 +150,8 @@ public class AddressLabel extends JComponent {
 					}
 				}
 			});
+		} else if (currentAddress instanceof AddressResult) {
+			this.addressValidator = new AddressValidator(addressDatabase, ((AddressResult) currentAddress).getOutputAddress());
 		}
 		this.setOpaque(true);
 		
@@ -250,7 +252,7 @@ public class AddressLabel extends JComponent {
 		}
 		// set the check icon for validated addressResult labels
 		if (currentAddress instanceof AddressResult) {
-			if (((AddressResult)currentAddress).isValidated()) {
+			if (addressValidator.getResults().size() == 0) {
 				checkIcon.paintIcon(this, g2, x, y);
 				x += checkIcon.getIconWidth() + 4;
 				repaint();
