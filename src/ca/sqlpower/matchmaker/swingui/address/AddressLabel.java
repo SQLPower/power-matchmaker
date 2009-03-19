@@ -230,6 +230,8 @@ public class AddressLabel extends JComponent {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		final Graphics2D g2 = (Graphics2D) g;
+		g2.setColor(getBackground());
+		g2.fillRect(0, 0, getWidth(), getHeight());
 		g2.setColor(Color.WHITE);
 		g2.fillRoundRect(((EmptyBorder)border.getOutsideBorder()).getBorderInsets().left,
 			  	         ((EmptyBorder)border.getOutsideBorder()).getBorderInsets().top, 
