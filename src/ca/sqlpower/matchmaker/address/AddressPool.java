@@ -473,7 +473,8 @@ public class AddressPool extends MonitorableImpl{
 					ps.setString(26, outputAddress.getSuite());
 					ps.setBoolean(27, outputAddress.isSuitePrefix());
 					ps.setString(28, outputAddress.getSuiteType());
-					ps.setString(29, outputAddress.getType().toString());
+					Type type = outputAddress.getType();
+					ps.setString(29, type == null ? null : type.toString());
 					ps.setString(30, outputAddress.getUnparsedAddress());
 					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
 					if (urbanBeforeRural == null) {
