@@ -38,8 +38,8 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
-import ca.sqlpower.matchmaker.address.Address.Type;
 import ca.sqlpower.matchmaker.address.AddressResult.StorageState;
+import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -306,7 +306,7 @@ public class AddressPool extends MonitorableImpl{
 				address.setSuiteType(rs.getString(OUTPUT_SUITE_TYPE));
 				String typeString = rs.getString(OUTPUT_TYPE);
 				if (typeString != null) {
-					address.setType(Type.valueOf(rs.getString(OUTPUT_TYPE)));
+					address.setType(RecordType.valueOf(rs.getString(OUTPUT_TYPE)));
 				}
 				address.setUnparsedAddress(rs.getString(OUTPUT_UNPARSED_ADDRESS));
 				address.setUrbanBeforeRural(rs.getBoolean(OUTPUT_URBAN_BEFORE_RURAL));
@@ -473,7 +473,7 @@ public class AddressPool extends MonitorableImpl{
 					ps.setString(26, outputAddress.getSuite());
 					ps.setBoolean(27, outputAddress.isSuitePrefix());
 					ps.setString(28, outputAddress.getSuiteType());
-					Type type = outputAddress.getType();
+					RecordType type = outputAddress.getType();
 					ps.setString(29, type == null ? null : type.toString());
 					ps.setString(30, outputAddress.getUnparsedAddress());
 					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
@@ -608,7 +608,7 @@ public class AddressPool extends MonitorableImpl{
 					ps.setString(j + 25, outputAddress.getSuite());
 					ps.setBoolean(j + 26, outputAddress.isSuitePrefix());
 					ps.setString(j + 27, outputAddress.getSuiteType());
-					Type type = outputAddress.getType();
+					RecordType type = outputAddress.getType();
 					ps.setString(j + 28, type == null ? null : type.toString());
 					ps.setString(j + 29, outputAddress.getUnparsedAddress());
 					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
