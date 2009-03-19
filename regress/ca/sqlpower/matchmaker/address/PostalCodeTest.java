@@ -20,7 +20,7 @@
 package ca.sqlpower.matchmaker.address;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.address.Address.Type;
+import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 
 public class PostalCodeTest extends TestCase {
 
@@ -45,7 +45,6 @@ public class PostalCodeTest extends TestCase {
         // A,1,ON,TORONTO,YONGE,ST,,2,004950,,,,0,0,0,0,0,0,004950, ,,NORTH YORK,OFFICE BUILDING,2,M2N6K1,M2N1K0,
         urbanBuilding = new PostalCode();
         urbanBuilding.setAddressType(AddressType.STREET_ADDRESS);
-        urbanBuilding.setBuildingName("OFFICE BUILDING");
         urbanBuilding.setDeliveryInstallationPostalCode("M2N1K0");
         urbanBuilding.setDirectoryAreaName("TORONTO");
         urbanBuilding.setMunicipalityName("NORTH YORK");
@@ -67,7 +66,7 @@ public class PostalCodeTest extends TestCase {
         sqlpWWHQ.setStreetNumber(4950);
         sqlpWWHQ.setStreetType("ST");
         sqlpWWHQ.setSuite("2110");
-        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.setType(RecordType.STREET);
         
         assertTrue(urbanBuilding.containsAddress(sqlpWWHQ));
     }
@@ -80,7 +79,7 @@ public class PostalCodeTest extends TestCase {
         sqlpWWHQ.setStreetNumber(4980); // wrong address should trigger negative response
         sqlpWWHQ.setStreetType("ST");
         sqlpWWHQ.setSuite("2110");
-        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.setType(RecordType.STREET);
         
         assertFalse(urbanBuilding.containsAddress(sqlpWWHQ));
     }
@@ -93,7 +92,7 @@ public class PostalCodeTest extends TestCase {
         sqlpWWHQ.setStreetNumber(4950);
         sqlpWWHQ.setStreetType("ST");
         sqlpWWHQ.setSuite("2110");
-        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.setType(RecordType.STREET);
         
         assertFalse(urbanBuilding.containsAddress(sqlpWWHQ));
     }
@@ -106,7 +105,7 @@ public class PostalCodeTest extends TestCase {
         sqlpWWHQ.setStreetNumber(4950);
         sqlpWWHQ.setStreetType("ST");
         sqlpWWHQ.setSuite("2110");
-        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.setType(RecordType.STREET);
         
         assertFalse(urbanBuilding.containsAddress(sqlpWWHQ));
     }
@@ -119,7 +118,7 @@ public class PostalCodeTest extends TestCase {
         sqlpWWHQ.setStreetNumber(4950);
         sqlpWWHQ.setStreetType("ST");
         sqlpWWHQ.setSuite("2110");
-        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.setType(RecordType.STREET);
         
         assertFalse(urbanBuilding.containsAddress(sqlpWWHQ));
     }
@@ -132,7 +131,7 @@ public class PostalCodeTest extends TestCase {
         sqlpWWHQ.setStreetNumber(4950);
         sqlpWWHQ.setStreetType("RD");
         sqlpWWHQ.setSuite("2110");
-        sqlpWWHQ.setType(Type.URBAN);
+        sqlpWWHQ.setType(RecordType.STREET);
         
         assertFalse(urbanBuilding.containsAddress(sqlpWWHQ));
     }

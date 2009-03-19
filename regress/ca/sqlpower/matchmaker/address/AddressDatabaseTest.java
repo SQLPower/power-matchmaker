@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.address.Address.Type;
+import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.validation.ValidateResult;
 
 public class AddressDatabaseTest extends TestCase {
@@ -110,7 +110,7 @@ public class AddressDatabaseTest extends TestCase {
     
     public void testIncorrectMunicipality() {
         // The record we're hoping to match: NS,ANTIGONISH,HILLCREST,ST,ANTIGONISH,B2G 1Z3
-        address.setType(Type.URBAN);
+        address.setType(RecordType.STREET);
         address.setProvince("NS");
         address.setMunicipality("ANITGINOSH"); // this is the incorrect municipality name
         address.setStreet("Hillcrest");
@@ -126,7 +126,7 @@ public class AddressDatabaseTest extends TestCase {
 
     public void testAddPostalCode() {
         // The record we're hoping to match: NS,ANTIGONISH,HILLCREST,ST,14..58,ANTIGONISH,B2G 1Z3
-        address.setType(Type.URBAN);
+        address.setType(RecordType.STREET);
         address.setProvince("NS");
         address.setMunicipality("ANTIGONISH");
         address.setStreetNumber(20);
@@ -143,7 +143,7 @@ public class AddressDatabaseTest extends TestCase {
     }
     
     public void testNoWarningForOfficialName() throws Exception {
-        address.setType(Type.URBAN);
+        address.setType(RecordType.STREET);
         address.setProvince("NS");
         address.setMunicipality("ANTIGONISH");
         
@@ -163,7 +163,7 @@ public class AddressDatabaseTest extends TestCase {
     }
     
     public void testRecognizeValidMunicipality() {
-        address.setType(Type.URBAN);
+        address.setType(RecordType.STREET);
         address.setProvince("NS");
         address.setMunicipality("ANTIGONISH");
         address.setStreet("Hillcrest");
@@ -178,7 +178,7 @@ public class AddressDatabaseTest extends TestCase {
     }
     
     public void testMunicipalityCrossProvince() {
-        address.setType(Type.URBAN);
+        address.setType(RecordType.STREET);
         address.setMunicipality("VICTORIA");
         address.setProvince("NS");
         address.resetChangeFlags();

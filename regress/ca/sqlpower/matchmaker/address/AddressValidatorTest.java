@@ -22,9 +22,8 @@ package ca.sqlpower.matchmaker.address;
 import java.io.File;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.address.Address.Type;
-
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 
 public class AddressValidatorTest extends TestCase {
 	
@@ -107,7 +106,7 @@ public class AddressValidatorTest extends TestCase {
      */
     public void testAddressWithNoPostalCode() throws Exception {
     	Address a = new Address();
-    	a.setType(Type.URBAN);
+    	a.setType(RecordType.STREET);
     	a.setStreetNumber(1817);
     	a.setStreet("QUEEN");
     	a.setStreetDirection("E");
@@ -132,7 +131,7 @@ public class AddressValidatorTest extends TestCase {
     public void testAddressWithNoPostalCodeAndAddInfo() throws Exception {
     	Address a = new Address();
     	a.setStreetNumber(1817);
-    	a.setType(Type.URBAN);
+    	a.setType(RecordType.STREET);
     	a.setStreet("QUEEN 0");
     	a.setMunicipality("TORONTO");
     	a.setProvince("ON");
@@ -156,7 +155,7 @@ public class AddressValidatorTest extends TestCase {
     	a.setRuralRouteType("RR");
     	a.setRuralRouteNumber("4");
     	a.setDeliveryInstallationType("STN");
-    	a.setType(Type.RURAL);
+    	a.setType(RecordType.ROUTE);
     	a.setMunicipality("DUNDAS");
     	a.setProvince("ON");
     	a.setCountry("CA");

@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.address;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -85,13 +86,25 @@ public class SERPTest extends TestCase {
     	long before = System.currentTimeMillis();
     	
     	int i = 0;
-    	while (true) {
+    	int maxRow = 11000;
+    	int showLastRows = 1000;
+    	int lastSuccessCount = 0;
+    	int lastFailureCount = 0;
+    	List<Double> successRates = new ArrayList<Double>();
+    	boolean runAll = true;
+    	while (runAll || i < maxRow) {
     		i++;
     		if (i % 100 == 0) {
     			logger.debug("Parsed " + i + " records");
     		}
+    		if (i % 1000 == 0) {
+    			successRates.add(((double) (numPassed-lastSuccessCount) / (double) ((numPassed-lastSuccessCount) + (numFailed-lastFailureCount)) * 100));
+    			lastSuccessCount = numPassed;
+    			lastFailureCount = numFailed;
+    		}
     		line = in.readLine();
     		resultLine = result.readLine();
+    		if (!runAll && i < maxRow - showLastRows) continue;
     		if (line == null) break;
     		if (firstLineRead) {
     			String streetAddress = line.substring(109,159).trim();
@@ -106,7 +119,7 @@ public class SERPTest extends TestCase {
     			AddressValidator validator = new AddressValidator(addressDB, address);
     			List<ValidateResult> results = validator.getResults();
     			List<Address> suggestedAddresses = validator.getSuggestions();
-    			if (suggestedAddresses.size() > 0) {
+    			if (suggestedAddresses.size() > 0 && validator.isValidSuggestion()) {
     				address = suggestedAddresses.get(0);
     			}
     			
@@ -118,36 +131,21 @@ public class SERPTest extends TestCase {
     			String resultMunicipality = resultLine.substring(159, 189).trim();
     			String resultProvince = resultLine.substring(189, 191).trim();
     			String resultPostalCode = resultLine.substring(214, 220).trim();
+    			
+    			//XXX:not handling optional cases, they are currently being handled as valid
+    			boolean optionalFailed = true;
+    			if (resultLine.substring(220, 222).equals("CO")) {
+    				logger.debug("Optional corrected address");
+    				optionalFailed = validateAddress(streetAddress,
+    						municipality, province, postalCode);
+    			}
 
-    			boolean failed = false;
+    			boolean failed = validateAddress(resultStreetAddress,
+						resultMunicipality, resultProvince, resultPostalCode);
     			
-    			final String add = address.getAddress();
-				if (!resultStreetAddress.equals(add)) {
-    				logger.debug("Street Address is wrong: Expected '" + resultStreetAddress 
-    						+ "' Got '" + add + "'");
-    				failed = true;
-    			}
-    			
-    			if (!resultMunicipality.equals(address.getMunicipality())) {
-    				logger.debug("Municipality is wrong: Expected '" + resultMunicipality 
-    						+ "' Got '" + address.getMunicipality() + "'");
-    				failed = true;
-    			}
-    			
-    			if (!resultProvince.equals(address.getProvince())) {
-    				logger.debug("Province is wrong: Expected '" + resultProvince 
-    						+ "' Got '" + address.getProvince() + "'");
-    				failed = true;
-    			} 
-    			
-    			if (!resultPostalCode.equals(address.getPostalCode())) {
-    				logger.debug("Postal Code is wrong: Expected '" + resultPostalCode 
-    						+ "' Got '" + address.getPostalCode() + "'");
-    				failed = true;
-    			}
-    			
-    			if (failed) {
+    			if (failed && optionalFailed) {
     				logger.debug("Failed to parse '" + streetAddress + ", " + municipality + ", " + province + ", " + postalCode);
+    				logger.debug("Error was on line " + i + ": currently " + ((double) numPassed / (double) (numPassed + numFailed) * 100) + "% passed");
     				logger.debug("");
     				numFailed++;
     			} else {
@@ -163,6 +161,9 @@ public class SERPTest extends TestCase {
     		}
     		firstLineRead = true;
     	}
+		successRates.add(((double) (numPassed-lastSuccessCount) / (double) ((numPassed-lastSuccessCount) + (numFailed-lastFailureCount)) * 100));
+		lastSuccessCount = numPassed;
+		lastFailureCount = numFailed;
     	
     	long time = System.currentTimeMillis() - before;
     	logger.debug("Test took " + time + " ms");
@@ -170,8 +171,42 @@ public class SERPTest extends TestCase {
     	logger.debug("Number of tests failed: " + numFailed);
     	double passedPercent = (double) numPassed / (double) (numPassed + numFailed) * 100;
     	System.out.printf("Percentage of tests passed %.2f: ", passedPercent);
+    	System.out.println("");
+    	logger.debug("Percentage of tests passed per 1000 tests: " + successRates);
     	
     	in.close();
     	result.close();
     }
+
+	private boolean validateAddress(String resultStreetAddress,
+			String resultMunicipality, String resultProvince,
+			String resultPostalCode) {
+		boolean failed = false;
+		
+		final String add = address.getAddress();
+		if (!resultStreetAddress.equals(add)) {
+			logger.debug("Street Address is wrong: Expected '" + resultStreetAddress 
+					+ "' Got '" + add + "'");
+			failed = true;
+		}
+		
+		if (!resultMunicipality.equals(address.getMunicipality())) {
+			logger.debug("Municipality is wrong: Expected '" + resultMunicipality 
+					+ "' Got '" + address.getMunicipality() + "'");
+			failed = true;
+		}
+		
+		if (!resultProvince.equals(address.getProvince())) {
+			logger.debug("Province is wrong: Expected '" + resultProvince 
+					+ "' Got '" + address.getProvince() + "'");
+			failed = true;
+		} 
+		
+		if (!resultPostalCode.equals(address.getPostalCode())) {
+			logger.debug("Postal Code is wrong: Expected '" + resultPostalCode 
+					+ "' Got '" + address.getPostalCode() + "'");
+			failed = true;
+		}
+		return failed;
+	}
 }

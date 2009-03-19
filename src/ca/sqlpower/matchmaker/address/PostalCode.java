@@ -19,8 +19,6 @@
 
 package ca.sqlpower.matchmaker.address;
 
-import ca.sqlpower.matchmaker.address.Address.Type;
-
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.Relationship;
@@ -105,17 +103,13 @@ public class PostalCode {
     private String suiteToNumber;
     private String suiteFromNumber;
 
-    private String buildingName;
-    private String buildingTypeCode; // XXX enum
-
-    // government
-    private String departmentName;
-    private String branchName;
-    private String languageCode;
-
-    private String largeVolumeReceiverName;
-
-    private RecordType recordType;
+    /**
+     * This is the RecordType's number. RecordType cannot be a secondary key
+     * as it is an enum so to create a secondary key as the recordType we will
+     * use this int.
+     */
+    @SecondaryKey(relate=Relationship.MANY_TO_ONE)
+    private int recordTypeNumber;
     
     private String deliveryInstallationAreaName;
     private String deliveryInstallationQualifierName;
@@ -374,89 +368,17 @@ public class PostalCode {
 
 
 
-    public String getBuildingName() {
-        return buildingName;
-    }
-
-
-
-    public void setBuildingName(String buildingName) {
-        this.buildingName = buildingName;
-    }
-
-
-
-    public String getBuildingTypeCode() {
-        return buildingTypeCode;
-    }
-
-
-
-    public void setBuildingTypeCode(String buildingTypeCode) {
-        this.buildingTypeCode = buildingTypeCode;
-    }
-
-
-
-    public String getDepartmentName() {
-        return departmentName;
-    }
-
-
-
-    public void setDepartmentName(String departmentName) {
-        this.departmentName = departmentName;
-    }
-
-
-
-    public String getBranchName() {
-        return branchName;
-    }
-
-
-
-    public void setBranchName(String branchName) {
-        this.branchName = branchName;
-    }
-
-
-
-    public String getLanguageCode() {
-        return languageCode;
-    }
-
-
-
-    public void setLanguageCode(String languageCode) {
-        this.languageCode = languageCode;
-    }
-
-
-
-    public String getLargeVolumeReceiverName() {
-        return largeVolumeReceiverName;
-    }
-
-
-
-    public void setLargeVolumeReceiverName(String largeVolumeReceiverName) {
-        this.largeVolumeReceiverName = largeVolumeReceiverName;
-    }
-
-
-
     public RecordType getRecordType() {
-		return recordType;
+		return RecordType.getTypeForCode(recordTypeNumber);
 	}
 
 
     public void setRecordType(int type) {
-    	recordType = RecordType.getTypeForCode(type);
+    	recordTypeNumber = type;
     }
 
 	public void setRecordType(RecordType recordType) {
-		this.recordType = recordType;
+		recordTypeNumber = recordType.getRecordTypeCode();
 	}
 
 
@@ -559,12 +481,6 @@ public class PostalCode {
         sb.append(" routeServiceNumber: ").append(routeServiceNumber);
         sb.append(" suiteToNumber: ").append(suiteToNumber);
         sb.append(" suiteFromNumber: ").append(suiteFromNumber);
-        sb.append(" buildingName: ").append(buildingName);
-        sb.append(" buildingTypeCode: ").append(buildingTypeCode);
-        sb.append(" departmentName: ").append(departmentName);
-        sb.append(" branchName: ").append(branchName);
-        sb.append(" languageCode: ").append(languageCode);
-        sb.append(" largeVolumeReceiverName: ").append(largeVolumeReceiverName);
         
         return sb.toString();
     }
@@ -585,7 +501,7 @@ public class PostalCode {
     public boolean containsAddress(Address a) {
         if (!nullSafeEquals(getProvinceCode(), a.getProvince())) return false;
         if (!nullSafeEquals(getMunicipalityName(), a.getMunicipality())) return false;
-        if (a.getType() == Type.URBAN) {
+        if (a.getType() == RecordType.STREET) {
         	if (!nullSafeEquals(getStreetName(), a.getStreet())) return false;
 
         	Integer from = getStreetAddressFromNumber();
@@ -596,13 +512,13 @@ public class PostalCode {
         		return false;
         	}
         }
-        if (a.getType() == Type.RURAL) {
+        if (a.getType() == RecordType.ROUTE) {
         	if (a.getRuralRouteNumber() != null && getRouteServiceNumber() != null 
         			&& !getRouteServiceNumber().equals(a.getRuralRouteNumber())) {
         		return false;
         	}
         }
-        if (a.getType() == Type.LOCK_BOX) {
+        if (a.getType() == RecordType.LOCK_BOX) {
         	return containsLockBoxNumber(a);
         }
         

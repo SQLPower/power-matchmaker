@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.address.Address.Type;
+import ca.sqlpower.matchmaker.address.LargeVolumeReceiver.LVRRecordType;
 import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -115,6 +115,19 @@ public class AddressValidator {
         // validate street
         
         if (a.getPostalCode() != null) {
+        	
+        	//Addresses containing a large volume receiver postal code type B, C, D, E, or F should
+        	//not be modified from SERP handbook D-22.
+        	if (db.containsLVRPostalCode(a.getPostalCode())) {
+        		LargeVolumeReceiver lvr = db.findLargeVolumeReceiver(a.getPostalCode());
+        		final LVRRecordType recordType = lvr.getLVRRecordType();
+        		if (recordType == LVRRecordType.LVR_NAME_LOCK_BOX || recordType == LVRRecordType.LVR_NAME_STREET ||
+        				recordType == LVRRecordType.GOVERNMENT_NAME_LOCK_BOX || recordType == LVRRecordType.GOVERNMENT_NAME_STREET ||
+        				recordType == LVRRecordType.GENERAL_DELIVERY_NAME) {
+        			return;
+        		}
+        	}
+        	
             Set<PostalCode> pcSet = db.findPostalCode(a.getPostalCode());
             
             // verify province, municipality, street, type, direction, and street number
@@ -147,26 +160,24 @@ public class AddressValidator {
                 join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
                 allNulls = false;
             }
+            if (a.getType() != null) {
+            	join.addCondition(db.postalCodeRecordType, a.getType().getRecordTypeCode());
+            	allNulls = false;
+            }
             
             
             // TODO check how many fields match these criteria
             // (for example, if more than 1000 records match, just emit an error)
             
             List<RecordType> validRecordTypes = new ArrayList<RecordType>();
-            if (a.getType() == Type.URBAN) {
+            if (a.getType() != null) {
+            	validRecordTypes.add(a.getType());
+            }
+            if (a.getType() == RecordType.STREET) {
             	if (a.getStreet() != null) {
             		join.addCondition(db.postalCodeStreet, a.getStreet());
             		allNulls = false;
             	}
-            	validRecordTypes.add(RecordType.STREET);
-            } else if (a.getType() == Type.RURAL) {
-            	validRecordTypes.add(RecordType.ROUTE);
-            } else if (a.getType() == Type.MIXED) {
-            	validRecordTypes.add(RecordType.STREET_AND_ROUTE);
-            } else if (a.getType() == Type.LOCK_BOX) {
-            	validRecordTypes.add(RecordType.LOCK_BOX);
-            } else if (a.getType() == Type.GD) {
-            	validRecordTypes.add(RecordType.GENERAL_DELIVERY);
             }
             
             if (!allNulls) {
@@ -207,9 +218,10 @@ public class AddressValidator {
 	 * @param pcSet
 	 *            A set of postal codes to compare the address to and try to
 	 *            generate suggestions from.
+	 * @throws DatabaseException 
 	 */
 	private void generateSuggestions(Address a, Municipality municipality,
-			Set<PostalCode> pcSet) {
+			Set<PostalCode> pcSet) throws DatabaseException {
 		Map<Integer, Set<Address>> addressSuggestionsByError = new HashMap<Integer, Set<Address>>();
 		List<ValidateResult> smallestErrorList = new ArrayList<ValidateResult>();
 		boolean smallestErrorIsValid = true;
@@ -256,6 +268,20 @@ public class AddressValidator {
         	//the CPC database with a 0 in the second position is valid. We still need to correct
 			//the province and municipality however.
         	if (a.getPostalCode() != null && a.getPostalCode().charAt(1) == '0') {
+        		
+        		//Optional lock box name fix on rural routes
+				if ("BOX".equals(a.getLockBoxType())) {
+					if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
+						results.add(ValidateResult.createValidateResult(
+								Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
+						suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
+					} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
+						results.add(ValidateResult.createValidateResult(
+								Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
+						suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
+					}
+				}
+        		
         		suggestions.add(suggestion);
         		return;
         	}
@@ -263,14 +289,14 @@ public class AddressValidator {
 			if (pc.getRecordType() == RecordType.STREET || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.STREET) {
-						suggestion.setType(Type.URBAN);
+						suggestion.setType(RecordType.STREET);
 					} else if (pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
-						suggestion.setType(Type.MIXED);
+						suggestion.setType(RecordType.STREET_AND_ROUTE);
 						if (suggestion.isUrbanBeforeRural() == null) {
 							suggestion.setUrbanBeforeRural(true);
 						}
 					}
-				} else if (suggestion.getType() != Address.Type.URBAN && suggestion.getType() != Address.Type.MIXED) {
+				} else if (suggestion.getType() != PostalCode.RecordType.STREET && suggestion.getType() != PostalCode.RecordType.STREET_AND_ROUTE) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
 					errorCount++;
@@ -360,12 +386,12 @@ public class AddressValidator {
 				// TODO all the other fields
 			}
 			if (pc.getRecordType() == RecordType.GENERAL_DELIVERY) {
-				if (suggestion.getType() != Address.Type.GD) {
+				if (suggestion.getType() != PostalCode.RecordType.GENERAL_DELIVERY) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
 					errorCount++;
 				}
-				suggestion.setType(Type.GD);
+				suggestion.setType(RecordType.GENERAL_DELIVERY);
 				if (!Address.isGeneralDeliveryExactMatch(a.getGeneralDeliveryName())) {
 					if ((Address.isGeneralDelivery(a.getGeneralDeliveryName()) || a.getGeneralDeliveryName() == null) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
 							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
@@ -385,23 +411,27 @@ public class AddressValidator {
 				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
 			}
 			if (pc.getRecordType() == RecordType.LOCK_BOX) {
-				if (suggestion.getType() != Address.Type.LOCK_BOX) {
+				if (suggestion.getType() != PostalCode.RecordType.LOCK_BOX) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
 					errorCount++;
 				}
-				suggestion.setType(Type.LOCK_BOX);
-				if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
-					suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
-					errorCount++;
-				} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
-					suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
-					errorCount++;
+				suggestion.setType(RecordType.LOCK_BOX);
+				
+				if (!Address.isLockBoxExactMatch(a.getLockBoxType())) {
+					if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
+						suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
+						errorCount++;
+					} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
+						suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
+						errorCount++;
+					}
 				}
+				
 				if (a.getLockBoxNumber() != null && a.getLockBoxNumber().length() > 0 && a.getLockBoxNumber().charAt(0) == '#') {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Lock box number should not start with a #."));
@@ -423,14 +453,14 @@ public class AddressValidator {
 			if (pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.ROUTE) {
-						suggestion.setType(Type.RURAL);
+						suggestion.setType(RecordType.ROUTE);
 					} else if (pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
-						suggestion.setType(Type.MIXED);
+						suggestion.setType(RecordType.STREET_AND_ROUTE);
 						if (suggestion.isUrbanBeforeRural() == null) {
 							suggestion.setUrbanBeforeRural(false);
 						}
 					}
-				} else if (suggestion.getType() != Address.Type.RURAL && suggestion.getType() != Address.Type.MIXED) {
+				} else if (suggestion.getType() != RecordType.ROUTE && suggestion.getType() != RecordType.STREET_AND_ROUTE) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
 					errorCount++;

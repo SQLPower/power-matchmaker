@@ -162,9 +162,9 @@ failedToken
 streetAddressStart
 	:	{setStartsUrbanNotRural(true)}? streetAddress				
 							{
-							  address.setType(Address.Type.URBAN);
+							  address.setType(PostalCode.RecordType.STREET);
 							  if (address.isUrbanBeforeRural() != null) {
-							    address.setType(Address.Type.MIXED);
+							    address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
 							  }
 							}
 	;
@@ -234,7 +234,7 @@ streetToken
 							}
 	|	{hasStreetNameStarted && startsUrbanNotRural}?	ruralRoute      
 							{
-							 address.setType(Address.Type.MIXED);
+							 address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
 							 address.setUrbanBeforeRural(true);
 							}
 							
@@ -262,9 +262,9 @@ streetToken
 	
 ruralRouteAddress
 	:	{setStartsUrbanNotRural(false)}? ruralRoute				
-							{address.setType(Address.Type.RURAL);
+							{address.setType(PostalCode.RecordType.ROUTE);
 							  if (address.isUrbanBeforeRural() != null) {
-							    address.setType(Address.Type.MIXED);
+							    address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
 							  }
 							}
 	;
@@ -291,7 +291,7 @@ ruralRouteSuffix
 	:	diTypeAndName?
 	|	{!startsUrbanNotRural}? streetAddress				
 							{
-							 address.setType(Address.Type.MIXED);
+							 address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
 							 address.setUrbanBeforeRural(false);
 							}
 	;
@@ -301,13 +301,13 @@ lockBoxAddress
 							{
 							 address.setLockBoxType($lb.text);
 							 address.setLockBoxNumber($n.text);
-							 address.setType(Address.Type.LOCK_BOX);
+							 address.setType(PostalCode.RecordType.LOCK_BOX);
 							}
 	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}?=> lb1=NAME lb2=NAME '#'? n=NUMBER diTypeAndName?
 							{
 							 address.setLockBoxType($lb1.text + " " + $lb2.text);
 							 address.setLockBoxNumber($n.text);
-							 address.setType(Address.Type.LOCK_BOX);
+							 address.setType(PostalCode.RecordType.LOCK_BOX);
 							}
 	;
 	
@@ -315,18 +315,18 @@ generalDeliveryAddress
 	:	{Address.isGeneralDelivery(input.LT(1).getText())}?=> gd=NAME diTypeAndName?
 							{
 							 address.setGeneralDeliveryName($gd.text);
-							 address.setType(Address.Type.GD);
+							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
 							}
 	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}?=> gd1=NAME gd2=NAME diTypeAndName?
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text);
-							 address.setType(Address.Type.GD);
+							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
 							}
 	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}?=> 
 			gd1=NAME gd2=(STREETNUMSUFFIX|NAME) gd3=NAME diTypeAndName?
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text + " " + $gd3.text);
-							 address.setType(Address.Type.GD);
+							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
 							}
 	;
 	

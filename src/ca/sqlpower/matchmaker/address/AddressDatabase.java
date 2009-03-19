@@ -58,12 +58,15 @@ public class AddressDatabase {
     private PrimaryIndex<String, Municipality> municipalityPK;
     private SecondaryIndex<String, String, Municipality> municipalitySK;
     
+    private PrimaryIndex<String, LargeVolumeReceiver> largeVolumeReceiverPK;
+    
     PrimaryIndex<Long, PostalCode> postalCodePK;
     SecondaryIndex<String, Long, PostalCode> postalCodeSK;
     SecondaryIndex<String, Long, PostalCode> postalCodeProvince;
     SecondaryIndex<String, Long, PostalCode> postalCodeMunicipality;
     SecondaryIndex<String, Long, PostalCode> postalCodeStreet;
     private SecondaryIndex<String, Long, PostalCode> postalStreetTypeCode;
+    SecondaryIndex<Integer, Long, PostalCode> postalCodeRecordType;
     
     /**
      * This map stores all valid address types (like STREET and AVENUE) to their short form stored
@@ -91,6 +94,10 @@ public class AddressDatabase {
         municipalityPK = store.getPrimaryIndex(String.class, Municipality.class);
         municipalitySK = store.getSecondaryIndex(municipalityPK, String.class, "alternateNames");
         
+        store = new EntityStore(env, "LargeVolumeReceiver", storeConfig);
+        storesToClose.add(store);
+        largeVolumeReceiverPK = store.getPrimaryIndex(String.class, LargeVolumeReceiver.class);
+        
         store = new EntityStore(env, "PostalCode", storeConfig);
         storesToClose.add(store);
         postalCodePK = store.getPrimaryIndex(Long.class, PostalCode.class);
@@ -99,6 +106,7 @@ public class AddressDatabase {
         postalCodeMunicipality = store.getSecondaryIndex(postalCodePK, String.class, "municipalityName");
         postalCodeStreet = store.getSecondaryIndex(postalCodePK, String.class, "streetName");
         postalStreetTypeCode = store.getSecondaryIndex(postalCodePK, String.class, "streetTypeCode");
+        postalCodeRecordType = store.getSecondaryIndex(postalCodePK, Integer.class, "recordTypeNumber");
     }
 
     /**
@@ -247,6 +255,32 @@ public class AddressDatabase {
     	}
     	return false;
     }
+
+	/**
+	 * Returns true if the street name given is an exact match to a street in
+	 * the database. Returns false otherwise.
+	 */
+    public boolean containsStreetName(String streetName) {
+    	if (streetName == null) return false;
+    	EntityCursor<PostalCode> cursor = null;
+    	try {
+			cursor = postalCodeStreet.entities(streetName, true, streetName, true);
+			if (cursor.next() != null) {
+				return true;
+			}
+		} catch (DatabaseException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (cursor != null) {
+				try {
+					cursor.close();
+				} catch (DatabaseException e) {
+					//squishing exception to allow actual exception to go through.
+				}
+			}
+		}
+		return false;
+    }
     
     public boolean isStreetTypeFrench(String streetType) {
     	return frenchAddressTypes.contains(validAddressTypes.get(streetType));
@@ -283,4 +317,34 @@ public class AddressDatabase {
         pcCursor.close();
         return postalCodes;
     }
+
+    /**
+     * Returns true if the postal code is a large volume receiver postal code.
+     * False otherwise.
+     */
+	public boolean containsLVRPostalCode(String postalCode) throws DatabaseException {
+		if (postalCode == null) return false;
+		EntityCursor<LargeVolumeReceiver> cursor = largeVolumeReceiverPK.entities(postalCode, true, postalCode, true);
+		try {
+			if (cursor.next() != null) {
+				return true;
+			}
+		} finally {
+			cursor.close();
+		}
+		return false;
+	}
+	
+	/**
+	 * Only one large volume receiver should be found for each postal code.
+	 * If there is no large volume receiver for the given postal code then
+	 * the LVR returned will be null.
+	 */
+	public LargeVolumeReceiver findLargeVolumeReceiver(String postalCode) throws DatabaseException {
+		if (postalCode == null) return null;
+		EntityCursor<LargeVolumeReceiver> cursor = largeVolumeReceiverPK.entities(postalCode, true, postalCode, true);
+		LargeVolumeReceiver lvr = cursor.next();
+		cursor.close();
+		return lvr;
+	}
 }
