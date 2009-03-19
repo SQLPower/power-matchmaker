@@ -50,18 +50,17 @@ public class AddressListCellRenderer implements ListCellRenderer {
 		if (value instanceof AddressResult) {
 			AddressResult result = (AddressResult) value;
 			Address address;
-			if (!(result.getOutputAddress().isEmptyAddress())) {
-				address = result.getOutputAddress();
-			} else {
+			if (result.getOutputAddress().isEmptyAddress()) {
 				try {
 					address = Address.parse(
 							result.getAddressLine1(), result.getMunicipality(), result.getProvince(),
 							result.getPostalCode(), result.getCountry(), addressDatabase);
+					result.setOutputAddress(address);
 				} catch (RecognitionException e) {
 					throw new RuntimeException("An error occured while trying to parse the address", e);
 				}
 			}
-			return new AddressLabel(address, comparisonAddress, isSelected, list, addressDatabase);
+			return new AddressLabel(result, comparisonAddress, isSelected, list, addressDatabase);
 		}
 		return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase);
 	}

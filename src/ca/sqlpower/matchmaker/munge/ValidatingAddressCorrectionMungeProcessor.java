@@ -128,7 +128,7 @@ public class ValidatingAddressCorrectionMungeProcessor extends MungeProcessor {
 							MungeStepOutput postalCodeMSO = inputs.get(5);
 							String inPostalCode = (postalCodeMSO != null) ? (String)postalCodeMSO.getData() : null;
 							
-							AddressResult result = new AddressResult(uniqueKeyValues, addressLine1, addressLine2, municipality, province, inPostalCode, country, false);
+							AddressResult result = new AddressResult(uniqueKeyValues, addressLine1, addressLine2, municipality, province, inPostalCode, country);
 							
 							pool.addAddress(result, getLogger());
 						}

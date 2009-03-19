@@ -21,16 +21,12 @@ package ca.sqlpower.matchmaker.address;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 /**
  * An object representation of an invalid address record
  * as stored in the Address Correction Result table.
  */
 public class AddressResult implements AddressInterface {
 	
-	private static final Logger logger = Logger.getLogger(AddressResult.class); 
-
 	static enum StorageState {
 		/**
 		 * Address doesn't exist yet in the database
@@ -71,16 +67,11 @@ public class AddressResult implements AddressInterface {
 	private String country;
 	private Address outputAddress;
 	
-	/**
-	 * Whether or not the user or any auto-validation system has marked this
-	 * address record as validated.
-	 */
-	private boolean isValidated;
 	private StorageState storageState;
 
 	public AddressResult(List<Object> keyValues, String addressLine1,
 			String addressLine2, String municipality, String province,
-			String postalCode, String country, boolean isValidated) {
+			String postalCode, String country) {
 		this.keyValues = keyValues;
 		this.addressLine1 = addressLine1;
 		this.addressLine2 = addressLine2;
@@ -88,7 +79,6 @@ public class AddressResult implements AddressInterface {
 		this.province = province;
 		this.postalCode = postalCode;
 		this.country = country;
-		this.isValidated = isValidated;
 		
 		outputAddress = new Address();
 		storageState = StorageState.NEW;
@@ -96,7 +86,7 @@ public class AddressResult implements AddressInterface {
 	
 	public AddressResult(List<Object> keyValues, String addressLine1,
 			String addressLine2, String municipality, String province,
-			String postalCode, String country, Address outputAddress, boolean isValidated) {
+			String postalCode, String country, Address outputAddress) {
 		this.keyValues = keyValues;
 		this.addressLine1 = addressLine1;
 		this.addressLine2 = addressLine2;
@@ -104,7 +94,6 @@ public class AddressResult implements AddressInterface {
 		this.province = province;
 		this.postalCode = postalCode;
 		this.country = country;
-		this.isValidated = isValidated;
 		
 		this.outputAddress = outputAddress;
 		storageState = StorageState.NEW;
@@ -152,14 +141,6 @@ public class AddressResult implements AddressInterface {
 		return country;
 	}
 
-	public boolean isValidated() {
-		return isValidated;
-	}
-
-	public void setValidated(boolean validated) {
-		this.isValidated = validated;
-	}
-	
 	public Address getOutputAddress() {
 		return outputAddress;
 	}
