@@ -307,7 +307,7 @@ public class AddressValidator {
 					suggestion.setStreet(pc.getStreetName());
 					errorCount++;
 				}
-				if (different(pc.getStreetTypeCode(), a.getStreetType())) {
+				if (different(pc.getStreetTypeCode(), a.getStreetType()) && !Address.isStreetTypeValidAlternate(a.getStreetType(), pc.getStreetTypeCode())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street type does not agree with postal code"));
 					suggestion.setStreetType(pc.getStreetTypeCode());
