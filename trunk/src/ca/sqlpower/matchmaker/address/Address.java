@@ -128,6 +128,13 @@ public class Address implements AddressInterface {
 	 */
 	public static final Map<String, Set<String>> COMMON_PROVINCE_CODE_ABBREV = new HashMap<String, Set<String>>();
 	
+	/**
+	 * Each set in this set is a grouping of valid alternatives. If the street type given
+	 * is in the same set as the street type of the correct postal code then the street
+	 * type given should not be modified. 
+	 */
+	public static final Set<List<String>> STREET_TYPE_ALTERNATIVES = new HashSet<List<String>>();
+	
 	static {
 		RURAL_ROUTE_TYPES_LONG.put("RURAL ROUTE", "RR");
 		RURAL_ROUTE_TYPES_LONG.put("ROUTE RURALE", "RR");
@@ -195,6 +202,10 @@ public class Address implements AddressInterface {
 		altProvinces.add("NUNAVUT");
 		COMMON_PROVINCE_CODE_ABBREV.put("NU", new HashSet<String>(altProvinces));
 		altProvinces.clear();
+		
+		STREET_TYPE_ALTERNATIVES.add(new ArrayList<String>(Arrays.asList(new String[]{"STREET", "ST", "RUE"})));
+		STREET_TYPE_ALTERNATIVES.add(new ArrayList<String>(Arrays.asList(new String[]{"AVENUE", "AVE", "AV"})));
+		STREET_TYPE_ALTERNATIVES.add(new ArrayList<String>(Arrays.asList(new String[]{"BOULEVARD", "BLVD", "BOUL"})));
 	}
 	
 	/**
@@ -203,6 +214,21 @@ public class Address implements AddressInterface {
 	public static final List<String> DELIVERY_INSTALLATION_TYPES = new ArrayList<String>(Arrays.asList(new String[]{"BDP", "CC", "CDO", "CMC", "CPC", "CSP", "LCD", "PDF", "PO", "RPO", "STN", "SUCC"}));
 	
 	public static final List<String> DELIVERY_INSTALLATION_TYPES_LONG = new ArrayList<String>(Arrays.asList(new String[]{"BUREAU DE POSTE", "CONCESSION COMMERCIALE", "COMMERCIAL DEALERSHIP OUTLET", "COMMUNITY MAIL CENTRE", "CENTRE POSTAL COMMUNAUTAIRE", "COMPTOIR SERVICE POSTAL", "COMPTOIR POSTAL", "LETTER CARRIER DEPOT", "LETTER CARRIER", "POSTE DE FACTEURS", "POST OFFICE", "RETAIL POSTAL OUTLET", "POSTAL OUTLET", "STATION", "SUCCURSALE"}));
+	
+	/**
+	 * Given a string s, and the correct street type type this will return
+	 * true if the string s is a valid alternate to type and should not
+	 * be altered.
+	 */
+	public static boolean isStreetTypeValidAlternate(String s, String type) {
+		if (s == null) return false;
+		for (List<String> alternates : STREET_TYPE_ALTERNATIVES) {
+			if (alternates.contains(s) && alternates.contains(type)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * Given a province code that is not the standard code for a province this 
