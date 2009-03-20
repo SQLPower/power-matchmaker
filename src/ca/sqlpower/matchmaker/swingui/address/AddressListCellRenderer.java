@@ -53,8 +53,9 @@ public class AddressListCellRenderer implements ListCellRenderer {
 			if (result.getOutputAddress().isEmptyAddress()) {
 				try {
 					address = Address.parse(
-							result.getAddressLine1(), result.getMunicipality(), result.getProvince(),
-							result.getPostalCode(), result.getCountry(), addressDatabase);
+							result.getInputAddress(), result
+							.getInputMunicipality(), result.getInputProvince(),
+							result.getInputPostalCode(), result.getInputCountry(), addressDatabase);
 					result.setOutputAddress(address);
 				} catch (RecognitionException e) {
 					throw new RuntimeException("An error occured while trying to parse the address", e);

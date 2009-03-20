@@ -68,7 +68,6 @@ public class AddressLabel extends JComponent {
 	private static final Logger logger = Logger.getLogger(AddressLabel.class);
 
 	private AddressInterface currentAddress;
-	private AddressInterface revertToAddress;
 	
 	private static final int BORDER_SPACE = 12;
 	/**
@@ -124,7 +123,7 @@ public class AddressLabel extends JComponent {
     
     public AddressLabel(AddressInterface address, AddressInterface comparisonAddress, 
     					boolean isSelected, JList list, final AddressDatabase addressDatabase) {
-    	this.currentAddress = this.revertToAddress = address;
+    	this.currentAddress = address;
         this.comparisonAddress = comparisonAddress;
 		this.isSelected = isSelected;
 		this.list = list;
@@ -221,10 +220,6 @@ public class AddressLabel extends JComponent {
 		}
 
 	}
-	
-	public AddressInterface getRevertToAddress() {
-		return revertToAddress;
-	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -259,6 +254,9 @@ public class AddressLabel extends JComponent {
 				x += checkIcon.getIconWidth() + 4;
 				repaint();
 			}
+		} else if (list == null && addressValidator != null && validateResult.size() == 0) {
+				checkIcon.paintIcon(this, g2, x, y);
+				x += checkIcon.getIconWidth() + 4;
 		}
 		if (!isFieldMissing(currentAddress.getAddress())) {
 		    if (comparisonAddress != null && different(currentAddress.getAddress(), comparisonAddress.getAddress())) {
@@ -347,6 +345,10 @@ public class AddressLabel extends JComponent {
 		return null;
 	}
 	
+	public List getValidateResultsList(){
+		return validateResult;
+	}
+		
 	public JList getSuggestionList() {
 		return suggestionList;
 	}
