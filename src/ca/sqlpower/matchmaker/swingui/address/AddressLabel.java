@@ -313,8 +313,8 @@ public class AddressLabel extends JComponent {
 			addressLine1Hotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getAddress()), fm.getHeight());
 		} else {
 			// Set the JLabel for addressLine
-			addressLabel.setForeground(missingFieldColour);
 			g2.translate(x,y - fm.getAscent());
+			addressLabel.setForeground(missingFieldColour);
 			addressLabel.setText("Street Address Missing");
 			addressLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
 			addressLabel.paint(g2);
@@ -335,17 +335,17 @@ public class AddressLabel extends JComponent {
 		    }
 		    // Set the JLabel for municipality
 		    g2.translate(x,y - fm.getAscent());
-			addressLabel.setText(currentAddress.getMunicipality());
-			addressLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
-			addressLabel.paint(g2);
+		    municipalityLabel.setText(currentAddress.getMunicipality());
+		    municipalityLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+		    municipalityLabel.paint(g2);
 			g2.translate(-x, -y + fm.getAscent());
 			
 			municipalityHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getMunicipality()), fm.getHeight());
 			x += fm.stringWidth(currentAddress.getMunicipality() + " ");
 		} else {
 		    // Set the JLabel for municipality
-			municipalityLabel.setForeground(missingFieldColour);
 			g2.translate(x,y - fm.getAscent());
+			municipalityLabel.setForeground(missingFieldColour);
 			municipalityLabel.setText("Municipality Missing");
 			municipalityLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
 			municipalityLabel.paint(g2);
@@ -454,7 +454,7 @@ public class AddressLabel extends JComponent {
 		if (str == null) {
 			return true;
 		}
-		return str.trim().equals("null") || str.trim().equals("");
+		return str.trim().toUpperCase().equals("null") || str.trim().equals("");
 	}
 	
 	private boolean isClickingRightArea(MouseEvent e, Rectangle2D rec) {
@@ -486,8 +486,9 @@ public class AddressLabel extends JComponent {
 	 */
 	private Address getChangedAddress() {
 		try {
-			return Address.parse(addressTextField.getText().toUpperCase(), municipalityTextField.getText().toUpperCase(),
-										   provinceTextField.getText().toUpperCase(), postalCodeTextField.getText().toUpperCase(),
+			String postalCode = postalCodeTextField.getText().replaceAll("\\s+", "");
+			return Address.parse(addressTextField.getText().trim().toUpperCase(), municipalityTextField.getText().trim().toUpperCase(),
+										   provinceTextField.getText().trim().toUpperCase(), postalCode.toUpperCase(),
 										   "CANADA", addressDatabase);
 		} catch (RecognitionException e) {
 			MMSUtils.showExceptionDialog(
