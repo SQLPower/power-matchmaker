@@ -271,7 +271,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					suggestLabel.setFont(new Font(null, Font.BOLD, 13));
 					
 					JScrollPane scrollList = new JScrollPane(selectedAddressLabel.getSuggestionList());
-					scrollList.setPreferredSize(new Dimension(200, 500));
+					scrollList.setPreferredSize(new Dimension(230, 1000));
 					
 					ButtonBarBuilder bbb = new ButtonBarBuilder();
 					bbb.addRelatedGap();
