@@ -56,6 +56,9 @@ import ca.sqlpower.util.MonitorableImpl;
  */
 public class AddressPool extends MonitorableImpl{
 
+	/**
+	 * A list of constants for the Address Correction result table column names
+	 */
 	private static final String SOURCE_ADDRESS_KEY_COLUMN_BASE 		= "src_addr_key_col_";
 	private static final String INPUT_ADDRESS_LINE1 				= "input_address_line1";
 	private static final String INPUT_ADDRESS_LINE2 				= "input_address_line2";
@@ -88,7 +91,6 @@ public class AddressPool extends MonitorableImpl{
 	private	static final String OUTPUT_TYPE							= "output_type";
 	private static final String OUTPUT_UNPARSED_ADDRESS				= "output_unparsed_address";
 	private static final String OUTPUT_URBAN_BEFORE_RURAL			= "output_urban_before_rural";
-	private static final String STATUS 								= "status";
 	
 	private Map<List<Object>, AddressResult> addresses;
 	
