@@ -98,25 +98,55 @@ public class AddressLabel extends JComponent {
 	 */
 	private Color comparisonColour = ColourScheme.BREWER_SET19.get(1);
 	
+	/**
+	 * Each rectangle listens the mouse click for each address field 
+	 * so that user can edit the address label field by field. 
+	 */
 	private Rectangle2D addressLine1Hotspot = new Rectangle();
 	private Rectangle2D municipalityHotspot = new Rectangle();
 	private Rectangle2D provinceHotsopt = new Rectangle();
 	private Rectangle2D postalCodeHotspot = new Rectangle();
 	
+	/**
+	 * Each textField is for user editing the the addressLabel.
+	 * They will be always invisible unless the user click on 
+	 * corresponding address field.
+	 */
 	private JTextField addressTextField;
 	private JTextField municipalityTextField;
 	private JTextField provinceTextField;
 	private JTextField postalCodeTextField;
 
+	/**
+	 * The icon for valid address. It will appear as soon
+	 * as the address is corrected. 
+	 */
 	private ImageIcon checkIcon = new ImageIcon(getClass().getResource("icons/check.png"));
+	
+	/**
+	 * Red color for any missing fields in the addressLabel.
+	 */
     private Color missingFieldColour = ColourScheme.BREWER_SET19.get(0);
     
     private AddressValidator addressValidator;
     
     private	DefaultFormBuilder problemsBuilder;
     
+    /**
+     * The border for every addressLabel.
+     */
     private CompoundBorder border;
     
+    /**
+     * The internal JLabel which will do "..." when the length of the
+     * address is longer than the width of addressLabel automatically.  
+     * The only thing they are doing and should do is to support "..." feature.
+     */
+	private JLabel addressLabel = new JLabel();
+	private JLabel municipalityLabel = new JLabel();
+	private JLabel provinceLabel = new JLabel();
+	private JLabel postalCodeLabel = new JLabel();
+	
     public AddressLabel(AddressInterface address, boolean isSelected, JList list, AddressDatabase addressDatabase) {
         this(address, null, isSelected, list, addressDatabase);
     }
@@ -128,6 +158,13 @@ public class AddressLabel extends JComponent {
 		this.isSelected = isSelected;
 		this.list = list;
 		this.addressDatabase = addressDatabase;
+		
+		// Set font for each label 
+		addressLabel.setFont(getFont());
+		municipalityLabel.setFont(getFont());
+		provinceLabel.setFont(getFont());
+		postalCodeLabel.setFont(getFont());
+		
 		// Generate the related suggestionList for the middle bigger addressLabel only
 		if (currentAddress instanceof Address  && list == null) {
 			this.addressValidator = new AddressValidator(addressDatabase, (Address) currentAddress);
@@ -165,11 +202,13 @@ public class AddressLabel extends JComponent {
 		
 		setFont(Font.decode("plain 12"));
 		FontMetrics fm = getFontMetrics(getFont());
-		if (list != null) {
-			setPreferredSize(new Dimension(fm.charWidth('m') * 35, fm.getHeight() * 3));
+		if (list != null && address instanceof AddressResult) {
+			setPreferredSize(new Dimension(fm.charWidth('m') * 20, fm.getHeight() * 3));
+		} else if (list != null && address instanceof Address) {
+			setPreferredSize(new Dimension(fm.charWidth('m') * 22, fm.getHeight() * 3));
 		} else {
-			setPreferredSize(new Dimension(fm.charWidth('m') * 35 , fm.getHeight() * 5));
-			setMaximumSize(new Dimension(fm.charWidth('m') * 40, fm.getHeight() * 10));
+			setPreferredSize(new Dimension(fm.charWidth('m') * 20 , fm.getHeight() * 5));
+			setMaximumSize(new Dimension(fm.charWidth('m') * 30, fm.getHeight() * 10));
 		}
 		EmptyBorder emptyBorder = new EmptyBorder(3,4,3,4);
 		border = AddressLabelBorderFactory.generateAddressLabelBorder(Color.LIGHT_GRAY, 2, 5, emptyBorder);
@@ -237,7 +276,7 @@ public class AddressLabel extends JComponent {
 
 		FontMetrics fm = getFontMetrics(getFont());
 		int y = fm.getHeight()+fm.stringWidth(" ");
-		int x = 4+fm.stringWidth("  ");
+		int x = 4+fm.stringWidth("M");
 		if (list != null) {
 			if (isSelected) {
 				g2.setColor(list.getSelectionBackground());
@@ -260,71 +299,120 @@ public class AddressLabel extends JComponent {
 		}
 		if (!isFieldMissing(currentAddress.getAddress())) {
 		    if (comparisonAddress != null && different(currentAddress.getAddress(), comparisonAddress.getAddress())) {
-		        g2.setColor(comparisonColour);
+		        addressLabel.setForeground(comparisonColour);
 		    } else {
-                g2.setColor(getForeground());
+		    	addressLabel.setForeground(getForeground());
 		    }
-			g2.drawString(currentAddress.getAddress(), x, y);
+		    // Set the JLabel for addressLine
+		    g2.translate(x,y - fm.getAscent());
+			addressLabel.setText(currentAddress.getAddress());
+			addressLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+			addressLabel.paint(g2);
+			g2.translate(-x, -y + fm.getAscent());
+			
 			addressLine1Hotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getAddress()), fm.getHeight());
 		} else {
-			g2.setColor(missingFieldColour);
-			g2.drawString("Street Address Missing", x, y);
+			// Set the JLabel for addressLine
+			addressLabel.setForeground(missingFieldColour);
+			g2.translate(x,y - fm.getAscent());
+			addressLabel.setText("Street Address Missing");
+			addressLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+			addressLabel.paint(g2);
+			g2.translate(-x, -y + fm.getAscent());
+			
 			addressLine1Hotspot.setRect(x, y - fm.getAscent(), fm.stringWidth("Street Address Missing"), fm.getHeight());
 		}
 		setTextBounds(addressTextField, addressLine1Hotspot);
+		if (list == null) {
+			y += fm.charWidth('a');
+		}
 		y += fm.getHeight();
 		if (!isFieldMissing(currentAddress.getMunicipality())) {
 		    if (comparisonAddress != null && different(currentAddress.getMunicipality(), comparisonAddress.getMunicipality())) {
-                g2.setColor(comparisonColour);
+                municipalityLabel.setForeground(comparisonColour);
 		    } else {
-		        g2.setColor(getForeground());
+		    	municipalityLabel.setForeground(getForeground());
 		    }
-			g2.drawString(currentAddress.getMunicipality(), x, y);
+		    // Set the JLabel for municipality
+		    g2.translate(x,y - fm.getAscent());
+			addressLabel.setText(currentAddress.getMunicipality());
+			addressLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+			addressLabel.paint(g2);
+			g2.translate(-x, -y + fm.getAscent());
+			
 			municipalityHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getMunicipality()), fm.getHeight());
 			x += fm.stringWidth(currentAddress.getMunicipality() + " ");
 		} else {
-			g2.setColor(missingFieldColour);
-			g2.drawString("Municipality Missing", x, y);
+		    // Set the JLabel for municipality
+			municipalityLabel.setForeground(missingFieldColour);
+			g2.translate(x,y - fm.getAscent());
+			municipalityLabel.setText("Municipality Missing");
+			municipalityLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+			municipalityLabel.paint(g2);
+			g2.translate(-x, -y + fm.getAscent());
+			
 			municipalityHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth("Municipality Missing"), fm.getHeight());
 			x += fm.stringWidth("Municipality Missing" + " ");
 		}
 		setTextBounds(municipalityTextField, municipalityHotspot);
 		if (!isFieldMissing(currentAddress.getProvince())) {
             if (comparisonAddress != null && different(currentAddress.getProvince(), comparisonAddress.getProvince())) {
-                g2.setColor(comparisonColour);
+            	provinceLabel.setForeground(comparisonColour);
             } else {
-                g2.setColor(getForeground());
+            	provinceLabel.setForeground(getForeground());
             }
-			g2.drawString(currentAddress.getProvince(), x, y);
+            // Set the JLabel for Province
+            g2.translate(x,y - fm.getAscent());
+			provinceLabel.setText(currentAddress.getProvince());
+			provinceLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+			provinceLabel.paint(g2);
+			g2.translate(-x, -y + fm.getAscent());
+			
 			provinceHotsopt.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getProvince()), fm.getHeight());
 			x += fm.stringWidth(currentAddress.getProvince() + "  ");
 		} else {
-			g2.setColor(missingFieldColour);
-			g2.drawString("Province Missing", x, y);
+			 // Set the JLabel for Province
+            g2.translate(x,y - fm.getAscent());
+            provinceLabel.setForeground(missingFieldColour);
+			provinceLabel.setText("Province Missing");
+			provinceLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+			provinceLabel.paint(g2);
+			g2.translate(-x, -y + fm.getAscent());
+			
 			provinceHotsopt.setRect(x, y - fm.getAscent(), fm.stringWidth("Province Missing"), fm.getHeight());
 			x += fm.stringWidth("Province Missing" + "  ");
 		}
 		setTextBounds(provinceTextField, provinceHotsopt);
 		if (!isFieldMissing(currentAddress.getPostalCode())) {
             if (comparisonAddress != null && different(currentAddress.getPostalCode(), comparisonAddress.getPostalCode())) {
-                g2.setColor(comparisonColour);
+            	postalCodeLabel.setForeground(comparisonColour);
             } else {
-                g2.setColor(getForeground());
-            }        
+            	postalCodeLabel.setForeground(getForeground());
+            }   
+            String str;
             if (currentAddress.getPostalCode().length() == 6) {
-            	postalCodeHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getPostalCode() + " "), fm.getHeight());
-            	g2.drawString(currentAddress.getPostalCode().substring(0, 3), x, y);
-            	x += fm.stringWidth(currentAddress.getPostalCode().substring(0, 3) + " ");
-            	g2.drawString(currentAddress.getPostalCode().substring(3, 6), x, y);
-            	x += fm.stringWidth(currentAddress.getPostalCode().substring(3, 6) + " ");
+            	str = currentAddress.getPostalCode().substring(0, 3) + " ";
+            	str += currentAddress.getPostalCode().substring(3, 6);
             } else {
-            	g2.drawString(currentAddress.getPostalCode(), x, y);
-            	postalCodeHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getPostalCode()), fm.getHeight());
-            	x += fm.stringWidth(currentAddress.getPostalCode() + " ");
+            	str = currentAddress.getPostalCode();
             }
+            	// Set the JLabel for postalCode
+            	g2.translate(x,y - fm.getAscent());
+    			postalCodeLabel.setText(str);
+    			postalCodeLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+    			postalCodeLabel.paint(g2);
+    			g2.translate(-x, -y + fm.getAscent());
+    			
+            	postalCodeHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth(currentAddress.getPostalCode() + " "), fm.getHeight());
 		} else {
-			g2.setColor(missingFieldColour);
-			g2.drawString("PostalCode Missing", x, y);
+			// Set the JLabel for postalCode
+        	g2.translate(x,y - fm.getAscent());     
+        	postalCodeLabel.setForeground(missingFieldColour);
+			postalCodeLabel.setText("PostalCode Missing");
+			postalCodeLabel.setBounds(0, 0, getWidth() - x - fm.charWidth('M'), fm.getHeight());
+			postalCodeLabel.paint(g2);
+			g2.translate(-x, -y + fm.getAscent());
+			
 			postalCodeHotspot.setRect(x, y - fm.getAscent(), fm.stringWidth("PostalCode Missing"), fm.getHeight());
 			x += fm.stringWidth("PostalCode Missing");
 		}
