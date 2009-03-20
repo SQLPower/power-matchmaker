@@ -1254,8 +1254,14 @@ public class Address implements AddressInterface {
 				street == null &&
 				streetDirection == null &&
 				streetNumberSuffix == null &&
-				streetNumber == 0 &&
+				(streetNumber == null || streetNumber == 0) &&
 				streetType == null &&
 				suite == null;
+	}
+	
+	static Address getEmptyAddress() {
+		Address a = new Address();
+		a.setStreetNumber(Integer.valueOf(0));
+		return a;
 	}
 }

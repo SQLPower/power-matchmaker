@@ -442,10 +442,10 @@ public class AddressPool extends MonitorableImpl{
 					AddressResult result = dirtyAddresses.get(i);
 					ps.setString(1, result.getAddressLine1());
 					ps.setString(2, result.getAddressLine2());
-					ps.setString(3, result.getMunicipality());
-					ps.setString(4, result.getProvince());
-					ps.setString(5, result.getCountry());
-					ps.setString(6, result.getPostalCode());
+					ps.setString(3, result.getInputMunicipality());
+					ps.setString(4, result.getInputProvince());
+					ps.setString(5, result.getInputCountry());
+					ps.setString(6, result.getInputPostalCode());
 				
 					Address outputAddress = result.getOutputAddress();
 					ps.setString(7, outputAddress.getSuite());
@@ -577,10 +577,10 @@ public class AddressPool extends MonitorableImpl{
 
 					ps.setString(j, result.getAddressLine1());
 					ps.setString(j + 1, result.getAddressLine2());
-					ps.setString(j + 2, result.getMunicipality());
-					ps.setString(j + 3, result.getProvince());
-					ps.setString(j + 4, result.getCountry());
-					ps.setString(j + 5, result.getPostalCode());
+					ps.setString(j + 2, result.getInputMunicipality());
+					ps.setString(j + 3, result.getInputProvince());
+					ps.setString(j + 4, result.getInputCountry());
+					ps.setString(j + 5, result.getInputPostalCode());
 				
 					Address outputAddress = result.getOutputAddress();
 					ps.setString(j + 6, outputAddress.getSuite());

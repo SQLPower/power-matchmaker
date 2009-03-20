@@ -206,9 +206,10 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					
 					if (selected.getOutputAddress().isEmptyAddress()) {
 						address1 = Address.parse(
-							selected.getAddressLine1(), selected
-							.getMunicipality(), selected.getProvince(),
-							selected.getPostalCode(), selected.getCountry(), addressDatabase);
+							selected.getInputAddress(), selected
+							.getInputMunicipality(), selected.getInputProvince(),
+							selected.getInputPostalCode(), selected.getInputCountry(), addressDatabase);
+						selected.setOutputAddress(address1);
 					} else {
 						address1 = selected.getOutputAddress();
 					}
@@ -220,11 +221,21 @@ public class AddressValidationPanel extends NoEditEditorPane {
 					revertButton.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							selectedAddressLabel.setAddress(selectedAddressLabel.getRevertToAddress());
-							AddressValidator addressValidator = new AddressValidator(addressDatabase,selectedAddressLabel.getAddress());
-							JList suggestionList = new JList(addressValidator.getSuggestions().toArray());
-							selectedAddressLabel.setSuggestionList(suggestionList);
-							selectedAddressLabel.updateProblemDetails(addressValidator);
+							try {
+								logger.debug("Revert Address: " + selected.toString());
+								Address address = Address.parse(
+										selected.getInputAddress(), selected
+										.getInputMunicipality(), selected.getInputProvince(),
+										selected.getInputPostalCode(), selected.getInputCountry(), addressDatabase);
+								selected.setOutputAddress(selectedAddressLabel.getAddress());
+								selectedAddressLabel.setAddress(address);
+								AddressValidator addressValidator = new AddressValidator(addressDatabase,selectedAddressLabel.getAddress());
+								JList suggestionList = new JList(addressValidator.getSuggestions().toArray());
+								selectedAddressLabel.setSuggestionList(suggestionList);
+								selectedAddressLabel.updateProblemDetails(addressValidator);
+							} catch (RecognitionException e1) {
+								e1.printStackTrace();
+							}
 						}
 						
 					});
@@ -235,6 +246,17 @@ public class AddressValidationPanel extends NoEditEditorPane {
 							selected.setOutputAddress(selectedAddressLabel.getAddress());
 							pool.addAddress(selected, logger);
 							try {
+								if(selectedAddressLabel.getValidateResultsList().size() == 0) {
+									if(invalidResults.contains(selected)) {
+										invalidResults.removeElement(selected);
+										validResults.addElement(selected);
+									}
+								} else {
+									if(validResults.contains(selected)) {
+										validResults.removeElement(selected);
+										invalidResults.addElement(selected);
+									}
+								}
 								needsValidationList.repaint();
 								pool.store(logger, false, false);
 							} catch (SQLException ex) {

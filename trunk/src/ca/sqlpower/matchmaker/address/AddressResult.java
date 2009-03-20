@@ -102,8 +102,8 @@ public class AddressResult implements AddressInterface {
 	public List<Object> getKeyValues() {
 		return keyValues;
 	}
-
-	public String getAddress() {
+	
+	public String getInputAddress() {
 		StringBuilder sb = new StringBuilder();
 		if (addressLine1 != null) {
 			sb.append(addressLine1);
@@ -117,6 +117,13 @@ public class AddressResult implements AddressInterface {
 		return sb.toString();
 	}
 	
+	/**
+	 * Returns the output address
+	 */
+	public String getAddress() {
+		return outputAddress.getAddress();
+	}
+	
 	public String getAddressLine1() {
 		return addressLine1;
 	}
@@ -125,20 +132,48 @@ public class AddressResult implements AddressInterface {
 		return addressLine2;
 	}
 
-	public String getMunicipality() {
+	public String getInputMunicipality() {
 		return municipality;
 	}
-
-	public String getProvince() {
+	
+	/**
+	 * Returns output address municipality
+	 */
+	public String getMunicipality() {
+		return outputAddress.getMunicipality();
+	}
+	
+	public String getInputProvince() {
 		return province;
 	}
-
-	public String getPostalCode() {
+	
+	/**
+	 * Returns output address province
+	 */
+	public String getProvince() {
+		return outputAddress.getProvince();
+	}
+	
+	public String getInputPostalCode() {
 		return postalCode;
 	}
+	
+	/**
+	 * Returns output address postal code
+	 */
+	public String getPostalCode() {
+		return outputAddress.getPostalCode();
+	}
 
-	public String getCountry() {
+	public String getInputCountry() {
 		return country;
+	}
+	
+	/**
+	 * Returns output address country
+	 */
+	public String getCountry() {
+		return outputAddress.getCountry();
 	}
 
 	public Address getOutputAddress() {
