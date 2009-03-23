@@ -44,6 +44,7 @@ import javax.swing.text.Document;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -146,7 +147,7 @@ public class UserPreferencesEditor implements DataEntryPanel {
 			addressDataPathDoc.remove(0, addressDataPathDoc.getLength());
         	addressDataPathDoc.insertString(0, context.getAddressCorrectionDataPath(), null);
 		} catch (BadLocationException e2) {
-			e2.printStackTrace();
+			SPSUtils.showExceptionDialogNoReport(getPanel(), "", e2);
 		}
 
         JButton selectPath = new JButton(new AbstractAction("...") {
@@ -159,7 +160,7 @@ public class UserPreferencesEditor implements DataEntryPanel {
 						addressDataPathDoc.remove(0, addressDataPathDoc.getLength());
 						addressDataPathDoc.insertString(0, addressDataPathChooser.getSelectedFile().getAbsolutePath(), null);
 					} catch (BadLocationException e1) {
-						e1.printStackTrace();
+						SPSUtils.showExceptionDialogNoReport(getPanel(), "", e1);
 					}
 				}
 			}
@@ -175,6 +176,9 @@ public class UserPreferencesEditor implements DataEntryPanel {
 				} catch (DatabaseException e1) {
 					validatePathResult.setText("Invalid Address Data Path");
 					validatePathExInfo.setText(e1.toString());
+				} catch (Exception e2) {
+					validatePathResult.setText("Invalid Address Data Path");
+					validatePathExInfo.setText(e2.toString());
 				} finally {
 					if (testPath != null) {
 					testPath.close();
