@@ -52,6 +52,7 @@ import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -235,7 +236,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 								selectedAddressLabel.setSuggestionList(suggestionList);
 								selectedAddressLabel.updateProblemDetails(addressValidator);
 							} catch (RecognitionException e1) {
-								e1.printStackTrace();
+								SPSUtils.showExceptionDialogNoReport(getPanel(), "", e1);
 							} catch (DatabaseException e1) {
 								throw new RuntimeException("A database exception occurred while parsing the address" + e1);
 							}
