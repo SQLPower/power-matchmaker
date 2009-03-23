@@ -27,6 +27,7 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.Collection;
 
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -91,6 +92,11 @@ public class AddressValidationPanel extends NoEditEditorPane {
      * Show all, Show Invalid only and Show Valid only
      */
     private JComboBox displayComboBox;
+    
+    /**
+     * Saves all changes made to the label selected.
+     */
+    private JButton saveButton;
     
     /**
      * This is the list model which stores all the addresses
@@ -215,7 +221,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						address1 = selected.getOutputAddress();
 					}
 					
-					JButton saveButton = new JButton("Save");
+					saveButton = new JButton();
 					selectedAddressLabel = new AddressLabel(address1, null, false, null, addressDatabase, saveButton);
 					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
 					
@@ -235,6 +241,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 								JList suggestionList = new JList(addressValidator.getSuggestions().toArray());
 								selectedAddressLabel.setSuggestionList(suggestionList);
 								selectedAddressLabel.updateProblemDetails(addressValidator);
+								saveButton.getAction().actionPerformed(e);
 							} catch (RecognitionException e1) {
 								SPSUtils.showExceptionDialogNoReport(getPanel(), "", e1);
 							} catch (DatabaseException e1) {
@@ -244,7 +251,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						
 					});
 					
-					saveButton.addActionListener(new ActionListener() {
+					saveButton.setAction(new AbstractAction("Save") {
 						public void actionPerformed(ActionEvent e) {
 							selected.setOutputAddress(selectedAddressLabel.getAddress());
 							pool.addAddress(selected, logger);
