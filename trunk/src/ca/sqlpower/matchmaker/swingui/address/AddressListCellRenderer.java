@@ -65,9 +65,9 @@ public class AddressListCellRenderer implements ListCellRenderer {
 					throw new RuntimeException("A database error occured while trying to parse the address", e);
 				}
 			}
-			return new AddressLabel(result, comparisonAddress, isSelected, list, addressDatabase);
+			return new AddressLabel(result, comparisonAddress, isSelected, list, addressDatabase, null);
 		}
-		return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase);
+		return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase, null);
 	}
 
 }

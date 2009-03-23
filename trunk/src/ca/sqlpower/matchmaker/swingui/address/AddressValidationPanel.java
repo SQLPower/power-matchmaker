@@ -214,10 +214,11 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						address1 = selected.getOutputAddress();
 					}
 					
-					selectedAddressLabel = new AddressLabel(address1, null, false, null, addressDatabase);
+					JButton saveButton = new JButton("Save");
+					selectedAddressLabel = new AddressLabel(address1, null, false, null, addressDatabase, saveButton);
 					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
-					JButton revertButton = new JButton("Revert");
 					
+					JButton revertButton = new JButton("Revert");
 					revertButton.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
@@ -242,7 +243,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 						
 					});
 					
-					JButton saveButton = new JButton("Save");
 					saveButton.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							selected.setOutputAddress(selectedAddressLabel.getAddress());

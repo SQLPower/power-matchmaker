@@ -38,6 +38,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -84,6 +85,13 @@ public class AddressLabel extends JComponent {
 	private JList list;
 	private boolean isSelected;
 	private AddressDatabase addressDatabase;
+	
+	/**
+	 * This is not null only if the addressLabel is the middle bigger
+	 * addressLabel. This helps auto-save after user edit the label.
+	 */
+	private JButton saveButton;
+	
 	private JList suggestionList;
 	 
     /**
@@ -149,16 +157,17 @@ public class AddressLabel extends JComponent {
 	private JLabel postalCodeLabel = new JLabel();
 	
     public AddressLabel(AddressInterface address, boolean isSelected, JList list, AddressDatabase addressDatabase) {
-        this(address, null, isSelected, list, addressDatabase);
+        this(address, null, isSelected, list, addressDatabase, null);
     }
     
     public AddressLabel(AddressInterface address, AddressInterface comparisonAddress, 
-    					boolean isSelected, JList list, final AddressDatabase addressDatabase) {
+    					boolean isSelected, JList list, final AddressDatabase addressDatabase, final JButton saveButton) {
     	this.currentAddress = address;
         this.comparisonAddress = comparisonAddress;
 		this.isSelected = isSelected;
 		this.list = list;
 		this.addressDatabase = addressDatabase;
+		this.saveButton = saveButton;
 		
 		// Set font for each label 
 		addressLabel.setFont(getFont());
@@ -184,6 +193,11 @@ public class AddressLabel extends JComponent {
 						suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
 						updateTextFields();
 						updateProblemDetails(addressValidator);
+						// Auto save changes 
+						if (saveButton != null) {
+							logger.debug("Auto save executed!");
+							saveButton.doClick();
+						}
 					}
 				}
 			});
@@ -514,12 +528,18 @@ public class AddressLabel extends JComponent {
 			logger.debug("Current Address = " + currentAddress.getPostalCode() + "\nHashcode: " + currentAddress.hashCode());
 			logger.debug("New Current Address = " + newCurrentAddress.getPostalCode() + "\nHashcode: " + newCurrentAddress.hashCode());
 			if(!(currentAddress.equals(newCurrentAddress))) {
+					logger.debug("Addresses are different");
 					currentAddress = newCurrentAddress;
 					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
 					suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
 					//update the problem details
 					updateProblemDetails(addressValidator);
 					repaint();
+					// Auto save changes
+					if (saveButton != null) {
+						logger.debug("Auto save executed!");
+						saveButton.doClick();
+					}
 				}
 			}
 		
@@ -538,14 +558,21 @@ public class AddressLabel extends JComponent {
 				if (e.getSource() instanceof JTextField) {
 					// hide the text field 
 					((JTextField)e.getSource()).setVisible(false);
-					// update currentAddress
-					currentAddress = getChangedAddress();
-					// update the suggestionList
-					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
-					suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
-					// update the problem details
-					updateProblemDetails(addressValidator);
-					repaint();
+					if(!(currentAddress.equals(getChangedAddress()))) {
+						// update currentAddress
+						currentAddress = getChangedAddress();
+						// update the suggestionList
+						addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
+						suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
+						// update the problem details
+						updateProblemDetails(addressValidator);
+						repaint();
+						// Auto save changes 
+						if (saveButton != null) {
+							logger.debug("Auto save executed!");
+							saveButton.doClick();
+						}
+					}
 				}
 			}
 		}
