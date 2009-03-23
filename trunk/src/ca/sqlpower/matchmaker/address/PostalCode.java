@@ -112,6 +112,7 @@ public class PostalCode {
     private int recordTypeNumber;
     
     private String deliveryInstallationAreaName;
+    @SecondaryKey(relate=Relationship.MANY_TO_ONE)
     private String deliveryInstallationQualifierName;
     private String deliveryInstallationTypeDescription;
     
@@ -559,6 +560,38 @@ public class PostalCode {
             return false;
         }
         return o1.equals(o2);
+    }
+
+	/**
+	 * Returns true if the street address numbers covered by this postal code
+	 * contains all the street address numbers covered by the given postal code.
+	 * If the given postal code covers the exact same range as this postal code
+	 * than false will be returned. If the given postal code is not completely
+	 * contained by this postal code than false will be returned.
+	 * <p>
+	 * This should only be used on and with STREET and STREET_AND_RURAL type postal codes.
+	 */
+    public boolean contains(PostalCode pc) {
+		if (pc.getStreetAddressFromNumber() == null || pc.getStreetAddressToNumber() == null || getStreetAddressFromNumber() == null || getStreetAddressToNumber() == null) return false;
+		if (pc.getStreetAddressFromNumber() == getStreetAddressFromNumber() && pc.getStreetAddressToNumber() == getStreetAddressToNumber()) return false;
+		if (((pc.getStreetAddressFromNumber() > getStreetAddressFromNumber() && pc.getStreetAddressToNumber() <= getStreetAddressToNumber()) 
+				|| (pc.getStreetAddressToNumber() < getStreetAddressToNumber() && pc.getStreetAddressFromNumber() >= getStreetAddressFromNumber())) && 
+				(getStreetAddressSequenceType() == AddressSequenceType.CONSECUTIVE ||
+						getStreetAddressSequenceType() == pc.getStreetAddressSequenceType())) return true;
+		return false;
+    }
+    
+    /**
+     * Returns true if the address street number is contained in this postal code.
+     * <p>
+     * This should only be used on STREET and STREET_AND_RURAL type postal codes and addresses.
+     */
+    public boolean contains(Address a) {
+    	if (a.getStreetNumber() >= getStreetAddressFromNumber() && a.getStreetNumber() <= getStreetAddressToNumber() &&
+		(getStreetAddressSequenceType() == AddressSequenceType.CONSECUTIVE || 
+			(getStreetAddressSequenceType() == AddressSequenceType.ODD && a.getStreetNumber() % 2 == 1) ||
+			(getStreetAddressSequenceType() == AddressSequenceType.EVEN && a.getStreetNumber() % 2 == 0))) return true;
+    	return false;
     }
     
 }

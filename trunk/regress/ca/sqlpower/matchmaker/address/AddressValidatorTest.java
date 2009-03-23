@@ -20,9 +20,12 @@
 package ca.sqlpower.matchmaker.address;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.address.Municipality.ValidAlternateName;
 import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 
 public class AddressValidatorTest extends TestCase {
@@ -165,6 +168,202 @@ public class AddressValidatorTest extends TestCase {
     	assertFalse(suggestions.isEmpty());
     	Address bestSuggestion = suggestions.get(0);
     	assertEquals("DUNDAS", bestSuggestion.getDeliveryInstallationName());
+    }
+    
+    /**
+     * Regression test for special case. The order of the postal codes was causing the following
+     * to fail.
+     * <p>
+     * Special case: if multiple postal codes exist where one has a smaller street range
+	 * than the other (802-806 vs 802-812) and the address falls in both ranges, and the
+     * streets differ by a type that the address is missing (BAYVIEW AVE vs BAYVIEW ST 
+	 * with address BAYVIEW) then the postal code with the smaller range should be taken
+     * as more valid.
+     */
+    public void testSpecialCasePostalCodeContainmentOrder1() throws Exception {
+    	Address a = new Address();
+    	a.setType(RecordType.STREET);
+    	a.setStreetNumber(806);
+    	a.setStreet("HAMPSHIRE");
+    	a.setMunicipality("HIGH RIVER");
+    	a.setProvince("AB");
+    	a.setPostalCode("T1V0E3");
+    	AddressValidator validator = new AddressValidator(addressDB, a);
+    	Municipality m = new Municipality("AB", "HIGH RIVER", new HashSet<ValidAlternateName>(), new HashSet<String>());
+    	List<PostalCode> pcList = new ArrayList<PostalCode>();
+    	PostalCode pc1 = new PostalCode();
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("PLACE");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(808);
+    	pcList.add(pc1);
+    	pc1 = new PostalCode();
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("BAY");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(812);
+    	pcList.add(pc1);
+    	pc1 = new PostalCode();
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("CRES");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(816);
+    	pcList.add(pc1);
+    	validator.generateSuggestions(a, m, pcList);
+    	assertTrue(validator.isValidSuggestion());
+    	assertEquals("806 PLACE HAMPSHIRE NE", validator.getSuggestions().get(0).getAddress());
+    	System.out.println(validator.getSuggestions().get(0).getAddress());
+    }
+    
+    /**
+     * Regression test for special case. The order of the postal codes was causing the following
+     * to fail.
+     * <p>
+     * Special case: if multiple postal codes exist where one has a smaller street range
+	 * than the other (802-806 vs 802-812) and the address falls in both ranges, and the
+     * streets differ by a type that the address is missing (BAYVIEW AVE vs BAYVIEW ST 
+	 * with address BAYVIEW) then the postal code with the smaller range should be taken
+     * as more valid.
+     */
+    public void testSpecialCasePostalCodeContainmentOrder2() throws Exception {
+    	Address a = new Address();
+    	a.setType(RecordType.STREET);
+    	a.setStreetNumber(806);
+    	a.setStreet("HAMPSHIRE");
+    	a.setMunicipality("HIGH RIVER");
+    	a.setProvince("AB");
+    	a.setPostalCode("T1V0E3");
+    	AddressValidator validator = new AddressValidator(addressDB, a);
+    	Municipality m = new Municipality("AB", "HIGH RIVER", new HashSet<ValidAlternateName>(), new HashSet<String>());
+    	List<PostalCode> pcList = new ArrayList<PostalCode>();
+    	PostalCode pc1 = new PostalCode();
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("BAY");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(812);
+    	pcList.add(pc1);
+    	pc1 = new PostalCode();
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("CRES");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(816);
+    	pcList.add(pc1);
+    	pc1 = new PostalCode();
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("PLACE");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(808);
+    	pcList.add(pc1);
+    	validator.generateSuggestions(a, m, pcList);
+    	assertTrue(validator.isValidSuggestion());
+    	assertEquals("806 PLACE HAMPSHIRE NE", validator.getSuggestions().get(0).getAddress());
+    }
+    
+    /**
+     * Regression test for special case. The order of the postal codes was causing the following
+     * to fail.
+     * <p>
+     * Special case: if multiple postal codes exist where one has a smaller street range
+	 * than the other (802-806 vs 802-812) and the address falls in both ranges, and the
+     * streets differ by a type that the address is missing (BAYVIEW AVE vs BAYVIEW ST 
+	 * with address BAYVIEW) then the postal code with the smaller range should be taken
+     * as more valid.
+     */
+    public void testSpecialCasePostalCodeContainmentOrder3() throws Exception {
+    	Address a = new Address();
+    	a.setType(RecordType.STREET);
+    	a.setStreetNumber(806);
+    	a.setStreet("HAMPSHIRE");
+    	a.setMunicipality("HIGH RIVER");
+    	a.setProvince("AB");
+    	a.setPostalCode("T1V0E3");
+    	AddressValidator validator = new AddressValidator(addressDB, a);
+    	Municipality m = new Municipality("AB", "HIGH RIVER", new HashSet<ValidAlternateName>(), new HashSet<String>());
+    	List<PostalCode> pcList = new ArrayList<PostalCode>();
+    	PostalCode pc1 = new PostalCode();
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("BAY");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(812);
+    	pcList.add(pc1);
+    	pc1 = new PostalCode();
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("PLACE");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(808);
+    	pcList.add(pc1);
+    	pc1 = new PostalCode();
+    	pc1.setRecordType(RecordType.STREET);
+    	pc1.setPostalCode("T1V0E3");
+    	pc1.setAddressType(AddressType.STREET_ADDRESS);
+    	pc1.setProvinceCode("AB");
+    	pc1.setMunicipalityName("HIGH RIVER");
+    	pc1.setStreetName("HAMPSHIRE");
+    	pc1.setStreetTypeCode("CRES");
+    	pc1.setStreetDirectionCode("NE");
+    	pc1.setStreetAddressSequenceType(AddressSequenceType.EVEN);
+    	pc1.setStreetAddressFromNumber(802);
+    	pc1.setStreetAddressToNumber(816);
+    	pcList.add(pc1);
+    	validator.generateSuggestions(a, m, pcList);
+    	assertTrue(validator.isValidSuggestion());
+    	assertEquals("806 PLACE HAMPSHIRE NE", validator.getSuggestions().get(0).getAddress());
     }
     
 }

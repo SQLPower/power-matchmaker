@@ -26,6 +26,8 @@ import javax.swing.ListCellRenderer;
 
 import org.antlr.runtime.RecognitionException;
 
+import com.sleepycat.je.DatabaseException;
+
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressInterface;
@@ -59,6 +61,8 @@ public class AddressListCellRenderer implements ListCellRenderer {
 					result.setOutputAddress(address);
 				} catch (RecognitionException e) {
 					throw new RuntimeException("An error occured while trying to parse the address", e);
+				} catch (DatabaseException e) {
+					throw new RuntimeException("A database error occured while trying to parse the address", e);
 				}
 			}
 			return new AddressLabel(result, comparisonAddress, isSelected, list, addressDatabase);

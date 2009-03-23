@@ -235,6 +235,8 @@ public class AddressValidationPanel extends NoEditEditorPane {
 								selectedAddressLabel.updateProblemDetails(addressValidator);
 							} catch (RecognitionException e1) {
 								e1.printStackTrace();
+							} catch (DatabaseException e1) {
+								throw new RuntimeException("A database exception occurred while parsing the address" + e1);
 							}
 						}
 						
@@ -293,6 +295,12 @@ public class AddressValidationPanel extends NoEditEditorPane {
 									getPanel(),
 									"There was an error while trying to parse this address",
 									e1);
+				} catch (DatabaseException e1) {
+					MMSUtils
+					.showExceptionDialog(
+							getPanel(),
+							"There was a database error while trying to parse this address",
+							e1);
 				}
 			} else {
 				horizontalSplitPane.setRightComponent(
