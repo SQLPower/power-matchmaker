@@ -180,16 +180,11 @@ streetAddress
 	;
 	
 street
-	:	n=SUITEANDSTREETNUM s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX) streetToken+
+	:	n=SUITEANDSTREETNUM streetToken+
 							{String[] numbers = $n.text.split("-");
 							 address.setSuitePrefix(true);
 							 address.setSuite(numbers[0]);
 							 address.setStreetNumber(quietIntParse(numbers[1]));
-							 address.setStreetNumberSuffix($s.text);
-							}
-	|	n=NUMBER s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX) streetToken+	
-							{address.setStreetNumber(quietIntParse($n.text));
-							 address.setStreetNumberSuffix($s.text);
 							}
 	|	n=NUMANDSUFFIX streetToken+		{String streetNum = $n.text;
 							 address.setStreetNumber(quietIntParse(streetNum.substring(0, streetNum.length() - 1)));
@@ -206,13 +201,25 @@ streetToken
 							 address.setSuiteType($s.text);
 							 address.setSuite($sn.text);
 							}
-	|	{hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText())}? d=(NAME|STREETNUMSUFFIX)	
+	|	{hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText())}?=> d=(NAME|STREETNUMSUFFIX)	
 							{
 							 address.setStreetDirection($d.text);
 							}
 							
-	|	{!address.isStreetTypePrefix() && addressDatabase.containsStreetType(input.LT(1).getText())}? t=NAME
+	|	{(!address.isStreetTypePrefix() || ("C".equals(address.getStreetType()) && address.getStreetNumberSuffix() == null)) && addressDatabase.containsStreetType(input.LT(1).getText())}?=> 
+							t=(NAME|STREETNUMSUFFIX)
 							{
+							 //Fun special case where the street type C can come before the street name
+							 //like a street type, somtimes it's a street type, sometimes it's a street
+							 //number suffix. It's to be considered a street type unless there's another
+							 //street type then it's a street number suffix if it comes after the street
+							 //number (ie before the street name) and the street number suffix does not
+							 //exist yet (may be a fun case of 118 C C Avenue = 118C Center Avenue).
+							 if ("C".equals(address.getStreetType()) && address.getStreetNumberSuffix() == null) {
+							    address.setStreetNumberSuffix("C");
+							    address.setStreetType(null);
+							    address.setStreetTypePrefix(false);
+							 }
 							 if (address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
 							 }
@@ -227,12 +234,16 @@ streetToken
 							 address.setStreetTypePrefix(!hasStreetNameStarted);
 							 address.setStreetType($t.text);
 							}
-	|	{hasStreetNameStarted}?	n=NUMBER
+	|	{!hasStreetNameStarted}?=> s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX)
+							{
+							 address.setStreetNumberSuffix($s.text);
+							}
+	|	{hasStreetNameStarted}?=>	n=NUMBER
 							{
 							 address.setSuitePrefix(false);
 							 address.setSuite($n.text);
 							}
-	|	{hasStreetNameStarted && startsUrbanNotRural}?	ruralRoute      
+	|	{hasStreetNameStarted && startsUrbanNotRural}?=> ruralRoute      
 							{
 							 address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
 							 address.setUrbanBeforeRural(true);

@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.address;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +49,7 @@ public class AddressValidator {
      * {@link #validateImpl()} is called, which will happen automatically
      * upon the first call to {@link #getResults()}.
      */
-    private List<ValidateResult> results;
+    private final List<ValidateResult> results;
 
     /**
      * The list of suggested correct addresses that are similar to
@@ -58,7 +57,12 @@ public class AddressValidator {
      * is called, which will happen automatically upon the first call to
      * {@link #getSuggestions()}.
      */
-    private List<Address> suggestions;
+    private final List<Address> suggestions;
+    
+    /**
+     * Tracks if the address has been validated yet.
+     */
+    private boolean validated = false;
     
     /**
      * If true the first suggestion in the suggestions list is a valid postal code
@@ -76,6 +80,13 @@ public class AddressValidator {
      * as the delivery installation name).
      */
 	private boolean reparsed;
+	
+	/**
+	 * If true then this address is valid due to SERP standards. If false then the address
+	 * is not valid and there may be a valid suggestion. Check validSuggestion to see if
+	 * the first suggestion is a valid correction.
+	 */
+	private boolean serpValid = false;
 
     
     /**
@@ -88,13 +99,17 @@ public class AddressValidator {
         if (address == null) throw new NullPointerException("Null address");
         this.db = db;
         this.address = address;
+        results = new ArrayList<ValidateResult>();
+        suggestions = new ArrayList<Address>();
     }
     
     private void validateImpl() throws DatabaseException {
         Address a = new Address(address);
         
-        results = new ArrayList<ValidateResult>();
-        suggestions = new ArrayList<Address>();
+        validated = true;
+
+        results.clear();
+        suggestions.clear();
         
         // translate province/state names to official code (TODO)
         a.normalize();
@@ -124,11 +139,13 @@ public class AddressValidator {
         		if (recordType == LVRRecordType.LVR_NAME_LOCK_BOX || recordType == LVRRecordType.LVR_NAME_STREET ||
         				recordType == LVRRecordType.GOVERNMENT_NAME_LOCK_BOX || recordType == LVRRecordType.GOVERNMENT_NAME_STREET ||
         				recordType == LVRRecordType.GENERAL_DELIVERY_NAME) {
+        			serpValid = true;
         			return;
         		}
         	}
         	
             Set<PostalCode> pcSet = db.findPostalCode(a.getPostalCode());
+            List<PostalCode> pcList = new ArrayList<PostalCode>(pcSet);
             
             // verify province, municipality, street, type, direction, and street number
             if (pcSet.isEmpty()) {
@@ -139,7 +156,7 @@ public class AddressValidator {
                 a.setPostalCode(null);
                 
             } else {
-            	generateSuggestions(a, municipality, pcSet);
+            	generateSuggestions(a, municipality, pcList);
             }
             
         }
@@ -185,7 +202,7 @@ public class AddressValidator {
                 try {
                     matches = join.entities();
                     logger.debug("Checking address " + a);
-                    Set<PostalCode> pcSet = new HashSet<PostalCode>();
+                    List<PostalCode> pcSet = new ArrayList<PostalCode>();
                     for (PostalCode pc : matches) {
                         if (validRecordTypes.contains(pc.getRecordType()) && pc.containsAddress(a)) {
                             pcSet.add(pc);
@@ -209,24 +226,36 @@ public class AddressValidator {
 
 	/**
 	 * This method will generate the suggestions for a given address.
+	 * <p>
+	 * Package private for testing purposes.
 	 * 
 	 * @param a
 	 *            An address to correct.
 	 * @param municipality
 	 *            A municipality taken from the address to correct. Allows
 	 *            checking for older or alternate municipality names.
-	 * @param pcSet
+	 * @param pcList
 	 *            A set of postal codes to compare the address to and try to
 	 *            generate suggestions from.
 	 * @throws DatabaseException 
 	 */
-	private void generateSuggestions(Address a, Municipality municipality,
-			Set<PostalCode> pcSet) throws DatabaseException {
-		Map<Integer, Set<Address>> addressSuggestionsByError = new HashMap<Integer, Set<Address>>();
+	void generateSuggestions(Address a, Municipality municipality,
+			List<PostalCode> pcList) throws DatabaseException {
+		Map<Integer, List<Address>> addressSuggestionsByError = new HashMap<Integer, List<Address>>();
 		List<ValidateResult> smallestErrorList = new ArrayList<ValidateResult>();
 		boolean smallestErrorIsValid = true;
 		int smallestErrorCount = Integer.MAX_VALUE;
-		for (PostalCode pc : pcSet) {
+		PostalCode smallestErrorPostalCode = null;
+		//If set to true then the first postal code in the list is valid even if there 
+		//are multiple postal codes with the same error count. The first postal code is valid due to some unique case.
+		boolean validSpecialCase = false;
+		
+		//Some suggestions don't increase the error count as they are not a severe error but they still have
+		//a more valid suggestion. This tracks if there is a valid suggestion and the parsed address is not completely
+		//correct
+		boolean suggestionExists = false;
+		Address bestSuggestion = null; 
+		for (PostalCode pc : pcList) {
 			List<ValidateResult> errorList = new ArrayList<ValidateResult>();
 			int errorCount = 0;
 			boolean isValid = true;
@@ -240,12 +269,14 @@ public class AddressValidator {
 						Status.FAIL, "Postal codes do not agree"));
 				suggestion.setPostalCode(pc.getPostalCode());
 				errorCount++;
+				suggestionExists = true;
 			}
 			if (!pc.getProvinceCode().equals(a.getProvince())) {
 				errorList.add(ValidateResult.createValidateResult(
 						Status.FAIL, "Province code does not agree with postal code"));
 				suggestion.setProvince(pc.getProvinceCode());
 				errorCount++;
+				suggestionExists = true;
 			}
 			if (different(pc.getMunicipalityName(), a.getMunicipality())) {
 				if (municipality != null) {
@@ -255,12 +286,14 @@ public class AddressValidator {
 								Status.FAIL, "Municipality is not a valid alternate within postal code"));
 						suggestion.setMunicipality(municipality.getOfficialName());
 						errorCount++;
+						suggestionExists = true;
 					}
 				} else {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Municipality does not agree with postal code"));
 					suggestion.setMunicipality(pc.getMunicipalityName());
 					errorCount++;
+					suggestionExists = true;
 				}
 			}
 			
@@ -283,10 +316,19 @@ public class AddressValidator {
 				}
         		
         		suggestions.add(suggestion);
+        		serpValid = true;
         		return;
         	}
         	
 			if (pc.getRecordType() == RecordType.STREET || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+				
+				//If the address parsed was a route only and the correct address is street and route
+				//we only show the route address so missing or invalid street information is not an actual error
+				boolean countErrors = true;
+				if (suggestion.getType() == RecordType.ROUTE && pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+					countErrors = false;
+				}
+				
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.STREET) {
 						suggestion.setType(RecordType.STREET);
@@ -299,44 +341,64 @@ public class AddressValidator {
 				} else if (suggestion.getType() != PostalCode.RecordType.STREET && suggestion.getType() != PostalCode.RecordType.STREET_AND_ROUTE) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (different(pc.getStreetName(), a.getStreet())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street name does not agree with postal code"));
 					suggestion.setStreet(pc.getStreetName());
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (different(pc.getStreetTypeCode(), a.getStreetType()) && !Address.isStreetTypeValidAlternate(a.getStreetType(), pc.getStreetTypeCode())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street type does not agree with postal code"));
 					suggestion.setStreetType(pc.getStreetTypeCode());
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (a.isStreetTypePrefix() != isStreetTypePrefix(suggestion, pc)) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street type prefix does not agree with postal code"));
 					suggestion.setStreetTypePrefix(isStreetTypePrefix(suggestion, pc));
-					errorCount++;
+					if (countErrors) {
+						suggestionExists = true;
+					}
 				}
 				if (different(pc.getStreetDirectionCode(), a.getStreetDirection())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street direction does not agree with postal code"));
 					suggestion.setStreetDirection(pc.getStreetDirectionCode());
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (a.getStreetNumber() == null) {
 					isValid = false;
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street number missing from urban address."));
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 					logger.debug("Urban address missing street number is " + a.getAddress());
 				} else if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
 						(pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
 					isValid = false;
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street number does not fall into the range of allowed street numbers for this postal code."));
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 //            			Partial implementation of how street suffixs are supposed to be appended but is not consistent with the test data.
 //            			if (pc.getStreetAddressFromNumber() == a.getStreetNumber() && pc.getStreetAddressNumberSuffixFromCode() != null) {
@@ -361,12 +423,18 @@ public class AddressValidator {
 						isValid = false;
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "Street number is even when it should be odd."));
-						errorCount++;
+						if (countErrors) {
+							errorCount++;
+							suggestionExists = true;
+						}
 					} else if (pc.getStreetAddressSequenceType() == AddressSequenceType.EVEN && a.getStreetNumber() % 2 == 1) {
 						isValid = false;
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "Street number is odd when it should be even."));
-						errorCount++;
+						if (countErrors) {
+							errorCount++;
+							suggestionExists = true;
+						}
 					}
 				}
 			
@@ -374,13 +442,19 @@ public class AddressValidator {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Suite number should be a prefix if the suite type is invalid."));
 					suggestion.setSuitePrefix(true);
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (a.getSuite() != null && a.getSuite().length() > 0 && a.getSuite().charAt(0) == '#') {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Suite numbers should not have # prepended."));
 					suggestion.setSuite(a.getSuite().substring(1));
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 
 				// TODO all the other fields
@@ -390,6 +464,7 @@ public class AddressValidator {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
 					errorCount++;
+					suggestionExists = true;
 				}
 				suggestion.setType(RecordType.GENERAL_DELIVERY);
 				if (!Address.isGeneralDeliveryExactMatch(a.getGeneralDeliveryName())) {
@@ -399,22 +474,29 @@ public class AddressValidator {
 								Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
 						suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
 						errorCount++;
+						suggestionExists = true;
 					} else if ((Address.isGeneralDelivery(a.getGeneralDeliveryName()) || a.getGeneralDeliveryName() == null) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
 							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
 						suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
 						errorCount++;
+						suggestionExists = true;
 					}
 				}
 				
-				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+				int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+				if (count > 0) {
+					suggestionExists = true;
+				}
+				errorCount += count;
 			}
 			if (pc.getRecordType() == RecordType.LOCK_BOX) {
 				if (suggestion.getType() != PostalCode.RecordType.LOCK_BOX) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
 					errorCount++;
+					suggestionExists = true;
 				}
 				suggestion.setType(RecordType.LOCK_BOX);
 				
@@ -424,11 +506,13 @@ public class AddressValidator {
 								Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
 						suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
 						errorCount++;
+						suggestionExists = true;
 					} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
 						errorList.add(ValidateResult.createValidateResult(
 								Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
 						suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
 						errorCount++;
+						suggestionExists = true;
 					}
 				}
 				
@@ -437,6 +521,7 @@ public class AddressValidator {
 							Status.FAIL, "Lock box number should not start with a #."));
 					suggestion.setLockBoxNumber(a.getLockBoxNumber().substring(1));
 					errorCount++;
+					suggestionExists = true;
 				}
 				
 				if (!pc.containsLockBoxNumber(suggestion)) {
@@ -446,11 +531,24 @@ public class AddressValidator {
 						suggestion.setLockBoxNumber(new Integer(pc.getLockBoxBagFromNumber()).toString());
 					}
 					errorCount++;
+					suggestionExists = true;
 				}
 				
-				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+				int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+				if (count > 0) {
+					suggestionExists = true;
+				}
+				errorCount += count;
 			}
 			if (pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+				
+				//If the address parsed was a street only and the correct address is street and route
+				//we only show the street address so missing or invalid route information is not an actual error
+				boolean countErrors = true;
+				if (suggestion.getType() == RecordType.STREET && pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+					countErrors = false;
+				}
+				
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.ROUTE) {
 						suggestion.setType(RecordType.ROUTE);
@@ -463,71 +561,175 @@ public class AddressValidator {
 				} else if (suggestion.getType() != RecordType.ROUTE && suggestion.getType() != RecordType.STREET_AND_ROUTE) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Address type does not match best suggestion."));
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Invalid rural route type."));
 					suggestion.setRuralRouteType(Address.getRuralRouteShortForm(a.getRuralRouteType()));
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				
-				errorCount += correctDeliveryInstallation(a, pc, suggestion, errorList);
+				int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+				if (count > 0 && countErrors) {
+					suggestionExists = true;
+				}
+				int errors = count;
+				if (countErrors) errorCount += errors;
 				
 				if (a.getRuralRouteNumber() == null && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Missing rural route number."));
 					suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (a.getRuralRouteNumber() != null && a.getRuralRouteNumber().length() > 0 && a.getRuralRouteNumber().charAt(0) == '#') {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Rural route number should not start with a #."));
 					suggestion.setRuralRouteNumber(a.getRuralRouteNumber().substring(1));
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 				if (pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0 && different(suggestion.getRuralRouteNumber(), new Integer(pc.getRouteServiceNumber()).toString())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Incorrect rural route number."));
 					suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
-					errorCount++;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
 				}
 			}
 			
 
-			if (errorCount > 0 || reparsed) {
-				Set<Address> addresses = addressSuggestionsByError.get(errorCount);
+			if (suggestionExists || reparsed) {
+				//Special case: if multiple postal codes exist where one has a smaller street range
+				//than the other (802-806 vs 802-812) and the address falls in both ranges, and the
+				//streets differ by a type that the address is missing (BAYVIEW AVE vs BAYVIEW ST 
+				//with address BAYVIEW) then the postal code with the smaller range should be taken
+				//as more valid.
+				boolean addToFrontOfList = false;
+				if (smallestErrorPostalCode != null && postalCodeStreetRangesCoverAddress(a, pc, smallestErrorPostalCode) && 
+						checkIfFirstPostalCodeStreetRangeInsideSecond(pc, smallestErrorPostalCode) &&
+						checkIfStreetErrorMatchesBothPostalCodes(a, pc, smallestErrorPostalCode)) {
+					if (errorCount > smallestErrorCount) {
+						errorCount = smallestErrorCount;
+					}
+					addToFrontOfList = true;
+					validSpecialCase = true;
+				} else if (smallestErrorPostalCode != null && postalCodeStreetRangesCoverAddress(a, pc, smallestErrorPostalCode) && 
+						checkIfFirstPostalCodeStreetRangeInsideSecond(smallestErrorPostalCode, pc) &&
+						checkIfStreetErrorMatchesBothPostalCodes(a, pc, smallestErrorPostalCode)) {
+					validSpecialCase = true;
+					List<Address> addresses = addressSuggestionsByError.get(smallestErrorCount);
+					addresses.remove(bestSuggestion);
+					addresses.add(0, bestSuggestion);
+				} else if (smallestErrorPostalCode != null && postalCodeStreetRangesCoverAddress(a, pc, smallestErrorPostalCode) &&
+						checkIfStreetErrorMatchesBothPostalCodes(a, pc, smallestErrorPostalCode) &&
+						!checkIfFirstPostalCodeStreetRangeInsideSecond(smallestErrorPostalCode, pc)) {
+					validSpecialCase = false;
+				}
+				
+				List<Address> addresses = addressSuggestionsByError.get(errorCount);
 				if (addresses == null) {
-					addresses = new HashSet<Address>();
+					addresses = new ArrayList<Address>();
 					addresses.add(suggestion);
 					addressSuggestionsByError.put(errorCount, addresses);
-				} else {
-					addresses.add(suggestion);
+				} else if (!addresses.contains(suggestion)) {
+					if (addToFrontOfList) {
+						addresses.add(0, suggestion);
+					} else {
+						addresses.add(suggestion);
+					}
+				}
+				if (errorCount < smallestErrorCount || addToFrontOfList) {
+					smallestErrorPostalCode = pc;
+					smallestErrorList = errorList;
+					smallestErrorCount = errorCount;
+					smallestErrorIsValid = isValid;
+					bestSuggestion = suggestion;
 				}
 			} else {
 				suggestions.clear();
+				serpValid = true;
 				return;
 			}
-			if (errorCount < smallestErrorCount) {
-				smallestErrorList = errorList;
-				smallestErrorCount = errorCount;
-				smallestErrorIsValid = isValid;
-			}
+		}
+		serpValid = smallestErrorCount == 0;
+		if (results.size() == 0) {
+			serpValid = true;
 		}
 		results.addAll(smallestErrorList);
 		final ArrayList<Integer> errorCounts = new ArrayList<Integer>(addressSuggestionsByError.keySet());
 		Collections.sort(errorCounts);
 		//If there is only one suggestion at the lowest error count then that is a valid suggestion, otherwise invalid
-		if (!smallestErrorIsValid || (addressSuggestionsByError.get(smallestErrorCount) != null && addressSuggestionsByError.get(smallestErrorCount).size() > 1)) {
+		if (!validSpecialCase && (!smallestErrorIsValid || (addressSuggestionsByError.get(smallestErrorCount) != null && addressSuggestionsByError.get(smallestErrorCount).size() > 1))) {
 			validSuggestion = false;
+			serpValid = false;
 		}
 		for (Integer errorCount : errorCounts) {
 			for (Address suggestion : addressSuggestionsByError.get(errorCount)) {
 				suggestions.add(suggestion);
 			}
 		}
+		validated = true;
 	}
 	
+	/**
+	 * There are specific errors an address could have that would allow it to match to two
+	 * different postal codes. These errors are things like the postal codes differ by street
+	 * type or direction and the direction is missing. This will return true if they differ
+	 * by the valid error types and could be matched to both. An error count does not suffice
+	 * as one could be different by municipality only while the other could be different by direction
+	 * only.
+	 */
+	private boolean checkIfStreetErrorMatchesBothPostalCodes(Address a,
+			PostalCode pc, PostalCode smallestErrorPostalCode) {
+		if (a == null || pc == null || smallestErrorPostalCode == null) return false;
+		if (pc.getRecordType() != smallestErrorPostalCode.getRecordType()) return false;
+		if (!pc.getMunicipalityName().equals(smallestErrorPostalCode.getMunicipalityName())) return false;
+		if (!pc.getPostalCode().equals(smallestErrorPostalCode.getPostalCode())) return false;
+		if (!pc.getProvinceCode().equals(smallestErrorPostalCode.getProvinceCode())) return false;
+		if (pc.getStreetName() == null || !pc.getStreetName().equals(smallestErrorPostalCode.getStreetName())) return false;
+		if (!(a.getStreetType() == null || pc.getStreetTypeCode().equals(smallestErrorPostalCode.getStreetTypeCode()))) return false;
+		if (!(a.getStreetDirection() == null || pc.getStreetDirectionCode().equals(smallestErrorPostalCode.getStreetDirectionCode()))) return false;
+		return true;
+	}
+
+	/**
+	 * Returns true if the address contains a street number and falls in the range
+	 * of both postal codes passed in. 
+	 */
+	private boolean postalCodeStreetRangesCoverAddress(Address a,
+			PostalCode pc, PostalCode smallestErrorPostalCode) {
+		if (a == null || pc == null || smallestErrorPostalCode == null) return false;
+		if (a.getStreetNumber() == null ||pc.getStreetAddressFromNumber() == null || pc.getStreetAddressToNumber() == null || smallestErrorPostalCode.getStreetAddressFromNumber() == null || smallestErrorPostalCode.getStreetAddressToNumber() == null) return false;
+		if (pc.contains(a) && smallestErrorPostalCode.contains(a)) return true;
+		return false;
+	}
+
+	/**
+	 * Returns true if one of the postal code's range is inside the other. If they are
+	 * the same then false will be returned. 
+	 */
+	private boolean checkIfFirstPostalCodeStreetRangeInsideSecond(PostalCode pc,
+			PostalCode smallestErrorPostalCode) {
+		if (pc == null || smallestErrorPostalCode == null) return false;
+		if (smallestErrorPostalCode.contains(pc)) return true;
+		return false;
+	}
+
 	/**
 	 * Given an address to correct, a postal code to correct to and a partially validated suggestion,
 	 * this method will check the delivery installation information and update the suggestion accordingly.
@@ -670,14 +872,14 @@ public class AddressValidator {
     }
     
     public List<ValidateResult> getResults() {
-        if (results == null) {
+        if (!validated) {
             validate();
         }
         return Collections.unmodifiableList(results);
     }
     
     public List<Address> getSuggestions() {
-        if (suggestions == null) {
+        if (!validated) {
             validate();
         }
         return Collections.unmodifiableList(suggestions);
@@ -685,5 +887,9 @@ public class AddressValidator {
     
     public boolean isValidSuggestion() {
 		return validSuggestion;
+	}
+
+	public boolean isSerpValid() {
+		return serpValid;
 	}
 }

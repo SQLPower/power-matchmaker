@@ -67,6 +67,7 @@ public class AddressDatabase {
     SecondaryIndex<String, Long, PostalCode> postalCodeStreet;
     private SecondaryIndex<String, Long, PostalCode> postalStreetTypeCode;
     SecondaryIndex<Integer, Long, PostalCode> postalCodeRecordType;
+    private SecondaryIndex<String, Long, PostalCode> postalCodeDIName;
     
     /**
      * This map stores all valid address types (like STREET and AVENUE) to their short form stored
@@ -107,6 +108,7 @@ public class AddressDatabase {
         postalCodeStreet = store.getSecondaryIndex(postalCodePK, String.class, "streetName");
         postalStreetTypeCode = store.getSecondaryIndex(postalCodePK, String.class, "streetTypeCode");
         postalCodeRecordType = store.getSecondaryIndex(postalCodePK, Integer.class, "recordTypeNumber");
+        postalCodeDIName = store.getSecondaryIndex(postalCodePK, String.class, "deliveryInstallationQualifierName");
     }
 
     /**
@@ -346,5 +348,20 @@ public class AddressDatabase {
 		LargeVolumeReceiver lvr = cursor.next();
 		cursor.close();
 		return lvr;
+	}
+	
+	/**
+	 * Returns true if the database has a delivery installation with
+	 * the given name. Returns false otherwise.
+	 */
+	public boolean containsDeliveryInstallationName(String diName) throws DatabaseException {
+		if (diName == null) return false;
+		EntityCursor<PostalCode> cursor = postalCodeDIName.entities(diName, true, diName, true);
+		try {
+			if (cursor.next() != null) return true;
+		} finally {
+			cursor.close();
+		}
+		return false;
 	}
 }

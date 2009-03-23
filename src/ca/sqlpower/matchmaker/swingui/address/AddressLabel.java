@@ -62,6 +62,7 @@ import ca.sqlpower.validation.ValidateResult;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
+import com.sleepycat.je.DatabaseException;
 
 public class AddressLabel extends JComponent {
 	
@@ -494,6 +495,11 @@ public class AddressLabel extends JComponent {
 			MMSUtils.showExceptionDialog(
 					getParent(),
 					"There was an error while trying to parse this address",
+					e);
+		} catch (DatabaseException e) {
+			MMSUtils.showExceptionDialog(
+					getParent(),
+					"There was a database error while trying to parse this address",
 					e);
 		}
 		return new Address();

@@ -568,9 +568,10 @@ public class Address implements AddressInterface {
      * @param country
      *            The ISO two-letter country code
      * @throws RecognitionException 
+     * @throws DatabaseException 
      */
     public static Address parse(String streetAddress, String municipality, String province, String postalCode,
-            String country, AddressDatabase addressDatabase) throws RecognitionException {
+            String country, AddressDatabase addressDatabase) throws RecognitionException, DatabaseException {
     	
     	Address a;
     	if (streetAddress != null) {
@@ -596,6 +597,36 @@ public class Address implements AddressInterface {
 				a.setStreet(a.getStreet().substring(a.getStreet().indexOf(' ') + 1));
 				a.setSuitePrefix(true);
 			}
+	        
+	        if (a.getDeliveryInstallationName() != null) {
+				String diName = a.getDeliveryInstallationName().trim();
+				while (diName.length() > 0) {
+					if (addressDatabase.containsDeliveryInstallationName(diName)) {
+						a.setDeliveryInstallationName(diName.trim());
+						a.setAdditionalInformationSuffix(a.getDeliveryInstallationName().substring(diName.length()).trim());
+						break;
+					}
+					if (diName.lastIndexOf(' ') < 0) {
+						break;
+					}
+					diName = diName.substring(0, diName.lastIndexOf(' ')).trim();
+				}
+			}
+	        if (a.getStreet() != null) {
+				String streetName = a.getStreet().trim();
+				while (streetName.length() > 0) {
+					if (addressDatabase.containsStreetName(streetName)) {
+						a.setStreet(streetName.trim());
+						a.setAdditionalInformationSuffix(a.getStreet().substring(streetName.length()).trim());
+						break;
+					}
+					if (streetName.lastIndexOf(' ') < 0) {
+						break;
+					}
+					streetName = streetName.substring(0, streetName.lastIndexOf(' ')).trim();
+				}
+			}
+	        
     	} else {
     		a = new Address();
     	}
@@ -674,7 +705,7 @@ public class Address implements AddressInterface {
    		default:
    			throw new IllegalStateException("Address type " + type + " is unknown");
     	}
-    	if (additionalInformationSuffix != null) {
+    	if (additionalInformationSuffix != null && additionalInformationSuffix.trim().length() > 0) {
 			address = address + " " + additionalInformationSuffix;
 		}
     	return address;

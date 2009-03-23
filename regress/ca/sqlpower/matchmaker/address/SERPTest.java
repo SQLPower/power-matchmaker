@@ -86,7 +86,7 @@ public class SERPTest extends TestCase {
     	long before = System.currentTimeMillis();
     	
     	int i = 0;
-    	int maxRow = 11000;
+    	int maxRow = 16000;
     	int showLastRows = 1000;
     	int lastSuccessCount = 0;
     	int lastFailureCount = 0;
@@ -142,6 +142,29 @@ public class SERPTest extends TestCase {
 
     			boolean failed = validateAddress(resultStreetAddress,
 						resultMunicipality, resultProvince, resultPostalCode);
+    			
+    			if (resultLine.substring(220, 221).equals("V") && !validator.isSerpValid()) {
+    				failed = true;
+    				logger.debug("Expecting input to be valid but received suggestions.");
+    				logger.debug("Errors were: " + validator.getResults());
+    			}
+    			if (resultLine.substring(220, 221).equals("N") && (validator.isValidSuggestion() || validator.isSerpValid())) {
+    				failed = true;
+    				if (validator.isSerpValid()) {
+    					logger.debug("Expecting input to be invalid non-correctable but was marked valid.");
+    				} else {
+    					logger.debug("Expecting input to be invalid non-correctable but received suggestions.");
+    				}
+    			}
+    			if (resultLine.substring(220, 221).equals("C") && ((!validator.isValidSuggestion() && validator.isSerpValid())
+    					|| (resultLine.substring(221, 222).equals("O") && !validator.isSerpValid()))) {
+    				failed = true;
+    				if (validator.isSerpValid()) {
+    					logger.debug("Expecting input to be invalid correctable but was marked valid.");
+    				} else {
+    					logger.debug("Expecting input to be invalid correctable but marked invalid.");
+    				}
+    			}
     			
     			if (failed && optionalFailed) {
     				logger.debug("Failed to parse '" + streetAddress + ", " + municipality + ", " + province + ", " + postalCode);
