@@ -299,22 +299,22 @@ ruralRoute
 	;
 
 ruralRouteSuffix
-	:	diTypeAndName?
-	|	{!startsUrbanNotRural}? streetAddress				
+	:	{!startsUrbanNotRural}?=> streetAddress				
 							{
 							 address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
 							 address.setUrbanBeforeRural(false);
 							}
+	|	diTypeAndName
 	;
 	
 lockBoxAddress
-	:	{Address.isLockBox(input.LT(1).getText())}?=> lb=NAME '#'? n=NUMBER diTypeAndName?
+	:	{Address.isLockBox(input.LT(1).getText())}?=> lb=NAME '#'? n=NUMBER diTypeAndName
 							{
 							 address.setLockBoxType($lb.text);
 							 address.setLockBoxNumber($n.text);
 							 address.setType(PostalCode.RecordType.LOCK_BOX);
 							}
-	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}?=> lb1=NAME lb2=NAME '#'? n=NUMBER diTypeAndName?
+	|	{Address.isLockBox(input.LT(1).getText() + " " + input.LT(2).getText())}?=> lb1=NAME lb2=NAME '#'? n=NUMBER diTypeAndName
 							{
 							 address.setLockBoxType($lb1.text + " " + $lb2.text);
 							 address.setLockBoxNumber($n.text);
@@ -323,18 +323,18 @@ lockBoxAddress
 	;
 	
 generalDeliveryAddress
-	:	{Address.isGeneralDelivery(input.LT(1).getText())}?=> gd=NAME diTypeAndName?
+	:	{Address.isGeneralDelivery(input.LT(1).getText())}?=> gd=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd.text);
 							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
 							}
-	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}?=> gd1=NAME gd2=NAME diTypeAndName?
+	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText())}?=> gd1=NAME gd2=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text);
 							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
 							}
 	|	{Address.isGeneralDelivery(input.LT(1).getText() + " " + input.LT(2).getText() + " " + input.LT(3).getText())}?=> 
-			gd1=NAME gd2=(STREETNUMSUFFIX|NAME) gd3=NAME diTypeAndName?
+			gd1=NAME gd2=(STREETNUMSUFFIX|NAME) gd3=NAME diTypeAndName
 							{
 							 address.setGeneralDeliveryName($gd1.text + " " + $gd2.text + " " + $gd3.text);
 							 address.setType(PostalCode.RecordType.GENERAL_DELIVERY);
@@ -354,6 +354,7 @@ diTypeAndName
 							{
 							 address.setDeliveryInstallationType($dt1.text + " " + $dt2.text + " " + $dt3.text);
 							}
+	|	diName*
 	;
 
 diName

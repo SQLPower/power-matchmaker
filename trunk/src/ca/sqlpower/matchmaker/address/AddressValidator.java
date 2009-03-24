@@ -456,6 +456,18 @@ public class AddressValidator {
 						suggestionExists = true;
 					}
 				}
+				
+				if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null && pc.getStreetAddressFromNumber().equals(pc.getStreetAddressToNumber()) 
+						&& pc.getSuiteFromNumber() != null && pc.getSuiteToNumber() != null && pc.getSuiteFromNumber().trim().length() > 0 && pc.getSuiteToNumber().trim().length() > 0
+						&& suggestion.getSuite() == null) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Suite number missing when postal code requires it."));
+					isValid = false;
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
+				}
 
 				// TODO all the other fields
 			}
