@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.address.parse;
 
+import java.io.File;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -27,10 +29,27 @@ import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.debug.DebugEventListener;
 import org.antlr.runtime.debug.DebugTokenStream;
 
+import com.sleepycat.je.DatabaseException;
+
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.address.Address;
+import ca.sqlpower.matchmaker.address.AddressDatabase;
 
 public class AddressParserTest extends TestCase {
+	
+	/**
+	 * Path pointing to the directory containing the address database.
+	 */
+	private static final String ADDRESS_DATABASE_PATH = "/Users/thomas/addressdb";
+	private static AddressDatabase addressDB;
+	
+	static {
+		try {
+			addressDB = new AddressDatabase(new File(ADDRESS_DATABASE_PATH));
+		} catch (DatabaseException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
     private static DebugEventListener debugListener = new DebugEventListener() {
 
@@ -192,11 +211,13 @@ public class AddressParserTest extends TestCase {
     };
     
     private static Address parseStreetOnly(String addr) throws RecognitionException {
-        ANTLRStringStream input = new ANTLRStringStream(addr.toUpperCase() + " CITY PR A1A1A1");
+        ANTLRStringStream input = new ANTLRStringStream(addr.toUpperCase());
         AddressLexer lexer = new AddressLexer(input);
         TokenStream tokens = new CommonTokenStream(lexer);
         TokenStream dbgtokens = new DebugTokenStream(tokens, debugListener);
         AddressParser p = new AddressParser(dbgtokens);
+        p.setStartsUrbanNotRural(true);
+        p.setAddressDatabase(addressDB);
         p.streetAddress();
         return p.getAddress();
     }
