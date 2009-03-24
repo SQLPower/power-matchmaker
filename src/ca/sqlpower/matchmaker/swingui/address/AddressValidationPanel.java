@@ -151,7 +151,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			needsValidationList.setCellRenderer(new AddressListCellRenderer(null, addressDatabase));
 			JScrollPane addressPane = new JScrollPane(needsValidationList);
 			addressPane.setPreferredSize(new Dimension(250, 1000));
-			addressPane.setMinimumSize(new Dimension(150, 1000));
 					
 			validateResultPane = new JPanel();
 			validateResultPane.setLayout(new BoxLayout(validateResultPane, BoxLayout.Y_AXIS));
