@@ -184,7 +184,7 @@ public class AddressLabel extends JComponent {
 			suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			suggestionList.setCellRenderer(new AddressListCellRenderer(currentAddress, addressDatabase));
 			suggestionList.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent e) {
+				public void mouseReleased(MouseEvent e) {
 					logger.debug("Mouse Clicked on suggestion list " + ((JList)e.getSource()).getSelectedValue());
 					final Address selected = (Address) ((JList) e.getSource()).getSelectedValue();
 					if (selected != null) {
@@ -235,7 +235,7 @@ public class AddressLabel extends JComponent {
 		if (list == null) {
 			addMouseListener(new MouseAdapter() {
 				
-				public void mouseClicked(MouseEvent e) {
+				public void mouseReleased(MouseEvent e) {
 					if (isClickingRightArea(e, addressLine1Hotspot)) {
 						addressTextField.setText(currentAddress.getAddress());
 						setTextFieldsInvisible(addressTextField, municipalityTextField, provinceTextField, postalCodeTextField);
