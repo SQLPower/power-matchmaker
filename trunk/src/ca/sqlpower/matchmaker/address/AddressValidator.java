@@ -692,7 +692,9 @@ public class AddressValidator {
 		}
 		for (Integer errorCount : errorCounts) {
 			for (Address suggestion : addressSuggestionsByError.get(errorCount)) {
-				suggestions.add(suggestion);
+				if (!suggestions.contains(suggestion)) {
+					suggestions.add(suggestion);
+				}
 			}
 		}
 		validated = true;
