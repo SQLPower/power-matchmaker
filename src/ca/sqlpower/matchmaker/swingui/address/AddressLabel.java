@@ -583,21 +583,21 @@ public class AddressLabel extends JComponent {
 		validateResult = addressValidator.getResults();
 		logger.debug("The size of the Problems is : " + validateResult.size());
 		problemsBuilder.getPanel().removeAll();
-    	problemsBuilder = new DefaultFormBuilder(new FormLayout("fill:pref:grow"), problemsBuilder.getPanel());
+    	problemsBuilder = new DefaultFormBuilder(new FormLayout("max(400;min)"), problemsBuilder.getPanel());
 		JLabel problemsHeading = new JLabel("Problems:");
 		problemsHeading.setFont(new Font(null, Font.BOLD, 13));
 		problemsBuilder.append(problemsHeading);
 		for (ValidateResult vr : validateResult) {
 			logger.debug("The Problem details are: " + vr);
 			if (vr.getStatus() == Status.FAIL) {
-				problemsBuilder.append(new JLabel("Fail: "
-						+ vr.getMessage(), new ImageIcon(
+				problemsBuilder.append(new JLabel("<html>Fail: "
+						+ vr.getMessage() + "</html>", new ImageIcon(
 						AddressValidationPanel.class
 								.getResource("icons/fail.png")),
 						JLabel.LEFT));
 			} else if (vr.getStatus() == Status.WARN) {
-				problemsBuilder.append(new JLabel("Warning: "
-						+ vr.getMessage(), new ImageIcon(
+				problemsBuilder.append(new JLabel("<html>Warning: "
+						+ vr.getMessage() + "</html>", new ImageIcon(
 						AddressValidationPanel.class
 								.getResource("icons/warn.png")),
 						JLabel.LEFT));
