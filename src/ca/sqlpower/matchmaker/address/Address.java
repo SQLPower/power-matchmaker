@@ -91,14 +91,12 @@ public class Address implements AddressInterface {
 	public static final List<String> PO_BOX_VALID_ALT = new ArrayList<String>(Arrays.asList(new String[]{"BP", "POBX", "BOX"}));
 	
 	/**
-	 * The list of accepted street directions.
+	 * This set contains lists of street directions. All valid street directions are contained in this set.
+	 * Street directions grouped in the same list are alternates of each other. This means if an address
+	 * has one street direction and the correct street direction is in the same list then the street
+	 * direction is valid.
 	 */
-	public static final List<String> STREET_DIRECTIONS = new ArrayList<String>(Arrays.asList(new String[]{"N", "S", "E", "W", "NW", "NE", "SW", "SE", "NO", "SO"}));
-	
-	/**
-	 * The list of long forms of street direction names.
-	 */
-	public static final List<String> STREET_DIRECTIONS_LONG = new ArrayList<String>(Arrays.asList(new String[]{"NORTH", "EAST", "SOUTH", "WEST", "NORTH-WEST", "NORTH-EAST", "SOUTH-WEST", "SOUTH-EAST", "NORD-OUEST", "SUD-OUEST", "NORD-EST", "SUD-EST"}));
+	public static final Set<List<String>> STREET_DIRECTIONS_SET = new HashSet<List<String>>();
 	
 	/**
 	 * If an address's suite type matches one of these exactly is an accepted symbol.
@@ -136,6 +134,15 @@ public class Address implements AddressInterface {
 	public static final Set<List<String>> STREET_TYPE_ALTERNATIVES = new HashSet<List<String>>();
 	
 	static {
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"N", "NORTH", "NORD"})));
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"S", "SOUTH", "SUD"})));
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"E", "EAST", "EST"})));
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"W", "O", "WEST", "OUEST"})));
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"NW", "NO", "NORTH-WEST", "NORD-OUEST"})));
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"NE", "NORTH-EAST", "NORD-EST"})));
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"SW", "SO", "SOUTH-WEST", "SUD-OUEST"})));
+		STREET_DIRECTIONS_SET.add(new ArrayList<String>(Arrays.asList(new String[]{"SE", "SOUTH-EAST", "SUD-EST"})));
+		
 		RURAL_ROUTE_TYPES_LONG.put("RURAL ROUTE", "RR");
 		RURAL_ROUTE_TYPES_LONG.put("ROUTE RURALE", "RR");
 		RURAL_ROUTE_TYPES_LONG.put("SUBURBAN SERVICE", "SS");
@@ -293,9 +300,23 @@ public class Address implements AddressInterface {
 	}
 	
 	public static boolean isStreetDirection(String s) {
-		if (STREET_DIRECTIONS.contains(s)) return true;
-		for (String direction : STREET_DIRECTIONS_LONG) {
-			if (LevenshteinDistance.computeLevenshteinDistance(direction, s) <= direction.length()/3) return true;
+		for (List<String> directions : STREET_DIRECTIONS_SET) {
+			for (String direction : directions) {
+				if (LevenshteinDistance.computeLevenshteinDistance(direction, s) <= direction.length()/3) return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Street directions are grouped together if they are equivalent (eg: N, NORTH and NORD).
+	 * If two street directions are given with correct spelling and they are in the same 
+	 * equivalent group then true is returned as they are alternates of each other. If 
+	 * one of them is incorrectly spelled or if they are not equivalent then false is returned.
+	 */
+	public static boolean isStreetDirectionsEquivalent(String s1, String s2) {
+		for (List<String> directions : STREET_DIRECTIONS_SET) {
+			if (directions.contains(s1) && directions.contains(s2)) return true;
 		}
 		return false;
 	}

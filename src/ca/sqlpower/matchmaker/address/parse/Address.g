@@ -201,10 +201,6 @@ streetToken
 							 address.setSuiteType($s.text);
 							 address.setSuite($sn.text);
 							}
-	|	{hasStreetNameStarted && address.isStreetDirection(input.LT(1).getText())}?=> d=(NAME|STREETNUMSUFFIX)	
-							{
-							 address.setStreetDirection($d.text);
-							}
 							
 	|	{(!address.isStreetTypePrefix() || ("C".equals(address.getStreetType()) && address.getStreetNumberSuffix() == null)) && addressDatabase.containsStreetType(input.LT(1).getText())}?=> 
 							t=(NAME|STREETNUMSUFFIX)
@@ -234,15 +230,22 @@ streetToken
 							 address.setStreetTypePrefix(!hasStreetNameStarted);
 							 address.setStreetType($t.text);
 							}
-	|	{!hasStreetNameStarted}?=> s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX)
+	|	{hasStreetNameStarted && Address.isStreetDirection(input.LT(1).getText())}?=> d=(NAME|STREETNUMSUFFIX)	
+							{
+							 address.setStreetDirection($d.text);
+							}
+							
+	|	{(!hasStreetNameStarted) && address.getStreetType() == null}?=> s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX)
 							{
 							 address.setStreetNumberSuffix($s.text);
 							}
+							
 	|	{hasStreetNameStarted}?=>	n=NUMBER
 							{
 							 address.setSuitePrefix(false);
 							 address.setSuite($n.text);
 							}
+							
 	|	{hasStreetNameStarted && startsUrbanNotRural}?=> ruralRoute      
 							{
 							 address.setType(PostalCode.RecordType.STREET_AND_ROUTE);
