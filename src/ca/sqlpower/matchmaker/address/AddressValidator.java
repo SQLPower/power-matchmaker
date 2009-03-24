@@ -372,7 +372,7 @@ public class AddressValidator {
 						suggestionExists = true;
 					}
 				}
-				if (!Address.isStreetDirectionsEquivalent(pc.getStreetDirectionCode(), a.getStreetDirection())) {
+				if (different(pc.getStreetDirectionCode(), a.getStreetDirection()) && !Address.isStreetDirectionsEquivalent(pc.getStreetDirectionCode(), a.getStreetDirection())) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street direction does not agree with postal code"));
 					suggestion.setStreetDirection(pc.getStreetDirectionCode());
