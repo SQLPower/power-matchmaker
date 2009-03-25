@@ -94,7 +94,7 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			jobSize = numRowsToProcess * (mungeProcesses.size());
 			// If we're going to be validating addresses, then add some more to
 			// the jobsize for writing the invalid addresses to the result table
-			if (!getProject().getMungeSettings().isSkipValidation()) {
+			if (!getProject().getMungeSettings().isSerpAutocorrect()) {
 				jobSize += numRowsToProcess;
 			}
 
@@ -128,7 +128,7 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
 				MungeProcessor munger;
-				if (getProject().getMungeSettings().isSkipValidation()) {
+				if (getProject().getMungeSettings().isSerpAutocorrect()) {
 					munger = new MungeProcessor(process, logger);
 				} else {
 					munger = new ValidatingAddressCorrectionMungeProcessor(process, pool, logger);

@@ -24,18 +24,17 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.FormLayout;
-
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.swingui.DataEntryPanel;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * A {@link DataEntryPanel} implementation with settings regarding
- * Address Validation behaviour of the {@link AddressCorrectionEngine}. 
+ * Address Validation behaviour of the Address Correction Engine. 
  * The main settings at current include:
  * <li>PoolFilterSetting: A setting which determines which Addresses get loaded
  * into the Address Pool</li>
