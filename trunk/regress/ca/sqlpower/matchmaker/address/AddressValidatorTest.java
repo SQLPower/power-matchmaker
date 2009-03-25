@@ -33,12 +33,17 @@ public class AddressValidatorTest extends TestCase {
 	/**
 	 * Path pointing to the directory containing the address database.
 	 */
-	private static final String ADDRESS_DATABASE_PATH = "/Users/thomas/addressdb";
 	private AddressDatabase addressDB;
 	
     @Override
     protected void setUp() throws Exception {
-        addressDB = new AddressDatabase(new File(ADDRESS_DATABASE_PATH));
+    	String bdbPath = System.getProperty("ca.sqlpower.matchmaker.test.addressDB");
+	    if (bdbPath == null) {
+	        throw new RuntimeException(
+	                "Please define the system property ca.sqlpower.matchmaker.test.addressDB" +
+	                " to point to the directory where your BDB instance is which contains addresses");
+	    }
+        addressDB = new AddressDatabase(new File(bdbPath));
     }
 	
 	/**
@@ -365,5 +370,4 @@ public class AddressValidatorTest extends TestCase {
     	assertTrue(validator.isValidSuggestion());
     	assertEquals("806 PLACE HAMPSHIRE NE", validator.getSuggestions().get(0).getAddress());
     }
-    
 }

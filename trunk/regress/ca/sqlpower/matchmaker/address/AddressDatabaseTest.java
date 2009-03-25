@@ -89,8 +89,13 @@ public class AddressDatabaseTest extends TestCase {
     
     @Override
     protected void setUp() throws Exception {
-        addressDB = new AddressDatabase(new File("/Users/thomas/addressdb"));
-        
+    	String bdbPath = System.getProperty("ca.sqlpower.matchmaker.test.addressDB");
+	    if (bdbPath == null) {
+	        throw new RuntimeException(
+	                "Please define the system property ca.sqlpower.matchmaker.test.addressDB" +
+	                " to point to the directory where your BDB instance is which contains addresses");
+	    }
+    	addressDB = new AddressDatabase(new File(bdbPath));
         address = new Address();
     }
     

@@ -43,11 +43,6 @@ public class SERPTest extends TestCase {
 	private Logger logger = Logger.getLogger(SERPTest.class);
 	
 	/**
-	 * Path pointing to the directory containing the address database.
-	 */
-	private static final String ADDRESS_DATABASE_PATH = "/Users/thomas/addressdb";
-	
-	/**
 	 * The path to the SERP self test input file.
 	 */
 	private static final String TEST_FILE_PATH = "../matchmaker-addressparse/test_data/30843SCT";
@@ -61,7 +56,13 @@ public class SERPTest extends TestCase {
 	
     @Override
     protected void setUp() throws Exception {
-        addressDB = new AddressDatabase(new File(ADDRESS_DATABASE_PATH));
+    	String bdbPath = System.getProperty("ca.sqlpower.matchmaker.test.addressDB");
+	    if (bdbPath == null) {
+	        throw new RuntimeException(
+	                "Please define the system property ca.sqlpower.matchmaker.test.addressDB" +
+	                " to point to the directory where your BDB instance is which contains addresses");
+	    }
+        addressDB = new AddressDatabase(new File(bdbPath));
         address = new Address();
     }
     
