@@ -104,7 +104,7 @@ public class AddressValidator {
     }
     
     private void validateImpl() throws DatabaseException {
-        Address a = new Address(address);
+        Address a = new Address(getAddress());
         
         validated = true;
 
@@ -905,5 +905,9 @@ public class AddressValidator {
 
 	public boolean isSerpValid() {
 		return serpValid;
+	}
+
+	public Address getAddress() {
+		return address;
 	}
 }

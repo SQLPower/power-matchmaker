@@ -24,13 +24,8 @@ import java.awt.Component;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
-import org.antlr.runtime.RecognitionException;
-
-import com.sleepycat.je.DatabaseException;
-
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
-import ca.sqlpower.matchmaker.address.AddressInterface;
 import ca.sqlpower.matchmaker.address.AddressResult;
 
 public class AddressListCellRenderer implements ListCellRenderer {
@@ -39,35 +34,46 @@ public class AddressListCellRenderer implements ListCellRenderer {
      * The address to compare against when rendering the label. If null,
      * no comparison will be made.
      */
-    private final AddressInterface comparisonAddress;
+    private final Address comparisonAddress;
 	private AddressDatabase addressDatabase;
+	private final boolean showValidCheckmark;
     
-    public AddressListCellRenderer(AddressInterface comparisonAddress, AddressDatabase addressDatabase) {
+    public AddressListCellRenderer(Address comparisonAddress, AddressDatabase addressDatabase, boolean showValidCheckmark) {
         this.comparisonAddress = comparisonAddress;
         this.addressDatabase = addressDatabase;
+		this.showValidCheckmark = showValidCheckmark;
     }
     
 	public Component getListCellRendererComponent(JList list, Object value,
 			int index, boolean isSelected, boolean cellHasFocus) {
-		if (value instanceof AddressResult) {
-			AddressResult result = (AddressResult) value;
-			Address address;
-			if (result.getOutputAddress().isEmptyAddress()) {
+		AddressLabel addressLabel;
+		if (value instanceof Address) {
+			addressLabel = new AddressLabel((Address)value, comparisonAddress, addressDatabase, showValidCheckmark);
+		} else if (value instanceof AddressResult) {
+			AddressResult addressResult = (AddressResult) value;
+			Address address1;
+			if (addressResult.getOutputAddress().isEmptyAddress()) {
 				try {
-					address = Address.parse(
-							result.getInputAddress(), result
-							.getInputMunicipality(), result.getInputProvince(),
-							result.getInputPostalCode(), result.getInputCountry(), addressDatabase);
-					result.setOutputAddress(address);
-				} catch (RecognitionException e) {
-					throw new RuntimeException("An error occured while trying to parse the address", e);
-				} catch (DatabaseException e) {
-					throw new RuntimeException("A database error occured while trying to parse the address", e);
+					address1 = Address.parse(
+						addressResult.getInputAddress().getUnparsedAddressLine1(), addressResult.getInputAddress().getMunicipality(), addressResult.getInputAddress().getProvince(),
+						addressResult.getInputAddress().getPostalCode(), addressResult.getInputAddress().getCountry(), addressDatabase);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
 				}
+				addressResult.setOutputAddress(address1);
+			} else {
+				address1 = addressResult.getOutputAddress();
 			}
-			return new AddressLabel(result, comparisonAddress, isSelected, list, addressDatabase, null);
+			addressLabel = new AddressLabel(address1, comparisonAddress, addressDatabase, showValidCheckmark);
+		} else {
+			throw new ClassCastException("Attempting to cast " + value.getClass() + " to Address or AddressResult for rendering an AddressLabel.");
 		}
-		return new AddressLabel((AddressInterface)value, comparisonAddress, isSelected, list, addressDatabase, null);
+
+		if (isSelected) {
+			addressLabel.setBackground(list.getSelectionBackground());
+		}
+		
+		return addressLabel;
 	}
 
 }

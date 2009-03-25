@@ -310,7 +310,7 @@ public class AddressPool extends MonitorableImpl{
 				if (typeString != null) {
 					address.setType(RecordType.valueOf(rs.getString(OUTPUT_TYPE)));
 				}
-				address.setUnparsedAddress(rs.getString(OUTPUT_UNPARSED_ADDRESS));
+				address.setUnparsedAddressLine1(rs.getString(OUTPUT_UNPARSED_ADDRESS));
 				address.setUrbanBeforeRural(rs.getBoolean(OUTPUT_URBAN_BEFORE_RURAL));
 				
 				AddressResult result = new AddressResult(keyValues, addressLine1,
@@ -440,12 +440,12 @@ public class AddressPool extends MonitorableImpl{
 				
 				for (int i = 0; i < dirtyAddresses.size(); i++) {
 					AddressResult result = dirtyAddresses.get(i);
-					ps.setString(1, result.getAddressLine1());
-					ps.setString(2, result.getAddressLine2());
-					ps.setString(3, result.getInputMunicipality());
-					ps.setString(4, result.getInputProvince());
-					ps.setString(5, result.getInputCountry());
-					ps.setString(6, result.getInputPostalCode());
+					ps.setString(1, result.getInputAddress().getUnparsedAddressLine1());
+					ps.setString(2, result.getInputAddress().getUnparsedAddressLine2());
+					ps.setString(3, result.getInputAddress().getMunicipality());
+					ps.setString(4, result.getInputAddress().getProvince());
+					ps.setString(5, result.getInputAddress().getCountry());
+					ps.setString(6, result.getInputAddress().getPostalCode());
 				
 					Address outputAddress = result.getOutputAddress();
 					ps.setString(7, outputAddress.getSuite());
@@ -477,7 +477,7 @@ public class AddressPool extends MonitorableImpl{
 					ps.setString(28, outputAddress.getSuiteType());
 					RecordType type = outputAddress.getType();
 					ps.setString(29, type == null ? null : type.toString());
-					ps.setString(30, outputAddress.getUnparsedAddress());
+					ps.setString(30, outputAddress.getUnparsedAddressLine1());
 					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
 					if (urbanBeforeRural == null) {
 						ps.setNull(31, Types.BOOLEAN);
@@ -575,12 +575,12 @@ public class AddressPool extends MonitorableImpl{
 						j++;
 					}
 
-					ps.setString(j, result.getAddressLine1());
-					ps.setString(j + 1, result.getAddressLine2());
-					ps.setString(j + 2, result.getInputMunicipality());
-					ps.setString(j + 3, result.getInputProvince());
-					ps.setString(j + 4, result.getInputCountry());
-					ps.setString(j + 5, result.getInputPostalCode());
+					ps.setString(j, result.getInputAddress().getUnparsedAddressLine1());
+					ps.setString(j + 1, result.getInputAddress().getUnparsedAddressLine2());
+					ps.setString(j + 2, result.getInputAddress().getMunicipality());
+					ps.setString(j + 3, result.getInputAddress().getProvince());
+					ps.setString(j + 4, result.getInputAddress().getCountry());
+					ps.setString(j + 5, result.getInputAddress().getPostalCode());
 				
 					Address outputAddress = result.getOutputAddress();
 					ps.setString(j + 6, outputAddress.getSuite());
@@ -612,7 +612,7 @@ public class AddressPool extends MonitorableImpl{
 					ps.setString(j + 27, outputAddress.getSuiteType());
 					RecordType type = outputAddress.getType();
 					ps.setString(j + 28, type == null ? null : type.toString());
-					ps.setString(j + 29, outputAddress.getUnparsedAddress());
+					ps.setString(j + 29, outputAddress.getUnparsedAddressLine1());
 					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
 					if (urbanBeforeRural == null) {
 						ps.setNull(j + 30, Types.BOOLEAN);
