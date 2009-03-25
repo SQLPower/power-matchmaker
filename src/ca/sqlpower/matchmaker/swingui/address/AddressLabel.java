@@ -374,6 +374,7 @@ public class AddressLabel extends JComponent {
 		containsResults = (validator.getResults().size() > 0);
 		repaint();
 		firePropertyChange("currentAddress", oldValue, currentAddress);
+		updateTextFields();
 	}
 	
 	public Address getCurrentAddress() {
@@ -443,24 +444,14 @@ public class AddressLabel extends JComponent {
 	class TextFieldFocusAdapter extends FocusAdapter {
 
 		public void focusLost(FocusEvent e) {
-//			((JTextField)e.getSource()).setVisible(false);
-//			AddressInterface newCurrentAddress = getChangedAddress();
-//			logger.debug("Current Address = " + currentAddress.getPostalCode() + "\nHashcode: " + currentAddress.hashCode());
-//			logger.debug("New Current Address = " + newCurrentAddress.getPostalCode() + "\nHashcode: " + newCurrentAddress.hashCode());
-//			if(!(currentAddress.equals(newCurrentAddress))) {
-//					logger.debug("Addresses are different");
-//					setCurrentAddress(newCurrentAddress);
-//					addressValidator = new AddressValidator(addressDatabase, (Address)currentAddress);
-//					suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
-//					//update the problem details
-//					updateProblemDetails(addressValidator);
-//					repaint();
-//					// Auto save changes
-//					if (saveButton != null) {
-//						logger.debug("Auto save executed!");
-//						saveButton.doClick();
-//					}
-//				}
+			((JTextField)e.getSource()).setVisible(false);
+			logger.debug("Address before parsing is:" + currentAddress.toString());
+			Address newCurrentAddress = getChangedAddress();
+			logger.debug("Address before parsing is:" + newCurrentAddress.toString());
+			if(!(currentAddress.equals(newCurrentAddress))) {
+					logger.debug("Addresses are different");
+					setCurrentAddress(newCurrentAddress);
+				}
 			}
 		
 	};

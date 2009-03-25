@@ -70,8 +70,9 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 	private final AddressResult addressResult;
 	private final AddressDatabase addressDatabase;
     
-    private JButton undoButton;
-    private JButton redoButton;
+	//XXX: Add these 2 buttons to the panel and implement the functions
+//    private JButton undoButton;
+//    private JButton redoButton;
     
     /**
      * This is the selected AddressLabel which is in the middle of the 
@@ -178,40 +179,13 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 				}
 			});
 			
-			undoButton = new JButton("Undo");
-			undoButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					//XXX:Do undo button
-//					manager = selectedAddressLabel.getManager();
-//					try {
-//						manager.undo();
-//					} catch (CannotUndoException ex) {
-//						ex.printStackTrace();
-//					} finally {
-//						updateButtons();
-//					}
-				}
-			});
+//			undoButton = new JButton("Undo");
 			
-			redoButton = new JButton("Redo");
-			redoButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					//XXX:Do redo button
-//					manager = selectedAddressLabel.getManager();
-//					try {
-//						manager.undo();
-//					} catch (CannotUndoException ex) {
-//						ex.printStackTrace();
-//					} finally {
-//						updateButtons();
-//					}
-				}
-			});
+//			redoButton = new JButton("Redo");
 			
 			JLabel suggestLabel = new JLabel("Suggestions:");
 			suggestLabel.setFont(suggestLabel.getFont().deriveFont(Font.BOLD));
 			
-
 			this.addressValidator = new AddressValidator(addressDatabase, address1);
 			problemsBuilder = new DefaultFormBuilder(new FormLayout("fill:pref:grow"));
 			updateProblemDetails();
@@ -238,9 +212,6 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 			bbb.addRelatedGap();
 			bbb.addGridded(saveButton);
 			bbb.addRelatedGap();
-			bbb.addGridded(undoButton);
-			bbb.addRelatedGap();
-			bbb.addGridded(redoButton);
 			builder.add(bbb.getPanel(), cc.xy(1, 1));
 			builder.add(suggestLabel, cc.xy(3, 1));
 			builder.add(selectedAddressLabel, cc.xy(1, 3));
@@ -309,25 +280,14 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 
 	public boolean hasUnsavedChanges() {
 		// TODO Auto-generated method stub
-		logger
-				.debug("Stub call: AddressValidationEntryPanel.hasUnsavedChanges()");
+		logger.debug("Stub call: AddressValidationEntryPanel.hasUnsavedChanges()");
 		return false;
 	}
-	
-	// Method to set the text and state of the undo/redo buttons.
-	  protected void updateButtons() {
-		  //XXX:update
-//	    undoButton.setText(manager.getUndoPresentationName());
-//	    redoButton.setText(manager.getRedoPresentationName());
-//	    undoButton.getParent().validate();
-//	    undoButton.setEnabled(manager.canUndo());
-//	    redoButton.setEnabled(manager.canRedo());
-	  }	
 	  
-	  private void save() {
-		  addressResult.setOutputAddress(selectedAddressLabel.getCurrentAddress());
-		  logger.debug("SAVING: " + addressResult);
-		  parent.saveAddressResult(addressResult, validateResult.size() == 0);
-	  }
+	private void save() {
+		addressResult.setOutputAddress(selectedAddressLabel.getCurrentAddress());
+		logger.debug("SAVING: " + addressResult);
+		parent.saveAddressResult(addressResult, validateResult.size() == 0);
+	}
 
 }
