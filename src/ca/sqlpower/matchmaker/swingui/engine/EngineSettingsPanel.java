@@ -20,12 +20,14 @@
 package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,6 +36,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -47,16 +50,20 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.DataEntryPanel;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.validation.FileNameValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -79,6 +86,10 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
 		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23             24   25 	 26   27
 
+//	private static final String ADDRESS_COMMITTING_ENGINE_PANEL_ROW_SPECS = 
+//		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
+//		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19             20   21   22   23 
+
 	private static final String MATCH_ENGINE_PANEL_ROW_SPECS = 
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
 		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23             24   25   26   27 	
@@ -100,6 +111,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	public enum EngineType {
 		MATCH_ENGINE("Match Engine"), MERGE_ENGINE("Merge Engine"), 
 		CLEANSE_ENGINE("Cleanse Engine"), ADDRESS_CORRECTION_ENGINE("Address Correction Engine");
+//		VALIDATED_ADDRESS_COMMITING_ENGINE("Validated Address Committing Engine");
 		
 		String engineName;
 		
@@ -286,6 +298,9 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		} else if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			engine = project.getAddressCorrectionEngine();
 			engineSettings = project.getMungeSettings();
+//		} else if (type == EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE) {
+//			engine = project.getAddressCommittingEngine();
+//			engineSettings = project.getMungeSettings();
 		} else {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
@@ -393,7 +408,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		}
 
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-			skipValidation = new JCheckBox("Skip address validation", ((MungeSettings)engineSettings).isSkipValidation());
+			skipValidation = new JCheckBox("Automatically correct SERP correctable addresses", ((MungeSettings)engineSettings).isSerpAutocorrect());
 		}
 		
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
@@ -420,6 +435,8 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		String rowSpecs;
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			rowSpecs = ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS;
+//		} else if (type == EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE) {
+//			rowSpecs = ADDRESS_COMMITTING_ENGINE_PANEL_ROW_SPECS;
 		} else if (type == EngineType.MERGE_ENGINE) {
 			rowSpecs = MERGE_ENGINE_PANEL_ROW_SPECS;
 		} else if (type == EngineType.CLEANSE_ENGINE) {
@@ -427,8 +444,11 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		} else {
 			rowSpecs = MATCH_ENGINE_PANEL_ROW_SPECS;
 		}
+		
+		String columnSpecs = "4dlu,fill:pref,4dlu,pref,pref,20dlu,fill:pref:grow,pref,4dlu";
+		
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:pref,4dlu,pref,fill:pref:grow,pref,4dlu,pref,4dlu",
+				 columnSpecs,
 				 rowSpecs);
 		
 		PanelBuilder pb;
@@ -438,12 +458,12 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 
 		CellConstraints cc = new CellConstraints();
 		
-		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
+		pb.add(status, cc.xyw(4, 2, 6, "l,c"));
 
 		int y = 4;
 		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));
-		pb.add(logFilePath, cc.xyw(4, y, 2, "f,f"));
-		pb.add(new JButton(browseLogFileAction), cc.xy(6, y, "l,f"));
+		pb.add(logFilePath, cc.xyw(4, y, 4, "f,f"));
+		pb.add(new JButton(browseLogFileAction), cc.xy(8, y, "l,f"));
 		y += 2;
 		pb.add(appendToLog, cc.xy(4, y, "l,t"));
 		pb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(5, y, "r,t"));
@@ -470,24 +490,121 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		pb.add(new JLabel("# of records to process:"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
 		pb.add(new JLabel(" (Set to 0 to process all)"), cc.xy(5, y, "l, c"));
+		
+		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			pb.add(new JLabel("Address Pool Filter:"), cc.xy(7, y));
+		}
 
 		if (engineSettings instanceof MungeSettings) {
+			MungeSettings mungeSettings = (MungeSettings) engineSettings;
 			y += 2;
 			pb.add(useBatchExecute, cc.xyw(4, y, 2, "l,c"));
+			
+			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+				final JLabel poolSettingLabel = new JLabel(mungeSettings.getPoolFilterSetting().toString());
+				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
+					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
+						public void mmChildrenInserted(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							// no-op
+						}
+
+						public void mmChildrenRemoved(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							// no-op
+						}
+
+						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							if (evt.getPropertyName() == "poolFilterSetting") {
+								PoolFilterSetting newValue = (PoolFilterSetting) evt.getNewValue();
+								poolSettingLabel.setText(newValue.toString());
+							}
+						}
+
+						public void mmStructureChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							// no-op
+						}
+						
+				};
+				mungeSettings.addMatchMakerListener(poolFilterSettingChangeListener);
+				Font f = poolSettingLabel.getFont();
+				Font newFont = f.deriveFont(Font.ITALIC);
+				poolSettingLabel.setFont(newFont);
+				pb.add(poolSettingLabel, cc.xy(7, y));
+			}
 		}
 		
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			y += 2;
 			pb.add(skipValidation, cc.xyw(4, y, 2, "l,c"));
+			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+				pb.add(new JLabel("Auto-validation Setting"), cc.xy(7, y));
+			}
 		}
 		
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			y += 2;
 			pb.add(clearMatchPool, cc.xyw(4, y, 2, "l,c"));
+			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+				MungeSettings mungeSettings = (MungeSettings) engineSettings;
+				final JLabel autoValidateSettingLabel = new JLabel(((MungeSettings) engineSettings).getAutoValidateSetting().toString());
+				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
+					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
+						public void mmChildrenInserted(
+								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							// no-op
+						}
+	
+						public void mmChildrenRemoved(
+								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							// no-op
+						}
+	
+						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							if (evt.getPropertyName() == "autoValidateSetting") {
+								AutoValidateSetting newValue = (AutoValidateSetting) evt.getNewValue();
+								autoValidateSettingLabel.setText(newValue.toString());
+							}
+						}
+	
+						public void mmStructureChanged(
+								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+							// no-op
+						}
+				};
+				mungeSettings.addMatchMakerListener(poolFilterSettingChangeListener);
+				Font f = autoValidateSettingLabel.getFont();
+				Font newFont = f.deriveFont(Font.ITALIC);
+				autoValidateSettingLabel.setFont(newFont);
+				pb.add(autoValidateSettingLabel, cc.xy(7, y));
+			}
 		}
 
 		y += 2;
 		pb.add(debugMode, cc.xyw(4, y, 2, "l,c"));
+		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			final AddressValidationSettingsPanel avsp = new AddressValidationSettingsPanel((MungeSettings)engineSettings);
+			final JDialog validationSettingsDialog = DataEntryPanelBuilder.createDataEntryPanelDialog(
+					avsp, swingSession.getFrame(), "Address Validation Settings", "OK",
+					new Callable<Boolean>() {
+						public Boolean call() throws Exception {
+							boolean returnValue =  avsp.applyChanges();
+							swingSession.save(project);
+							return returnValue;
+						}
+					},
+					new Callable<Boolean>() {
+						public Boolean call() throws Exception {
+							return true;
+						}
+					});
+			validationSettingsDialog.setLocationRelativeTo(pb.getPanel());
+			
+			JButton addressValidationSettings = new JButton(new AbstractAction("Validation Settings...") {
+				public void actionPerformed(ActionEvent e) {
+					validationSettingsDialog.setVisible(true);
+				}
+			});
+			pb.add(addressValidationSettings, cc.xy(7, y, "l,c"));
+		}
 		
 		y += 2;
 		pb.add(new JLabel("Message Level:"), cc.xy(2,y, "r,t"));
@@ -511,16 +628,16 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		bbb.addFixed(abortButton);
 		
 		y += 2;
-		pb.add(bbb.getPanel(), cc.xyw(2, y, 6, "r,c"));
+		pb.add(bbb.getPanel(), cc.xyw(2, y, 7, "r,c"));
 
 		y += 2;
-		pb.add(engineOutputPanel.getProgressBar(), cc.xyw(2, y, 6));
+		pb.add(engineOutputPanel.getProgressBar(), cc.xyw(2, y, 7));
 		
 		y += 2;
-		pb.add(engineOutputPanel.getOutputComponent(), cc.xyw(2, y, 6));
+		pb.add(engineOutputPanel.getOutputComponent(), cc.xyw(2, y, 7));
 		
 		y += 2;
-		pb.add(engineOutputPanel.getButtonBar(), cc.xyw(2, y, 6));
+		pb.add(engineOutputPanel.getButtonBar(), cc.xyw(2, y, 7));
 		
 
 		refreshRunActionStatus();
@@ -541,7 +658,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			((MungeSettings)engineSettings).setUseBatchExecution(useBatchExecute.isSelected());
 		}
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-			((MungeSettings)engineSettings).setSkipValidation(skipValidation.isSelected());
+			((MungeSettings)engineSettings).setSerpAutocorrect(skipValidation.isSelected());
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());
