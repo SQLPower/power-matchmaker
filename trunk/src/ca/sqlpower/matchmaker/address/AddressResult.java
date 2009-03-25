@@ -25,7 +25,7 @@ import java.util.List;
  * An object representation of an invalid address record
  * as stored in the Address Correction Result table.
  */
-public class AddressResult implements AddressInterface {
+public class AddressResult {
 	
 	static enum StorageState {
 		/**
@@ -56,29 +56,40 @@ public class AddressResult implements AddressInterface {
 		}
 		
 	}
-	
+
+	/**
+	 * The primary key values of the original address from the database so we 
+	 * can tell where the original address came from.
+	 */
 	private List<Object> keyValues;
 	
-	private String addressLine1;
-	private String addressLine2;
-	private String municipality;
-	private String province;
-	private String postalCode;
-	private String country;
+	/**
+	 * This is the address from the database unparsed.
+	 */
+	private final Address inputAddress;
+	
+	/**
+	 * The address result after it has been parsed and validated.
+	 */
 	private Address outputAddress;
 	
+	/**
+	 * The state the current address is in based on changes from the database.
+	 * If the storage state is dirty then it has been changed and not saved.
+	 */
 	private StorageState storageState;
 
 	public AddressResult(List<Object> keyValues, String addressLine1,
 			String addressLine2, String municipality, String province,
 			String postalCode, String country) {
 		this.keyValues = keyValues;
-		this.addressLine1 = addressLine1;
-		this.addressLine2 = addressLine2;
-		this.municipality = municipality;
-		this.province = province;
-		this.postalCode = postalCode;
-		this.country = country;
+		inputAddress = new Address();
+		getInputAddress().setUnparsedAddressLine1(addressLine1);
+		getInputAddress().setUnparsedAddressLine2(addressLine2);
+		getInputAddress().setMunicipality(municipality);
+		getInputAddress().setProvince(province);
+		getInputAddress().setPostalCode(postalCode);
+		getInputAddress().setCountry(country);
 		
 		outputAddress = new Address();
 		storageState = StorageState.NEW;
@@ -88,12 +99,13 @@ public class AddressResult implements AddressInterface {
 			String addressLine2, String municipality, String province,
 			String postalCode, String country, Address outputAddress) {
 		this.keyValues = keyValues;
-		this.addressLine1 = addressLine1;
-		this.addressLine2 = addressLine2;
-		this.municipality = municipality;
-		this.province = province;
-		this.postalCode = postalCode;
-		this.country = country;
+		inputAddress = new Address();
+		getInputAddress().setUnparsedAddressLine1(addressLine1);
+		getInputAddress().setUnparsedAddressLine2(addressLine2);
+		getInputAddress().setMunicipality(municipality);
+		getInputAddress().setProvince(province);
+		getInputAddress().setPostalCode(postalCode);
+		getInputAddress().setCountry(country);
 		
 		this.outputAddress = outputAddress;
 		storageState = StorageState.NEW;
@@ -102,85 +114,17 @@ public class AddressResult implements AddressInterface {
 	public List<Object> getKeyValues() {
 		return keyValues;
 	}
-	
-	public String getInputAddress() {
-		StringBuilder sb = new StringBuilder();
-		if (addressLine1 != null) {
-			sb.append(addressLine1);
-		} 
-		if (addressLine2 != null) {
-			if (addressLine1 != null) {
-				sb.append(" ");
-			}
-			sb.append(addressLine2);
-		}
-		return sb.toString();
-	}
-	
-	/**
-	 * Returns the output address
-	 */
-	public String getAddress() {
-		return outputAddress.getAddress();
-	}
-	
-	public String getAddressLine1() {
-		return addressLine1;
-	}
-
-	public String getAddressLine2() {
-		return addressLine2;
-	}
-
-	public String getInputMunicipality() {
-		return municipality;
-	}
-	
-	/**
-	 * Returns output address municipality
-	 */
-	public String getMunicipality() {
-		return outputAddress.getMunicipality();
-	}
-	
-	public String getInputProvince() {
-		return province;
-	}
-	
-	/**
-	 * Returns output address province
-	 */
-	public String getProvince() {
-		return outputAddress.getProvince();
-	}
-	
-	public String getInputPostalCode() {
-		return postalCode;
-	}
-	
-	/**
-	 * Returns output address postal code
-	 */
-	public String getPostalCode() {
-		return outputAddress.getPostalCode();
-	}
-
-	public String getInputCountry() {
-		return country;
-	}
-	
-	/**
-	 * Returns output address country
-	 */
-	public String getCountry() {
-		return outputAddress.getCountry();
-	}
 
 	public Address getOutputAddress() {
 		return outputAddress;
 	}
 	
+	public Address getInputAddress() {
+		return inputAddress;
+	}
+
 	public void setOutputAddress(Address address) {
+		if (outputAddress.equals(address)) return;
 		this.outputAddress = address;
 	}
 	
@@ -197,12 +141,7 @@ public class AddressResult implements AddressInterface {
 	}
 	
 	public String toString() {
-		return addressLine1 + " " + 
-			   addressLine2 + " " + 
-			   municipality + " " + 
-			   province + " " + 
-			   country + " " +
-			   postalCode + " " + 
+		return getInputAddress() + ", " + 
 			   outputAddress;
 	}
 }

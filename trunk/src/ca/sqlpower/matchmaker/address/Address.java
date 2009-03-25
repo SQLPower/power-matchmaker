@@ -46,7 +46,7 @@ import com.sleepycat.je.DatabaseException;
  * validation and correction logic. Methods are provided so client code can discover any
  * changes made to the address fields by validation and correction code.
  */
-public class Address implements AddressInterface {
+public class Address {
 	private static final Logger logger = Logger.getLogger(Address.class);
 	
 	/**
@@ -398,7 +398,13 @@ public class Address implements AddressInterface {
     /**
      * This is the original input string, as provided by client code.
      */
-    private String unparsedAddress;
+    private String unparsedAddressLine1;
+    
+    /**
+     * This is the other original input string, as provided by client code.
+     * This being the other input string as being line 2.
+     */
+    private String unparsedAddressLine2;
     
     /**
      * The suite, unit, or apartment number. If the address does not have
@@ -558,7 +564,7 @@ public class Address implements AddressInterface {
         suitePrefix = source.suitePrefix;
         suiteType = source.suiteType;
         type = source.type;
-        unparsedAddress = source.unparsedAddress;
+        unparsedAddressLine1 = source.unparsedAddressLine1;
         urbanBeforeRural = source.urbanBeforeRural;
     }
     
@@ -651,7 +657,7 @@ public class Address implements AddressInterface {
     	} else {
     		a = new Address();
     	}
-    	a.setUnparsedAddress(streetAddress);
+    	a.setUnparsedAddressLine1(streetAddress);
         a.municipality = municipality;
         a.province = province;
         a.postalCode = postalCode;
@@ -822,12 +828,12 @@ public class Address implements AddressInterface {
         return sb.toString();
 	}
 
-    public String getUnparsedAddress() {
-        return unparsedAddress;
+    public String getUnparsedAddressLine1() {
+        return unparsedAddressLine1;
     }
 
-    public void setUnparsedAddress(String unparsedAddress) {
-        this.unparsedAddress = unparsedAddress;
+    public void setUnparsedAddressLine1(String unparsedAddress) {
+        this.unparsedAddressLine1 = unparsedAddress;
     }
 
     public String getSuite() {
@@ -1315,5 +1321,14 @@ public class Address implements AddressInterface {
 		Address a = new Address();
 		a.setStreetNumber(Integer.valueOf(0));
 		return a;
+	}
+
+	public void setUnparsedAddressLine2(String unparsedAddressLine2) {
+			this.unparsedAddressLine2 = unparsedAddressLine2;
+		
+	}
+
+	public String getUnparsedAddressLine2() {
+		return unparsedAddressLine2;
 	}
 }

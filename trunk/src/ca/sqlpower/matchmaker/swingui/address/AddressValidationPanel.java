@@ -20,17 +20,14 @@
 package ca.sqlpower.matchmaker.swingui.address;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.Collection;
 
-import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -41,10 +38,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
@@ -53,12 +48,7 @@ import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.swingui.SPSUtils;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import com.sleepycat.je.DatabaseException;
 
 public class AddressValidationPanel extends NoEditEditorPane {
@@ -83,20 +73,10 @@ public class AddressValidationPanel extends NoEditEditorPane {
     private JPanel validateResultPane;
 
     /**
-     * This builds the right component of the {{@link #horizontalSplitPane}
-     */
-    private DefaultFormBuilder builder;    
-    
-    /**
      * This is the comboBox with 3 addresses display options :
      * Show all, Show Invalid only and Show Valid only
      */
     private JComboBox displayComboBox;
-    
-    /**
-     * Saves all changes made to the label selected.
-     */
-    private JButton saveButton;
     
     /**
      * This is the list model which stores all the addresses
@@ -112,12 +92,6 @@ public class AddressValidationPanel extends NoEditEditorPane {
      * This is the list model which stores only the invalid addresses
      */
     private DefaultListModel invalidResults = new DefaultListModel();
-    
-    /**
-     * This is the selected AddressLabel which is in the middle of the 
-     * validation screen waiting to be corrected.
-     */
-    private AddressLabel selectedAddressLabel;
     
     private JList needsValidationList;
     
@@ -148,7 +122,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			needsValidationList = new JList(allResults);
 			needsValidationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			needsValidationList.addListSelectionListener(new AddressListCellSelectionListener());
-			needsValidationList.setCellRenderer(new AddressListCellRenderer(null, addressDatabase));
+			needsValidationList.setCellRenderer(new AddressListCellRenderer(null, addressDatabase, true));
 			JScrollPane addressPane = new JScrollPane(needsValidationList);
 			addressPane.setPreferredSize(new Dimension(250, 1000));
 					
@@ -193,6 +167,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 	class AddressListCellSelectionListener implements ListSelectionListener {
 
 		public void valueChanged(ListSelectionEvent e) {
+			logger.debug("Value changed in the panel's list to " + ((JList)e.getSource()).getSelectedValue());
 			
 			//remember user's choice of the divider's location
 			horizontalSplitPane.setDividerLocation(horizontalSplitPane.getDividerLocation());			
@@ -200,116 +175,9 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			final AddressResult selected = (AddressResult) ((JList)e.getSource()).getSelectedValue();
 			
 			if (selected != null) {
+				AddressValidationEntryPanel editor = new AddressValidationEntryPanel(AddressValidationPanel.this, selected, addressDatabase);
+				horizontalSplitPane.setRightComponent(editor.getPanel());
 				
-				builder = new DefaultFormBuilder(new FormLayout(
-						"fill:pref:grow,4dlu,fill:pref",
-				"pref,4dlu,pref,4dlu,fill:pref:grow"));
-				builder.setDefaultDialogBorder();
-				CellConstraints cc = new CellConstraints();
-
-				
-				try {
-					Address address1;
-					
-					if (selected.getOutputAddress().isEmptyAddress()) {
-						address1 = Address.parse(
-							selected.getInputAddress(), selected
-							.getInputMunicipality(), selected.getInputProvince(),
-							selected.getInputPostalCode(), selected.getInputCountry(), addressDatabase);
-						selected.setOutputAddress(address1);
-					} else {
-						address1 = selected.getOutputAddress();
-					}
-					
-					saveButton = new JButton();
-					selectedAddressLabel = new AddressLabel(address1, null, false, null, addressDatabase, saveButton);
-					selectedAddressLabel.setFont(new Font("Times New Roman", Font.PLAIN, 16));
-					
-					JButton revertButton = new JButton("Revert");
-					revertButton.addActionListener(new ActionListener() {
-						
-						public void actionPerformed(ActionEvent e) {
-							try {
-								logger.debug("Revert Address: " + selected.toString());
-								Address address = Address.parse(
-										selected.getInputAddress(), selected
-										.getInputMunicipality(), selected.getInputProvince(),
-										selected.getInputPostalCode(), selected.getInputCountry(), addressDatabase);
-								selected.setOutputAddress(selectedAddressLabel.getAddress());
-								selectedAddressLabel.setAddress(address);
-								AddressValidator addressValidator = new AddressValidator(addressDatabase,selectedAddressLabel.getAddress());
-								JList suggestionList = new JList(addressValidator.getSuggestions().toArray());
-								selectedAddressLabel.setSuggestionList(suggestionList);
-								selectedAddressLabel.updateProblemDetails(addressValidator);
-								saveButton.getAction().actionPerformed(e);
-							} catch (RecognitionException e1) {
-								SPSUtils.showExceptionDialogNoReport(getPanel(), "", e1);
-							} catch (DatabaseException e1) {
-								throw new RuntimeException("A database exception occurred while parsing the address" + e1);
-							}
-						}
-						
-					});
-					
-					saveButton.setAction(new AbstractAction("Save") {
-						public void actionPerformed(ActionEvent e) {
-							selected.setOutputAddress(selectedAddressLabel.getAddress());
-							pool.addAddress(selected, logger);
-							try {
-								if(selectedAddressLabel.getValidateResultsList().size() == 0) {
-									if(invalidResults.contains(selected)) {
-										invalidResults.removeElement(selected);
-										validResults.addElement(selected);
-									}
-								} else {
-									if(validResults.contains(selected)) {
-										validResults.removeElement(selected);
-										invalidResults.addElement(selected);
-									}
-								}
-								needsValidationList.repaint();
-								pool.store(logger, false, false);
-							} catch (SQLException ex) {
-								throw new RuntimeException("An error occured while trying to save this address, ex");
-							} catch (SQLObjectException ex) {
-								throw new RuntimeException("An error occured while trying to save this address, ex");
-							}
-						}
-					});
-					
-					JLabel suggestLabel = new JLabel("Suggestions:");
-					suggestLabel.setFont(new Font(null, Font.BOLD, 13));
-					
-					JScrollPane scrollList = new JScrollPane(selectedAddressLabel.getSuggestionList());
-					scrollList.setPreferredSize(new Dimension(230, 1000));
-					
-					ButtonBarBuilder bbb = new ButtonBarBuilder();
-					bbb.addRelatedGap();
-					bbb.addGridded(revertButton);
-					bbb.addRelatedGap();
-					bbb.addGridded(saveButton);
-					bbb.addRelatedGap();
-					builder.add(bbb.getPanel(), cc.xy(1, 1));
-					builder.add(suggestLabel, cc.xy(3, 1));
-					builder.add(selectedAddressLabel, cc.xy(1, 3));
-					builder.add(selectedAddressLabel.getProblemBuilder().getPanel(), cc.xy(1, 5));
-					builder.add(scrollList, cc.xywh(3, 3, 1, 3));
-					
-					horizontalSplitPane.setRightComponent(builder.getPanel());
-
-				} catch (RecognitionException e1) {
-					MMSUtils
-							.showExceptionDialog(
-									getPanel(),
-									"There was an error while trying to parse this address",
-									e1);
-				} catch (DatabaseException e1) {
-					MMSUtils
-					.showExceptionDialog(
-							getPanel(),
-							"There was a database error while trying to parse this address",
-							e1);
-				}
 			} else {
 				horizontalSplitPane.setRightComponent(
 						new JLabel("To begin address validation, please select an address from the list.",	JLabel.CENTER));
@@ -318,5 +186,33 @@ public class AddressValidationPanel extends NoEditEditorPane {
 		}
 		
 	}
-
+	
+	/**
+	 * This is a temporary method for saving an address result from the {@link AddressValidationEntryPanel}
+	 * until we have list models properly listening to the pool.
+	 */
+	void saveAddressResult(AddressResult addressResult, boolean containsProblems) {
+		pool.addAddress(addressResult, logger);
+		try {
+			if(containsProblems) {
+				if(invalidResults.contains(addressResult)) {
+					invalidResults.removeElement(addressResult);
+					validResults.addElement(addressResult);
+				}
+			} else {
+				if(validResults.contains(addressResult)) {
+					validResults.removeElement(addressResult);
+					invalidResults.addElement(addressResult);
+				}
+			}
+			needsValidationList.repaint();
+			pool.store(logger, false, false);
+		} catch (SQLException ex) {
+			throw new RuntimeException("An error occured while trying to save this address, ex");
+		} catch (SQLObjectException ex) {
+			throw new RuntimeException("An error occured while trying to save this address, ex");
+		}
+		
+	}
+	
 }
