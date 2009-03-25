@@ -40,6 +40,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.address.AddressResult.StorageState;
 import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
+import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -374,6 +375,7 @@ public class AddressPool extends MonitorableImpl{
 		
 		Connection con = null;
 		PreparedStatement ps = null;
+		Statement stmt = null;
 		
 		try {
 			con = project.createResultTableConnection();
@@ -385,137 +387,83 @@ public class AddressPool extends MonitorableImpl{
 			StringBuilder sql;
 			
 			if (dirtyAddresses.size() > 0) {
-				sql= new StringBuilder();
 				
-				//First, create and UPDATE PreparedStatement to update dirty records
-				sql.append("UPDATE ");
-			
-				appendFullyQualifiedTableName(sql, resultTable);
-				
-				sql.append(" SET ");
-				sql.append(INPUT_ADDRESS_LINE1).append("=?, ");					// 1
-				sql.append(INPUT_ADDRESS_LINE2).append("=?, ");					// 2
-				sql.append(INPUT_MUNICIPALITY).append("=?, ");					// 3
-				sql.append(INPUT_PROVINCE).append("=?, ");						// 4
-				sql.append(INPUT_COUNTRY).append("=?, ");						// 5
-				sql.append(INPUT_POSTAL_CODE).append("=?, ");					// 6
-				
-				sql.append(OUTPUT_COUNTRY).append("=?, ");						// 7
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append("=?, ");	// 8
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=?, ");	// 9			
-				sql.append(OUTPUT_DIRECTION_PREFIX).append("=?, ");				// 10
-				sql.append(OUTPUT_FAILED_PARSING_STRING).append("=?, ");		// 11
-				sql.append(OUTPUT_GENERAL_DELIVERY_NAME).append("=?, ");		// 12
-				sql.append(OUTPUT_LOCK_BOX_NUMBER).append("=?, ");				// 13
-				sql.append(OUTPUT_LOCK_BOX_TYPE).append("=?, ");				// 14
-				sql.append(OUTPUT_MUNICIPALITY).append("=?, ");					// 15
-				sql.append(OUTPUT_POSTAL_CODE).append("=?, ");					// 16
-				sql.append(OUTPUT_PROVINCE).append("=?, ");						// 17
-				sql.append(OUTPUT_RURAL_ROUTE_NUMBER).append("=?, ");			// 18
-				sql.append(OUTPUT_RURAL_ROUTE_TYPE).append("=?, ");				// 19
-				sql.append(OUTPUT_STREET_DIRECTION).append("=?, ");				// 20
-				sql.append(OUTPUT_STREET_NAME).append("=?, ");					// 21
-				sql.append(OUTPUT_STREET_NUMBER).append("=?, ");				// 22
-				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=?, ");			// 23
-				sql.append(OUTPUT_STREET_TYPE).append("=?, ");					// 24
-				sql.append(OUTPUT_STREET_TYPE_PREFIX).append("=?, ");			// 25
-				sql.append(OUTPUT_SUITE).append("=?, ");						// 26
-				sql.append(OUTPUT_SUITE_PREFIX).append("=?, ");					// 27
-				sql.append(OUTPUT_SUITE_TYPE).append("=?, ");					// 28
-				sql.append(OUTPUT_TYPE).append("=?, ");							// 29
-				sql.append(OUTPUT_UNPARSED_ADDRESS).append("=?, ");				// 30
-				sql.append(OUTPUT_URBAN_BEFORE_RURAL).append("=? ");			// 31
-				
-				sql.append("WHERE ");
-				for (int i = 0; i < keySize; i++) {
-					if (i > 0) {
-						sql.append("AND ");
-					}
-					sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(i).append("=? "); // 18+
-				}
-				
-				ps = con.prepareStatement(sql.toString());
-	
-				int batchCount = 0;
+				stmt = con.createStatement();
 				
 				for (int i = 0; i < dirtyAddresses.size(); i++) {
-					AddressResult result = dirtyAddresses.get(i);
-					ps.setString(1, result.getInputAddress().getUnparsedAddressLine1());
-					ps.setString(2, result.getInputAddress().getUnparsedAddressLine2());
-					ps.setString(3, result.getInputAddress().getMunicipality());
-					ps.setString(4, result.getInputAddress().getProvince());
-					ps.setString(5, result.getInputAddress().getCountry());
-					ps.setString(6, result.getInputAddress().getPostalCode());
-				
-					Address outputAddress = result.getOutputAddress();
-					ps.setString(7, outputAddress.getSuite());
-					ps.setString(8, outputAddress.getDeliveryInstallationName());
-					ps.setString(9, outputAddress.getDeliveryInstallationType());
-					ps.setBoolean(10, outputAddress.isDirectionPrefix());
-					ps.setString(11, outputAddress.getFailedParsingString());
-					ps.setString(12, outputAddress.getGeneralDeliveryName());
-					ps.setString(13, outputAddress.getLockBoxNumber());
-					ps.setString(14, outputAddress.getLockBoxType());
-					ps.setString(15, outputAddress.getMunicipality());
-					ps.setString(16, outputAddress.getPostalCode());
-					ps.setString(17, outputAddress.getProvince());
-					ps.setString(18, outputAddress.getRuralRouteNumber());
-					ps.setString(19, outputAddress.getRuralRouteType());
-					ps.setString(20, outputAddress.getStreetDirection());
-					ps.setString(21, outputAddress.getStreet());
-					Integer streetNumber = outputAddress.getStreetNumber();
-					if (streetNumber == null) {
-						ps.setNull(22, Types.INTEGER);
-					} else {
-						ps.setInt(22, streetNumber);
-					}
-					ps.setString(23, outputAddress.getStreetNumberSuffix());
-					ps.setString(24, outputAddress.getStreetType());
-					ps.setBoolean(25, outputAddress.isStreetTypePrefix());
-					ps.setString(26, outputAddress.getSuite());
-					ps.setBoolean(27, outputAddress.isSuitePrefix());
-					ps.setString(28, outputAddress.getSuiteType());
-					RecordType type = outputAddress.getType();
-					ps.setString(29, type == null ? null : type.toString());
-					ps.setString(30, outputAddress.getUnparsedAddressLine1());
-					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
-					if (urbanBeforeRural == null) {
-						ps.setNull(31, Types.BOOLEAN);
-					} else {
-						ps.setBoolean(31, urbanBeforeRural);
-					}
 					
-					int j = 32;
+					sql= new StringBuilder();
+					AddressResult result = dirtyAddresses.get(i);
+					
+					//First, create and UPDATE PreparedStatement to update dirty records
+					sql.append("UPDATE ");
+				
+					appendFullyQualifiedTableName(sql, resultTable);
+					
+					sql.append(" SET ");
+					sql.append(INPUT_ADDRESS_LINE1).append("=" + SQL.quote(result.getInputAddress().getUnparsedAddressLine1()) + ", ");					// 1
+					sql.append(INPUT_ADDRESS_LINE2).append("=" + SQL.quote(result.getInputAddress().getUnparsedAddressLine2()) + ", ");					// 2
+					sql.append(INPUT_MUNICIPALITY).append("=" + SQL.quote(result.getInputAddress().getMunicipality()) + ", ");					// 3
+					sql.append(INPUT_PROVINCE).append("=" + SQL.quote(result.getInputAddress().getProvince()) + ", ");						// 4
+					sql.append(INPUT_COUNTRY).append("=" + SQL.quote(result.getInputAddress().getCountry()) + ", ");						// 5
+					sql.append(INPUT_POSTAL_CODE).append("=" + SQL.quote(result.getInputAddress().getPostalCode()) + ", ");					// 6
+					
+					Address outputAddress = result.getOutputAddress();
+					sql.append(OUTPUT_COUNTRY).append("=" + SQL.quote(outputAddress.getSuite()) + ", ");						// 7
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append("=" + SQL.quote(outputAddress.getDeliveryInstallationName()) + ", ");	// 8
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=" + SQL.quote(outputAddress.getDeliveryInstallationType()) + ", ");	// 9			
+					sql.append(OUTPUT_DIRECTION_PREFIX).append("=" + outputAddress.isDirectionPrefix() + ", ");				// 10
+					sql.append(OUTPUT_FAILED_PARSING_STRING).append("=" + SQL.quote(outputAddress.getFailedParsingString()) + ", ");		// 11
+					sql.append(OUTPUT_GENERAL_DELIVERY_NAME).append("=" + SQL.quote(outputAddress.getGeneralDeliveryName()) + ", ");		// 12
+					sql.append(OUTPUT_LOCK_BOX_NUMBER).append("=" + SQL.quote(outputAddress.getLockBoxNumber()) + ", ");				// 13
+					sql.append(OUTPUT_LOCK_BOX_TYPE).append("=" + SQL.quote(outputAddress.getLockBoxType()) + ", ");				// 14
+					sql.append(OUTPUT_MUNICIPALITY).append("=" + SQL.quote(outputAddress.getMunicipality()) + ", ");					// 15
+					sql.append(OUTPUT_POSTAL_CODE).append("=" + SQL.quote(outputAddress.getPostalCode()) + ", ");					// 16
+					sql.append(OUTPUT_PROVINCE).append("=" + SQL.quote(outputAddress.getProvince()) + ", ");						// 17
+					sql.append(OUTPUT_RURAL_ROUTE_NUMBER).append("=" + SQL.quote(outputAddress.getRuralRouteNumber()) + ", ");			// 18
+					sql.append(OUTPUT_RURAL_ROUTE_TYPE).append("=" + SQL.quote(outputAddress.getRuralRouteType()) + ", ");				// 19
+					sql.append(OUTPUT_STREET_DIRECTION).append("=" + SQL.quote(outputAddress.getStreetDirection()) + ", ");				// 20
+					sql.append(OUTPUT_STREET_NAME).append("=" + SQL.quote(outputAddress.getStreet()) + ", ");					// 21
+					sql.append(OUTPUT_STREET_NUMBER).append("=" + outputAddress.getStreetNumber() + ", ");				// 22
+					sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=" + SQL.quote(outputAddress.getStreetNumberSuffix()) + ", ");			// 23
+					sql.append(OUTPUT_STREET_TYPE).append("=" + SQL.quote(outputAddress.getStreetType()) + ", ");					// 24
+					sql.append(OUTPUT_STREET_TYPE_PREFIX).append("=" + outputAddress.isStreetTypePrefix() + ", ");			// 25
+					sql.append(OUTPUT_SUITE).append("=" + SQL.quote(outputAddress.getSuite()) + ", ");						// 26
+					sql.append(OUTPUT_SUITE_PREFIX).append("=" + outputAddress.isSuitePrefix() + ", ");					// 27
+					sql.append(OUTPUT_SUITE_TYPE).append("=" + SQL.quote(outputAddress.getSuiteType()) + ", ");					// 28
+					RecordType type = outputAddress.getType();
+					sql.append(OUTPUT_TYPE).append("=" + SQL.quote(type == null ? null : type.toString()) + ", ");							// 29
+					sql.append(OUTPUT_UNPARSED_ADDRESS).append("=" + SQL.quote(outputAddress.getUnparsedAddressLine1()) + ", ");				// 30
+					sql.append(OUTPUT_URBAN_BEFORE_RURAL).append("=" + outputAddress.isUrbanBeforeRural() + " ");			// 31
+					
+					sql.append("WHERE ");
+					
+					int j = 0;
 					
 					for (Object keyValue: result.getKeyValues()) {
-						ps.setObject(j, keyValue);
+						if (j > 0) {
+							sql.append("AND ");
+						}
+						if (keyValue == null) {
+							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(j).append(" is null "); // 18+
+						} else if (keyValue instanceof String || keyValue instanceof Character) {
+							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(j).append("=" + SQL.quote(keyValue.toString()) + " "); // 18+
+						} else {
+							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(j).append("=" + keyValue + " "); // 18+
+						}
 						j++;
 					}
 					
 					engineLogger.debug("Preparing the following address result to be updated: " + result);
+					engineLogger.error("Executing statement " + sql);
 					
-					if (useBatchUpdates) {
-						engineLogger.debug("Adding statement to batch");
-						ps.addBatch();
-						batchCount++;
-						if (batchCount > 1000 || i + 1 == dirtyAddresses.size()) {
-							engineLogger.debug("Executing update batch");
-							ps.executeBatch();
-							batchCount = 0;
-						}
-					} else {
-						engineLogger.debug("Executing update statement");
-						ps.execute();
-					}
+					engineLogger.debug("Executing update statement");
+					stmt.execute(sql.toString());
 					incrementProgress();
 				}
 				
-				// Execute remaining batch statements
-				if (batchCount > 0 && useBatchUpdates) {
-					ps.executeBatch();
-				}
-				if (ps != null) ps.close();
-				ps = null;
+				if (stmt != null) stmt.close();
+				stmt = null;
 			}
 			
 			if (newAddresses.size() > 0) {
@@ -670,6 +618,7 @@ public class AddressPool extends MonitorableImpl{
 		} finally {
 			setFinished(true);
 			if (ps != null) try { ps.close(); } catch (SQLException e) { engineLogger.error("Error while closing PreparedStatement", e); }
+			if (stmt != null) try { stmt.close(); } catch (SQLException e) { engineLogger.error("Error while closing Statement", e); }
 			if (con != null) try { con.close(); } catch (SQLException e) { engineLogger.error("Error while closing Connection", e); }
 		}
 	}
