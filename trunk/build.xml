@@ -218,7 +218,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
+	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz, downloadpage">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -231,6 +231,14 @@
 				<include name="*-${app.version}.pdf"/>
 			</fileset>
 		</copy>
+		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
+	</target>
+	
+	<!-- ================================= 
+          target: downloadpage              
+         ================================= -->
+    <target name="downloadpage" depends="getAppVersion">
+    	<mkdir dir="${dist.dir}"/>
 	    <get dest="${dist.dir}/index.html" src="http://www.sqlpower.ca/page/matchmaker_download_template"/>
 		<replace file="${dist.dir}/index.html">
 			<replacefilter token="&lt;head&gt;" value="&lt;head&gt;&lt;base href=&quot;http://www.sqlpower.ca/page/&quot;&gt;"/>
@@ -238,8 +246,8 @@
 			<replacefilter token="@@downloadLinkBase" value="${downloadLinkBase}"/>
 			<replacefilter token="@@docLinkBase" value="${docLinkBase}"/>
 		</replace>
-		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
-	</target>
+    </target>
+
 	
 	<!-- DOCUMENTATION
 		There are THREE main documentation targets, all built from the
@@ -474,6 +482,7 @@
 	<target name="getAppVersion">
 		<mkdir dir="${build}"/>
 		<!-- get the version number from source code ArchitectUtils -->
+		<delete file="${build}/ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.class"/>
 		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" includes="ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.java" debug="true"/>
 		<taskdef name="genVersion"
 					classname="ca.sqlpower.matchmaker.antbuild.MatchMakerVersionTask"
