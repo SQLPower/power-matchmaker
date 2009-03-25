@@ -273,7 +273,7 @@ public class ProjectDAOXML implements ProjectDAO {
         printAttribute("auto-match-threshold", p.getMungeSettings().getAutoMatchThreshold());
         printAttribute("last-backup-number", p.getMungeSettings().getLastBackupNo());
         printAttribute("use-batch-execution", p.getMungeSettings().isUseBatchExecution());
-        printAttribute("skip-validation", p.getMungeSettings().isSkipValidation());
+        printAttribute("serp-autocorrect", p.getMungeSettings().isSerpAutocorrect());
         niprintln(" />");
 
         print("<merge-settings");
