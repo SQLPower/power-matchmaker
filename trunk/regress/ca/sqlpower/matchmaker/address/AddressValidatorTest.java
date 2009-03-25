@@ -370,4 +370,45 @@ public class AddressValidatorTest extends TestCase {
     	assertTrue(validator.isValidSuggestion());
     	assertEquals("806 PLACE HAMPSHIRE NE", validator.getSuggestions().get(0).getAddress());
     }
+    /**
+     * Regression test for the parser and validator. Previously the postal code:
+     * 532 ANNDALXE CR
+	 * WATERLOO ON  N2K 2R1
+	 * was returning two suggestions, both of which were valid. Only one suggestion
+	 * should be returned for the correct street address name.
+     */
+    public void testAddressReturnsOneCorrection() throws Exception {
+    	Address address = Address.parse("532 ANNDALXE CR", "WATERLOO", "ON", "N2K2R1", "CA", addressDB);
+    	
+    	AddressValidator validator = new AddressValidator(addressDB, address);
+    	List<Address> suggestions = validator.getSuggestions();
+    	System.out.println(suggestions);
+    	assertEquals(1, suggestions.size());
+    	Address bestSuggestion = suggestions.get(0);
+    	assertEquals("ANNDALE", bestSuggestion.getStreet());
+    	assertEquals("CRT", bestSuggestion.getStreetType());
+    	
+    }
+    
+    /**
+     * Regression test for the parser and validator. Previously the postal code:
+     * RURAL RTE 3 SUCC BUREAU-CHEF, MONT-LAURIER, QC, J9L3G5
+	 * was returning numerous suggestions that were the same.
+     */
+    public void testAddressDoesntReturnDuplicates() throws Exception {
+    	Address address = Address.parse("RURAL RTE 3 SUCC BUREAU-CHEF", "MONT-LAURIER", "QC", "J9L3G5", "CA", addressDB);
+    	
+    	AddressValidator validator = new AddressValidator(addressDB, address);
+    	List<Address> suggestions = validator.getSuggestions();
+    	System.out.println(suggestions);
+    	for (Address a : suggestions) {
+    		int addressCount = 0;
+    		for (Address b : suggestions) {
+    			if (a.getAddress().equals(b.getAddress())) addressCount++;
+    		}
+    		assertEquals("Each address should be unique but the following address was not " + a, 1, addressCount);
+    	}
+    	
+    }
+    
 }

@@ -320,14 +320,12 @@ public class AddressValidator {
         		return;
         	}
         	
-			if (pc.getRecordType() == RecordType.STREET || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+			if ((pc.getRecordType() == RecordType.STREET || pc.getRecordType() == RecordType.STREET_AND_ROUTE) &&
+					!(suggestion.getType() == RecordType.ROUTE && pc.getRecordType() == RecordType.STREET_AND_ROUTE)) {
 				
 				//If the address parsed was a route only and the correct address is street and route
 				//we only show the route address so missing or invalid street information is not an actual error
 				boolean countErrors = true;
-				if (suggestion.getType() == RecordType.ROUTE && pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
-					countErrors = false;
-				}
 				
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.STREET) {
@@ -345,6 +343,8 @@ public class AddressValidator {
 						errorCount++;
 						suggestionExists = true;
 					}
+				} else if (suggestion.isUrbanBeforeRural() == null) {
+					suggestion.setUrbanBeforeRural(true);
 				}
 				if (different(pc.getStreetName(), a.getStreet())) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -552,14 +552,12 @@ public class AddressValidator {
 				}
 				errorCount += count;
 			}
-			if (pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
+			if ((pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) &&
+					!(suggestion.getType() == RecordType.STREET && pc.getRecordType() == RecordType.STREET_AND_ROUTE)) {
 				
 				//If the address parsed was a street only and the correct address is street and route
 				//we only show the street address so missing or invalid route information is not an actual error
 				boolean countErrors = true;
-				if (suggestion.getType() == RecordType.STREET && pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
-					countErrors = false;
-				}
 				
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.ROUTE) {
@@ -577,6 +575,8 @@ public class AddressValidator {
 						errorCount++;
 						suggestionExists = true;
 					}
+				} else if (suggestion.isUrbanBeforeRural() == null) {
+					suggestion.setUrbanBeforeRural(false);
 				}
 				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
 					errorList.add(ValidateResult.createValidateResult(
