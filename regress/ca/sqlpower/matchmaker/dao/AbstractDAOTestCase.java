@@ -46,6 +46,8 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
@@ -337,6 +339,18 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
                         } else {
                             newVal = MergeActionType.CONCAT;
                         }
+                    } else if (property.getPropertyType() == PoolFilterSetting.class) {
+                    	if (oldVal != PoolFilterSetting.EVERYTHING) {
+                    		newVal = PoolFilterSetting.EVERYTHING;
+                    	} else {
+                    		newVal = PoolFilterSetting.INVALID_ONLY;
+                    	}
+                    } else if (property.getPropertyType() == AutoValidateSetting.class) {
+                    	if (oldVal != AutoValidateSetting.NOTHING) {
+                    		newVal = AutoValidateSetting.NOTHING;
+                    	} else {
+                    		newVal = AutoValidateSetting.SERP_CORRECTABLE;
+                    	}
 					} else {
 						throw new RuntimeException("This test case lacks a value for "
 								+ property.getName() + " (type "

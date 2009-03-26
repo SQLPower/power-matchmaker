@@ -73,7 +73,6 @@ import javax.swing.undo.UndoManager;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.matchmaker.AddressCorrectionEngineImpl;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
@@ -91,6 +90,7 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
@@ -441,7 +441,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<AddressCorrectionEngineImpl, EngineSettingsPanel> addressCorrectionEnginePanels;
+	private Map<AddressCorrectionEngine, EngineSettingsPanel> addressCorrectionEnginePanels;
 	
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
@@ -462,7 +462,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         matchEnginePanels = new HashMap<MatchEngineImpl, EngineSettingsPanel>();
         mergeEnginePanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
         cleanseEnginePanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
-        addressCorrectionEnginePanels = new HashMap<AddressCorrectionEngineImpl, EngineSettingsPanel>();
+        addressCorrectionEnginePanels = new HashMap<AddressCorrectionEngine, EngineSettingsPanel>();
         
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         
@@ -1388,13 +1388,22 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	/**
 	 * Returns or creates the editor panel linked to the given Address Correction Engine engine
 	 * 
-	 * @param mei The current engine
+	 * @param engine The current engine
 	 * @param project The current project
 	 */
-	public EngineSettingsPanel getAddressCorrectionEnginePanel(AddressCorrectionEngineImpl engine, Project project) {
+	public EngineSettingsPanel getAddressCorrectionEnginePanel(AddressCorrectionEngine engine, Project project) {
 		EngineSettingsPanel ep = addressCorrectionEnginePanels.get(engine);
 		if (ep == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.ADDRESS_CORRECTION_ENGINE);
+			addressCorrectionEnginePanels.put(engine,ep);
+		}
+		return ep;
+	}
+	
+	public EngineSettingsPanel getValidatedAddressCommittingEnginePanel(AddressCorrectionEngine engine, Project project) {
+		EngineSettingsPanel ep = addressCorrectionEnginePanels.get(engine);
+		if (ep == null) {
+			ep = new EngineSettingsPanel(this, project, getFrame(), EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE);
 			addressCorrectionEnginePanels.put(engine,ep);
 		}
 		return ep;

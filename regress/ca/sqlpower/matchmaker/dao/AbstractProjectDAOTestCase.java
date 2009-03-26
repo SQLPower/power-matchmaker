@@ -83,6 +83,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         nonPersistingProperties.add("matchingEngine");
         nonPersistingProperties.add("mergingEngine");
         nonPersistingProperties.add("addressCorrectionEngine");
+        nonPersistingProperties.add("addressCommittingEngine");
         
         // tested explicitly elsewhere
         nonPersistingProperties.add("sourceTable");

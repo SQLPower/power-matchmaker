@@ -40,6 +40,8 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
@@ -108,6 +110,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("matchingEngine");
         propertiesToIgnoreForDuplication.add("cleansingEngine");
         propertiesToIgnoreForDuplication.add("addressCorrectionEngine");
+        propertiesToIgnoreForDuplication.add("addressCommittingEngine");
         propertiesToIgnoreForDuplication.add("undoing");
         propertiesToIgnoreForDuplication.add("runningEngine");
         
@@ -307,6 +310,18 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         	} else {
         		return null;
         	}
+        } else if (property.getPropertyType() == PoolFilterSetting.class) {
+        	if (oldVal != PoolFilterSetting.EVERYTHING) {
+        		return PoolFilterSetting.EVERYTHING;
+        	} else {
+        		return PoolFilterSetting.INVALID_ONLY;
+        	}
+        } else if (property.getPropertyType() == AutoValidateSetting.class) {
+        	if (oldVal != AutoValidateSetting.NOTHING) {
+        		return AutoValidateSetting.NOTHING;
+        	} else {
+        		return AutoValidateSetting.SERP_CORRECTABLE;
+        	}
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
@@ -498,6 +513,18 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         		newVal = mmo;
         	} else {
         		newVal = null;
+        	}
+        } else if (property.getPropertyType() == PoolFilterSetting.class) {
+        	if (oldVal != PoolFilterSetting.EVERYTHING) {
+        		newVal = PoolFilterSetting.EVERYTHING;
+        	} else {
+        		newVal = PoolFilterSetting.INVALID_ONLY;
+        	}
+        } else if (property.getPropertyType() == AutoValidateSetting.class) {
+        	if (oldVal != AutoValidateSetting.NOTHING) {
+        		newVal = AutoValidateSetting.NOTHING;
+        	} else {
+        		newVal = AutoValidateSetting.SERP_CORRECTABLE;
         	}
 		} else {
 			throw new RuntimeException("This test case lacks a value for "

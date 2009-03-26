@@ -99,7 +99,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 					val.equals(ProjectActionType.RUN_CLEANSING) ||
 					val.equals(ProjectActionType.RUN_ADDRESS_CORRECTION)) {
 				setIcon(matchEngineIcon);
-			} else if (val.equals(ProjectActionType.RUN_MERGE)) {
+			} else if (val.equals(ProjectActionType.RUN_MERGE) ||
+						val.equals(ProjectActionType.COMMIT_VALIDATED_ADDRESSES)) {
 				setIcon(mergeEngineIcon);
 			} else { 
 				setIcon(infoIcon);

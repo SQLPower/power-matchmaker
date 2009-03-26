@@ -307,6 +307,7 @@ public class ProjectXMLDAOTest extends TestCase {
         ignore.add("matchingEngine");
         ignore.add("mergingEngine");
         ignore.add("addressCorrectionEngine");
+        ignore.add("addressCommittingEngine");
         ignore.add("sourceTable");
         ignore.add("resultTable");
         ignore.add("xrefTable");

@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.sqlobject.SQLIndex;
 
 /**
@@ -84,7 +85,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
      * attempting to open this munge step.
 	 */
     @Override
-	public void doOpen(Logger logger) throws Exception {
+	public void doOpen(EngineMode mode, Logger logger) throws Exception {
         
         if (inputStep == null) {
             throw new IllegalStateException("Can't open when input step is null.");

@@ -553,6 +553,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						ProgressWatcher.watchProgress(monitor, addressPoolLoadingWorker);
 						Thread workerThread = new Thread(addressPoolLoadingWorker);
 						workerThread.start();
+					} else if (node.getActionType() == ProjectActionType.COMMIT_VALIDATED_ADDRESSES) {
+						swingSession.setCurrentEditorComponent(swingSession.getValidatedAddressCommittingEnginePanel(node.getProject().getAddressCommittingEngine(), node.getProject()));
 					}
 				} else if (o instanceof TranslateGroupParent) {
 					swingSession

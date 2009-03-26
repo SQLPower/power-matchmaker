@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 /**
@@ -93,6 +94,10 @@ public class StubMungeStep implements MungeStep {
         return null;
     }
 
+    public void open(EngineMode mode, Logger logger) throws Exception {
+    	logger.debug("Stub call: StubMungeStep.open()");
+    }
+    
     public void open(Logger logger) throws Exception {
         logger.debug("Stub call: StubMungeStep.open()");
     }

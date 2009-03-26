@@ -130,7 +130,12 @@ public class MatchMakerTreeModel implements TreeModel {
         /**
          * Shows the "Validate Addresses" UI.
          */
-        VALIDATE_ADDRESSES("Validate Addresses");
+        VALIDATE_ADDRESSES("Validate Addresses"),
+        
+        /**
+         * Shows the "Commit Validated Addresses" UI.
+         */
+        COMMIT_VALIDATED_ADDRESSES("Commit Validated Addresses");
         
         private final String name;
         
@@ -228,7 +233,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		{ProjectActionType.RUN_CLEANSING, ProjectActionType.AUDIT_INFO};
 	
 	private static final ProjectActionType[] ADDRESSS_CORRECTION_ACTIONS = 
-		{ ProjectActionType.RUN_ADDRESS_CORRECTION, ProjectActionType.VALIDATE_ADDRESSES };
+		{ ProjectActionType.RUN_ADDRESS_CORRECTION, ProjectActionType.VALIDATE_ADDRESSES, ProjectActionType.COMMIT_VALIDATED_ADDRESSES };
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 	

@@ -21,16 +21,22 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
+import ca.sqlpower.matchmaker.address.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.address.AddressValidator;
-import ca.sqlpower.validation.ValidateResult;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
+import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
@@ -43,6 +49,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	private boolean addressValid;
 	
 	private MungeStep inputStep;
+	
+	private AddressPool pool;
 	
 	public AddressCorrectionMungeStep() {
 		super("Address Correction", false);
@@ -80,22 +88,87 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void doOpen(Logger logger) throws Exception {
+	public void doOpen(EngineMode mode, Logger logger) throws Exception {
 		MatchMakerSession session = getSession();
 		MatchMakerSessionContext context = session.getContext();
 		setParameter(ADDRESS_CORRECTION_DATA_PATH, context.getAddressCorrectionDataPath());
+		
+		if (mode instanceof AddressCorrectionEngineMode) {
+			this.mode = (AddressCorrectionEngineMode) mode;
+		} else if (mode != null) {
+			throw new IllegalArgumentException("Address Correction Step only accepts StepModes of type AddressCorrectionMungeStep.AddressCorrectionMode");
+		}
 		
 		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
 		if (addressCorrectionDataPath == null || addressCorrectionDataPath.length() == 0) {
 			throw new IllegalStateException("Address Correction Data Path is empty. Please set the path in User Preferences");
 		}
 		addressDB = new AddressDatabase(new File(addressCorrectionDataPath));
-		
 	}
 	
 	@Override
 	public Boolean doCall() throws Exception {
+		if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES) {
+			return doCallWriteBackCorrectedAddresses();
+		} else if (mode == null || mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
+			return doCallParseAndCorrect();
+		} else {
+			throw new IllegalStateException("Address Correction Step does not support this mode: " + mode);
+		}
+	}
+	
+	/**
+	 * Uses the user validated values stored in the from the result table where
+	 * available. Otherwise, if no value is available, it will default to the
+	 * auto-corrected value.
+	 * 
+	 * @return
+	 * @throws Exception
+	 *             Any Exceptions will get passed along to the SPSwingWorker
+	 *             running this process.
+	 */
+	private Boolean doCallWriteBackCorrectedAddresses() throws Exception {
+		logger.debug("Running with user validated addresses as output");
+		
+		SQLIndex uniqueKey = getProject().getSourceTableIndex();
 
+		List<Object> uniqueKeyValues = new ArrayList<Object>();
+
+		for (Column col: uniqueKey.getChildren()) {
+			MungeStepOutput output = inputStep.getOutputByName(col.getName());
+			if (output == null) {
+				throw new IllegalStateException("Input step is missing unique key column '" + col.getName() + "'");
+			}
+			uniqueKeyValues.add(output.getData());
+		}
+		
+		AddressResult result = pool.findAddress(uniqueKeyValues);
+		
+		if (result != null && !result.getOutputAddress().isEmptyAddress()) {
+			Address address = result.getOutputAddress();
+			
+			logger.debug("Found an output address:\n" + address);
+			List<MungeStepOutput> outputs = getChildren(); 
+			outputs.get(0).setData(address.getAddress());
+			outputs.get(1).setData(address.getAddress());
+			outputs.get(2).setData(address.getSuite());
+			outputs.get(3).setData(address.getStreetNumber() != null ? BigDecimal.valueOf(address.getStreetNumber()) : null);
+			outputs.get(4).setData(address.getStreetNumberSuffix());
+			outputs.get(5).setData(address.getStreet());
+			outputs.get(6).setData(address.getStreetType());
+			outputs.get(7).setData(address.getStreetDirection());
+			outputs.get(8).setData(address.getMunicipality());
+			outputs.get(9).setData(address.getProvince());
+			outputs.get(10).setData(address.getCountry());
+			outputs.get(11).setData(address.getPostalCode());
+		} else {
+			addressValid = false;
+		}
+
+		return Boolean.TRUE;
+	}
+	
+	private Boolean doCallParseAndCorrect() throws Exception{
 		addressValid = false;
 		
 		MungeStepOutput addressLine1MSO = getMSOInputs().get(0);
@@ -119,38 +192,80 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		logger.debug("Address that was parsed:\n" + address.toString());
 		
 		AddressValidator validator = new AddressValidator(addressDB, address);
-		List<ValidateResult> results = validator.getResults();
+		validator.validate();
+		
+		if (getProject().getMungeSettings().isSerpAutocorrect()) {
+			// if is SERP correctable
+			if (!validator.isSerpValid() && validator.isValidSuggestion()) {
+				Address correctedAddress = validator.getSuggestions().get(0);
+				
+				List<MungeStepOutput> outputs = getChildren(); 
+				
+				outputs.get(0).setData(correctedAddress.getAddress());
+				outputs.get(1).setData(correctedAddress.getAddress());
+				outputs.get(2).setData(correctedAddress.getSuite());
+				outputs.get(3).setData(correctedAddress.getStreetNumber() != null ? BigDecimal.valueOf(correctedAddress.getStreetNumber()) : null);
+				outputs.get(4).setData(correctedAddress.getStreetNumberSuffix());
+				outputs.get(5).setData(correctedAddress.getStreet());
+				outputs.get(6).setData(correctedAddress.getStreetType());
+				outputs.get(7).setData(correctedAddress.getStreetDirection());
+				outputs.get(8).setData(correctedAddress.getMunicipality());
+				outputs.get(9).setData(correctedAddress.getProvince());
+				outputs.get(10).setData(correctedAddress.getCountry());
+				outputs.get(11).setData(correctedAddress.getPostalCode());
 
-		if (results.size() > 0) { 
-			logger.debug("Address '" + addressString + "' was invalid with the following problem(s):");
-			
-			for (ValidateResult result: results) {
-				logger.debug("\tStatus:" + result.getStatus() + " Message: " + result.getMessage());
+				return Boolean.TRUE;
 			}
-		} else {
-			addressValid = true;
+		}  
+		
+		// else if not doing SERP auto-correction
+		switch (getProject().getMungeSettings().getPoolFilterSetting()) {
+			case INVALID_ONLY:
+				if (validator.isSerpValid()) {
+					break;
+				}
+			case INVALID_OR_DIFFERENT_FORMAT:
+				if (validator.isSerpValid() && validator.getSuggestions().size() == 0) {
+					break;
+				}
+			default:
+				SQLIndex uniqueKey = getProject().getSourceTableIndex();
+			
+				MungeStep inputStep = getInputStep();
+				
+				List<Object> uniqueKeyValues = new ArrayList<Object>();
+				
+				for (Column col: uniqueKey.getChildren()) {
+					MungeStepOutput output = inputStep.getOutputByName(col.getName());
+					if (output == null) {
+						throw new IllegalStateException("Input step is missing unique key column '" + col.getName() + "'");
+					}
+					uniqueKeyValues.add(output.getData());
+				}
+				
+				AddressResult result = new AddressResult(uniqueKeyValues, addressLine1, addressLine2, municipality, province, inPostalCode, country);
+				
+				switch (getProject().getMungeSettings().getAutoValidateSetting()) {
+					case NOTHING:
+						break;
+					case SERP_CORRECTABLE:
+						if (validator.isSerpValid() || !validator.isValidSuggestion()) {
+							break;
+						}
+					case EVERYTHING_WITH_SUGGESTION:
+						if (validator.getSuggestions().size() == 0) {
+							break;
+						}
+					default:
+						result.setOutputAddress(validator.getSuggestions().get(0));
+				}
+				
+				pool.addAddress(result, logger);
 		}
 		
-		logger.debug("Address after correction:\n" + address.toString());
-		
-		List<MungeStepOutput> outputs = getChildren(); 
-		
-		outputs.get(0).setData(address.getAddress());
-		outputs.get(1).setData(addressLine2);
-		outputs.get(2).setData(address.getSuite());
-		outputs.get(3).setData(address.getStreetNumber() != null ? BigDecimal.valueOf(address.getStreetNumber()) : null);
-		outputs.get(4).setData(address.getStreetNumberSuffix());
-		outputs.get(5).setData(address.getStreet());
-		outputs.get(6).setData(address.getStreetType());
-		outputs.get(7).setData(address.getStreetDirection());
-		outputs.get(8).setData(address.getMunicipality());
-		outputs.get(9).setData(address.getProvince());
-		outputs.get(10).setData(address.getCountry());
-		outputs.get(11).setData(address.getPostalCode());
-
 		return Boolean.TRUE;
 	}
-	
+
 	/**
 	 * A package-private method that will return whether or not the current
 	 * address being parsed in this step is valid. Note that the value is
@@ -164,5 +279,9 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	MungeStep getInputStep() {
 		return inputStep;
+	}
+	
+	void setAddressPool(AddressPool pool, Logger logger) {
+		this.pool = pool;
 	}
 }
