@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,6 +70,7 @@ public class AddressDatabase {
     SecondaryIndex<Integer, Long, PostalCode> postalCodeRecordType;
     private SecondaryIndex<String, Long, PostalCode> postalCodeDIName;
     
+    private PrimaryIndex<String, AddressDatabaseDate> datePK;
     /**
      * This map stores all valid address types (like STREET and AVENUE) to their short form stored
      * in the database.
@@ -80,8 +82,14 @@ public class AddressDatabase {
      * french come before the street name instead of after it.
      */
     private final Set<String> frenchAddressTypes = new HashSet<String>();
+
+	private AddressDatabaseDate expiryDate;
     
-    private void open() throws DatabaseException {
+    public Date getExpiryDate() {
+		return expiryDate.getDate();
+	}
+
+	private void open() throws DatabaseException {
         EnvironmentConfig envConfig = new EnvironmentConfig();
         envConfig.setAllowCreate(false);
         envConfig.setReadOnly(true);
@@ -109,6 +117,11 @@ public class AddressDatabase {
         postalStreetTypeCode = store.getSecondaryIndex(postalCodePK, String.class, "streetTypeCode");
         postalCodeRecordType = store.getSecondaryIndex(postalCodePK, Integer.class, "recordTypeNumber");
         postalCodeDIName = store.getSecondaryIndex(postalCodePK, String.class, "deliveryInstallationQualifierName");
+        
+        store = new EntityStore(env, "AddressDatabaseDate", storeConfig);
+        storesToClose.add(store);
+        datePK = store.getPrimaryIndex(String.class, AddressDatabaseDate.class);
+        expiryDate = datePK.get(AddressDatabaseDate.EXPIRY_DATE_KEY);
     }
 
     /**
