@@ -39,6 +39,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.sqlobject.SQLType;
+import ca.sqlpower.validation.ValidateResult;
 
 /**
  * An abstract implementation of the MungeStep interface. The only
@@ -800,5 +801,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
         case Types.DATE:
             return Date.class;
         }
+    }
+    
+    public List<ValidateResult> checkPreconditions() {
+    	return Collections.emptyList();
     }
 }

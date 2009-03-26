@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.PreferenceChangeListener;
 
 import org.apache.log4j.Logger;
 
@@ -181,5 +182,15 @@ public class StubSwingSessionContext implements SwingSessionContext {
 	public String getAddressCorrectionDataPath() {
 		logger.debug("Stub call: StubSwingSessionContext.getAddressCorrectionDataPath()");
 		return null;
+	}
+
+	public void addPreferenceChangeListener(PreferenceChangeListener l) {
+		logger.debug("Stub call: MatchMakerSessionContext.addPreferenceChangeListener()");
+		
+	}
+
+	public void removePreferenceChangeListener(PreferenceChangeListener l) {
+		logger.debug("Stub call: MatchMakerSessionContext.removePreferenceChangeListener()");
+		
 	}
 }

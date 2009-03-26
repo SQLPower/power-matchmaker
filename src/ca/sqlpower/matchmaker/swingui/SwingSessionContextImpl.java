@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -725,5 +726,13 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
 	public void ensureDefaultRepositoryDefined() {
 		context.ensureDefaultRepositoryDefined();
+	}
+
+	public void addPreferenceChangeListener(PreferenceChangeListener l) {
+		context.addPreferenceChangeListener(l);
+	}
+
+	public void removePreferenceChangeListener(PreferenceChangeListener l) {
+		context.removePreferenceChangeListener(l);
 	}
 }

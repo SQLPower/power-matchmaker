@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
@@ -276,6 +277,14 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     
     public String getAddressCorrectionDataPath() {
     	return prefs.get(ADDRESS_CORRECTION_DATA_PATH, "");
+    }
+    
+    public void addPreferenceChangeListener(PreferenceChangeListener l) {
+    	prefs.addPreferenceChangeListener(l);
+    }
+    
+    public void removePreferenceChangeListener(PreferenceChangeListener l) {
+    	prefs.removePreferenceChangeListener(l);
     }
 
 }

@@ -37,6 +37,10 @@ import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
+
+import com.sleepycat.je.DatabaseException;
 
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
@@ -89,25 +93,42 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public void doOpen(EngineMode mode, Logger logger) throws Exception {
-		MatchMakerSession session = getSession();
-		MatchMakerSessionContext context = session.getContext();
-		setParameter(ADDRESS_CORRECTION_DATA_PATH, context.getAddressCorrectionDataPath());
-		
 		if (mode instanceof AddressCorrectionEngineMode) {
 			this.mode = (AddressCorrectionEngineMode) mode;
 		} else if (mode != null) {
 			throw new IllegalArgumentException("Address Correction Step only accepts StepModes of type AddressCorrectionMungeStep.AddressCorrectionMode");
 		}
+		validateDatabase();
+		
+	}
+
+	/**
+	 * This will get the address database's path from the context and
+	 * try to connect to it. If the database cannot be connected to the
+	 * database will be null.
+	 */
+	public void validateDatabase() {
+		MatchMakerSession session = getSession();
+		MatchMakerSessionContext context = session.getContext();
+		setParameter(ADDRESS_CORRECTION_DATA_PATH, context.getAddressCorrectionDataPath());
+		
 		
 		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
 		if (addressCorrectionDataPath == null || addressCorrectionDataPath.length() == 0) {
 			throw new IllegalStateException("Address Correction Data Path is empty. Please set the path in User Preferences");
 		}
-		addressDB = new AddressDatabase(new File(addressCorrectionDataPath));
+		try {
+			setAddressDB(new AddressDatabase(new File(addressCorrectionDataPath)));
+		} catch (DatabaseException e) {
+			setAddressDB(null);
+		}
 	}
 	
 	@Override
 	public Boolean doCall() throws Exception {
+		if (addressDB == null) {
+			return false;
+		}
 		if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES) {
 			return doCallWriteBackCorrectedAddresses();
 		} else if (mode == null || mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
@@ -281,7 +302,31 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		return inputStep;
 	}
 	
+	private void setAddressDB(AddressDatabase addressDB) {
+		AddressDatabase oldValue = this.addressDB;
+		this.addressDB = addressDB;
+		getEventSupport().firePropertyChange("addressDB", oldValue, addressDB);
+	}
+	
+	public boolean doesDatabaseExist()  {
+		return addressDB != null;
+	}
+	
 	void setAddressPool(AddressPool pool, Logger logger) {
 		this.pool = pool;
 	}
+	
+	@Override
+	public List<ValidateResult> checkPreconditions() {
+		List<ValidateResult> resultList = new ArrayList<ValidateResult>();
+		if (addressDB == null) {
+			ValidateResult result = ValidateResult
+					.createValidateResult(
+							Status.FAIL,
+							"Address data is not valid or not setup properly. " +
+							"Please check the Address Database Path in User Preferences.");
+		}
+		return resultList;
+	}
+
 }
