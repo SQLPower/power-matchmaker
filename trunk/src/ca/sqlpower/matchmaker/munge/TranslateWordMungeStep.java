@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 
 
@@ -145,7 +146,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 * the parameter.
 	 */
 	@Override
-	public void doOpen(Logger logger) throws Exception {
+	public void doOpen(EngineMode mode, Logger logger) throws Exception {
 		String oid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
 		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (getSession().getDAO(MatchMakerTranslateGroup.class));
 		translateGroup = groupDAO.findByOID(Long.valueOf(oid));

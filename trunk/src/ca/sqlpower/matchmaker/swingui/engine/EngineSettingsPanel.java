@@ -86,9 +86,9 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
 		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23             24   25 	 26   27
 
-//	private static final String ADDRESS_COMMITTING_ENGINE_PANEL_ROW_SPECS = 
-//		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
-//		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19             20   21   22   23 
+	private static final String ADDRESS_COMMITTING_ENGINE_PANEL_ROW_SPECS = 
+		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
+		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19             20   21   22   23 
 
 	private static final String MATCH_ENGINE_PANEL_ROW_SPECS = 
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
@@ -110,8 +110,8 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 */
 	public enum EngineType {
 		MATCH_ENGINE("Match Engine"), MERGE_ENGINE("Merge Engine"), 
-		CLEANSE_ENGINE("Cleanse Engine"), ADDRESS_CORRECTION_ENGINE("Address Correction Engine");
-//		VALIDATED_ADDRESS_COMMITING_ENGINE("Validated Address Committing Engine");
+		CLEANSE_ENGINE("Cleanse Engine"), ADDRESS_CORRECTION_ENGINE("Address Correction Engine"),
+		VALIDATED_ADDRESS_COMMITING_ENGINE("Validated Address Committing Engine");
 		
 		String engineName;
 		
@@ -298,9 +298,9 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		} else if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			engine = project.getAddressCorrectionEngine();
 			engineSettings = project.getMungeSettings();
-//		} else if (type == EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE) {
-//			engine = project.getAddressCommittingEngine();
-//			engineSettings = project.getMungeSettings();
+		} else if (type == EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE) {
+			engine = project.getAddressCommittingEngine();
+			engineSettings = project.getMungeSettings();
 		} else {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
@@ -435,8 +435,8 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		String rowSpecs;
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			rowSpecs = ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS;
-//		} else if (type == EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE) {
-//			rowSpecs = ADDRESS_COMMITTING_ENGINE_PANEL_ROW_SPECS;
+		} else if (type == EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE) {
+			rowSpecs = ADDRESS_COMMITTING_ENGINE_PANEL_ROW_SPECS;
 		} else if (type == EngineType.MERGE_ENGINE) {
 			rowSpecs = MERGE_ENGINE_PANEL_ROW_SPECS;
 		} else if (type == EngineType.CLEANSE_ENGINE) {

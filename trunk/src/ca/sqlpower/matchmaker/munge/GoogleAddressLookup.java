@@ -33,6 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+
 public class GoogleAddressLookup extends AbstractMungeStep {
 
     
@@ -104,7 +106,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     }
     
     @Override
-    public void doOpen(Logger logger) throws Exception {
+    public void doOpen(EngineMode mode, Logger logger) throws Exception {
         String key = getParameter(GOOGLE_MAPS_API_KEY);
         if (key == null || key.length() == 0) {
             throw new IllegalStateException("Can't open step: Google Maps API Key is required.");

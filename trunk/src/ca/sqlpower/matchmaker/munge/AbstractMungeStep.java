@@ -37,6 +37,7 @@ import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.sqlobject.SQLType;
 
 /**
@@ -106,6 +107,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	private Class defaultInputClass = Object.class;
 	
+	protected EngineMode mode;
 	
 	public AbstractMungeStep(String name, boolean canAddInputs) {
 		setName(name);
@@ -121,7 +123,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	/**
 	 * A method that is called when a step is opened. Default is No-op. 
 	 */
-	public void doOpen(Logger log) throws Exception {}
+	public void doOpen(EngineMode mode, Logger log) throws Exception {}
 	
 	/**
 	 * A method that is called when an step is "run/called". Default is No-op. 
@@ -473,12 +475,16 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		return canAddInputs;
 	}
 
-    /**
+	public final void open(Logger logger) throws Exception {
+		open(null, logger);
+	}
+	
+	/**
      * Only sets the logger, because most steps do not need to allocate any resources.
      * If your step needs to allocate resources (perform a database query, open
      * a file, connect to a server, and so on), you should override this method.
      */
-    public final void open(Logger logger) throws Exception {
+    public final void open(EngineMode mode, Logger logger) throws Exception {
     	this.logger = logger;
         if (logger == null) {
             throw new NullPointerException("Step " + getClass().getName() + " was given a null logger");
@@ -492,7 +498,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
             throw new IllegalStateException("Step is already opened");
         }
         
-        doOpen(logger);
+        doOpen(mode, logger);
 
         opened = true;
         committed = false;

@@ -40,12 +40,17 @@ public class AddressParserTest extends TestCase {
 	/**
 	 * Path pointing to the directory containing the address database.
 	 */
-	private static final String ADDRESS_DATABASE_PATH = "/Users/thomas/addressdb";
 	private static AddressDatabase addressDB;
 	
 	static {
 		try {
-			addressDB = new AddressDatabase(new File(ADDRESS_DATABASE_PATH));
+			String bdbPath = System.getProperty("ca.sqlpower.matchmaker.test.addressDB");
+		    if (bdbPath == null) {
+		        throw new RuntimeException(
+		                "Please define the system property ca.sqlpower.matchmaker.test.addressDB" +
+		                " to point to the directory where your BDB instance is which contains addresses");
+		    }
+			addressDB = new AddressDatabase(new File(bdbPath));
 		} catch (DatabaseException e) {
 			throw new RuntimeException(e);
 		}

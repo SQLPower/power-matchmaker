@@ -62,7 +62,7 @@ public class SERPTest extends TestCase {
 	                "Please define the system property ca.sqlpower.matchmaker.test.addressDB" +
 	                " to point to the directory where your BDB instance is which contains addresses");
 	    }
-        addressDB = new AddressDatabase(new File(bdbPath));
+        addressDB = new AddressDatabase(new File(""));
         address = new Address();
     }
     

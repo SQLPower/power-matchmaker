@@ -179,7 +179,7 @@ public class MungeSettings extends MatchMakerSettings {
 	
 	private PoolFilterSetting poolFilterSetting = PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT;
 	
-	private AutoValidateSetting autoValidateSetting = AutoValidateSetting.SERP_CORRECTABLE;
+	private AutoValidateSetting autoValidateSetting = AutoValidateSetting.NOTHING;
 	
 	public boolean getClearMatchPool() {
 		return clearMatchPool;

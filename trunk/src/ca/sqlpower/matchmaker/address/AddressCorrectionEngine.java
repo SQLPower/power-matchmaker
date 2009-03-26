@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker;
+package ca.sqlpower.matchmaker.address;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,15 +26,27 @@ import java.util.concurrent.CancellationException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.address.AddressPool;
+import ca.sqlpower.matchmaker.AbstractEngine;
+import ca.sqlpower.matchmaker.EngineInvocationResult;
+import ca.sqlpower.matchmaker.EngineSettingException;
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MungeSettings;
+import ca.sqlpower.matchmaker.Processor;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.SourceTableException;
+import ca.sqlpower.matchmaker.munge.AddressCorrectionMungeProcessor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
-import ca.sqlpower.matchmaker.munge.ValidatingAddressCorrectionMungeProcessor;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Monitorable;
 
-public class AddressCorrectionEngineImpl extends AbstractEngine {
+public class AddressCorrectionEngine extends AbstractEngine {
 
+	public enum AddressCorrectionEngineMode implements EngineMode {
+		ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES,
+		ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES
+	}
+	
 	private final Logger logger;
 	
 	private String message;
@@ -56,10 +68,13 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 
 	private int numRowsToProcess;
 	
-	public AddressCorrectionEngineImpl(MatchMakerSession session, Project project) {
-		logger = Logger.getLogger(AddressCorrectionEngineImpl.class + "." + project.getName());
+	private AddressCorrectionEngineMode mode;
+	
+	public AddressCorrectionEngine(MatchMakerSession session, Project project, AddressCorrectionEngineMode mode) {
+		logger = Logger.getLogger(AddressCorrectionEngine.class + "." + project.getName());
 		this.setSession(session);
 		this.setProject(project);
+		this.mode = mode;
 	}
 	
 	public void checkPreconditions() throws EngineSettingException,
@@ -70,6 +85,8 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException,
 			SourceTableException {
+		
+		logger.info("This engine is running in " + mode + " mode");
 		
 		double startTime = System.currentTimeMillis();
 		
@@ -112,27 +129,32 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			logger.info(message);
 			
 			AddressPool pool = new AddressPool(getProject());
-			pool.load(logger);
 			
-			if (getProject().getMungeSettings().isClearMatchPool()) {
+			if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES && getProject().getMungeSettings().isClearMatchPool()) {
 				message = "Clearing Address Pool";
 				logger.info(message);
 				pool.clear();
+			} else {
+				pool.load(logger);
 			}
-			
-			message = "Searching for invalid addresses";
-			logger.info(message);
+
+			if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
+				message = "Searching for invalid addresses";
+				logger.info(message);
+			}
 			
 			for (MungeProcess process: mungeProcesses) {
 				checkCancelled();
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
 				MungeProcessor munger;
-				if (getProject().getMungeSettings().isSerpAutocorrect()) {
-					munger = new MungeProcessor(process, logger);
-				} else {
-					munger = new ValidatingAddressCorrectionMungeProcessor(process, pool, logger);
-				}
+
+				munger = new AddressCorrectionMungeProcessor(process, pool,
+						mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES ? true :
+						getProject().getMungeSettings().isSerpAutocorrect(),
+						mode,
+						logger);
+				
 				setCurrentProcessor(munger);
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
@@ -143,7 +165,13 @@ public class AddressCorrectionEngineImpl extends AbstractEngine {
 			
 			MungeSettings settings = getProject().getMungeSettings();
 			setCurrentProcessor(pool);
-			logger.info("Storing invalid addresses");
+			
+			if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
+				logger.info("Storing invalid addresses into the result table");
+			} else {
+				logger.info("Storing corrected addresses into the source table");
+			}
+			
 			pool.store(getLogger(), settings.isUseBatchExecution(), settings.getDebug());
 			progress += pool.getProgress();
 			setCurrentProcessor(null);

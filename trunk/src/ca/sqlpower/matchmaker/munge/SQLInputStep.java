@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.sql.CachedRowSet;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -129,7 +130,7 @@ public class SQLInputStep extends AbstractMungeStep {
     }
     
     @Override
-    public void doOpen(Logger logger) throws Exception {
+    public void doOpen(EngineMode mode, Logger logger) throws Exception {
     	
     	if (isPreviewMode() && previewRS != null) {
     		previewRS.beforeFirst();

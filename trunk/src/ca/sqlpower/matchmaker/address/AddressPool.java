@@ -668,4 +668,8 @@ public class AddressPool extends MonitorableImpl{
 		}
 		return rowCount;
 	}
+
+	public AddressResult findAddress(List<Object> uniqueKeyValues) {
+		return addresses.get(uniqueKeyValues);
+	}
 }

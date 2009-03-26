@@ -36,6 +36,8 @@ import ca.sqlpower.util.Monitorable;
 public interface MatchMakerEngine extends Monitorable,
 	Callable<EngineInvocationResult>, DatabaseObject {
 
+	public interface EngineMode{};
+	
 	/**
 	 * Starts the engine.  This method returns once the engine run has
 	 * completed, so if you're running the engine within a Swing GUI, it

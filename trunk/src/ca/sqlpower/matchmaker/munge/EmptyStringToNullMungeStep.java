@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.munge;
 
 
+
 /**
  * A step which outputs <code>null</code> when the input value is
  * <code>null</code> or the empty string, and passes all other input values

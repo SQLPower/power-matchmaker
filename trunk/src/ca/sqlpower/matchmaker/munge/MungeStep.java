@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 
 /**
  * Defines a special type of MatchMakerObject which is capable of being part of a
@@ -214,7 +215,25 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * Opening this step clears its previous committed and rolled back
      * state from its previous (open, call, commit|rollback, close) sequence.
      */
-    void open(Logger logger) throws Exception;
+	void open(Logger logger) throws Exception;
+
+	/**
+	 * In addition to performing the same function as {@link #open(Logger)},
+	 * this version allows client code to pass in flags to a step if it has
+	 * multiple modes of behaviour. The flag variable would have to of a type
+	 * that implements the StepMode. This could include using an enum that
+	 * implements StepMode to use an enum as a flag.
+	 * 
+	 * @param mode
+	 *            A flag variable that can be any type that implements
+	 *            {@link EngineMode}. How the step interprets the flag is up to
+	 *            the {@link MungeStep} implementation.
+	 * @param logger
+	 *            A {@link Logger} that is logging the log output of the entire
+	 *            MungeProcess that this particular MungeStep is part of.
+	 * @throws Exception
+	 */
+    void open(EngineMode mode, Logger logger) throws Exception;
     
     /**
      * Closes any resources allocated by the {@link open()} method.  For users of

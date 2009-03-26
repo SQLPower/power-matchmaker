@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -269,7 +270,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	}
 	
 	@Override
-	public void doOpen(Logger logger) throws Exception {		
+	public void doOpen(EngineMode mode, Logger logger) throws Exception {		
 		table = getProject().getSourceTable();
 		
 		//checks if the database supports updatable result sets.

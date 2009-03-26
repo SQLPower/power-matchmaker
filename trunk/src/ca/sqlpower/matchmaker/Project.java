@@ -31,7 +31,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.address.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -169,7 +171,14 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	/**
 	 * The Address Correction Engine will be created lazily, because we only need one instance per project.
 	 */
-	private AddressCorrectionEngineImpl addressCorrectionEngine = null; 
+	private AddressCorrectionEngine addressCorrectionEngine = null; 
+	
+	/**
+	 * An {@link AddressCorrectionEngine} particularly set up to not
+	 * auto-correct addresses, but to load user-corrected addresses from a
+	 * result table and commit them into the source table.
+	 */
+	private AddressCorrectionEngine addressCommittingEngine = null;
 	
     /**
      * The process that holds the engine lock. If no process has an engine lock
@@ -946,21 +955,29 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Returns the contained {@link AddressCorrectionEngineImpl}.
+	 * Returns the contained {@link AddressCorrectionEngine}.
 	 * If there isn't one, one will get created. This helps to ensure
 	 * only one instance is created per project. 
 	 * 
 	 * @return The Address Correction Engine contained
 	 */
-	public AddressCorrectionEngineImpl getAddressCorrectionEngine() {
+	public AddressCorrectionEngine getAddressCorrectionEngine() {
 		if (addressCorrectionEngine == null) {
-			addressCorrectionEngine = new AddressCorrectionEngineImpl(getSession(), this);
+			addressCorrectionEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES);
 		}
 		return addressCorrectionEngine;
 	}
 	
+	public AddressCorrectionEngine getAddressCommittingEngine() {
+		if (addressCommittingEngine == null) {
+			addressCommittingEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES);
+		}
+		return addressCommittingEngine;
+	}
+	
 	/**
-	 * Returns the connection associated with the source table
+	 * Returns the connection associated with the source table. If the sourceTable
+	 * is null, then returns null;
 	 * @throws SQLException 
 	 */
 	public Connection createSourceTableConnection() throws SQLException {
@@ -971,7 +988,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Returns the connection associated with the result table
+	 * Returns the connection associated with the result table. If the result table
+	 * is null, then returns null;
 	 * @throws SQLException 
 	 */
 	public Connection createResultTableConnection() throws SQLException {
