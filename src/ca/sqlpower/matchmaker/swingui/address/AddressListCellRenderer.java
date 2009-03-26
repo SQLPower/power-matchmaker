@@ -53,14 +53,7 @@ public class AddressListCellRenderer implements ListCellRenderer {
 			AddressResult addressResult = (AddressResult) value;
 			Address address1;
 			if (addressResult.getOutputAddress().isEmptyAddress()) {
-				try {
-					address1 = Address.parse(
-						addressResult.getInputAddress().getUnparsedAddressLine1(), addressResult.getInputAddress().getMunicipality(), addressResult.getInputAddress().getProvince(),
-						addressResult.getInputAddress().getPostalCode(), addressResult.getInputAddress().getCountry(), addressDatabase);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-				addressResult.setOutputAddress(address1);
+				address1 = addressResult.getInputAddress();
 			} else {
 				address1 = addressResult.getOutputAddress();
 			}
