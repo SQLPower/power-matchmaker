@@ -126,7 +126,7 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 		try {
 			final Address address1;
 			
-			if (addressResult.getOutputAddress().isEmptyAddress()) {
+			if (addressResult.getOutputAddress().isEmptyAddress() || addressResult.getOutputAddress().getType() == null) {
 				address1 = Address.parse(
 					addressResult.getInputAddress().getUnparsedAddressLine1(), addressResult.getInputAddress().getMunicipality(), addressResult.getInputAddress().getProvince(),
 					addressResult.getInputAddress().getPostalCode(), addressResult.getInputAddress().getCountry(), addressDatabase);
@@ -134,19 +134,35 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 			} else {
 				address1 = addressResult.getOutputAddress();
 			}
+			this.addressValidator = new AddressValidator(addressDatabase, address1);
 			
 			JButton saveButton = new JButton("Save");
-			selectedAddressLabel = new AddressLabel(address1, null, addressDatabase, true);
+			selectedAddressLabel = new AddressLabel(address1, null, true, addressValidator.isAddressValid());
 			selectedAddressLabel.addPropertyChangeListener(new PropertyChangeListener() {
 			
 				public void propertyChange(PropertyChangeEvent evt) {
 					if (evt.getPropertyName().equals("currentAddress")) {
 						// update the suggestionList
-						addressValidator = new AddressValidator(addressDatabase, (Address) evt.getNewValue());
+						Address address = (Address) evt.getNewValue();
+						if (address.getType() == null) { //unparsed address, needs to be parsed, This could also be a failed to parse address, won't hurt to try parsing again
+							try {
+								address = Address.parse(address.getAddress(), address.getMunicipality(), address.getProvince(), address.getPostalCode(), address.getCountry(), addressDatabase);
+							} catch (RecognitionException e) {
+								MMSUtils.showExceptionDialog(
+										panel,
+										"There was an error while trying to parse this address",
+										e);
+							} catch (DatabaseException e) {
+								MMSUtils.showExceptionDialog(
+										panel,
+										"There was a database error while trying to parse this address",
+										e);
+							}
+						}
+						addressValidator = new AddressValidator(addressDatabase, address);
 						suggestionList.setModel(new JList(addressValidator.getSuggestions().toArray()).getModel());
-						// update the problem details
+						selectedAddressLabel.setAddressValid(addressValidator.isAddressValid());
 						updateProblemDetails();
-						// Auto save changes
 						save();
 					}
 				}
@@ -186,13 +202,12 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 			JLabel suggestLabel = new JLabel("Suggestions:");
 			suggestLabel.setFont(suggestLabel.getFont().deriveFont(Font.BOLD));
 			
-			this.addressValidator = new AddressValidator(addressDatabase, address1);
 			problemsBuilder = new DefaultFormBuilder(new FormLayout("fill:pref:grow"));
 			updateProblemDetails();
 			suggestionList = new JList(addressValidator.getSuggestions().toArray());
 			logger.debug("There are " + addressValidator.getSuggestions().size() + " suggestions.");
 			suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			suggestionList.setCellRenderer(new AddressListCellRenderer(address1, addressDatabase, false));
+			suggestionList.setCellRenderer(new AddressListCellRenderer(address1, false));
 			suggestionList.addMouseListener(new MouseAdapter() {
 				public void mouseReleased(MouseEvent e) {
 					logger.debug("Mouse Clicked on suggestion list " + ((JList)e.getSource()).getSelectedValue());
@@ -232,7 +247,7 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 					e1);
 		}
 	}
-	
+
 	public void updateProblemDetails() {
 		validateResult = addressValidator.getResults();
 		logger.debug("The size of the Problems is : " + validateResult.size());
@@ -286,6 +301,7 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 	  
 	private void save() {
 		addressResult.setOutputAddress(selectedAddressLabel.getCurrentAddress());
+		addressResult.setValid(addressValidator.isAddressValid());
 		logger.debug("SAVING: " + addressResult);
 		parent.saveAddressResult(addressResult, validateResult.size() == 0);
 	}

@@ -25,7 +25,6 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 import ca.sqlpower.matchmaker.address.Address;
-import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressResult;
 
 public class AddressListCellRenderer implements ListCellRenderer {
@@ -35,12 +34,10 @@ public class AddressListCellRenderer implements ListCellRenderer {
      * no comparison will be made.
      */
     private final Address comparisonAddress;
-	private AddressDatabase addressDatabase;
 	private final boolean showValidCheckmark;
     
-    public AddressListCellRenderer(Address comparisonAddress, AddressDatabase addressDatabase, boolean showValidCheckmark) {
+    public AddressListCellRenderer(Address comparisonAddress, boolean showValidCheckmark) {
         this.comparisonAddress = comparisonAddress;
-        this.addressDatabase = addressDatabase;
 		this.showValidCheckmark = showValidCheckmark;
     }
     
@@ -48,7 +45,7 @@ public class AddressListCellRenderer implements ListCellRenderer {
 			int index, boolean isSelected, boolean cellHasFocus) {
 		AddressLabel addressLabel;
 		if (value instanceof Address) {
-			addressLabel = new AddressLabel((Address)value, comparisonAddress, addressDatabase, showValidCheckmark);
+			addressLabel = new AddressLabel((Address)value, comparisonAddress, showValidCheckmark, false);
 		} else if (value instanceof AddressResult) {
 			AddressResult addressResult = (AddressResult) value;
 			Address address1;
@@ -57,7 +54,7 @@ public class AddressListCellRenderer implements ListCellRenderer {
 			} else {
 				address1 = addressResult.getOutputAddress();
 			}
-			addressLabel = new AddressLabel(address1, comparisonAddress, addressDatabase, showValidCheckmark);
+			addressLabel = new AddressLabel(address1, comparisonAddress, showValidCheckmark, addressResult.isValid());
 		} else {
 			throw new ClassCastException("Attempting to cast " + value.getClass() + " to Address or AddressResult for rendering an AddressLabel.");
 		}

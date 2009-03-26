@@ -92,6 +92,7 @@ public class AddressPool extends MonitorableImpl{
 	private	static final String OUTPUT_TYPE							= "output_type";
 	private static final String OUTPUT_UNPARSED_ADDRESS				= "output_unparsed_address";
 	private static final String OUTPUT_URBAN_BEFORE_RURAL			= "output_urban_before_rural";
+	private static final String OUTPUT_VALID						= "output_valid";
 	
 	private Map<List<Object>, AddressResult> addresses;
 	
@@ -184,6 +185,8 @@ public class AddressPool extends MonitorableImpl{
 		t.addColumn(outputType);
 		SQLColumn outputUrbanBeforeRural = new SQLColumn(t, OUTPUT_URBAN_BEFORE_RURAL, Types.BOOLEAN, 1, 0);
 		t.addColumn(outputUrbanBeforeRural);
+		SQLColumn valid = new SQLColumn(t, OUTPUT_VALID, Types.BOOLEAN, 1, 0);
+		t.addColumn(valid);
 		
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
 		for (int i = 0; i < si.getChildCount(); i++) {
@@ -314,9 +317,11 @@ public class AddressPool extends MonitorableImpl{
 				address.setUnparsedAddressLine1(rs.getString(OUTPUT_UNPARSED_ADDRESS));
 				address.setUrbanBeforeRural(rs.getBoolean(OUTPUT_URBAN_BEFORE_RURAL));
 				
+				Boolean valid = rs.getBoolean(OUTPUT_VALID);
+				
 				AddressResult result = new AddressResult(keyValues, addressLine1,
 						addressLine2, municipality, province, postalCode, country,
-						address);
+						address, valid);
 				result.markClean();
 				
 				addresses.put(keyValues, result);
@@ -434,7 +439,8 @@ public class AddressPool extends MonitorableImpl{
 					RecordType type = outputAddress.getType();
 					sql.append(OUTPUT_TYPE).append("=" + SQL.quote(type == null ? null : type.toString()) + ", ");							// 29
 					sql.append(OUTPUT_UNPARSED_ADDRESS).append("=" + SQL.quote(outputAddress.getUnparsedAddressLine1()) + ", ");				// 30
-					sql.append(OUTPUT_URBAN_BEFORE_RURAL).append("=" + outputAddress.isUrbanBeforeRural() + " ");			// 31
+					sql.append(OUTPUT_URBAN_BEFORE_RURAL).append("=" + outputAddress.isUrbanBeforeRural() + ", ");			// 31
+					sql.append(OUTPUT_VALID).append("=" + result.isValid() + " ");			// 32
 					
 					sql.append("WHERE ");
 					
@@ -506,12 +512,13 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(OUTPUT_SUITE_TYPE).append(", ");						
 				sql.append(OUTPUT_TYPE).append(", ");							
 				sql.append(OUTPUT_UNPARSED_ADDRESS).append(", ");				
-				sql.append(OUTPUT_URBAN_BEFORE_RURAL).append(")");				
+				sql.append(OUTPUT_URBAN_BEFORE_RURAL).append(", ");		
+				sql.append(OUTPUT_VALID).append(")");
 				sql.append("VALUES(");
 				for (int i = 0; i < keySize; i++) {
 					sql.append("?, ");
 				}
-				sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 				ps = con.prepareStatement(sql.toString());
 				int batchCount = 0;
 				for (int i = 0; i < newAddresses.size(); i++) {
@@ -567,6 +574,7 @@ public class AddressPool extends MonitorableImpl{
 					} else {
 						ps.setBoolean(j + 30, outputAddress.isUrbanBeforeRural());
 					}
+					ps.setBoolean(j + 31, result.isValid());
 
 					engineLogger.debug("Preparing the following address to be inserted: " + result);
 					
