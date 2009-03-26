@@ -1178,6 +1178,14 @@ public class Address {
 				|| (urbanBeforeRural != null && !urbanBeforeRural.equals(a.isUrbanBeforeRural()))) {
 			return false;
 		}
+		if ((unparsedAddressLine1 == null && a.getUnparsedAddressLine1() != null) 
+				|| (unparsedAddressLine1 != null && !unparsedAddressLine1.equals(a.getUnparsedAddressLine1()))) {
+			return false;
+		}
+		if ((unparsedAddressLine2 == null && a.getUnparsedAddressLine2() != null) 
+				|| (unparsedAddressLine2 != null && !unparsedAddressLine2.equals(a.getUnparsedAddressLine2()))) {
+			return false;
+		}
 		
 		return true;
 	}
@@ -1303,6 +1311,16 @@ public class Address {
 		addValue = 0;
 		if (urbanBeforeRural != null) {
 			addValue = urbanBeforeRural.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (unparsedAddressLine1 != null) {
+			addValue = unparsedAddressLine1.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
+		if (unparsedAddressLine2 != null) {
+			addValue = unparsedAddressLine2.hashCode();
 		}
 		result = 31 * result + addValue;
 		

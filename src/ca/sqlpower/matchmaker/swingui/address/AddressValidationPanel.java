@@ -43,7 +43,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
-import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
@@ -108,8 +107,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				AddressResult address =(AddressResult)addressArray[i];
 				allResults.add(0, address);
 				if (!address.getOutputAddress().isEmptyAddress()) {
-					AddressValidator validator = new AddressValidator(addressDatabase, address.getOutputAddress());
-					if (validator.getResults().size() == 0) {
+					if (address.isValid()) {
 						validResults.add(0, address);
 					} else {
 						invalidResults.add(0, address);
@@ -122,7 +120,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			needsValidationList = new JList(allResults);
 			needsValidationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			needsValidationList.addListSelectionListener(new AddressListCellSelectionListener());
-			needsValidationList.setCellRenderer(new AddressListCellRenderer(null, addressDatabase, true));
+			needsValidationList.setCellRenderer(new AddressListCellRenderer(null, true));
 			JScrollPane addressPane = new JScrollPane(needsValidationList);
 			addressPane.setPreferredSize(new Dimension(250, 1000));
 					

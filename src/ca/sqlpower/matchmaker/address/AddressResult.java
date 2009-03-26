@@ -78,6 +78,12 @@ public class AddressResult {
 	 * If the storage state is dirty then it has been changed and not saved.
 	 */
 	private StorageState storageState;
+	
+	/**
+	 * Tracks if the last address placed in the outputAddress variable is considered
+	 * valid or not.
+	 */
+	private boolean valid;
 
 	public AddressResult(List<Object> keyValues, String addressLine1,
 			String addressLine2, String municipality, String province,
@@ -91,13 +97,15 @@ public class AddressResult {
 		getInputAddress().setPostalCode(postalCode);
 		getInputAddress().setCountry(country);
 		
-		outputAddress = new Address();
+		outputAddress = new Address(inputAddress);
 		storageState = StorageState.NEW;
+		valid = false;
 	}
 	
 	public AddressResult(List<Object> keyValues, String addressLine1,
 			String addressLine2, String municipality, String province,
-			String postalCode, String country, Address outputAddress) {
+			String postalCode, String country, Address outputAddress,
+			Boolean isValid) {
 		this.keyValues = keyValues;
 		inputAddress = new Address();
 		getInputAddress().setUnparsedAddressLine1(addressLine1);
@@ -109,6 +117,11 @@ public class AddressResult {
 		
 		this.outputAddress = outputAddress;
 		storageState = StorageState.NEW;
+		if (isValid == null) {
+			valid = false;
+		} else {
+			valid = isValid;
+		}
 	}
 	
 	public List<Object> getKeyValues() {
@@ -143,5 +156,14 @@ public class AddressResult {
 	public String toString() {
 		return getInputAddress() + ", " + 
 			   outputAddress;
+	}
+
+	public void setValid(boolean isValid) {
+			this.valid = isValid;
+		
+	}
+
+	public boolean isValid() {
+		return valid;
 	}
 }

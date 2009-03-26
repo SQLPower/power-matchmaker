@@ -44,16 +44,10 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
-import ca.sqlpower.matchmaker.address.AddressDatabase;
-import ca.sqlpower.matchmaker.address.AddressValidator;
-import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.swingui.ColourScheme;
-
-import com.sleepycat.je.DatabaseException;
 
 public class AddressLabel extends JComponent {
 	
@@ -68,8 +62,6 @@ public class AddressLabel extends JComponent {
 	 */
 	private Address comparisonAddress;
 	
-	private AddressDatabase addressDatabase;
-	 
 	/**
 	 * The colour "differing" fields will be rendered in. Non-differing fields
 	 * will be rendered in this component's foreground colour.
@@ -92,10 +84,10 @@ public class AddressLabel extends JComponent {
 	 * They will be always invisible unless the user click on 
 	 * corresponding address field.
 	 */
-	private JTextField addressTextField;
-	private JTextField municipalityTextField;
-	private JTextField provinceTextField;
-	private JTextField postalCodeTextField;
+	private final JTextField addressTextField;
+	private final JTextField municipalityTextField;
+	private final JTextField provinceTextField;
+	private final JTextField postalCodeTextField;
 
 	/**
 	 * The icon for valid address. It will appear as soon
@@ -132,19 +124,24 @@ public class AddressLabel extends JComponent {
 	private final boolean allowsValidateCheck;
 
 	/**
-	 * This boolean checks if the last set address on this label contains results. 
+	 * Tracks if the address being displayed is actually valid.
 	 */
-	private boolean containsResults;
+	private boolean addressValid;
 	
-    public AddressLabel(Address address, Address comparisonAddress, final AddressDatabase addressDatabase, boolean allowsValidateCheck) {
-    	setBackground(Color.WHITE);
+	/**
+	 * @param address The address to display on the label.
+	 * @param comparisonAddress
+	 * @param allowsValidateCheck If true this label can have a valid check beside it if it is valid.
+	 * @param valid If the allowsValidateCheck is true then if this is true the label will start with a
+	 * valid check mark. If this is false the label will not have a valid check mark. If allowsValidateCheck
+	 * is false then this flag will not be used.
+	 */
+    public AddressLabel(Address address, Address comparisonAddress, boolean allowsValidateCheck, boolean valid) {
+    	this.setAddressValid(valid);
+		setBackground(Color.WHITE);
     	this.currentAddress = address;
-		//XXX:XXXXXX There's gotta be a better way to validate the results every paint beyond running the validator every paint
-		AddressValidator validator = new AddressValidator(addressDatabase, currentAddress);
-		containsResults = (validator.getResults().size() > 0);
 		
         this.comparisonAddress = comparisonAddress;
-		this.addressDatabase = addressDatabase;
 		this.allowsValidateCheck = allowsValidateCheck;		
 		
 		this.setOpaque(true);
@@ -214,7 +211,6 @@ public class AddressLabel extends JComponent {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		final Graphics2D g2 = (Graphics2D) g;
-		//Need to get the selection colour if it's in a JList
 		g2.setColor(getParent().getBackground());
 		g2.fillRect(0, 0, getWidth(), getHeight());
 		g2.setColor(getBackground());
@@ -230,7 +226,7 @@ public class AddressLabel extends JComponent {
 		int x = 4+fm.stringWidth("M");
 		// set the check icon for validated addressResult labels
 		
-		if (allowsValidateCheck && !containsResults) {
+		if (allowsValidateCheck && addressValid) {
 			checkIcon.paintIcon(this, g2, x, y);
 			x += checkIcon.getIconWidth() + 4;
 			repaint();
@@ -369,21 +365,13 @@ public class AddressLabel extends JComponent {
 	public void setCurrentAddress(Address address) {
 		Address oldValue = currentAddress;
 		this.currentAddress = address;
-		//XXX:XXXXXX There's gotta be a better way to validate the results every paint beyond running the validator every paint
-		AddressValidator validator = new AddressValidator(addressDatabase, currentAddress);
-		containsResults = (validator.getResults().size() > 0);
 		repaint();
 		firePropertyChange("currentAddress", oldValue, currentAddress);
 		updateTextFields();
 	}
 	
 	public Address getCurrentAddress() {
-		try {
-			return (Address)currentAddress;
-		} catch (ClassCastException e) {
-			MMSUtils.showExceptionDialog(this.getParent(), "Current address is AddressResult type, expecting Address Type ", e);
-		}
-		return null;
+		return currentAddress;
 	}
 	
 	private boolean isFieldMissing(String str) {
@@ -421,23 +409,14 @@ public class AddressLabel extends JComponent {
 	 * @return The new parsed user edited address
 	 */
 	private Address getChangedAddress() {
-		try {
-			String postalCode = postalCodeTextField.getText().replaceAll("\\s+", "");
-			return Address.parse(addressTextField.getText().trim().toUpperCase(), municipalityTextField.getText().trim().toUpperCase(),
-										   provinceTextField.getText().trim().toUpperCase(), postalCode.toUpperCase(),
-										   "CANADA", addressDatabase);
-		} catch (RecognitionException e) {
-			MMSUtils.showExceptionDialog(
-					getParent(),
-					"There was an error while trying to parse this address",
-					e);
-		} catch (DatabaseException e) {
-			MMSUtils.showExceptionDialog(
-					getParent(),
-					"There was a database error while trying to parse this address",
-					e);
-		}
-		return new Address();
+		String postalCode = postalCodeTextField.getText().replaceAll("\\s+", "");
+		Address a = new Address();
+		a.setUnparsedAddressLine1(addressTextField.getText().trim().toUpperCase());
+		a.setMunicipality(municipalityTextField.getText().trim().toUpperCase());
+		a.setProvince(provinceTextField.getText().trim().toUpperCase());
+		a.setPostalCode(postalCode.toUpperCase());
+		a.setCountry("CANADA");
+		return a;
 	}
 	
 	
@@ -485,5 +464,14 @@ public class AddressLabel extends JComponent {
 		municipalityTextField.setText(currentAddress.getMunicipality());
 		provinceTextField.setText(currentAddress.getProvince());
 		postalCodeTextField.setText(currentAddress.getPostalCode());
+	}
+
+	public void setAddressValid(boolean addressValid) {
+		this.addressValid = addressValid;
+		repaint();
+	}
+
+	public boolean isAddressValid() {
+		return addressValid;
 	}
 }

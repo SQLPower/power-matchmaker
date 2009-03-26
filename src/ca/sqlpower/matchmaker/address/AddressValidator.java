@@ -497,11 +497,40 @@ public class AddressValidator {
 					}
 				}
 				
-				int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-				if (count > 0) {
-					suggestionExists = true;
+				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
+					int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+					if (count > 0) {
+						suggestionExists = true;
+					}
+					errorCount += count;
+				} else {
+					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
+					if (a.getProvince() != null) {
+						join.addCondition(db.postalCodeProvince, a.getProvince());
+					}
+					if (a.getMunicipality() != null) {
+						join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
+					}
+					if (a.getType() != null) {
+						join.addCondition(db.postalCodeRecordType, a.getType().getRecordTypeCode());
+					}
+					ForwardCursor<PostalCode> matches = null;
+					try {
+						matches = join.entities();
+						for (PostalCode similarPC : matches) {
+							if (similarPC != pc) {
+								int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+								if (count > 0) {
+									suggestionExists = true;
+								}
+								errorCount += count;
+							}
+						}
+					} finally {
+						if (matches != null) matches.close();
+					}
 				}
-				errorCount += count;
+				
 			}
 			if (pc.getRecordType() == RecordType.LOCK_BOX) {
 				if (suggestion.getType() != PostalCode.RecordType.LOCK_BOX) {
@@ -546,11 +575,39 @@ public class AddressValidator {
 					suggestionExists = true;
 				}
 				
-				int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-				if (count > 0) {
-					suggestionExists = true;
+				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
+					int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+					if (count > 0) {
+						suggestionExists = true;
+					}
+					errorCount += count;
+				} else {
+					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
+					if (a.getProvince() != null) {
+						join.addCondition(db.postalCodeProvince, a.getProvince());
+					}
+					if (a.getMunicipality() != null) {
+						join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
+					}
+					if (a.getType() != null) {
+						join.addCondition(db.postalCodeRecordType, a.getType().getRecordTypeCode());
+					}
+					ForwardCursor<PostalCode> matches = null;
+					try {
+						matches = join.entities();
+						for (PostalCode similarPC : matches) {
+							if (similarPC != pc && similarPC.containsLockBoxNumber(suggestion)) {
+								int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+								if (count > 0) {
+									suggestionExists = true;
+								}
+								errorCount += count;
+							}
+						}
+					} finally {
+						if (matches != null) matches.close();
+					}
 				}
-				errorCount += count;
 			}
 			if ((pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) &&
 					!(suggestion.getType() == RecordType.STREET && pc.getRecordType() == RecordType.STREET_AND_ROUTE)) {
@@ -588,12 +645,44 @@ public class AddressValidator {
 					}
 				}
 				
-				int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-				if (count > 0 && countErrors) {
-					suggestionExists = true;
+				
+				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
+					int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+					if (count > 0 && countErrors) {
+						suggestionExists = true;
+					}
+					int errors = count;
+					if (countErrors) errorCount += errors;
+				} else {
+					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
+					if (a.getProvince() != null) {
+						join.addCondition(db.postalCodeProvince, a.getProvince());
+					}
+					if (a.getMunicipality() != null) {
+						join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
+					}
+					if (a.getType() != null) {
+						join.addCondition(db.postalCodeRecordType, a.getType().getRecordTypeCode());
+					}
+					ForwardCursor<PostalCode> matches = null;
+					try {
+						matches = join.entities();
+						for (PostalCode similarPC : matches) {
+							if (similarPC != pc && similarPC.getRouteServiceNumber() != null && similarPC.getRouteServiceNumber().trim().length() > 0 
+									&& !different(suggestion.getRuralRouteNumber(), new Integer(similarPC.getRouteServiceNumber()).toString()) &&
+									(suggestion.getType() != PostalCode.RecordType.STREET && suggestion.getType() != PostalCode.RecordType.STREET_AND_ROUTE)) {
+								int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
+								if (count > 0 && countErrors) {
+									suggestionExists = true;
+								}
+								int errors = count;
+								if (countErrors) errorCount += errors;
+							}
+						}
+					} finally {
+						if (matches != null) matches.close();
+					}
 				}
-				int errors = count;
-				if (countErrors) errorCount += errors;
 				
 				if (a.getRuralRouteNumber() == null && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
 					errorList.add(ValidateResult.createValidateResult(
@@ -752,9 +841,6 @@ public class AddressValidator {
 	 */
 	private int correctDeliveryInstallation(Address a, PostalCode pc, Address suggestion, List<ValidateResult> errorList) {
 		int errorCount = 0;
-		if (a.getDeliveryInstallationName() == null && a.getDeliveryInstallationType() == null) {
-			return 0;
-		}
 		if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
 			if (a.getDeliveryInstallationType() != null && pc.getDeliveryInstallationTypeDescription() != null &&
 					((a.getDeliveryInstallationType().equals("STN") && pc.getDeliveryInstallationTypeDescription().equals("SUCC"))
@@ -899,6 +985,12 @@ public class AddressValidator {
         return Collections.unmodifiableList(suggestions);
     }
     
+    /**
+     * If true the first suggestion in the suggestions list is a valid postal code
+     * that is accurate for the given address. If false then either there is too many
+     * conflicts between the data given in the address or the address is missing too
+     * much information to accurately give a valid suggestion.
+     */
     public boolean isValidSuggestion() {
 		return validSuggestion;
 	}
@@ -909,5 +1001,14 @@ public class AddressValidator {
 
 	public Address getAddress() {
 		return address;
+	}
+	
+	/**
+	 * What is defined to be valid may depend on user preferences when switching between
+	 * SERP certification, MDM conformance and normalizing. This will tell what is valid
+	 * based on settings. At current it is simple but will grow.
+	 */
+	public boolean isAddressValid() {
+		return getResults().size() == 0;
 	}
 }
