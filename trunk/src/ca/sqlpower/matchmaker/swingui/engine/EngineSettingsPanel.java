@@ -27,7 +27,12 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.Callable;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -37,6 +42,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -51,15 +57,18 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
+import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -67,6 +76,7 @@ import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.validation.FileNameValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
+import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -75,6 +85,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.sleepycat.je.DatabaseException;
 
 /**
  * A panel that provides a GUI for setting the parameters for running the MatchMakerEngine,
@@ -203,7 +214,13 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 * Displays the validation status of the engine preconditions.
 	 */
 	private StatusComponent status = new StatusComponent();
-
+	
+	/**
+	 * Displays a warning if current address database is out of date and a fail if 
+	 * it's missing.
+	 */
+	private JEditorPane expiryDatePane;
+	
 	/**
 	 * The validation handler used to validate the configuration portion
 	 * of the editor pane.
@@ -270,8 +287,16 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	private PropertyChangeListener propertyChangeListener;
 	private ItemListener itemListener;
 	private AbstractAction messageLevelActionListener;
+
+	/**
+	 * This is the date that the address database expires on.
+	 * <p>
+	 * TODO: Create a settings panel that extends this that is only for the address validation
+	 * to handle the date.
+	 */
+	private Date expiryDate;
 	
-	public EngineSettingsPanel(MatchMakerSwingSession swingSession, Project project, JFrame parentFrame, 
+	public EngineSettingsPanel(final MatchMakerSwingSession swingSession, Project project, JFrame parentFrame, 
 			EngineType engineType) {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
@@ -345,6 +370,53 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 */	
 	private JPanel buildUI() {
 
+		logger.debug("We are building the UI of an engine settings panel.");
+		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
+			expiryDatePane = new JEditorPane();
+			expiryDatePane.setEditable(false);
+			final AddressDatabase addressDatabase;
+			try {
+				addressDatabase = new AddressDatabase(new File(swingSession.getContext().getAddressCorrectionDataPath()));
+				expiryDate = addressDatabase.getExpiryDate();
+				expiryDatePane.setText(DateFormat.getDateInstance().format(expiryDate));
+			} catch (DatabaseException e1) {
+				MMSUtils.showExceptionDialog(parentFrame, "An error occured while loading the Address Correction Data", e1);
+				expiryDatePane.setText("Database missing, expiry date invalid");
+			}
+
+			logger.debug("We are adding the listener");
+			swingSession.getContext().addPreferenceChangeListener(new PreferenceChangeListener() {
+				public void preferenceChange(PreferenceChangeEvent evt) {
+					if (MatchMakerSessionContext.ADDRESS_CORRECTION_DATA_PATH.equals(evt.getKey())) {
+						logger.debug("The new database path is: " + evt.getNewValue());
+						final AddressDatabase addressDatabase;
+						try {
+							addressDatabase = new AddressDatabase(new File(evt.getNewValue()));
+							expiryDate = addressDatabase.getExpiryDate();
+							expiryDatePane.setText(DateFormat.getDateInstance().format(expiryDate));
+						} catch (DatabaseException ex) {
+							MMSUtils.showExceptionDialog(parentFrame, "An error occured while loading the Address Correction Data", ex);
+							expiryDate = null;
+							expiryDatePane.setText("Database missing, expiry date invalid");
+						}
+					}
+				}
+			});
+			// handler listens to expiryDatePane so whenever the expiryDatePane's text has been changed, the below method will be called.
+			handler.addValidateObject(expiryDatePane, new Validator() {
+				public ValidateResult validate(Object contents) {
+					if (expiryDate == null) {
+						return ValidateResult.createValidateResult(Status.FAIL, "Address Correction Database is missing. Please reset your Address Correction Data Path in Preferences.");
+					}
+					if (Calendar.getInstance().getTime().after(expiryDate)) {
+						return ValidateResult.createValidateResult(Status.WARN, "Address Correction Database is expired. The results of this engine run cannot be SERP valid.");
+					}
+					return ValidateResult.createValidateResult(Status.OK, "");
+				}
+			});
+		}
+		
+		
 		if (engineSettings.getLog() == null) {
 			engineSettings.setLog(new File(project.getName() + ".log"));
 		}
