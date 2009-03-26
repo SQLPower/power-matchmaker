@@ -705,7 +705,17 @@ public class Address {
     
     public String getAddress() {
     	if (type == null) {  //parse failure on address line
-    		return failedParsingString;
+    		StringBuffer sb = new StringBuffer();
+    		if (unparsedAddressLine1 != null) {
+    			sb.append(unparsedAddressLine1);
+    		}
+    		if (unparsedAddressLine1 != null && unparsedAddressLine1.length() > 0 && unparsedAddressLine2 != null && unparsedAddressLine2.length() > 0) {
+    			sb.append(" ");
+    		}
+    		if (unparsedAddressLine2 != null) {
+    			sb.append(unparsedAddressLine2);
+    		}
+    		return sb.toString();
     	}
     	String address;
     	switch (type) {
