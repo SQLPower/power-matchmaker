@@ -29,6 +29,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.validation.ValidateResult;
 
 /**
  * A non-functional implementation of MungeStep for the benefit of test cases.
@@ -282,5 +283,10 @@ public class StubMungeStep implements MungeStep {
 	
 	public boolean hasConnectedInputs() {
 		return false;
+	}
+	
+	public List<ValidateResult> checkPreconditions() {
+		logger.debug("Stub call: StubMungeStep.checkPreconditions()");
+		return null;
 	}
 }

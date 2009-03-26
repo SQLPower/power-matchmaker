@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -127,10 +128,14 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         this.mungePen = new MungePen(process, handler, parentProject);
         
+        stepPrecheckResults = new ArrayList<ValidateResult>();
+        
         for (MungeStep step : process.getChildren()) {
 			if (step instanceof AbstractMungeStep) {
 				((AbstractMungeStep) step).setPreviewMode(true);
 			}
+			
+			stepPrecheckResults.addAll(step.checkPreconditions());
         }
         
         buildUI();
@@ -235,6 +240,9 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		    }
 		}
 	};
+
+
+	private List<ValidateResult> stepPrecheckResults;
     
     /**
      * Saves the process, possibly adding it to the parent project given in the

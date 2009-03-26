@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.event.UndoableEditListener;
@@ -194,6 +195,17 @@ public class SwingSessionContextTest extends TestCase {
 			public void setAddressCorrectionDataPath(String path) {
 				// TODO Auto-generated method stub
 				logger.debug("Stub call: MatchMakerSessionContext.setAddressCorrectionDataPath()");
+				
+			}
+
+			public void addPreferenceChangeListener(PreferenceChangeListener l) {
+				logger.debug("Stub call: MatchMakerSessionContext.addPreferenceChangeListener()");
+				
+			}
+
+			public void removePreferenceChangeListener(
+					PreferenceChangeListener l) {
+				logger.debug("Stub call: MatchMakerSessionContext.removePreferenceChangeListener()");
 				
 			}
         };

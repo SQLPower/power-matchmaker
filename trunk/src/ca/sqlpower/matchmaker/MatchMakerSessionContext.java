@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
@@ -153,4 +154,15 @@ public interface MatchMakerSessionContext {
      * Returns the path of the directory containing the Address Correction Data.
      */
     public String getAddressCorrectionDataPath();
+    
+    /**
+     * Adds a listener to the preferences so different parts of the app
+     * can update when a preference changes.
+     */
+    public void addPreferenceChangeListener(PreferenceChangeListener l);
+    
+    /**
+     * Removes a listener to the preferences.
+     */
+    public void removePreferenceChangeListener(PreferenceChangeListener l);
 }

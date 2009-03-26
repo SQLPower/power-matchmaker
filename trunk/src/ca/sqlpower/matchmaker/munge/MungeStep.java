@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.validation.ValidateResult;
 
 /**
  * Defines a special type of MatchMakerObject which is capable of being part of a
@@ -305,4 +306,17 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 *         it. False if otherwise.
 	 */
     boolean hasConnectedInputs();
+
+	/**
+	 * A MungeStep may have some preconditions that need to be met before it can
+	 * run properly. This method will check these preconditons and then return a
+	 * {@link List} of {@link ValidateResult} that indicate the result of this
+	 * preconditions check. Client code can then react accordingly. If there are
+	 * no preconditions to check, then this method can simply return an empty
+	 * list.
+	 * 
+	 * @return A {@link List} of {@link ValidateResult} that indicate the result
+	 *         of the precondition check.
+	 */
+    public List<ValidateResult> checkPreconditions();
 }

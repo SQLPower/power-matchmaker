@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
@@ -118,5 +119,13 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 
 	public void setAddressCorrectionDataPath(String path) {
 		// Do nothing
+	}
+
+	public void addPreferenceChangeListener(PreferenceChangeListener l) {
+		prefs.addPreferenceChangeListener(l);
+	}
+
+	public void removePreferenceChangeListener(PreferenceChangeListener l) {
+		prefs.removePreferenceChangeListener(l);
 	}
 }
