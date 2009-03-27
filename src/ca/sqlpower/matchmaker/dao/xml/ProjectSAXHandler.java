@@ -46,6 +46,8 @@ import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
@@ -340,6 +342,10 @@ public class ProjectSAXHandler extends DefaultHandler {
                         ms.setUseBatchExecution(Boolean.valueOf(aval));
                     } else if (aname.equals("serp-autocorrect")) {
                         ms.setSerpAutocorrect(Boolean.valueOf(aval));
+                    } else if (aname.equals("pool-filter-setting")) {
+                    	ms.setPoolFilterSetting(PoolFilterSetting.valueOf(aval));
+                    } else if (aname.equals("auto-validate-setting")) {
+                    	ms.setAutoValidateSetting(AutoValidateSetting.valueOf(aval));
                     } else {
                         logger.warn("Unexpected attribute of <munge-settings>: " + aname + "=" + aval + " at " + locationAsString());
                     }

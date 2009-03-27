@@ -16,7 +16,7 @@
 --					 supported by the platform. If not, it gets 
 --					 substituted with an empty string. 
 
-insert into {CATALOG}{SCHEMA}mm_schema_info values ('schema_version', '6.0.2')
+insert into {CATALOG}{SCHEMA}mm_schema_info values ('schema_version', '6.0.3')
 ;
 
 INSERT INTO {CATALOG}{SCHEMA}pl_group(group_name,group_desc,last_update_date,last_update_user,create_date)

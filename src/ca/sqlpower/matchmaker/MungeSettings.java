@@ -41,11 +41,11 @@ public class MungeSettings extends MatchMakerSettings {
 		 * Include any records that are either invalid, or have
 		 * suggestions with a different format from the original source addresses
 		 */
-		INVALID_OR_DIFFERENT_FORMAT("Include invalid or different format"),
+		INVALID_OR_DIFFERENT_FORMAT("Include SERP invalid or different format"),
 		/**
 		 * Include only records that are invalid 
 		 */
-		INVALID_ONLY("Include only invalid records");
+		INVALID_ONLY("Include only SERP invalid records");
 		
 		/**
 		 * A longer description of this setting
@@ -56,8 +56,7 @@ public class MungeSettings extends MatchMakerSettings {
 			this.longDescription = longDescription;
 		}
 		
-		@Override
-		public String toString() {
+		public String getLongDescription() {
 			return longDescription;
 		}
 	}
@@ -91,8 +90,7 @@ public class MungeSettings extends MatchMakerSettings {
 			this.longDescription = longDescription;
 		}
 		
-		@Override
-		public String toString() {
+		public String getLongDescription() {
 			return longDescription;
 		}
 	}

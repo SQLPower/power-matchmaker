@@ -80,7 +80,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		
 		ButtonGroup poolFilterButtonGroup = new ButtonGroup();
 		dfb.nextLine();
-		pfcEverythingRB = new JRadioButton(PoolFilterSetting.EVERYTHING.toString());
+		pfcEverythingRB = new JRadioButton(PoolFilterSetting.EVERYTHING.getLongDescription());
 		if (settings.getPoolFilterSetting() == PoolFilterSetting.EVERYTHING) {
 			pfcEverythingRB.setSelected(true);
 		}
@@ -88,7 +88,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		poolFilterButtonGroup.add(pfcEverythingRB);
 		
 		dfb.nextLine();
-		pfcInvalidOrDifferentRB = new JRadioButton(PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT.toString());
+		pfcInvalidOrDifferentRB = new JRadioButton(PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT.getLongDescription());
 		if (settings.getPoolFilterSetting() == PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT) {
 			pfcInvalidOrDifferentRB.setSelected(true);
 		}
@@ -96,7 +96,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		poolFilterButtonGroup.add(pfcInvalidOrDifferentRB);
 		
 		dfb.nextLine();
-		pfcInvalidOnlyRB = new JRadioButton(PoolFilterSetting.INVALID_ONLY.toString());
+		pfcInvalidOnlyRB = new JRadioButton(PoolFilterSetting.INVALID_ONLY.getLongDescription());
 		if (settings.getPoolFilterSetting() == PoolFilterSetting.INVALID_ONLY) {
 			pfcInvalidOnlyRB.setSelected(true);
 		}
@@ -111,7 +111,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		ButtonGroup autoValidateButtonGroup = new ButtonGroup();
 		
 		dfb.nextLine();
-		avcNothingRB = new JRadioButton(AutoValidateSetting.NOTHING.toString());
+		avcNothingRB = new JRadioButton(AutoValidateSetting.NOTHING.getLongDescription());
 		if (settings.getAutoValidateSetting() == AutoValidateSetting.NOTHING) {
 			avcNothingRB.setSelected(true);
 		}
@@ -119,7 +119,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		autoValidateButtonGroup.add(avcNothingRB);
 		
 		dfb.nextLine();
-		avcSerpCorrectableRB = new JRadioButton(AutoValidateSetting.SERP_CORRECTABLE.toString());
+		avcSerpCorrectableRB = new JRadioButton(AutoValidateSetting.SERP_CORRECTABLE.getLongDescription());
 		if (settings.getAutoValidateSetting() == AutoValidateSetting.SERP_CORRECTABLE) {
 			avcSerpCorrectableRB.setSelected(true);
 		}
@@ -127,7 +127,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		autoValidateButtonGroup.add(avcSerpCorrectableRB);
 		
 		dfb.nextLine();
-		avcEverythingWithSuggestionRB = new JRadioButton(AutoValidateSetting.EVERYTHING_WITH_SUGGESTION.toString());
+		avcEverythingWithSuggestionRB = new JRadioButton(AutoValidateSetting.EVERYTHING_WITH_SUGGESTION.getLongDescription());
 		if (settings.getAutoValidateSetting() == AutoValidateSetting.EVERYTHING_WITH_SUGGESTION) {
 			avcEverythingWithSuggestionRB.setSelected(true);
 		}
