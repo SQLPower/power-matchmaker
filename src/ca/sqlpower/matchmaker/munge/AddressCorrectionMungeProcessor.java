@@ -41,14 +41,11 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 	
 	private AddressPool pool;
 	
-	private boolean skipValidation;
-	
 	private AddressCorrectionEngineMode mode;
 	
-	public AddressCorrectionMungeProcessor(MungeProcess mungeProcess, AddressPool pool, boolean skipValidation, AddressCorrectionEngineMode mode, Logger logger) {
+	public AddressCorrectionMungeProcessor(MungeProcess mungeProcess, AddressPool pool, AddressCorrectionEngineMode mode, Logger logger) {
 		super(mungeProcess, logger);
 		this.pool = pool;
-		this.skipValidation = skipValidation;
 		this.mode = mode;
 	}
 
@@ -93,9 +90,7 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 					}
 					
 					if (step instanceof AddressCorrectionMungeStep) {
-						if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
-							break;
-						} else if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES) {
+						if (!((AddressCorrectionMungeStep) step).isAddressCorrected()) {
 							break;
 						}
 					}
