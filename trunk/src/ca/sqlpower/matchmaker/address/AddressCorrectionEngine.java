@@ -86,7 +86,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 	public EngineInvocationResult call() throws EngineSettingException,
 			SourceTableException {
 		
-		logger.info("This engine is running in " + mode + " mode");
+		logger.debug("This engine is running in " + mode + " mode");
 		
 		double startTime = System.currentTimeMillis();
 		
@@ -150,8 +150,6 @@ public class AddressCorrectionEngine extends AbstractEngine {
 				MungeProcessor munger;
 
 				munger = new AddressCorrectionMungeProcessor(process, pool,
-						mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES ? true :
-						getProject().getMungeSettings().isSerpAutocorrect(),
 						mode,
 						logger);
 				

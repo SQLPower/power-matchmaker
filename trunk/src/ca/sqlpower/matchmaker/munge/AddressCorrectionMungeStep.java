@@ -50,7 +50,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	private AddressDatabase addressDB;
 	
-	private boolean addressValid;
+	private boolean addressCorrected;
 	
 	private MungeStep inputStep;
 	
@@ -93,6 +93,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public void doOpen(EngineMode mode, Logger logger) throws Exception {
+		AddressCorrectionMungeStep.logger = logger;
+		
 		if (mode instanceof AddressCorrectionEngineMode) {
 			this.mode = (AddressCorrectionEngineMode) mode;
 		} else if (mode != null) {
@@ -165,7 +167,10 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		
 		AddressResult result = pool.findAddress(uniqueKeyValues);
 		
-		if (result != null && !result.getOutputAddress().isEmptyAddress()) {
+		if (result != null && 
+				result.getOutputAddress() != null &&
+				!result.getOutputAddress().isEmptyAddress() &&
+				result.isValid()) {
 			Address address = result.getOutputAddress();
 			
 			logger.debug("Found an output address:\n" + address);
@@ -182,15 +187,16 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			outputs.get(9).setData(address.getProvince());
 			outputs.get(10).setData(address.getCountry());
 			outputs.get(11).setData(address.getPostalCode());
+			addressCorrected = true;
 		} else {
-			addressValid = false;
+			addressCorrected = false;
 		}
 
 		return Boolean.TRUE;
 	}
 	
 	private Boolean doCallParseAndCorrect() throws Exception{
-		addressValid = false;
+		addressCorrected = false;
 		
 		MungeStepOutput addressLine1MSO = getMSOInputs().get(0);
 		String addressLine1 = (addressLine1MSO != null) ? (String)addressLine1MSO.getData(): null;
@@ -216,9 +222,13 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		validator.validate();
 		
 		if (getProject().getMungeSettings().isSerpAutocorrect()) {
+			logger.debug("SERP Auto correction enabled");
 			// if is SERP correctable
 			if (!validator.isSerpValid() && validator.isValidSuggestion()) {
+				logger.debug("Address is not SERP valid and has a valid suggestion");
 				Address correctedAddress = validator.getSuggestions().get(0);
+				
+				logger.debug("Top suggestion from validator is: " + correctedAddress);
 				
 				List<MungeStepOutput> outputs = getChildren(); 
 				
@@ -235,6 +245,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 				outputs.get(10).setData(correctedAddress.getCountry());
 				outputs.get(11).setData(correctedAddress.getPostalCode());
 
+				addressCorrected = true;
+				
 				return Boolean.TRUE;
 			}
 		}  
@@ -242,12 +254,29 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		// else if not doing SERP auto-correction
 		switch (getProject().getMungeSettings().getPoolFilterSetting()) {
 			case INVALID_ONLY:
+				logger.debug("Accepting only SERP invalid addresss");
 				if (validator.isSerpValid()) {
+					logger.debug("This address is SERP valid, so skipping");
 					break;
 				}
 			case INVALID_OR_DIFFERENT_FORMAT:
-				if (validator.isSerpValid() && validator.getSuggestions().size() == 0) {
-					break;
+				logger.debug("Accepting only SERP invalid addresses or addresses with suggestions");
+				if (validator.isSerpValid()) {
+					// if no suggestions, then skip
+					if (validator.getSuggestions().size() == 0) {
+						logger.debug("This address is SERP valid, or has no suggestions, so skipping");
+						break;
+					}
+					// if only one suggestion and it's the same as the original, then skip
+					if (validator.getSuggestions().size() == 1) {
+						Address suggestedAddress = validator.getSuggestions().get(0);
+						if (address.getAddress().equals(suggestedAddress.getAddress()) &&
+								address.getMunicipality().equals(suggestedAddress.getMunicipality()) &&
+								address.getProvince().equals(suggestedAddress.getProvince())) {						logger.debug("Suggested address is exactly the same, so skipping");
+							logger.debug("Only one suggestion and it's the same, so skipping");
+							break;
+						}
+					}
 				}
 			default:
 				SQLIndex uniqueKey = getProject().getSourceTableIndex();
@@ -268,20 +297,28 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 				
 				switch (getProject().getMungeSettings().getAutoValidateSetting()) {
 					case NOTHING:
+						logger.debug("Autovalidation disabled");
 						break;
 					case SERP_CORRECTABLE:
+						logger.debug("Autovalidating SERP correctable addresses");
 						if (validator.isSerpValid() || !validator.isValidSuggestion()) {
+							logger.debug("Address is SERP valid, or has no valid suggestions, so skipping");
 							break;
 						}
 					case EVERYTHING_WITH_SUGGESTION:
+						logger.debug("Autovalidating anything with a suggestion");
 						if (validator.getSuggestions().size() == 0) {
+							logger.debug("Validator has no suggestions, so skipping");
 							break;
 						}
 					default:
+						logger.debug("Autovalidating address to the following address: " + validator.getSuggestions().get(0));
 						result.setOutputAddress(validator.getSuggestions().get(0));
+						result.setValid(true);
 				}
-				
 				pool.addAddress(result, logger);
+			
+			addressCorrected = false;
 		}
 		
 		return Boolean.TRUE;
@@ -289,13 +326,16 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
 	/**
 	 * A package-private method that will return whether or not the current
-	 * address being parsed in this step is valid. Note that the value is
-	 * meaningless if there is no address currently being parsed in this step.
-	 * Generally, the boolean value applies to the address data it received that
-	 * last time the {@link #doCall()} method was called.
+	 * address that this step has set as its output is corrected. This means
+	 * that the address inside was either automatically SERP corrected or it is
+	 * placed an address from the address result pool that is marked as 'valid'.
+	 * <p>
+	 * Note that the value is meaningless if there is no address currently being
+	 * parsed in this step. Generally, the boolean value applies to the address
+	 * data it received that last time the {@link #doCall()} method was called.
 	 */
-	boolean isAddressValid() {
-		return addressValid;
+	boolean isAddressCorrected() {
+		return addressCorrected;
 	}
 	
 	MungeStep getInputStep() {
@@ -320,11 +360,11 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public List<ValidateResult> checkPreconditions() {
 		List<ValidateResult> resultList = new ArrayList<ValidateResult>();
 		if (addressDB == null) {
-			ValidateResult result = ValidateResult
+			resultList.add(ValidateResult
 					.createValidateResult(
 							Status.FAIL,
 							"Address data is not valid or not setup properly. " +
-							"Please check the Address Database Path in User Preferences.");
+							"Please check the Address Database Path in User Preferences."));
 		}
 		return resultList;
 	}
