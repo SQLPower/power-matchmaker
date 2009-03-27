@@ -62,7 +62,7 @@ public class SERPTest extends TestCase {
 	                "Please define the system property ca.sqlpower.matchmaker.test.addressDB" +
 	                " to point to the directory where your BDB instance is which contains addresses");
 	    }
-        addressDB = new AddressDatabase(new File(""));
+        addressDB = new AddressDatabase(new File(bdbPath));
         address = new Address();
     }
     
@@ -148,6 +148,10 @@ public class SERPTest extends TestCase {
     				failed = true;
     				logger.debug("Expecting input to be valid but received suggestions.");
     				logger.debug("Errors were: " + validator.getResults());
+    			}
+    			if (!resultLine.substring(220, 221).equals("V") && validator.isSerpValid()) {
+    				failed = true;
+    				logger.debug("Expecting input to be invalid but marked valid.");
     			}
     			if (resultLine.substring(220, 221).equals("N") && (validator.isValidSuggestion() || validator.isSerpValid())) {
     				failed = true;
