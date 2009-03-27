@@ -140,6 +140,7 @@ public class AddressValidator {
         				recordType == LVRRecordType.GOVERNMENT_NAME_LOCK_BOX || recordType == LVRRecordType.GOVERNMENT_NAME_STREET ||
         				recordType == LVRRecordType.GENERAL_DELIVERY_NAME) {
         			serpValid = true;
+        			logger.debug("SERP valid because the postal code is a large volume receiver.");
         			return;
         		}
         	}
@@ -250,12 +251,12 @@ public class AddressValidator {
 		//are multiple postal codes with the same error count. The first postal code is valid due to some unique case.
 		boolean validSpecialCase = false;
 		
-		//Some suggestions don't increase the error count as they are not a severe error but they still have
-		//a more valid suggestion. This tracks if there is a valid suggestion and the parsed address is not completely
-		//correct
-		boolean suggestionExists = false;
 		Address bestSuggestion = null; 
 		for (PostalCode pc : pcList) {
+			//Some suggestions don't increase the error count as they are not a severe error but they still have
+			//a more valid suggestion. This tracks if there is a valid suggestion and the parsed address is not completely
+			//correct
+			boolean suggestionExists = false;
 			List<ValidateResult> errorList = new ArrayList<ValidateResult>();
 			int errorCount = 0;
 			boolean isValid = true;
@@ -317,6 +318,7 @@ public class AddressValidator {
         		
         		suggestions.add(suggestion);
         		serpValid = true;
+        		logger.debug("SERP valid because postal code has a 0 in the second position.");
         		return;
         	}
         	
@@ -764,6 +766,7 @@ public class AddressValidator {
 			} else {
 				suggestions.clear();
 				serpValid = true;
+				logger.debug("SERP valid, clearing suggestions");
 				return;
 			}
 		}
@@ -787,6 +790,7 @@ public class AddressValidator {
 			}
 		}
 		validated = true;
+		logger.debug("Displaying " + suggestions.size() + " suggestions");
 	}
 	
 	/**
