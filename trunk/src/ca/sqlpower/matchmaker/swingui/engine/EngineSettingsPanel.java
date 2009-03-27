@@ -573,7 +573,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			pb.add(useBatchExecute, cc.xyw(4, y, 2, "l,c"));
 			
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-				final JLabel poolSettingLabel = new JLabel(mungeSettings.getPoolFilterSetting().toString());
+				final JLabel poolSettingLabel = new JLabel(mungeSettings.getPoolFilterSetting().getLongDescription());
 				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
 					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
 						public void mmChildrenInserted(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
@@ -587,7 +587,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							if (evt.getPropertyName() == "poolFilterSetting") {
 								PoolFilterSetting newValue = (PoolFilterSetting) evt.getNewValue();
-								poolSettingLabel.setText(newValue.toString());
+								poolSettingLabel.setText(newValue.getLongDescription());
 							}
 						}
 
@@ -617,7 +617,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			pb.add(clearMatchPool, cc.xyw(4, y, 2, "l,c"));
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 				MungeSettings mungeSettings = (MungeSettings) engineSettings;
-				final JLabel autoValidateSettingLabel = new JLabel(((MungeSettings) engineSettings).getAutoValidateSetting().toString());
+				final JLabel autoValidateSettingLabel = new JLabel(((MungeSettings) engineSettings).getAutoValidateSetting().getLongDescription());
 				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
 					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
 						public void mmChildrenInserted(
@@ -633,7 +633,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							if (evt.getPropertyName() == "autoValidateSetting") {
 								AutoValidateSetting newValue = (AutoValidateSetting) evt.getNewValue();
-								autoValidateSettingLabel.setText(newValue.toString());
+								autoValidateSettingLabel.setText(newValue.getLongDescription());
 							}
 						}
 	

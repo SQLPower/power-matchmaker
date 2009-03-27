@@ -138,6 +138,14 @@
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="skip_validation_ind" length="1" />
 			</property>
+			<property name="poolFilterSetting"
+			type="ca.sqlpower.matchmaker.util.PoolFilterSettingUserType">
+				<column name="pool_filter_setting" length="30" />
+			</property>
+			<property name="autoValidateSetting"
+			type="ca.sqlpower.matchmaker.util.AutoValidateSettingUserType">
+				<column name="auto_validate_setting" length="30" />
+			</property>
 			<property name="lastBackupNo" type="long">
 				<column name="last_backup_no" precision="18" scale="0" />
 			</property>
