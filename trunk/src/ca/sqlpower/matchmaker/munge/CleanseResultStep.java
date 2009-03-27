@@ -262,7 +262,12 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		break;
 		}
 		logger.debug("attempting updaterow");
-		rs.updateRow();
+		try {
+			rs.updateRow();
+		} catch (SQLException ex) {
+			logger.error("Update failed on column :" + rs.getMetaData().getColumnName(columnIndex) + " with data \"" + data + "\"");
+			throw ex;
+		}
 	}
 	
 	public List<MungeResult> getResults() {
