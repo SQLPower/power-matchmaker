@@ -517,7 +517,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			rowSpecs = MATCH_ENGINE_PANEL_ROW_SPECS;
 		}
 		
-		String columnSpecs = "4dlu,fill:pref,4dlu,pref,pref,20dlu,fill:pref:grow,pref,4dlu";
+		String columnSpecs = "4dlu,fill:pref,4dlu,pref,pref,40dlu,fill:pref:grow,pref,4dlu";
 		
 		FormLayout layout = new FormLayout(
 				 columnSpecs,
