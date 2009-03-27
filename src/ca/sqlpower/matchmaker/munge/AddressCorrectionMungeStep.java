@@ -133,13 +133,68 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		}
 		if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES) {
 			return doCallWriteBackCorrectedAddresses();
-		} else if (mode == null || mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
+		} else if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
 			return doCallParseAndCorrect();
+		} else if (mode == null) {
+			return doCallNormalize();
 		} else {
 			throw new IllegalStateException("Address Correction Step does not support this mode: " + mode);
 		}
 	}
 	
+	/**
+	 * Normalize addresses for deduping
+	 * @return
+	 */
+	private Boolean doCallNormalize() throws Exception {
+		MungeStepOutput addressLine1MSO = getMSOInputs().get(0);
+		String addressLine1 = (addressLine1MSO != null) ? (String)addressLine1MSO.getData(): null;
+		MungeStepOutput addressLine2MSO = getMSOInputs().get(1);
+		String addressLine2 = (addressLine2MSO != null) ? (String)addressLine2MSO.getData() : null;
+		MungeStepOutput municipalityMSO = getMSOInputs().get(2);
+		String municipality = (municipalityMSO != null) ? (String)municipalityMSO.getData() : null;
+		MungeStepOutput provinceMSO = getMSOInputs().get(3);
+		String province = (provinceMSO != null) ? (String)provinceMSO.getData() : null;
+		MungeStepOutput countryMSO = getMSOInputs().get(4);
+		String country = (countryMSO != null) ? (String)countryMSO.getData() : null;
+		MungeStepOutput postalCodeMSO = getMSOInputs().get(5);
+		String inPostalCode = (postalCodeMSO != null) ? (String)postalCodeMSO.getData() : null;
+		
+		// nicely formatted 
+		String addressString = addressLine1 + ", " + addressLine2 + ", " + municipality + ", " + province + ", " + inPostalCode + ", " + country;
+		logger.debug("Parsing Address: " + addressString);
+		Address address = Address.parse(addressLine1, municipality, province, inPostalCode, country, addressDB);
+		
+		logger.debug("Address that was parsed:\n" + address.toString());
+		
+		AddressValidator validator = new AddressValidator(addressDB, address);
+		validator.validate();
+		
+		Address output;
+		
+		if (validator.getSuggestions().size() != 0 && validator.isValidSuggestion()) {
+			output = validator.getSuggestions().get(0);
+			logger.debug("Normalizing address to " + output);
+		} else {
+			output = address;
+		}
+		List<MungeStepOutput> outputs = getChildren(); 
+		outputs.get(0).setData(output.getAddress());
+		outputs.get(1).setData(output.getAddress());
+		outputs.get(2).setData(output.getSuite());
+		outputs.get(3).setData(output.getStreetNumber() != null ? BigDecimal.valueOf(output.getStreetNumber()) : null);
+		outputs.get(4).setData(output.getStreetNumberSuffix());
+		outputs.get(5).setData(output.getStreet());
+		outputs.get(6).setData(output.getStreetType());
+		outputs.get(7).setData(output.getStreetDirection());
+		outputs.get(8).setData(output.getMunicipality());
+		outputs.get(9).setData(output.getProvince());
+		outputs.get(10).setData(output.getCountry());
+		outputs.get(11).setData(output.getPostalCode());
+		
+		return true;
+	}
+
 	/**
 	 * Uses the user validated values stored in the from the result table where
 	 * available. Otherwise, if no value is available, it will default to the
