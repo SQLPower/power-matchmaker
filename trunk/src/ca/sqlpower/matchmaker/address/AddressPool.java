@@ -414,7 +414,7 @@ public class AddressPool extends MonitorableImpl{
 					sql.append(INPUT_POSTAL_CODE).append("=" + SQL.quote(result.getInputAddress().getPostalCode()) + ", ");					// 6
 					
 					Address outputAddress = result.getOutputAddress();
-					sql.append(OUTPUT_COUNTRY).append("=" + SQL.quote(outputAddress.getSuite()) + ", ");						// 7
+					sql.append(OUTPUT_COUNTRY).append("=" + SQL.quote(outputAddress.getCountry()) + ", ");						// 7
 					sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append("=" + SQL.quote(outputAddress.getDeliveryInstallationName()) + ", ");	// 8
 					sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=" + SQL.quote(outputAddress.getDeliveryInstallationType()) + ", ");	// 9			
 					sql.append(OUTPUT_DIRECTION_PREFIX).append("=" + outputAddress.isDirectionPrefix() + ", ");				// 10
@@ -461,9 +461,8 @@ public class AddressPool extends MonitorableImpl{
 					}
 					
 					engineLogger.debug("Preparing the following address result to be updated: " + result);
-					engineLogger.error("Executing statement " + sql);
+					engineLogger.debug("Executing statement " + sql);
 					
-					engineLogger.debug("Executing update statement");
 					stmt.execute(sql.toString());
 					incrementProgress();
 				}
