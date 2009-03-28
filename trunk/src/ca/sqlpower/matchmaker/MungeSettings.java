@@ -77,7 +77,11 @@ public class MungeSettings extends MatchMakerSettings {
 		 */
 		SERP_CORRECTABLE("Auto-validate only SERP correctable addresses"),
 		/**
-		 * Validate any address with a suggestion
+		 * Validate any address with only one suggestion 
+		 */
+		EVERYTHING_WITH_ONE_SUGGESTION("Auto-validate any address with only one suggestion"),
+		/**
+		 * Validate any address with at least one suggestion
 		 */
 		EVERYTHING_WITH_SUGGESTION("Auto-validate any address with a suggestion");
 		
@@ -177,7 +181,7 @@ public class MungeSettings extends MatchMakerSettings {
 	
 	private PoolFilterSetting poolFilterSetting = PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT;
 	
-	private AutoValidateSetting autoValidateSetting = AutoValidateSetting.NOTHING;
+	private AutoValidateSetting autoValidateSetting = AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION;
 	
 	public boolean getClearMatchPool() {
 		return clearMatchPool;

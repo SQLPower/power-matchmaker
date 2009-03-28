@@ -62,6 +62,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 	// Radio buttons for setting the AutoValidationSetting
 	private JRadioButton avcNothingRB;
 	private JRadioButton avcSerpCorrectableRB;
+	private JRadioButton avcEverythingWithOneSuggestionRB;
 	private JRadioButton avcEverythingWithSuggestionRB;
 	
 	/**
@@ -127,6 +128,14 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		autoValidateButtonGroup.add(avcSerpCorrectableRB);
 		
 		dfb.nextLine();
+		avcEverythingWithOneSuggestionRB = new JRadioButton(AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION.getLongDescription());
+		if (settings.getAutoValidateSetting() == AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION) {
+			avcEverythingWithOneSuggestionRB.setSelected(true);
+		}
+		dfb.append(avcEverythingWithOneSuggestionRB);
+		autoValidateButtonGroup.add(avcEverythingWithOneSuggestionRB);
+		
+		dfb.nextLine();
 		avcEverythingWithSuggestionRB = new JRadioButton(AutoValidateSetting.EVERYTHING_WITH_SUGGESTION.getLongDescription());
 		if (settings.getAutoValidateSetting() == AutoValidateSetting.EVERYTHING_WITH_SUGGESTION) {
 			avcEverythingWithSuggestionRB.setSelected(true);
@@ -150,6 +159,8 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 			settings.setAutoValidateSetting(AutoValidateSetting.NOTHING);
 		} else if (avcSerpCorrectableRB.isSelected()) {
 			settings.setAutoValidateSetting(AutoValidateSetting.SERP_CORRECTABLE);
+		} else if (avcEverythingWithOneSuggestionRB.isSelected()) {
+			settings.setAutoValidateSetting(AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION);
 		} else if (avcEverythingWithSuggestionRB.isSelected()) {
 			settings.setAutoValidateSetting(AutoValidateSetting.EVERYTHING_WITH_SUGGESTION);
 		}
