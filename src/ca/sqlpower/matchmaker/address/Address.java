@@ -1333,6 +1333,9 @@ public class Address {
 	 * particular {@link AddressResult} has an empty output address.
 	 */
 	public boolean isEmptyAddress() {
+		logger.debug("country:" + country + "municipality:" + municipality + "postalcode:" + postalCode + "province:" + province);
+		logger.debug("street:" + street + "streetDirection:" + streetDirection + "streetNumberSuffix:" + streetNumberSuffix);
+		logger.debug("streetNumber:" + streetNumber + "streetType:" + streetType + "suite:" + suite);
 		return country == null &&
 				municipality == null &&
 				postalCode == null &&

@@ -49,11 +49,7 @@ public class AddressListCellRenderer implements ListCellRenderer {
 		} else if (value instanceof AddressResult) {
 			AddressResult addressResult = (AddressResult) value;
 			Address address1;
-			if (addressResult.getOutputAddress().isEmptyAddress()) {
-				address1 = addressResult.getInputAddress();
-			} else {
-				address1 = addressResult.getOutputAddress();
-			}
+			address1 = addressResult.getOutputAddress();
 			addressLabel = new AddressLabel(address1, comparisonAddress, showValidCheckmark, addressResult.isValid());
 		} else {
 			throw new ClassCastException("Attempting to cast " + value.getClass() + " to Address or AddressResult for rendering an AddressLabel.");

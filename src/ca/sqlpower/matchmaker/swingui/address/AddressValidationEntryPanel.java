@@ -125,19 +125,18 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 		
 		try {
 			final Address address1;
-			
-			if (addressResult.getOutputAddress().isEmptyAddress() || addressResult.getOutputAddress().getType() == null) {
-				address1 = Address.parse(
-					addressResult.getInputAddress().getUnparsedAddressLine1(), addressResult.getInputAddress().getMunicipality(), addressResult.getInputAddress().getProvince(),
-					addressResult.getInputAddress().getPostalCode(), addressResult.getInputAddress().getCountry(), addressDatabase);
-				addressResult.setOutputAddress(address1);
-			} else {
-				address1 = addressResult.getOutputAddress();
-			}
+		
+			logger.debug("ADDRESS BEFORE PARSING IS : " + addressResult.getOutputAddress());
+			address1 = Address.parse(
+					addressResult.getOutputAddress().getAddress(), addressResult.getOutputAddress().getMunicipality(), addressResult.getOutputAddress().getProvince(),
+					addressResult.getOutputAddress().getPostalCode(), addressResult.getOutputAddress().getCountry(), addressDatabase);
+			logger.debug("ADDRESS AFTER PARSING IS : " + address1);
+			logger.debug("The output address is not empty.");
+			logger.debug("The non-empty address is: " + address1);
 			this.addressValidator = new AddressValidator(addressDatabase, address1);
 			
 			JButton saveButton = new JButton("Save");
-			selectedAddressLabel = new AddressLabel(address1, null, true, addressValidator.isAddressValid());
+			selectedAddressLabel = new AddressLabel(addressResult.getOutputAddress(), null, true, addressValidator.isAddressValid());
 			selectedAddressLabel.addPropertyChangeListener(new PropertyChangeListener() {
 			
 				public void propertyChange(PropertyChangeEvent evt) {

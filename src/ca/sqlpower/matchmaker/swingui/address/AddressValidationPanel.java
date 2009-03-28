@@ -108,15 +108,15 @@ public class AddressValidationPanel extends NoEditEditorPane {
 		for (int i = 0; i < addressArray.length; i++) {
 			AddressResult address =(AddressResult)addressArray[i];
 			allResults.add(0, address);
-			if (!address.getOutputAddress().isEmptyAddress()) {
+//			if (!address.getOutputAddress().isEmptyAddress()) {
 				if (address.isValid()) {
 					validResults.add(0, address);
 				} else {
 					invalidResults.add(0, address);
 				}
-			} else {
-				invalidResults.add(0, address);
-			}
+//			} else {
+//				invalidResults.add(0, address);
+//			}
 		}
 
 		needsValidationList = new JList(allResults);

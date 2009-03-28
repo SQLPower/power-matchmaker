@@ -219,7 +219,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		
 		if (result != null && 
 				result.getOutputAddress() != null &&
-				!result.getOutputAddress().isEmptyAddress() &&
+				/*!result.getOutputAddress().isEmptyAddress() && */ 
 				result.isValid()) {
 			Address address = result.getOutputAddress();
 			

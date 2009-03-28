@@ -224,14 +224,28 @@ public class AddressLabel extends JComponent {
 		FontMetrics fm = getFontMetrics(getFont());
 		int y = fm.getHeight()+fm.stringWidth(" ");
 		int x = 4+fm.stringWidth("M");
-		// set the check icon for validated addressResult labels
 		
+		if (logger.isDebugEnabled()) {
+			Rectangle clip = g2.getClipBounds();
+			if (clip != null) {
+				g2.setColor(Color.green);
+				clip.width--;
+				clip.height--;
+				g2.draw(clip);
+				g2.setColor(getBackground());
+				logger.debug("Clipping region: "+g2.getClip()); //$NON-NLS-1$
+			} else {
+				logger.debug("Null clipping region"); //$NON-NLS-1$
+			}
+		}
+		
+		// set the check icon for validated addressResult labels
 		if (allowsValidateCheck && addressValid) {
 			checkIcon.paintIcon(this, g2, x, y);
 			x += checkIcon.getIconWidth() + 4;
-			repaint();
 		}
 		if (!isFieldMissing(currentAddress.getAddress())) {
+			logger.debug("Current Address is: " + currentAddress);
 		    if (comparisonAddress != null && different(currentAddress.getAddress(), comparisonAddress.getAddress())) {
 		        addressLabel.setForeground(comparisonColour);
 		    } else {
@@ -363,9 +377,9 @@ public class AddressLabel extends JComponent {
 	}
 	
 	public void setCurrentAddress(Address address) {
+		logger.debug("oldAddress: " + currentAddress + ";  newAddress: " + address);
 		Address oldValue = currentAddress;
 		this.currentAddress = address;
-		repaint();
 		firePropertyChange("currentAddress", oldValue, currentAddress);
 		updateTextFields();
 	}
