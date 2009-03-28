@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
@@ -40,6 +41,13 @@ import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
+/**
+ * An MungeStep that takes in a supposed mailing address as inputs and then
+ * tries to parse, validate, and correct it based on a database derived from the
+ * Canadian postal database. Note that this MungeStep currently only supports
+ * Canadian mailing addresses, and mailing addresses from other countries cannot
+ * be expected to be parsed, validated, or corrected properly.
+ */
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
 	private static Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
@@ -345,7 +353,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 				
 				AddressResult result = new AddressResult(uniqueKeyValues, addressLine1, addressLine2, municipality, province, inPostalCode, country);
 				
-				switch (getProject().getMungeSettings().getAutoValidateSetting()) {
+				AutoValidateSetting autoValidateSetting = getProject().getMungeSettings().getAutoValidateSetting();
+				switch (autoValidateSetting) {
 					case NOTHING:
 						logger.debug("Autovalidation disabled");
 						break;
@@ -353,6 +362,12 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 						logger.debug("Autovalidating SERP correctable addresses");
 						if (validator.isSerpValid() || !validator.isValidSuggestion()) {
 							logger.debug("Address is SERP valid, or has no valid suggestions, so skipping");
+							break;
+						}
+					case EVERYTHING_WITH_ONE_SUGGESTION:
+						logger.debug("Autovalidating anything with just one suggestion");
+						if (validator.getSuggestions().size() != 1 && autoValidateSetting == AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION) {
+							logger.debug("Validator has zero or more than one suggestion, so skipping");
 							break;
 						}
 					case EVERYTHING_WITH_SUGGESTION:
@@ -367,8 +382,6 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 						result.setValid(true);
 				}
 				pool.addAddress(result, logger);
-			
-			addressCorrected = false;
 		}
 		
 		return Boolean.TRUE;
