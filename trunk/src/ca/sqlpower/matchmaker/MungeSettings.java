@@ -107,7 +107,7 @@ public class MungeSettings extends MatchMakerSettings {
         result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
         result = PRIME * result + ((clearMatchPool == true) ? 345 : 456);
         result = PRIME * result + ((useBatchExecution == true) ? 1 : 0);
-        result = PRIME * result + ((serpAutocorrect == true) ? 1 : 0);
+        result = PRIME * result + ((autoWriteAutoValidatedAddresses == true) ? 1 : 0);
         result = PRIME * result + ((poolFilterSetting == null) ? 0 : poolFilterSetting.hashCode());
         result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoValidateSetting.hashCode());
         return result;
@@ -138,7 +138,7 @@ public class MungeSettings extends MatchMakerSettings {
         
         if (useBatchExecution != other.useBatchExecution ) return false;
         
-        if (serpAutocorrect != other.serpAutocorrect) return false;
+        if (autoWriteAutoValidatedAddresses != other.autoWriteAutoValidatedAddresses) return false;
         
         if (poolFilterSetting != other.poolFilterSetting) return false;
         
@@ -171,13 +171,13 @@ public class MungeSettings extends MatchMakerSettings {
 	/**
 	 * Currently, setting is specific to the Address Correction Engine
 	 * <p>
-	 * If true, then the Address Correction Process will automatically correct
-	 * any address that is SERP correctable.
+	 * If true, then the Address Correction Process will automatically write
+	 * back automatically validated addresses back to the source table.
 	 * <p>
 	 * If false, then the Address Correction process will not automatically
-	 * correct any addresses.
+	 * write anything to the source table until the commit phase.
 	 */
-	private boolean serpAutocorrect = false;
+	private boolean autoWriteAutoValidatedAddresses = false;
 	
 	private PoolFilterSetting poolFilterSetting = PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT;
 	
@@ -202,15 +202,15 @@ public class MungeSettings extends MatchMakerSettings {
 				this.useBatchExecution);
 	}
 	
-	public boolean isSerpAutocorrect() {
-		return serpAutocorrect;
+	public boolean isAutoWriteAutoValidatedAddresses() {
+		return autoWriteAutoValidatedAddresses;
 	}
 
-	public void setSerpAutocorrect(boolean serpAutocorrect) {
-		boolean oldValue = this.serpAutocorrect;
-		this.serpAutocorrect = serpAutocorrect;
-		getEventSupport().firePropertyChange("serpAutocorrect", oldValue,
-				this.serpAutocorrect);
+	public void setAutoWriteAutoValidatedAddresses(boolean autoWriteAutoValidatedAddresses) {
+		boolean oldValue = this.autoWriteAutoValidatedAddresses;
+		this.autoWriteAutoValidatedAddresses = autoWriteAutoValidatedAddresses;
+		getEventSupport().firePropertyChange("autoWriteAutoValidatedAddresses", oldValue,
+				this.autoWriteAutoValidatedAddresses);
 	}
 	
 	public void setClearMatchPool(boolean clearMatchPool) {
@@ -270,7 +270,7 @@ public class MungeSettings extends MatchMakerSettings {
         buf.append("lastBackupNo->"+lastBackupNo+", ");
         buf.append("clearMatchPool->"+clearMatchPool+", ");
         buf.append("useBatchExecution->"+useBatchExecution+", ");
-        buf.append("skipValidation->"+serpAutocorrect+", ");
+        buf.append("autoWriteAutoValidatedAddresses->"+autoWriteAutoValidatedAddresses+", ");
         buf.append("poolFilterSetting->" + poolFilterSetting + ", ");
         buf.append("autoValidateSetting->" + autoValidateSetting + ", ");
         buf.append(super.toString());
@@ -299,7 +299,7 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setClearMatchPool(isClearMatchPool());
 		settings.setVisible(isVisible());
 		settings.setUseBatchExecution(isUseBatchExecution());
-		settings.setSerpAutocorrect(isSerpAutocorrect());
+		settings.setAutoWriteAutoValidatedAddresses(isAutoWriteAutoValidatedAddresses());
 		settings.setPoolFilterSetting(getPoolFilterSetting());
 		settings.setAutoValidateSetting(getAutoValidateSetting());
 		return settings;

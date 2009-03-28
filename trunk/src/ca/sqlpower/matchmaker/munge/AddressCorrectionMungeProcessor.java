@@ -91,6 +91,7 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 					
 					if (step instanceof AddressCorrectionMungeStep) {
 						if (!((AddressCorrectionMungeStep) step).isAddressCorrected()) {
+							getLogger().debug("Not writing anything to the source table for this record");
 							break;
 						}
 					}

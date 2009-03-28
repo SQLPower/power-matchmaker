@@ -111,7 +111,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 			jobSize = numRowsToProcess * (mungeProcesses.size());
 			// If we're going to be validating addresses, then add some more to
 			// the jobsize for writing the invalid addresses to the result table
-			if (!getProject().getMungeSettings().isSerpAutocorrect()) {
+			if (!getProject().getMungeSettings().isAutoWriteAutoValidatedAddresses()) {
 				jobSize += numRowsToProcess;
 			}
 

@@ -285,36 +285,6 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		AddressValidator validator = new AddressValidator(addressDB, address);
 		validator.validate();
 		
-		if (getProject().getMungeSettings().isSerpAutocorrect()) {
-			logger.debug("SERP Auto correction enabled");
-			// if is SERP correctable
-			if (!validator.isSerpValid() && validator.isValidSuggestion()) {
-				logger.debug("Address is not SERP valid and has a valid suggestion");
-				Address correctedAddress = validator.getSuggestions().get(0);
-				
-				logger.debug("Top suggestion from validator is: " + correctedAddress);
-				
-				List<MungeStepOutput> outputs = getChildren(); 
-				
-				outputs.get(0).setData(correctedAddress.getAddress());
-				outputs.get(1).setData(addressLine2);
-				outputs.get(2).setData(correctedAddress.getSuite());
-				outputs.get(3).setData(correctedAddress.getStreetNumber() != null ? BigDecimal.valueOf(correctedAddress.getStreetNumber()) : null);
-				outputs.get(4).setData(correctedAddress.getStreetNumberSuffix());
-				outputs.get(5).setData(correctedAddress.getStreet());
-				outputs.get(6).setData(correctedAddress.getStreetType());
-				outputs.get(7).setData(correctedAddress.getStreetDirection());
-				outputs.get(8).setData(correctedAddress.getMunicipality());
-				outputs.get(9).setData(correctedAddress.getProvince());
-				outputs.get(10).setData(country);
-				outputs.get(11).setData(correctedAddress.getPostalCode());
-
-				addressCorrected = true;
-				
-				return Boolean.TRUE;
-			}
-		}  
-		
 		// else if not doing SERP auto-correction
 		switch (getProject().getMungeSettings().getPoolFilterSetting()) {
 			case INVALID_ONLY:
@@ -383,6 +353,32 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 							break;
 						}
 					default:
+						if (getProject().getMungeSettings().isAutoWriteAutoValidatedAddresses()) {
+							logger.debug("Automatically writing back an auto-validated address");
+							Address correctedAddress = validator.getSuggestions().get(0);
+							
+							logger.debug("Top suggestion from validator is: " + correctedAddress);
+							
+							List<MungeStepOutput> outputs = getChildren(); 
+							
+							outputs.get(0).setData(correctedAddress.getAddress());
+							outputs.get(1).setData(addressLine2);
+							outputs.get(2).setData(correctedAddress.getSuite());
+							outputs.get(3).setData(correctedAddress.getStreetNumber() != null ? BigDecimal.valueOf(correctedAddress.getStreetNumber()) : null);
+							outputs.get(4).setData(correctedAddress.getStreetNumberSuffix());
+							outputs.get(5).setData(correctedAddress.getStreet());
+							outputs.get(6).setData(correctedAddress.getStreetType());
+							outputs.get(7).setData(correctedAddress.getStreetDirection());
+							outputs.get(8).setData(correctedAddress.getMunicipality());
+							outputs.get(9).setData(correctedAddress.getProvince());
+							outputs.get(10).setData(country);
+							outputs.get(11).setData(correctedAddress.getPostalCode());
+
+							addressCorrected = true;
+							
+							return Boolean.TRUE;
+						}  
+						
 						logger.debug("Autovalidating address to the following address: " + validator.getSuggestions().get(0));
 						result.setOutputAddress(validator.getSuggestions().get(0));
 						result.setValid(true);
