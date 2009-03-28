@@ -43,6 +43,10 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 	
 	private AddressCorrectionEngineMode mode;
 	
+	private int numValid = 0;
+	private int numCorrectable = 0;
+	private int numIncorrectable = 0;
+	
 	public AddressCorrectionMungeProcessor(MungeProcess mungeProcess, AddressPool pool, AddressCorrectionEngineMode mode, Logger logger) {
 		super(mungeProcess, logger);
 		this.pool = pool;
@@ -90,7 +94,20 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 					}
 					
 					if (step instanceof AddressCorrectionMungeStep) {
-						if (!((AddressCorrectionMungeStep) step).isAddressCorrected()) {
+						AddressCorrectionMungeStep addressStep = (AddressCorrectionMungeStep) step;
+						if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
+							switch (addressStep.getAddressStatus()) {
+								case VALID:
+									numValid++;
+									break;
+								case CORRECTABLE:
+									numCorrectable++;
+									break;
+								case INCORRECTABLE:
+									numIncorrectable++;
+							}
+						}
+						if (!addressStep.isAddressCorrected()) {
 							getLogger().debug("Not writing anything to the source table for this record");
 							break;
 						}
@@ -131,4 +148,15 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 		return Boolean.TRUE;
 	}
 
+	public int getNumValid() {
+		return numValid;
+	}
+
+	public int getNumCorrectable() {
+		return numCorrectable;
+	}
+
+	public int getNumIncorrectable() {
+		return numIncorrectable;
+	}
 }

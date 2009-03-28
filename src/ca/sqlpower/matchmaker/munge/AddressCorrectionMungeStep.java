@@ -62,6 +62,23 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	private AddressPool pool;
 	
+	public enum AddressStatus {
+		/**
+		 * Address is SERP valid
+		 */
+		VALID,
+		/**
+		 * Address is SERP correctable
+		 */
+		CORRECTABLE,
+		/**
+		 * Address is cannot be corrected with SERP
+		 */
+		INCORRECTABLE
+	}
+	
+	private AddressStatus addressStatus;
+	
 	public AddressCorrectionMungeStep() {
 		super("Address Correction", false);
 		
@@ -285,6 +302,14 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		AddressValidator validator = new AddressValidator(addressDB, address);
 		validator.validate();
 		
+		if (validator.isSerpValid()) {
+			addressStatus = AddressStatus.VALID;
+		} else if (validator.isValidSuggestion()) {
+			addressStatus = AddressStatus.CORRECTABLE;
+		} else {
+			addressStatus = AddressStatus.INCORRECTABLE;
+		}
+		
 		// else if not doing SERP auto-correction
 		switch (getProject().getMungeSettings().getPoolFilterSetting()) {
 			case INVALID_ONLY:
@@ -435,4 +460,12 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		return resultList;
 	}
 
+	/**
+	 * Returns the {@link AddressStatus} of the last address processed by this
+	 * {@link AddressCorrectionMungeStep}. If it is null, then no addresses have
+	 * been processed by this step yet.
+	 */
+	public AddressStatus getAddressStatus() {
+		return addressStatus;
+	}
 }

@@ -36,7 +36,6 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableException;
 import ca.sqlpower.matchmaker.munge.AddressCorrectionMungeProcessor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeProcessor;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Monitorable;
 
@@ -98,9 +97,12 @@ public class AddressCorrectionEngine extends AbstractEngine {
 		setStarted(true);
 		progress = 0;
 
+		int numValid = 0;
+		int numCorrectable = 0;
+		int numIncorrectable = 0;
+		
+		List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
 		try {
-			
-			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
 			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
 				if (mp.getActive()) {
 					mungeProcesses.add(mp);
@@ -147,7 +149,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 				checkCancelled();
 				message = "Running munge process " + process.getName();
 				logger.debug(getMessage());
-				MungeProcessor munger;
+				AddressCorrectionMungeProcessor munger;
 
 				munger = new AddressCorrectionMungeProcessor(process, pool,
 						mode,
@@ -159,6 +161,10 @@ public class AddressCorrectionEngine extends AbstractEngine {
 				munger.call(numRowsToProcess);
 				progress += munger.getProgress();
 				setCurrentProcessor(null);
+				
+				numValid += munger.getNumValid();
+				numCorrectable += munger.getNumCorrectable();
+				numIncorrectable += munger.getNumIncorrectable();
 			}
 			
 			MungeSettings settings = getProject().getMungeSettings();
@@ -184,10 +190,17 @@ public class AddressCorrectionEngine extends AbstractEngine {
 			logger.error("Address Correction Engine Failed", e);
 			return EngineInvocationResult.FAILURE;
 		} finally {
+			int rowsProcessed = Math.min(numRowsToProcess, getProgress());
 			logger.setLevel(oldLoggerLevel);
 			setFinished(true);
 			double time = System.currentTimeMillis() - startTime;
-			logger.info(String.format("Address Correction Engine processed %d records in %.3f seconds (%.2f per second)", numRowsToProcess, time/1000, (numRowsToProcess * 1000 / time)));
+			logger.info("Number of Valid Addresses found: " + numValid);
+			logger.info("Number of Correctable Addresses found: " + numCorrectable);
+			logger.info("Number of Incorrectable Addresses found: " + numIncorrectable);
+			logger.info(String.format(
+									"Address Correction Engine processed %d records in %.3f seconds (%.2f per second)",
+									rowsProcessed, time / 1000,
+									(rowsProcessed * 1000 / time)));
 		}
 	}
 	
