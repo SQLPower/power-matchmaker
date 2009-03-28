@@ -868,6 +868,72 @@
 					</orderedlist>
 
 				</section>
+				
+				<section id="working_with.guidelines.address_correction">
+
+                    <title>
+                        General Steps for an Address Correction Project
+                    </title>
+
+                    <para>
+                        In an Address Correction project you would
+                        typically do the following:
+                    </para>
+
+                    <orderedlist>
+                    
+                        <listitem>
+                            <para>
+                                Define the location of the Address Correction Database
+                                in the user preferences. An Address Correction Database
+                                can be obtained from                        
+                                <ulink
+                                    url="http://www.sqlpower.ca/page/matchmaker_address_data">
+                                    www.sqlpower.ca/page/matchmaker_address_data
+                                </ulink>
+                                and is required for address correction. The Address Correction
+                                Database contains all known valid mailing addresses in Canada.
+                            </para>
+                        </listitem>
+
+                        <listitem>
+                            <para>
+                                Define the munge processes that will be
+                                used to identify addresses.
+                            </para>
+                        </listitem>
+
+
+                        <listitem>
+                            <para>
+                                Run the Address Correction engine to find address
+                                records in the source table, based on
+                                your munge processes. Power*MatchMaker
+                                stores the results in a new results
+                                table.
+                            </para>
+                        </listitem>
+
+
+                        <listitem>
+                            <para>
+                                Validate the addresses in the results
+                                table.
+                            </para>
+                        </listitem>
+
+
+                        <listitem>
+                            <para>
+                                Run the Commit Validated Addresses engine to correct 
+                                the address data in the source
+                                table, based on your merge rules.
+                            </para>
+                        </listitem>
+
+                    </orderedlist>
+
+                </section>
 
 			</section>
 
@@ -2393,6 +2459,519 @@
 
 
 		</section>
+		
+		<section id="working_with.example_address_project">
+
+            <title>Example - Creating an Address Correction Project</title>
+
+            <para>
+                This section walks you through a step-by-step example to
+                create a small Address Correction project.
+            </para>
+            <para>
+                If you want to
+                walk through this example in the MatchMaker while reading
+                along you will need a table with addresses in it. You will also
+                need a copy of the Address Database and define it's location
+                in the user Preferences. An Address Correction Database
+                can be obtained from                        
+                <ulink
+                    url="http://www.sqlpower.ca/page/matchmaker_address_data">
+                    www.sqlpower.ca/page/matchmaker_address_data
+                </ulink>
+                and is required for address correction.
+            </para> 
+            <para>
+                For more
+                information on creating projects, see
+                <xref linkend="working_with.overview_project" />
+                .
+            </para>
+
+            <section
+                id="working_with.example_address_project.login">
+                <title>Step 1: Login to a Repository</title>
+
+                <para>
+                    Typically, you would first login to the repository
+                    where you want to store your project. For this
+                    example, you will use the Power*MatchMaker Default
+                    Repository. You are logged into this repository by
+                    default.
+                </para>
+
+                <para>
+                    Note: For more information on creating your own
+                    repository, see
+                    <xref linkend="Chapter 5-repositories" />
+                    .
+                </para>
+            </section>
+            
+            <section
+                id="working_with.example_address_project.new_project">
+                <title>Step 2: Create a New Project</title>
+
+                <para>
+                    Next, you will create a new Address Correction project.
+                </para>
+
+                <orderedlist>
+
+                    <listitem>
+                        <para>
+                            First, create the folder where the project
+                            will be stored. In the Power*MatchMaker
+                            Tree, right-click the Current Projects
+                            folder, then click New Folder. Enter the
+                            folder name and description, then click
+                            Save.
+                        </para>
+                    </listitem>
+
+
+                    <listitem>
+                        <para>
+                            Next, create a new project within the
+                            folder. Right-click the folder, click New
+                            Project, then click New Address Correction Project.
+                        </para>
+                    </listitem>
+
+
+                    <listitem>
+                        <para>
+                            Enter a name and description for the
+                            project.
+                        </para>
+                    </listitem>
+
+
+                    <listitem>
+                        <para>
+                            In the Source Table section, select the
+                            table you want to check for incorrect addresses.
+                            Select the catalog, schema and table for the
+                            table that contains address that need to be
+                            corrected.
+                        </para>
+
+                        <para>
+                            Note: The unique index option lets you
+                            choose which fields are needed to uniquely
+                            identify the records. The primary key is
+                            selected by default. If there is no primary
+                            key or the primary key is inappropriate, you
+                            can modify the unique index by clicking the
+                            Pick Columns button after you have saved the
+                            project.
+                        </para>
+                    </listitem>
+
+
+                    <listitem>
+                        <para>
+                            In the Output Table section, select the
+                            table where the address validation information
+                            will be stored. This table will store the original
+                            values in the source table to user modified values.
+                            You can leave the table name
+                            set to the default and select a schema.
+                        </para>
+
+                        <para>
+                            Note: If you enter a table that does not
+                            exist, Power*MatchMaker will create the
+                            table. If the table exists but is not
+                            correctly formatted, you will be given the
+                            option to drop the table and create a new
+                            one.
+                        </para>
+                    </listitem>
+
+
+                    <listitem>
+                        <para>Click Save.</para>
+                    </listitem>
+
+                </orderedlist>
+
+            </section>
+
+            <section
+                id="working_with.example_address_project.munge">
+                <title>Step 3: Define Munge Processes</title>
+
+                <para>
+                    Next, you will create the munge processes that
+                    Power*MatchMaker will use to find addresses
+                    in the table.
+                </para>
+
+                <orderedlist>
+
+                    <listitem>
+                        <para>
+                            In the Power*MatchMaker Tree, expand the
+                            folder containing your project. Right-click
+                            the Munge Processes folder, then click New
+                            Munge Process.
+                        </para>
+
+                        <para>
+                            You will use the large white area in the
+                            centre, called the Munge Pen, to define the
+                            munge steps to include in the munge process.
+                        </para>
+
+                        <mediaobject>
+                            <imageobject>
+                                <imagedata
+                                    fileref="doc/images/address_munge.png" format="PNG"
+                                    width="5in" />
+                            </imageobject>
+                        </mediaobject>
+
+
+
+                        <itemizedlist>
+
+                            <listitem>
+                                <para>
+                                    The three default steps for an Address
+                                    Correction project are already added
+                                    to the Munge Pen. The first step
+                                    (the input step) is the source table
+                                    and is labelled with the table name.
+                                    This step contains all of the
+                                    initial data from your source table.
+                                    The second step is the Address Correction
+                                    step. This step decides if the address is valid
+                                    and looks for suggestions. Depending on the
+                                    engine settings this step will also write
+                                    back automatically corrected addresses.
+                                    The last step (the output step) is
+                                    the same as the input step. This step
+                                    should have values from the Address
+                                    Correction step placed in it, possibly
+                                    after transformations. This tells the
+                                    Address Correction step how to write
+                                    the addresses back to the table after
+                                    modifications.
+                                </para>
+                            </listitem>
+
+                            <listitem>
+                                <para>
+                                    The munge steps you can use to
+                                    transform the data are shown on the
+                                    right side of the Munge Pen.
+                                </para>
+                            </listitem>
+
+                        </itemizedlist>
+
+                    </listitem>
+
+                    <listitem>
+                        <para>
+		                    On the Address Correction step press the Show All button
+		                    to see what each connection will give.
+                        </para>
+                    </listitem>
+                    
+                    <listitem>
+                        <para>
+                            To feed data into this step some columns from the input
+                            table may need to be merged with Concatenation steps. At
+                            current the address line 1 is the connection that needs
+                            to be passed the street or route information. Address line 2
+                            is considered additional data and is passed as is. Following
+                            address line 1 the municipality, province, country, and postal
+                            code must be given. If only Canadian addresses are being
+                            corrected and that information is not stored in the table a 
+                            String constant step can be used to provide the country.
+                        </para>
+                    </listitem>
+                    
+                    <listitem>
+                        <para>
+                            After plugging values into the Address Correction step,
+                            values need to be fed into the result step. Values 
+                            can be placed into the result step as desired.
+                        </para>
+                    </listitem>
+
+                </orderedlist>
+
+            </section>
+            
+            <section
+                id="working_with.example_address_project.match_engine">
+                <title>Step 4: Find Addresses to Correct</title>
+
+                <para>
+                    Next, you will find addresses by running the
+                    Addresss Correction engine. The Address Correction
+                     engine will use the munge
+                    process you created to find duplicate records and
+                    will store the results in the results table. The
+                    Address Correction engine may change the source data
+                    depending on the Validation Settings.
+                </para>
+
+                <orderedlist>
+
+                    <listitem>
+                        <para>
+                            In the Power*MatchMaker Tree, within your
+                            project folder, click Run Address Correction
+                             Engine.
+                        </para>
+                    </listitem>
+                    
+                    <listitem>
+                        <para>
+                            The validation settings is one of the more interesting
+                            settings in the Address Correction engine.
+                            The validation settings decide what types of addresses
+                            to show for validation through the filter settings.
+                            Auto-validation can also be set from the validation
+                            settings if some addresses are to be automatically corrected.
+                        </para>
+                        
+                        <para>
+                            The Address Filter Settings have the following options:                        
+                        </para>
+                        
+                        <itemizedlist>
+                            <listitem>
+                                <para>
+                                    Include all records - All records will be 
+                                    displayed in the Address Validation step even
+                                    if the engine marks the address as valid.
+                                </para>
+                            </listitem>
+
+                            <listitem>
+                                <para>
+                                    Include SERP invalid or different format - 
+                                    Addresses that are defined as invalid based
+                                    on SERP specifications will be displayed in
+                                    the Address Validation step. Additionally,
+                                    if a different format is found for the record
+                                    by the parser than it will also be displayed
+                                    in the Address Validation step.
+                                </para>
+                            </listitem>
+                            
+                            <listitem>
+                                <para>
+                                    Include only SERP invalid records - 
+                                    Addresses that are defined as invalid based
+                                    on SERP specifications will be displayed in
+                                    the Address Validation step.
+                                </para>
+                            </listitem>
+                        
+                        </itemizedlist>
+                        
+                        <para>
+                            The Auto-validate Settings have the following options:                        
+                        </para>
+                        
+                        <itemizedlist>
+                            <listitem>
+                                <para>
+                                    Do not auto-validate - No automatic correction
+                                    of addresses will be done. The source table will
+                                    not be modified and all corrections will be done 
+                                    in the Address Validation screen.
+                                </para>
+                            </listitem>
+
+                            <listitem>
+                                <para>
+                                    Auto-validate only SERP correctable addresses - 
+                                    This will write back to the source tables all
+                                    addresses that are correctable based on SERP
+                                    specifications.
+                                </para>
+                            </listitem>
+                            
+                            <listitem>
+                                <para>
+                                    Auto-validate any address with only one suggestion - 
+                                    If an address is given only one suggestion by the
+                                    Address Correction step then this setting will write
+                                    that suggestion back to the source table.
+                                </para>
+                            </listitem>
+                            
+                            <listitem>
+                                <para>
+                                    Auto-validate any address with a suggestion - 
+                                    If an address is given at least one suggestion by the
+                                    Address Correction step then this setting will write
+                                    the first suggestion back to the source table. The
+                                    suggestions are ordered from most likely to least likely
+                                    but it is not guaranteed that the first suggestion is
+                                    not as likely as any subsequent suggestion.
+                                </para>
+                            </listitem>
+                        
+                        </itemizedlist>
+                        
+                    </listitem>
+                    
+                    <listitem>
+                        <para>
+                            You can leave all of the other options set to the
+                            default settings. The following options are
+                            available:
+                        </para>
+
+                        <itemizedlist>
+
+                            <listitem>
+                                <para>
+                                    Log File - Enter a filename and
+                                    location for the log file.
+                                    Information will be logged here when
+                                    the Address Correction engine is run.
+                                </para>
+                            </listitem>
+
+
+                            <listitem>
+                                <para>
+                                    Records to Process - Select the
+                                    number of records to check.
+                                </para>
+                            </listitem>
+
+
+                            <listitem>
+                                <para>
+                                    Debug Mode - Select this option if
+                                    you want to run the Address Correction
+                                     engine in debug mode.
+                                </para>
+                            </listitem>
+
+
+                            <listitem>
+                                <para>
+                                    Clear Match Pool - Select this
+                                    option if you want to remove all
+                                    addresses found previously.
+                                </para>
+                            </listitem>
+
+
+                            <listitem>
+                                <para>
+                                    Message Level - Select the amount of
+                                    information to be displayed in the
+                                    results. If you set the message
+                                    level to DEBUG, you should limit the
+                                    number of records to process, since
+                                    processing all records at the DEBUG
+                                    message level can be very
+                                    time-consuming.
+                                </para>
+                            </listitem>
+
+                        </itemizedlist>
+                    </listitem>
+
+                    <listitem>
+                        <para>
+                            Click Run Engine. The engine runs and
+                            finds all addresses that needs some correction.
+                        </para>
+                    </listitem>
+
+                </orderedlist>
+            </section>
+            
+            <section
+                id="working_with.example_address_project.validate_matches">
+                <title>Step 5: Validate Addresses</title>
+
+                <para>
+                    Next, you will review the addresses to ensure they are
+                    valid. Additionally corrections can be done manually
+                    and suggestions can be selected.
+                </para>
+
+                <orderedlist>
+
+                    <listitem>
+                        <para>
+                            In the Power*MatchMaker Tree, within your
+                            project folder, click Validate Addresses.
+                        </para>
+
+                        <para>
+                            The addresses are shown on the left side
+                            of the window. Each address can be selected
+                            from the left list to show an editor for that
+                            address on the right of the list.
+                        </para>
+
+                        <mediaobject>
+                            <imageobject>
+                                <imagedata
+                                    fileref="doc/images/address_validate.png" format="PNG"
+                                    width="5in" />
+                            </imageobject>
+                        </mediaobject>
+
+
+                    </listitem>
+
+                    <listitem>
+                        <para>
+                            Selecting an address from the list shows the
+                            address editor to the right of the list. Below
+                            the address in the editor is the list of errors
+                            the address currently has. To the right of the
+                            address is a list of suggestions that are offered
+                            by the Address Correction step.
+                        </para>
+                        
+                        <para>
+                             To correct the address select an address from the
+                             suggestion list or click on parts of the address
+                             to edit it by hand. The most likely suggestions
+                             are at the top of the suggestion list while less likely
+                             suggestions appear lower. When the address is correct
+                             a green check mark will appear to the left of the
+                             address. Each change will save the address. To
+                             revert the address to what was originally in the 
+                             source table press the revert button.
+                        </para>
+                    
+                    </listitem>
+
+                    <listitem>
+                        <para>
+                            When an address is corrected and is valid a green
+                            check mark will appear to the left of it in the list.
+                            Once all of the addresses have been corrected the
+                            addresses can be committed to the source table. Select
+                            the Commit Validated Addresses from the project tree
+                            and press the Run Engine button to write all modified
+                            addresses to the source table.
+                        </para>
+                    </listitem>
+
+                </orderedlist>
+
+            </section>
+            
+        </section>
 
 		<section id="SQL Query">
 
