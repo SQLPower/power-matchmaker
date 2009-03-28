@@ -134,7 +134,7 @@
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="use_batch_execution_ind" length="1" />
 			</property>
-			<property name="serpAutocorrect"
+			<property name="autoWriteAutoValidatedAddresses"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="skip_validation_ind" length="1" />
 			</property>

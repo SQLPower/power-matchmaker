@@ -340,8 +340,8 @@ public class ProjectSAXHandler extends DefaultHandler {
                         ms.setLastBackupNo(Long.parseLong(aval));
                     } else if (aname.equals("use-batch-execution")) {
                         ms.setUseBatchExecution(Boolean.valueOf(aval));
-                    } else if (aname.equals("serp-autocorrect")) {
-                        ms.setSerpAutocorrect(Boolean.valueOf(aval));
+                    } else if (aname.equals("auto-write-autovalidated-addresses")) {
+                        ms.setAutoWriteAutoValidatedAddresses(Boolean.valueOf(aval));
                     } else if (aname.equals("pool-filter-setting")) {
                     	ms.setPoolFilterSetting(PoolFilterSetting.valueOf(aval));
                     } else if (aname.equals("auto-validate-setting")) {

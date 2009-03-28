@@ -193,7 +193,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 * user to manually correct the addresses before writing them back to the
 	 * source table.
 	 */
-	private JCheckBox skipValidation;
+	private JCheckBox autoWriteAutoValidatedAddresses;
 	
 	/**
 	 * The frame that this editor lives in.
@@ -480,7 +480,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		}
 
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-			skipValidation = new JCheckBox("Automatically correct SERP correctable addresses", ((MungeSettings)engineSettings).isSerpAutocorrect());
+			autoWriteAutoValidatedAddresses = new JCheckBox("Automatically write back auto-validated addresses", ((MungeSettings)engineSettings).isAutoWriteAutoValidatedAddresses());
 		}
 		
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
@@ -564,7 +564,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		pb.add(new JLabel(" (Set to 0 to process all)"), cc.xy(5, y, "l, c"));
 		
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-			pb.add(new JLabel("Address Pool Filter:"), cc.xy(7, y));
+			pb.add(new JLabel("Address Filter Setting:"), cc.xy(7, y));
 		}
 
 		if (engineSettings instanceof MungeSettings) {
@@ -606,7 +606,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			y += 2;
-			pb.add(skipValidation, cc.xyw(4, y, 2, "l,c"));
+			pb.add(autoWriteAutoValidatedAddresses, cc.xyw(4, y, 2, "l,c"));
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 				pb.add(new JLabel("Auto-validation Setting"), cc.xy(7, y));
 			}
@@ -730,7 +730,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			((MungeSettings)engineSettings).setUseBatchExecution(useBatchExecute.isSelected());
 		}
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-			((MungeSettings)engineSettings).setSerpAutocorrect(skipValidation.isSelected());
+			((MungeSettings)engineSettings).setAutoWriteAutoValidatedAddresses(autoWriteAutoValidatedAddresses.isSelected());
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());
