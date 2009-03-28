@@ -40,8 +40,6 @@ import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
-import com.sleepycat.je.DatabaseException;
-
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
 	private static Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
@@ -116,12 +114,9 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		
 		
 		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
-		if (addressCorrectionDataPath == null || addressCorrectionDataPath.length() == 0) {
-			throw new IllegalStateException("Address Correction Data Path is empty. Please set the path in User Preferences");
-		}
 		try {
 			setAddressDB(new AddressDatabase(new File(addressCorrectionDataPath)));
-		} catch (DatabaseException e) {
+		} catch (Exception e) {
 			setAddressDB(null);
 		}
 	}
@@ -400,7 +395,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	private void setAddressDB(AddressDatabase addressDB) {
 		AddressDatabase oldValue = this.addressDB;
 		this.addressDB = addressDB;
-		getEventSupport().firePropertyChange("addressDB", oldValue, addressDB);
+		//XXX: Firing this event would be better than the munge component listening to the context
+//		getEventSupport().firePropertyChange("addressDB", oldValue, addressDB);
 	}
 	
 	public boolean doesDatabaseExist()  {
