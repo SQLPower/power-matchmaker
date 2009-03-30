@@ -40,6 +40,16 @@ import com.sleepycat.persist.ForwardCursor;
 public class AddressValidator {
 	
 	private static final Logger logger = Logger.getLogger(AddressValidator.class);
+	
+	/**
+	 * This is a hard limit on the number of postal code entries found to correct an address to.
+	 * This is an optimization for cases where too much information is missing from the address
+	 * to make a reasonable suggestion. There is not likely to be more than 50 entries for a single
+	 * postal code in the database. However, this limit is high enough that even if multiple postal
+	 * codes are required to be processed to validate an address this value should be well over the
+	 * number of postal code entries processed to guarantee the postal code is valid before stopping.
+	 */
+	private static final int MAX_POSTAL_CODES_PROCESSED = 1000;
 
     private final AddressDatabase db;
     private final Address address;
@@ -165,6 +175,12 @@ public class AddressValidator {
         if (a.getPostalCode() == null) {
             results.add(ValidateResult.createValidateResult(Status.FAIL, "Postal Code is missing"));
             
+            //If the address line 1 and 2 are missing along with the postal code this will return too many results to
+            //reasonably process.
+            if (a.getUnparsedAddressLine1() == null && a.getUnparsedAddressLine2() == null) {
+            	return;
+            }
+            
             // try to find unique postal code match TODO extract to public method
             EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
             
@@ -252,7 +268,12 @@ public class AddressValidator {
 		boolean validSpecialCase = false;
 		
 		Address bestSuggestion = null; 
+		int postalCodesProcessed = 0;
 		for (PostalCode pc : pcList) {
+			if (postalCodesProcessed > MAX_POSTAL_CODES_PROCESSED) {
+				break;
+			}
+			postalCodesProcessed++;
 			//Some suggestions don't increase the error count as they are not a severe error but they still have
 			//a more valid suggestion. This tracks if there is a valid suggestion and the parsed address is not completely
 			//correct
