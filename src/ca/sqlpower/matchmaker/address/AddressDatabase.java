@@ -323,6 +323,7 @@ public class AddressDatabase {
      * @throws DatabaseException if the lookup fails due to database problems
      */
     public Set<PostalCode> findPostalCode(String postalCode) throws DatabaseException {
+    	if (postalCode == null) return new HashSet<PostalCode>();
         String pcNormalized = postalCode.toUpperCase().replaceAll("[^A-Z0-9]", "");
         EntityCursor<PostalCode> pcCursor = postalCodeSK.entities(pcNormalized, true, pcNormalized, true);
         Set<PostalCode> postalCodes = new HashSet<PostalCode>();

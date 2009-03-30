@@ -27,6 +27,7 @@ import java.util.List;
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.address.Municipality.ValidAlternateName;
 import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
+import ca.sqlpower.validation.ValidateResult;
 
 public class AddressValidatorTest extends TestCase {
 	
@@ -151,6 +152,34 @@ public class AddressValidatorTest extends TestCase {
     	Address bestSuggestion = suggestions.get(0);
     	assertEquals("M4L3Z6", bestSuggestion.getPostalCode());
     	assertEquals("ST", bestSuggestion.getStreetType());
+    }
+    
+    /**
+     * Test to ensure the validator gives an error when there is a space
+     * between the street number and an alphabetic street suffix.
+     * 
+     * Input: 853 K BRAEMAR ST SE, MEDICINE HAT, AB, T1A0V4
+     */
+    public void testAddressWithSpaceBeforeStreetSuffix() throws Exception {
+    	Address a = new Address();
+    	a.setStreetNumber(853);
+    	a.setStreetNumberSuffix("K");
+    	a.setStreetNumberSuffixSeparate(true);
+    	a.setType(RecordType.STREET);
+    	a.setStreetType("ST");
+    	a.setStreetTypePrefix(false);
+    	a.setStreet("BRAEMAR");
+    	a.setStreetDirection("SE");
+    	a.setDirectionPrefix(false);
+    	a.setMunicipality("MEDICINE HAT");
+    	a.setProvince("AB");
+    	a.setCountry("CA");
+    	a.setPostalCode("T1A0V4");
+    	
+    	AddressValidator validator = new AddressValidator(addressDB, a);
+    	List<ValidateResult> results = validator.getResults();
+    	assertFalse(results.isEmpty());
+    	System.out.println(results);
     }
     
     /**
