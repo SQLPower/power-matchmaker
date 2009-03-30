@@ -385,6 +385,8 @@ public class AddressPool extends MonitorableImpl{
 		Connection con = null;
 		PreparedStatement ps = null;
 		Statement stmt = null;
+		StringBuilder sql = new StringBuilder();
+		AddressResult result = null;
 		
 		try {
 			con = project.createResultTableConnection();
@@ -393,7 +395,6 @@ public class AddressPool extends MonitorableImpl{
 			SQLTable resultTable = project.getResultTable();
 			int keySize = project.getSourceTableIndex().getChildCount();
 
-			StringBuilder sql;
 			
 			if (dirtyAddresses.size() > 0) {
 				
@@ -401,8 +402,7 @@ public class AddressPool extends MonitorableImpl{
 				
 				for (int i = 0; i < dirtyAddresses.size(); i++) {
 					
-					sql= new StringBuilder();
-					AddressResult result = dirtyAddresses.get(i);
+					result = dirtyAddresses.get(i);
 					
 					//First, create and UPDATE PreparedStatement to update dirty records
 					sql.append("UPDATE ");
@@ -527,7 +527,7 @@ public class AddressPool extends MonitorableImpl{
 				ps = con.prepareStatement(sql.toString());
 				int batchCount = 0;
 				for (int i = 0; i < newAddresses.size(); i++) {
-					AddressResult result = newAddresses.get(i);
+					result = newAddresses.get(i);
 					int j = 1;
 					
 					for (Object keyValue: result.getKeyValues()) {
@@ -618,8 +618,8 @@ public class AddressPool extends MonitorableImpl{
 				con.commit();
 			}
 			
-			for (AddressResult result: addresses.values()) {
-				result.markClean();
+			for (AddressResult ar: addresses.values()) {
+				ar.markClean();
 			}
 		} catch (Exception ex) {
 			try {
@@ -628,7 +628,11 @@ public class AddressPool extends MonitorableImpl{
 				engineLogger.error("Error while rolling back. " +
 						"Suppressing this exception to prevent it from overshadowing the orginal exception.", sqlEx);
 			}
-			throw new RuntimeException("Unexpected exception while storing address validation results", ex);
+			throw new RuntimeException(
+					"Unexpected exception while storing address validation results. Current result: " +
+							result == null ? "null" :
+							"Input Address: " + result.getInputAddress() +
+							", Output Address: " + result.getOutputAddress(), ex);
 		} finally {
 			setFinished(true);
 			if (ps != null) try { ps.close(); } catch (SQLException e) { engineLogger.error("Error while closing PreparedStatement", e); }
