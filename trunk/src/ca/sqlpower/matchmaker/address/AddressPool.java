@@ -84,6 +84,7 @@ public class AddressPool extends MonitorableImpl{
 	private static final String OUTPUT_STREET_DIRECTION 			= "output_street_direction";
 	private static final String OUTPUT_STREET_NUMBER 				= "output_street_number";
 	private static final String OUTPUT_STREET_NUMBER_SUFFIX 		= "output_street_number_suffix";
+	private static final String OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE= "output_street_number_suffix_separate";
 	private static final String OUTPUT_STREET_TYPE 					= "output_street_type";
 	private static final String OUTPUT_STREET_TYPE_PREFIX			= "output_street_type_prefix";
 	private static final String OUTPUT_SUITE 						= "output_suite";
@@ -169,6 +170,8 @@ public class AddressPool extends MonitorableImpl{
 		t.addColumn(outputStreetNumber);
 		SQLColumn outputStreetNumberSuffix = new SQLColumn(t, OUTPUT_STREET_NUMBER_SUFFIX, Types.VARCHAR, 6, 0);
 		t.addColumn(outputStreetNumberSuffix);
+		SQLColumn outputStreetNumberSuffixSeparate = new SQLColumn(t, OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE, Types.BOOLEAN, 1, 0);
+		t.addColumn(outputStreetNumberSuffixSeparate);
 		SQLColumn outputStreetType = new SQLColumn(t, OUTPUT_STREET_TYPE, Types.VARCHAR, 11, 0);
 		t.addColumn(outputStreetType);
 		SQLColumn outputStreetTypePrefix = new SQLColumn(t, OUTPUT_STREET_TYPE_PREFIX, Types.BOOLEAN, 1, 0);
@@ -304,6 +307,7 @@ public class AddressPool extends MonitorableImpl{
 				address.setStreet(rs.getString(OUTPUT_STREET_NAME));
 				address.setStreetDirection(rs.getString(OUTPUT_STREET_DIRECTION));
 				address.setStreetNumberSuffix(rs.getString(OUTPUT_STREET_NUMBER_SUFFIX));
+				address.setStreetNumberSuffix(rs.getString(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE));
 				address.setStreetNumber(rs.getInt(OUTPUT_STREET_NUMBER));
 				address.setStreetType(rs.getString(OUTPUT_STREET_TYPE));
 				address.setStreetTypePrefix(rs.getBoolean(OUTPUT_STREET_TYPE_PREFIX));
@@ -431,6 +435,7 @@ public class AddressPool extends MonitorableImpl{
 					sql.append(OUTPUT_STREET_NAME).append("=" + SQL.quote(outputAddress.getStreet()) + ", ");					// 21
 					sql.append(OUTPUT_STREET_NUMBER).append("=" + outputAddress.getStreetNumber() + ", ");				// 22
 					sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=" + SQL.quote(outputAddress.getStreetNumberSuffix()) + ", ");			// 23
+					sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=" + outputAddress.getStreetNumberSuffixSeparate() + ", ");			// 23.5
 					sql.append(OUTPUT_STREET_TYPE).append("=" + SQL.quote(outputAddress.getStreetType()) + ", ");					// 24
 					sql.append(OUTPUT_STREET_TYPE_PREFIX).append("=" + outputAddress.isStreetTypePrefix() + ", ");			// 25
 					sql.append(OUTPUT_SUITE).append("=" + SQL.quote(outputAddress.getSuite()) + ", ");						// 26
@@ -503,7 +508,8 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(OUTPUT_STREET_DIRECTION).append(", ");				
 				sql.append(OUTPUT_STREET_NAME).append(", ");					
 				sql.append(OUTPUT_STREET_NUMBER).append(", ");					
-				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append(", ");			
+				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append(", ");
+				sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append(", ");
 				sql.append(OUTPUT_STREET_TYPE).append(", ");			
 				sql.append(OUTPUT_STREET_TYPE_PREFIX).append(", ");				
 				sql.append(OUTPUT_SUITE).append(", ");							
@@ -517,7 +523,7 @@ public class AddressPool extends MonitorableImpl{
 				for (int i = 0; i < keySize; i++) {
 					sql.append("?, ");
 				}
-				sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+				sql.append("?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 				ps = con.prepareStatement(sql.toString());
 				int batchCount = 0;
 				for (int i = 0; i < newAddresses.size(); i++) {
@@ -559,21 +565,22 @@ public class AddressPool extends MonitorableImpl{
 						ps.setInt(j + 21, streetNumber);
 					}
 					ps.setString(j + 22, outputAddress.getStreetNumberSuffix());
-					ps.setString(j + 23, outputAddress.getStreetType());
-					ps.setBoolean(j + 24, outputAddress.isStreetTypePrefix());
-					ps.setString(j + 25, outputAddress.getSuite());
-					ps.setBoolean(j + 26, outputAddress.isSuitePrefix());
-					ps.setString(j + 27, outputAddress.getSuiteType());
+					ps.setObject(j + 23, (Boolean) outputAddress.getStreetNumberSuffixSeparate(), Types.BOOLEAN);
+					ps.setString(j + 24, outputAddress.getStreetType());
+					ps.setBoolean(j + 25, outputAddress.isStreetTypePrefix());
+					ps.setString(j + 26, outputAddress.getSuite());
+					ps.setBoolean(j + 27, outputAddress.isSuitePrefix());
+					ps.setString(j + 28, outputAddress.getSuiteType());
 					RecordType type = outputAddress.getType();
-					ps.setString(j + 28, type == null ? null : type.toString());
-					ps.setString(j + 29, outputAddress.getUnparsedAddressLine1());
+					ps.setString(j + 29, type == null ? null : type.toString());
+					ps.setString(j + 30, outputAddress.getUnparsedAddressLine1());
 					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
 					if (urbanBeforeRural == null) {
-						ps.setNull(j + 30, Types.BOOLEAN);
+						ps.setNull(j + 31, Types.BOOLEAN);
 					} else {
-						ps.setBoolean(j + 30, outputAddress.isUrbanBeforeRural());
+						ps.setBoolean(j + 31, outputAddress.isUrbanBeforeRural());
 					}
-					ps.setBoolean(j + 31, result.isValid());
+					ps.setBoolean(j + 32, result.isValid());
 
 					engineLogger.debug("Preparing the following address to be inserted: " + result);
 					

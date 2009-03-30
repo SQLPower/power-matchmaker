@@ -189,6 +189,7 @@ street
 	|	n=NUMANDSUFFIX streetToken+		{String streetNum = $n.text;
 							 address.setStreetNumber(quietIntParse(streetNum.substring(0, streetNum.length() - 1)));
 							 address.setStreetNumberSuffix(streetNum.substring(streetNum.length() - 1, streetNum.length()));
+							 address.setStreetNumberSuffixSeparate(false);
 							}
 	|	n=NUMBER streetToken+			
 							{address.setStreetNumber(quietIntParse($n.text));}
@@ -238,6 +239,7 @@ streetToken
 	|	{(!hasStreetNameStarted) && address.getStreetType() == null}?=> s=(STREETNUMSUFFIX|NUMERICSTREETSUFFIX)
 							{
 							 address.setStreetNumberSuffix($s.text);
+							 address.setStreetNumberSuffixSeparate(true);
 							}
 							
 	|	{hasStreetNameStarted}?=>	n=NUMBER
@@ -257,6 +259,10 @@ streetToken
 							 if (!address.isStreetTypePrefix() && address.getStreetType() != null) {
 							    appendStreetName(address.getStreetType());
 							    address.setStreetType(null);
+							 }
+							 if (address.getStreetDirection() != null) {
+							    appendStreetName(address.getStreetDirection());
+							    address.setStreetDirection(null);
 							 }
 							 if (!address.isSuitePrefix()) {
 							    if (address.getSuiteType() != null) {

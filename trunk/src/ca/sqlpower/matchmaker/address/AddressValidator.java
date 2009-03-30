@@ -420,6 +420,27 @@ public class AddressValidator {
 //            					}
 //            				}
 //            			}
+				if (a.getStreetNumberSuffix() != null && a.getStreetNumberSuffix().length() > 0 && 
+						a.getStreetNumberSuffix().charAt(0) > 64 && a.getStreetNumberSuffixSeparate() != null && 
+						a.getStreetNumberSuffixSeparate()) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street number suffix is alphabetic and should not be separate from the street number"));
+					suggestion.setStreetNumberSuffixSeparate(false);
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
+				} else if (a.getStreetNumberSuffix() != null && a.getStreetNumberSuffix().length() > 0 && 
+						a.getStreetNumberSuffix().charAt(0) < 58 && a.getStreetNumberSuffixSeparate() != null && 
+						!a.getStreetNumberSuffixSeparate()) {
+					errorList.add(ValidateResult.createValidateResult(
+							Status.FAIL, "Street number suffix is numeric and should be separate from the street number"));
+					suggestion.setStreetNumberSuffixSeparate(true);
+					if (countErrors) {
+						errorCount++;
+						suggestionExists = true;
+					}
+				}
 				if (a.getStreetNumber() != null) {
 					if (pc.getStreetAddressSequenceType() == AddressSequenceType.ODD && a.getStreetNumber() % 2 == 0) {
 						isValid = false;

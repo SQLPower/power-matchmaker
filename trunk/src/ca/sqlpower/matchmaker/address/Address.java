@@ -440,6 +440,14 @@ public class Address {
     private String streetNumberSuffix;
     
     /**
+     * Tracks if the street number suffix was directly connected to the street number
+     * or if there was a space between them. Once the address is parsed this information
+     * is not stored except for here and is needed as alphabetic street number suffixes
+     * are not valid if there is a space between them and the street number.
+     */
+    private Boolean streetNumberSuffixSeparate;
+    
+    /**
      * The street name, rural route, or post office box identifier. This field is never
      * null.
      */
@@ -558,6 +566,7 @@ public class Address {
         streetDirection = source.streetDirection;
         streetNumber = source.streetNumber;
         streetNumberSuffix = source.streetNumberSuffix;
+        streetNumberSuffixSeparate = source.streetNumberSuffixSeparate;
         streetType = source.streetType;
         streetTypePrefix = source.streetTypePrefix;
         suite = source.suite;
@@ -803,12 +812,17 @@ public class Address {
         if (streetNumber != null) {
             sb.append(streetNumber);
             if (streetNumberSuffix != null && streetNumberSuffix.trim().length() > 0) {
-            	try {
-            		Integer.parseInt(streetNumberSuffix.substring(0, 1));
+            	if (streetNumberSuffixSeparate == null) {
+            		//If the street number suffix was not stated to be separate or not use the appropriate spacing.
+            		try {
+            			Integer.parseInt(streetNumberSuffix.substring(0, 1));
+            			sb.append(" ");
+            		} catch (NumberFormatException e) {
+            			//If the street number suffix does not start with a number place it
+            			//directly behind the street number without a space.
+            		}
+            	} else if (streetNumberSuffixSeparate) {
             		sb.append(" ");
-            	} catch (NumberFormatException e) {
-            		//If the street number suffix does not start with a number place it
-            		//directly behind the street number without a space.
             	}
                 sb.append(streetNumberSuffix);
             }
@@ -1152,6 +1166,10 @@ public class Address {
 				|| (streetNumberSuffix != null && !streetNumberSuffix.equals(a.getStreetNumberSuffix()))) {
 			return false;
 		}
+		if ((streetNumberSuffixSeparate == null && a.getStreetNumberSuffixSeparate() != null) 
+				|| (streetNumberSuffixSeparate != null && !streetNumberSuffixSeparate.equals(a.getStreetNumberSuffixSeparate()))) {
+			return false;
+		}
 		if ((streetType == null && a.getStreetType() != null) 
 				|| (streetType != null && !streetType.equals(a.getStreetType()))) {
 			return false;
@@ -1279,6 +1297,11 @@ public class Address {
 		}
 		result = 31 * result + addValue;
 		addValue = 0;
+		if (streetNumberSuffixSeparate != null) {
+			addValue = streetNumberSuffixSeparate.hashCode();
+		}
+		result = 31 * result + addValue;
+		addValue = 0;
 		if (streetType != null) {
 			addValue = streetType.hashCode();
 		}
@@ -1361,5 +1384,14 @@ public class Address {
 
 	public String getUnparsedAddressLine2() {
 		return unparsedAddressLine2;
+	}
+
+	public void setStreetNumberSuffixSeparate(Boolean streetNumberSuffixSeparate) {
+			this.streetNumberSuffixSeparate = streetNumberSuffixSeparate;
+		
+	}
+
+	public Boolean getStreetNumberSuffixSeparate() {
+		return streetNumberSuffixSeparate;
 	}
 }
