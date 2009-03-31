@@ -49,7 +49,10 @@ import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
-	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
+	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/project_matchmaker.png"));
+	final private Icon projectDedupeIcon = new ImageIcon(getClass().getResource("/icons/project_dedupe.png"));
+	final private Icon projectCleanseIcon = new ImageIcon(getClass().getResource("/icons/project_cleanse.png"));
+	final private Icon projectAddressIcon = new ImageIcon(getClass().getResource("/icons/project_address.png"));
 	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
 	final private Icon mergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double.png"));
 	final private Icon sourceMergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double_star.png"));
@@ -75,7 +78,19 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
 
 		if (value instanceof Project) {
-			setIcon(projectIcon);
+			switch (((Project) value).getType()) {
+				case FIND_DUPES:
+					setIcon(projectDedupeIcon);
+					break;
+				case CLEANSE:
+					setIcon(projectCleanseIcon);
+					break;
+				case ADDRESS_CORRECTION:
+					setIcon(projectAddressIcon);
+					break;
+				default:
+					setIcon(projectIcon);
+			}
 		} else if (value instanceof MungeProcess) {
             MungeProcess mungeProcess = (MungeProcess) value;
             if (mungeProcess.getColour() == null) {
