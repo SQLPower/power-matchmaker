@@ -167,8 +167,14 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         		SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
 				refreshIndexComboBoxAndAction(sourceTable);
 				if (sourceTable != null) {
-					String trimmedResultTableName = sourceTable.getName();
-					trimmedResultTableName += "_RESULT";
+					String trimmedResultTableName;
+					if (project.getType() == ProjectMode.FIND_DUPES) {
+						trimmedResultTableName = sourceTable.getName() + "_match_pool";
+					} else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
+						trimmedResultTableName = sourceTable.getName() + "_address_pool";
+					} else {
+						trimmedResultTableName = sourceTable.getName() + "_result";
+					}
 					resultTableName.setText(trimmedResultTableName);
 				}
 				filterPanel.setTable(sourceTable);
