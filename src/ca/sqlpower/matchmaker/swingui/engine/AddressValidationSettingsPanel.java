@@ -108,7 +108,7 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		dfb.nextLine();
 		dfb.appendUnrelatedComponentsGapRow();
 		dfb.nextLine();
-		dfb.append("Auto-validate Setting");
+		dfb.append("Auto-correction Setting");
 		ButtonGroup autoValidateButtonGroup = new ButtonGroup();
 		
 		dfb.nextLine();
