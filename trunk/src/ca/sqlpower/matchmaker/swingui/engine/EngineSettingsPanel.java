@@ -480,7 +480,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		}
 
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-			autoWriteAutoValidatedAddresses = new JCheckBox("Automatically write back auto-validated addresses", ((MungeSettings)engineSettings).isAutoWriteAutoValidatedAddresses());
+			autoWriteAutoValidatedAddresses = new JCheckBox("Immediately commit auto-corrected addresses", ((MungeSettings)engineSettings).isAutoWriteAutoValidatedAddresses());
 		}
 		
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
@@ -608,7 +608,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			y += 2;
 			pb.add(autoWriteAutoValidatedAddresses, cc.xyw(4, y, 2, "l,c"));
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
-				pb.add(new JLabel("Auto-validation Setting"), cc.xy(7, y));
+				pb.add(new JLabel("Auto-correction Setting:"), cc.xy(7, y));
 			}
 		}
 		

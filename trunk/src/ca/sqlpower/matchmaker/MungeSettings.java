@@ -41,11 +41,11 @@ public class MungeSettings extends MatchMakerSettings {
 		 * Include any records that are either invalid, or have
 		 * suggestions with a different format from the original source addresses
 		 */
-		INVALID_OR_DIFFERENT_FORMAT("Include SERP invalid or different format"),
+		INVALID_OR_DIFFERENT_FORMAT("Include invalid or valid but different format"),
 		/**
 		 * Include only records that are invalid 
 		 */
-		INVALID_ONLY("Include only SERP invalid records");
+		INVALID_ONLY("Include only invalid records");
 		
 		/**
 		 * A longer description of this setting
@@ -69,21 +69,22 @@ public class MungeSettings extends MatchMakerSettings {
 		/**
 		 * Do no auto validate at all
 		 */
-		NOTHING("Do not auto-validate"),
+		NOTHING("No auto-correction"),
 		/**
-		 * Only validate addresses that are SERP correctable
+		 * Only validate addresses that are correctable according to
+		 * the applicable postal authority (currently only SERP)
 		 * (that is, the {@link AddressValidator} provides a
 		 * valid suggestion)
 		 */
-		SERP_CORRECTABLE("Auto-validate only SERP correctable addresses"),
+		SERP_CORRECTABLE("Auto-correct for postal authority certification"),
 		/**
 		 * Validate any address with only one suggestion 
 		 */
-		EVERYTHING_WITH_ONE_SUGGESTION("Auto-validate any address with only one suggestion"),
+		EVERYTHING_WITH_ONE_SUGGESTION("Auto-correct any with a single suggestion"),
 		/**
 		 * Validate any address with at least one suggestion
 		 */
-		EVERYTHING_WITH_SUGGESTION("Auto-validate any address with a suggestion");
+		EVERYTHING_WITH_SUGGESTION("Auto-correct any with at least one suggestion");
 		
 		/**
 		 * A longer description of particular setting
