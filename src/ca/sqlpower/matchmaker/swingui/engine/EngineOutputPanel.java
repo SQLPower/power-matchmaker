@@ -77,6 +77,7 @@ public class EngineOutputPanel {
 	public EngineOutputPanel(final JFrame owner) {
 		
 		progressBar = new JProgressBar();
+		progressBar.setStringPainted(true);
 
 		GraphicsEnvironment ge = GraphicsEnvironment
 		.getLocalGraphicsEnvironment();
