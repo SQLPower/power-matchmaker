@@ -128,13 +128,14 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * @param project the project Object to be edited
 	 * @param folder the project's parent folder
 	 */
-    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws SQLObjectException {
+    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder, Action cancelAction) throws SQLObjectException {
         if (project == null) throw new IllegalArgumentException("You can't edit a null project");
         if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
         
         this.swingSession = swingSession;
         this.project = project;
         this.folder = folder;
+        this.cancelAction = cancelAction;
         handler = new FormValidationHandler(status, true);
         handler.setValidatedAction(saveAction);
         panel = buildUI();
@@ -241,6 +242,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
             }
 		}
 	};
+	
+	private Action cancelAction;
 
 	private Window getParentWindow() {
 	    return SPSUtils.getWindowInHierarchy(panel);
@@ -334,6 +337,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
     	JButton viewBuilder = new JButton(viewBuilderAction);
     	JButton saveProject = new JButton(saveAction);
+    	JButton cancelProject = new JButton(cancelAction);
         JButton createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
@@ -410,6 +414,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		// way, please fix this.
 		JPanel savePanel = new JPanel(new FlowLayout());
 		savePanel.add(saveProject);
+		savePanel.add(cancelProject);
 		pb.add(savePanel, cc.xy(4, row));
 
 		return pb.getPanel();
@@ -858,7 +863,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	}
 
 	public void discardChanges() {
-		logger.error("Cannot discard chagnes");
+		
 	}
 
 	public Project getCurrentEditingMMO() {
