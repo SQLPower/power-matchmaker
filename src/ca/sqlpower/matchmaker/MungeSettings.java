@@ -38,14 +38,33 @@ public class MungeSettings extends MatchMakerSettings {
 		 */
 		EVERYTHING("Include all records"),
 		/**
+		 * Include all invalid or valid records. Currently, this would have the
+		 * same behaviour as as 'EVERYTHING'.
+		 */
+		VALID_OR_INVALID("Include all records"),
+		/**
+		 * Currently, this has the same behaviour as 'VALID_ONLY'
+		 */
+		VALID_OR_DIFFERENT_FORMAT("Include all valid records"),
+		/**
 		 * Include any records that are either invalid, or have
 		 * suggestions with a different format from the original source addresses
 		 */
 		INVALID_OR_DIFFERENT_FORMAT("Include invalid or valid but different format"),
 		/**
+		 * Include only records that are valid
+		 */
+		VALID_ONLY("Include only valid records"),
+		/**
+		 * Include only records that are valid but have suggestions printed in a 
+		 * different format
+		 */
+		DIFFERENT_FORMAT_ONLY("Include only valid records with different formats"),
+		/**
 		 * Include only records that are invalid 
 		 */
-		INVALID_ONLY("Include only invalid records");
+		INVALID_ONLY("Include only invalid records"),
+		NOTHING("Include nothing");
 		
 		/**
 		 * A longer description of this setting

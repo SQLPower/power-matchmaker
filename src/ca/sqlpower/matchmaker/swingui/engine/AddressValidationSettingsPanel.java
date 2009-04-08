@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui.engine;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -55,9 +56,9 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 	private MungeSettings settings;
 	
 	// Radio buttons for setting the PoolFilterSetting
-	private JRadioButton pfcEverythingRB;
-	private JRadioButton pfcInvalidOrDifferentRB;
-	private JRadioButton pfcInvalidOnlyRB;
+	private JCheckBox valid;
+	private JCheckBox differentFormat;
+	private JCheckBox invalid;
 	
 	// Radio buttons for setting the AutoValidationSetting
 	private JRadioButton avcNothingRB;
@@ -79,30 +80,35 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 		DefaultFormBuilder dfb = new DefaultFormBuilder(validationSettingsLayout);
 		dfb.append("Address Filter Setting");
 		
-		ButtonGroup poolFilterButtonGroup = new ButtonGroup();
 		dfb.nextLine();
-		pfcEverythingRB = new JRadioButton(PoolFilterSetting.EVERYTHING.getLongDescription());
-		if (settings.getPoolFilterSetting() == PoolFilterSetting.EVERYTHING) {
-			pfcEverythingRB.setSelected(true);
+		valid = new JCheckBox("Include all valid addresses");
+		if (settings.getPoolFilterSetting() == PoolFilterSetting.EVERYTHING ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.VALID_ONLY ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.VALID_OR_DIFFERENT_FORMAT ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.VALID_OR_INVALID) {
+			valid.setSelected(true);
 		}
-		dfb.append(pfcEverythingRB);
-		poolFilterButtonGroup.add(pfcEverythingRB);
+		dfb.append(valid);
 		
 		dfb.nextLine();
-		pfcInvalidOrDifferentRB = new JRadioButton(PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT.getLongDescription());
-		if (settings.getPoolFilterSetting() == PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT) {
-			pfcInvalidOrDifferentRB.setSelected(true);
+		differentFormat = new JCheckBox("Include all valid addresses with different formatting");
+		if (settings.getPoolFilterSetting() == PoolFilterSetting.EVERYTHING || 
+				settings.getPoolFilterSetting() == PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.VALID_OR_DIFFERENT_FORMAT ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.DIFFERENT_FORMAT_ONLY) {
+			differentFormat.setSelected(true);
 		}
-		dfb.append(pfcInvalidOrDifferentRB);
-		poolFilterButtonGroup.add(pfcInvalidOrDifferentRB);
+		dfb.append(differentFormat);
 		
 		dfb.nextLine();
-		pfcInvalidOnlyRB = new JRadioButton(PoolFilterSetting.INVALID_ONLY.getLongDescription());
-		if (settings.getPoolFilterSetting() == PoolFilterSetting.INVALID_ONLY) {
-			pfcInvalidOnlyRB.setSelected(true);
+		invalid = new JCheckBox("Include all invalid addresses");
+		if (settings.getPoolFilterSetting() == PoolFilterSetting.EVERYTHING ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.VALID_OR_INVALID ||
+				settings.getPoolFilterSetting() == PoolFilterSetting.INVALID_ONLY) {
+			invalid.setSelected(true);
 		}
-		dfb.append(pfcInvalidOnlyRB);
-		poolFilterButtonGroup.add(pfcInvalidOnlyRB);
+		dfb.append(invalid);
 		
 		
 		dfb.nextLine();
@@ -147,13 +153,24 @@ public class AddressValidationSettingsPanel implements DataEntryPanel {
 	}
 	
 	public boolean applyChanges() {
-		if (pfcEverythingRB.isSelected()) {
+		if (valid.isSelected() && differentFormat.isSelected() && invalid.isSelected()) {
 			settings.setPoolFilterSetting(PoolFilterSetting.EVERYTHING);
-		} else if (pfcInvalidOrDifferentRB.isSelected()) {
+		} else if (valid.isSelected() && differentFormat.isSelected() && !invalid.isSelected()) {
+			settings.setPoolFilterSetting(PoolFilterSetting.VALID_OR_DIFFERENT_FORMAT);
+		} else if (valid.isSelected() && !differentFormat.isSelected() && invalid.isSelected()) {
+			settings.setPoolFilterSetting(PoolFilterSetting.VALID_OR_INVALID);
+		} else if (valid.isSelected() && !differentFormat.isSelected() && !invalid.isSelected()) {
+			settings.setPoolFilterSetting(PoolFilterSetting.VALID_ONLY); 
+		} else if (!valid.isSelected() && differentFormat.isSelected() && invalid.isSelected()) {
 			settings.setPoolFilterSetting(PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT);
-		} else if (pfcInvalidOnlyRB.isSelected()) {
+		} else if (!valid.isSelected() && differentFormat.isSelected() && !invalid.isSelected()) {
+			settings.setPoolFilterSetting(PoolFilterSetting.DIFFERENT_FORMAT_ONLY);
+		} else if (!valid.isSelected() && !differentFormat.isSelected() && invalid.isSelected()) {
 			settings.setPoolFilterSetting(PoolFilterSetting.INVALID_ONLY);
+		} else if (!valid.isSelected() && !differentFormat.isSelected() && !invalid.isSelected()) {
+			settings.setPoolFilterSetting(PoolFilterSetting.NOTHING);
 		}
+			
 		
 		if (avcNothingRB.isSelected()) {
 			settings.setAutoValidateSetting(AutoValidateSetting.NOTHING);
