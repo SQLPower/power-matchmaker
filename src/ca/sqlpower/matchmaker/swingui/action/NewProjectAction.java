@@ -84,7 +84,12 @@ public final class NewProjectAction extends AbstractAction {
 		project.setResultTableSPDatasource(dsName);
 		
 		try {
-			ProjectEditor me = new ProjectEditor(swingSession, project, folder);
+			AbstractAction cancelAction = new AbstractAction("Cancel") {
+				public void actionPerformed(final ActionEvent e) {
+					swingSession.setCurrentEditorComponent(null);
+				}
+			};
+			ProjectEditor me = new ProjectEditor(swingSession, project, folder, cancelAction);
 			swingSession.setCurrentEditorComponent(me);
 		} catch (Exception ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create match", ex);

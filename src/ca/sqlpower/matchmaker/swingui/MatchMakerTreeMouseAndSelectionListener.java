@@ -426,10 +426,16 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 							(PlFolder) o);
 					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof Project) {
-
+					AbstractAction cancelAction = new AbstractAction("Cancel") {
+						public void actionPerformed(final ActionEvent e) {
+							swingSession.setCurrentEditorComponent(null);
+						}
+					};
+					
 					ProjectEditor me;
 					me = new ProjectEditor(swingSession, (Project) o,
-							(PlFolder<Project>) ((Project) o).getParent());
+							(PlFolder<Project>) ((Project) o).getParent(),
+							cancelAction);
 
 					swingSession.setCurrentEditorComponent(me);
 
