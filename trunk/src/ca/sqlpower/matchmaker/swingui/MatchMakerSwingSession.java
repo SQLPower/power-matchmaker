@@ -59,7 +59,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -298,48 +297,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 //	TODO: Implement Cross-referencing projects first before re-enabling this action
 //	private Action newXrefAction = null;
 	private Action newCleanseAction = null;
+	private Action newAddressAction = null;
 	
-	private Action editProjectAction = new EditProjectAction("Edit Project");
 	private Action deleteProjectAction = new DeleteProjectAction(this);
-
-	private Action runMatchAction = new AbstractAction("Run Match") {
-
-		public void actionPerformed(ActionEvent e) {
-			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (project != null && project.getType() == ProjectMode.FIND_DUPES) {
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-			    TreePath treePath = 
-			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,2));
-			    getTree().setSelectionPath(treePath);
-			}
-		}
-	};
-
-	private Action runMergeAction = new AbstractAction("Run Merge") {
-
-		public void actionPerformed(ActionEvent e) {
-			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (project != null && project.getType() == ProjectMode.FIND_DUPES) {
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-				TreePath treePath = 
-					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,5));
-				getTree().setSelectionPath(treePath);
-			}
-		}
-	};
-	
-	private Action runCleanseAction = new AbstractAction("Run Cleanse") {
-
-		public void actionPerformed(ActionEvent e) {
-			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (project != null && project.getType() == ProjectMode.CLEANSE) {
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-				TreePath treePath = 
-					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,1));
-				getTree().setSelectionPath(treePath);
-			}
-		}
-	};
 
 	private Action helpAction;
 	private Action buildExampleTableAction;
@@ -513,6 +473,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 //		TODO: Implement Cross-referencing projects first before re-enabling this action
 //		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
 		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
+		newAddressAction = new NewProjectAction(this, "New Address Correction Project", Project.ProjectMode.ADDRESS_CORRECTION);
 		
         JMenuBar menuBar = new JMenuBar();
 
@@ -537,10 +498,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		menuBar.add(editMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
-		JMenu databaseMenu = new JMenu("Database");
+		JMenu databaseMenu = new JMenu("Connections");
 		databaseMenu.setMnemonic('d');
 		databaseMenu.add(remoteLoginAction);
         databaseMenu.add(createRepositoryAction);
+        databaseMenu.addSeparator();
 		databaseMenu.add(databaseConnectionAction);
 		menuBar.add(databaseMenu);
 		
@@ -548,15 +510,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.setMnemonic('m');
 		projectMenu.add(newDeDupeAction);
 		projectMenu.add(newCleanseAction);
+		projectMenu.add(newAddressAction);
 //		TODO: Implement Cross-referencing projects first before re-enabling this action
 //		projectMenu.add(newXrefAction);
 		projectMenu.addSeparator();
-		projectMenu.add(editProjectAction);
 		projectMenu.add(deleteProjectAction);
-		projectMenu.addSeparator();
-		projectMenu.add(runMatchAction);
-		projectMenu.add(runMergeAction);
-		projectMenu.add(runCleanseAction);
 		
 		// TODO: Match statistics has been disabled until re-implementation
 //		projectMenu.addSeparator();
@@ -571,8 +529,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(sqlQueryAction);
 		toolsMenu.add(new EditTranslateAction(this));
-		// We will add this back in if we need the SQLRunner later
-        //toolsMenu.add(new SQLRunnerAction(frame));
 		menuBar.add(toolsMenu);
 
 		// Commented the 'Window' menu until we actually have something to put in it
@@ -580,7 +536,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 //        windowMenu.setMnemonic('w');
 //        menuBar.add(windowMenu);
         
-        helpAction = new HelpAction(frame);
+		ImageIcon helpIcon = SPSUtils.createIcon("help", "Help");
+        helpAction = new HelpAction(frame, helpIcon);
 
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.setMnemonic('h');
@@ -600,26 +557,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		
 		frame.setJMenuBar(menuBar);
 
-		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
-
-		toolBar.add(newDeDupeAction);
-		toolBar.add(newCleanseAction);
-//		TODO: Implement Cross-referencing projects first before re-enabling this action
-//		toolBar.add(newXrefAction);
-        toolBar.addSeparator();
-        toolBar.add(runMatchAction);
-        toolBar.add(runMergeAction);
-        toolBar.add(runCleanseAction);
-        toolBar.addSeparator();
-        toolBar.addSeparator();
-        toolBar.add(helpAction);
-        toolBar.add(exitAction);
-		toolBar.setToolTipText("MatchMaker Toolbar");
-		toolBar.setName("MatchMaker Toolbar");
-
 		Container projectBarPane = frame.getContentPane();
 		projectBarPane.setLayout(new BorderLayout());
-		projectBarPane.add(toolBar, BorderLayout.NORTH);
 
 		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),getTranslateGroupParent(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);

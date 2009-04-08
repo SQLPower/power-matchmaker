@@ -29,6 +29,7 @@ import javax.help.CSH;
 import javax.help.HelpBroker;
 import javax.help.HelpSet;
 import javax.swing.AbstractAction;
+import javax.swing.Icon;
 import javax.swing.JFrame;
 
 import ca.sqlpower.swingui.SPSUtils;
@@ -39,9 +40,9 @@ import ca.sqlpower.swingui.SPSUtils;
 public class HelpAction extends AbstractAction {
 	JFrame parent;
 	
-	public HelpAction(JFrame parent) {
+	public HelpAction(JFrame parent, Icon icon) {
+		super("Help", icon);
 		this.parent = parent;
-		super.putValue(AbstractAction.NAME, "Help");
 	}
 
 	public void actionPerformed(ActionEvent e) {
