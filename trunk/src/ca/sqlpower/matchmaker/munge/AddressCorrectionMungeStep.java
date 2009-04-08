@@ -30,6 +30,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
@@ -317,107 +318,137 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			addressStatus = AddressStatus.INCORRECTABLE;
 		}
 		
-		// else if not doing SERP auto-correction
-		switch (getProject().getMungeSettings().getPoolFilterSetting()) {
-			case INVALID_ONLY:
-				logger.debug("Accepting only SERP invalid addresss");
-				if (validator.isSerpValid()) {
-					logger.debug("This address is SERP valid, so skipping");
+		PoolFilterSetting setting = getProject().getMungeSettings().getPoolFilterSetting();
+		
+		if (setting == PoolFilterSetting.NOTHING) {
+			return Boolean.TRUE;
+		} else if (setting == PoolFilterSetting.INVALID_ONLY) {
+			if (validator.isSerpValid()) {
+				logger.debug("This address is SERP valid, so skipping");
+				return Boolean.TRUE;
+			}
+		} else if (setting == PoolFilterSetting.DIFFERENT_FORMAT_ONLY) {
+			List<Address> suggestions = validator.getSuggestions();
+			if (suggestions.size() == 0) {
+				logger.debug("No suggestions, so skipping");
+				return Boolean.TRUE;
+			} else if (!validator.isSerpValid()) {
+				logger.debug("Invalid address, so skipping");
+				return Boolean.TRUE;
+			} else if (suggestions.size() == 1) {
+				Address suggestedAddress = suggestions.get(0);
+				if (address.getAddress().equals(suggestedAddress.getAddress()) &&
+						address.getMunicipality().equals(suggestedAddress.getMunicipality()) &&
+						address.getProvince().equals(suggestedAddress.getProvince())) {						logger.debug("Suggested address is exactly the same, so skipping");
+					logger.debug("Only one suggestion and it's the same, so skipping");
+					return Boolean.TRUE;
+				}
+			}
+		} else if (setting == PoolFilterSetting.VALID_ONLY) {
+			if (!validator.isSerpValid()) {
+				logger.debug("This address is not SERP valid, so skipping");
+				return Boolean.TRUE;
+			}
+		} else if (setting == PoolFilterSetting.INVALID_OR_DIFFERENT_FORMAT) {
+			logger.debug("Accepting only SERP invalid addresses or addresses with suggestions");
+			if (validator.isSerpValid()) {
+				List<Address> suggestions = validator.getSuggestions();
+				// if no suggestions, then skip
+				if (suggestions.size() == 0) {
+					logger.debug("This address is SERP valid, or has no suggestions, so skipping");
+					return Boolean.TRUE;
+				}
+				// if only one suggestion and it's the same as the original, then skip
+				if (suggestions.size() == 1) {
+					Address suggestedAddress = suggestions.get(0);
+					if (address.getAddress().equals(suggestedAddress.getAddress()) &&
+							address.getMunicipality().equals(suggestedAddress.getMunicipality()) &&
+							address.getProvince().equals(suggestedAddress.getProvince())) {						logger.debug("Suggested address is exactly the same, so skipping");
+						logger.debug("Only one suggestion and it's the same, so skipping");
+						return Boolean.TRUE;
+					}
+				}
+			}
+		} else if (setting == PoolFilterSetting.VALID_OR_DIFFERENT_FORMAT) {
+			logger.debug("Accepting only SERP invalid addresses or addresses with suggestions");
+			if (!validator.isSerpValid()) {
+				logger.debug("This address is SERP invalid, so skipping");
+				return Boolean.TRUE;
+			}
+		}
+		
+		SQLIndex uniqueKey = getProject().getSourceTableIndex();
+	
+		MungeStep inputStep = getInputStep();
+		
+		List<Object> uniqueKeyValues = new ArrayList<Object>();
+		
+		for (Column col: uniqueKey.getChildren()) {
+			MungeStepOutput output = inputStep.getOutputByName(col.getName());
+			if (output == null) {
+				throw new IllegalStateException("Input step is missing unique key column '" + col.getName() + "'");
+			}
+			uniqueKeyValues.add(output.getData());
+		}
+		
+		AddressResult result = new AddressResult(uniqueKeyValues, addressLine1, addressLine2, municipality, province, inPostalCode, country);
+		
+		AutoValidateSetting autoValidateSetting = getProject().getMungeSettings().getAutoValidateSetting();
+		switch (autoValidateSetting) {
+			case NOTHING:
+				logger.debug("Autovalidation disabled");
+				break;
+			case SERP_CORRECTABLE:
+				logger.debug("Autovalidating SERP correctable addresses");
+				if (validator.isSerpValid() || !validator.isValidSuggestion()) {
+					logger.debug("Address is SERP valid, or has no valid suggestions, so skipping");
 					break;
 				}
-			case INVALID_OR_DIFFERENT_FORMAT:
-				logger.debug("Accepting only SERP invalid addresses or addresses with suggestions");
-				if (validator.isSerpValid()) {
-					// if no suggestions, then skip
-					if (validator.getSuggestions().size() == 0) {
-						logger.debug("This address is SERP valid, or has no suggestions, so skipping");
-						break;
-					}
-					// if only one suggestion and it's the same as the original, then skip
-					if (validator.getSuggestions().size() == 1) {
-						Address suggestedAddress = validator.getSuggestions().get(0);
-						if (address.getAddress().equals(suggestedAddress.getAddress()) &&
-								address.getMunicipality().equals(suggestedAddress.getMunicipality()) &&
-								address.getProvince().equals(suggestedAddress.getProvince())) {						logger.debug("Suggested address is exactly the same, so skipping");
-							logger.debug("Only one suggestion and it's the same, so skipping");
-							break;
-						}
-					}
+			case EVERYTHING_WITH_ONE_SUGGESTION:
+				logger.debug("Autovalidating anything with just one suggestion");
+				if (validator.getSuggestions().size() != 1 && autoValidateSetting == AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION) {
+					logger.debug("Validator has zero or more than one suggestion, so skipping");
+					break;
+				}
+			case EVERYTHING_WITH_SUGGESTION:
+				logger.debug("Autovalidating anything with a suggestion");
+				if (validator.getSuggestions().size() == 0) {
+					logger.debug("Validator has no suggestions, so skipping");
+					break;
 				}
 			default:
-				SQLIndex uniqueKey = getProject().getSourceTableIndex();
-			
-				MungeStep inputStep = getInputStep();
+				if (getProject().getMungeSettings().isAutoWriteAutoValidatedAddresses()) {
+					logger.debug("Automatically writing back an auto-validated address");
+					Address correctedAddress = validator.getSuggestions().get(0);
+					
+					logger.debug("Top suggestion from validator is: " + correctedAddress);
+					
+					List<MungeStepOutput> outputs = getChildren(); 
+					
+					outputs.get(0).setData(correctedAddress.getAddress());
+					outputs.get(1).setData(addressLine2);
+					outputs.get(2).setData(correctedAddress.getSuite());
+					outputs.get(3).setData(correctedAddress.getStreetNumber() != null ? BigDecimal.valueOf(correctedAddress.getStreetNumber()) : null);
+					outputs.get(4).setData(correctedAddress.getStreetNumberSuffix());
+					outputs.get(5).setData(correctedAddress.getStreet());
+					outputs.get(6).setData(correctedAddress.getStreetType());
+					outputs.get(7).setData(correctedAddress.getStreetDirection());
+					outputs.get(8).setData(correctedAddress.getMunicipality());
+					outputs.get(9).setData(correctedAddress.getProvince());
+					outputs.get(10).setData(country);
+					outputs.get(11).setData(correctedAddress.getPostalCode());
+					outputs.get(12).setData(validator.isSerpValid());
+					
+					addressCorrected = true;
+					
+					return Boolean.TRUE;
+				}  
 				
-				List<Object> uniqueKeyValues = new ArrayList<Object>();
-				
-				for (Column col: uniqueKey.getChildren()) {
-					MungeStepOutput output = inputStep.getOutputByName(col.getName());
-					if (output == null) {
-						throw new IllegalStateException("Input step is missing unique key column '" + col.getName() + "'");
-					}
-					uniqueKeyValues.add(output.getData());
-				}
-				
-				AddressResult result = new AddressResult(uniqueKeyValues, addressLine1, addressLine2, municipality, province, inPostalCode, country);
-				
-				AutoValidateSetting autoValidateSetting = getProject().getMungeSettings().getAutoValidateSetting();
-				switch (autoValidateSetting) {
-					case NOTHING:
-						logger.debug("Autovalidation disabled");
-						break;
-					case SERP_CORRECTABLE:
-						logger.debug("Autovalidating SERP correctable addresses");
-						if (validator.isSerpValid() || !validator.isValidSuggestion()) {
-							logger.debug("Address is SERP valid, or has no valid suggestions, so skipping");
-							break;
-						}
-					case EVERYTHING_WITH_ONE_SUGGESTION:
-						logger.debug("Autovalidating anything with just one suggestion");
-						if (validator.getSuggestions().size() != 1 && autoValidateSetting == AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION) {
-							logger.debug("Validator has zero or more than one suggestion, so skipping");
-							break;
-						}
-					case EVERYTHING_WITH_SUGGESTION:
-						logger.debug("Autovalidating anything with a suggestion");
-						if (validator.getSuggestions().size() == 0) {
-							logger.debug("Validator has no suggestions, so skipping");
-							break;
-						}
-					default:
-						if (getProject().getMungeSettings().isAutoWriteAutoValidatedAddresses()) {
-							logger.debug("Automatically writing back an auto-validated address");
-							Address correctedAddress = validator.getSuggestions().get(0);
-							
-							logger.debug("Top suggestion from validator is: " + correctedAddress);
-							
-							List<MungeStepOutput> outputs = getChildren(); 
-							
-							outputs.get(0).setData(correctedAddress.getAddress());
-							outputs.get(1).setData(addressLine2);
-							outputs.get(2).setData(correctedAddress.getSuite());
-							outputs.get(3).setData(correctedAddress.getStreetNumber() != null ? BigDecimal.valueOf(correctedAddress.getStreetNumber()) : null);
-							outputs.get(4).setData(correctedAddress.getStreetNumberSuffix());
-							outputs.get(5).setData(correctedAddress.getStreet());
-							outputs.get(6).setData(correctedAddress.getStreetType());
-							outputs.get(7).setData(correctedAddress.getStreetDirection());
-							outputs.get(8).setData(correctedAddress.getMunicipality());
-							outputs.get(9).setData(correctedAddress.getProvince());
-							outputs.get(10).setData(country);
-							outputs.get(11).setData(correctedAddress.getPostalCode());
-							outputs.get(12).setData(validator.isSerpValid());
-							
-							addressCorrected = true;
-							
-							return Boolean.TRUE;
-						}  
-						
-						logger.debug("Autovalidating address to the following address: " + validator.getSuggestions().get(0));
-						result.setOutputAddress(validator.getSuggestions().get(0));
-						result.setValid(true);
-				}
-				pool.addAddress(result, logger);
+				logger.debug("Autovalidating address to the following address: " + validator.getSuggestions().get(0));
+				result.setOutputAddress(validator.getSuggestions().get(0));
+				result.setValid(true);
 		}
+		pool.addAddress(result, logger);
 		
 		return Boolean.TRUE;
 	}
