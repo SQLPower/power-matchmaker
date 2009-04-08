@@ -94,6 +94,11 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		addChild(new MungeStepOutput<String>("Province", String.class));
 		addChild(new MungeStepOutput<String>("Country", String.class));
 		addChild(new MungeStepOutput<String>("Postal/ZIP", String.class));
+		// A new output requested. Basically, it will return either the value of
+		// the validator's isSERPValid if using a validator, or just return the
+		// address's isValid flag in the case of just writing values from the
+		// result table
+		addChild(new MungeStepOutput<Boolean>("Is Valid?", Boolean.class));
 	
 		InputDescriptor input0 = new InputDescriptor("Address Line 1", String.class);
 		InputDescriptor input1 = new InputDescriptor("Address Line 2", String.class);
@@ -212,6 +217,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		outputs.get(9).setData(output.getProvince());
 		outputs.get(10).setData(country);
 		outputs.get(11).setData(output.getPostalCode());
+		outputs.get(12).setData(validator.isSerpValid());
 		
 		return true;
 	}
@@ -268,6 +274,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			outputs.get(9).setData(address.getProvince());
 			outputs.get(10).setData(country);
 			outputs.get(11).setData(address.getPostalCode());
+			outputs.get(12).setData(result.isValid());
 			addressCorrected = true;
 		} else {
 			addressCorrected = false;
@@ -398,7 +405,8 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 							outputs.get(9).setData(correctedAddress.getProvince());
 							outputs.get(10).setData(country);
 							outputs.get(11).setData(correctedAddress.getPostalCode());
-
+							outputs.get(12).setData(validator.isSerpValid());
+							
 							addressCorrected = true;
 							
 							return Boolean.TRUE;
