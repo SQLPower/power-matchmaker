@@ -330,8 +330,17 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
 		
-		this.runEngineAction = new RunEngineAction(swingSession, project, engine, "Run Engine",
+		if (type == EngineType.MERGE_ENGINE ||
+			type == EngineType.CLEANSE_ENGINE ||
+			type == EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE) {
+			this.runEngineAction = new RunWarningEngineAction(swingSession, project, engine, "Run Engine",
+					engineOutputPanel, this, engineStart, engineFinish, 
+					"This engine will make changes to your source data.\n" +
+					"We strongly recommend that you backup your source data before running this engine.\n");
+		} else {
+			this.runEngineAction = new RunEngineAction(swingSession, project, engine, "Run Engine",
 				engineOutputPanel, this, engineStart, engineFinish);
+		}
 		
 		this.panel = buildUI();
 		
