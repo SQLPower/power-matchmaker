@@ -27,11 +27,12 @@ import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.event.TaskTerminationEvent;
 import ca.sqlpower.swingui.event.TaskTerminationListener;
 
 /**
- * This action is used to run the match engine. It also is responsible
+ * This action is used to run a {@link MatchMakerEngine} engine. It also is responsible
  * for constructing the user interface that deals with engine output.
  */
 class RunEngineAction extends AbstractAction implements TaskTerminationListener{
@@ -73,10 +74,28 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 
 	
 	/**
-	 * Sets up the action.
+	 * Sets up the {@link RunEngineAction}.
 	 * 
-	 * @param startAction An action to be run when the engine is started. Can be null.
-	 * @param finishAction An action to be run when the engine is finished. Can be null.
+	 * @param session
+	 *            The session that this action will register a
+	 *            {@link SPSwingWorker} with.
+	 * @param project
+	 *            The {@link Project} that this engine will be running on.
+	 * @param engine
+	 *            The engine that this action will be running
+	 * @param name
+	 *            The name of this action. It will be displayed on whatever
+	 *            control (ex. button) is used to run the engine.
+	 * @param engineOutputPanel
+	 *            The {@link EngineOutputPanel} that the engine output will be
+	 *            displayed on.
+	 * @param editorPane
+	 *            The {@link EngineSettingsPanel} that this
+	 *            {@link RunEngineAction} is being run from.
+	 * @param startAction
+	 *            An action to be run when the engine is started. Can be null.
+	 * @param finishAction
+	 *            An action to be run when the engine is finished. Can be null.
 	 */
 	public RunEngineAction(MatchMakerSwingSession session, Project project, MatchMakerEngine engine, String name, 
 			EngineOutputPanel engineOutputPanel, EngineSettingsPanel editorPane, Runnable startAction, 
