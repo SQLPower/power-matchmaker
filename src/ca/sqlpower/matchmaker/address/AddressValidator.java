@@ -442,8 +442,8 @@ public class AddressValidator {
 //            				}
 //            			}
 				if (a.getStreetNumberSuffix() != null && a.getStreetNumberSuffix().length() > 0 && 
-						a.getStreetNumberSuffix().charAt(0) > 64 && a.getStreetNumberSuffixSeparate() != null && 
-						a.getStreetNumberSuffixSeparate()) {
+						a.getStreetNumberSuffix().charAt(0) > 64 && a.isStreetNumberSuffixSeparate() != null && 
+						a.isStreetNumberSuffixSeparate()) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street number suffix is alphabetic and should not be separate from the street number"));
 					suggestion.setStreetNumberSuffixSeparate(false);
@@ -452,8 +452,8 @@ public class AddressValidator {
 						suggestionExists = true;
 					}
 				} else if (a.getStreetNumberSuffix() != null && a.getStreetNumberSuffix().length() > 0 && 
-						a.getStreetNumberSuffix().charAt(0) < 58 && a.getStreetNumberSuffixSeparate() != null && 
-						!a.getStreetNumberSuffixSeparate()) {
+						a.getStreetNumberSuffix().charAt(0) < 58 && a.isStreetNumberSuffixSeparate() != null && 
+						!a.isStreetNumberSuffixSeparate()) {
 					errorList.add(ValidateResult.createValidateResult(
 							Status.FAIL, "Street number suffix is numeric and should be separate from the street number"));
 					suggestion.setStreetNumberSuffixSeparate(true);

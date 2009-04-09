@@ -100,6 +100,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 		int numValid = 0;
 		int numCorrectable = 0;
 		int numIncorrectable = 0;
+		int numWritten = 0;
 		
 		List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
 		try {
@@ -165,6 +166,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 				numValid += munger.getNumValid();
 				numCorrectable += munger.getNumCorrectable();
 				numIncorrectable += munger.getNumIncorrectable();
+				numWritten += munger.getNumWritten();
 			}
 			
 			MungeSettings settings = getProject().getMungeSettings();
@@ -194,9 +196,12 @@ public class AddressCorrectionEngine extends AbstractEngine {
 			logger.setLevel(oldLoggerLevel);
 			setFinished(true);
 			double time = System.currentTimeMillis() - startTime;
-			logger.info("Number of Valid Addresses found: " + numValid);
-			logger.info("Number of Correctable Addresses found: " + numCorrectable);
-			logger.info("Number of Incorrectable Addresses found: " + numIncorrectable);
+			if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
+				logger.info("Number of Valid Addresses found: " + numValid);
+				logger.info("Number of Correctable Addresses found: " + numCorrectable);
+				logger.info("Number of Incorrectable Addresses found: " + numIncorrectable);
+			}
+			logger.info("Number of Source Addresses Modified: " + numWritten);
 			logger.info(String.format(
 									"Address Correction Engine processed %d records in %.3f seconds (%.2f per second)",
 									rowsProcessed, time / 1000,

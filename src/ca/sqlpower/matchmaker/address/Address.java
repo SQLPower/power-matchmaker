@@ -1166,8 +1166,8 @@ public class Address {
 				|| (streetNumberSuffix != null && !streetNumberSuffix.equals(a.getStreetNumberSuffix()))) {
 			return false;
 		}
-		if ((streetNumberSuffixSeparate == null && a.getStreetNumberSuffixSeparate() != null) 
-				|| (streetNumberSuffixSeparate != null && !streetNumberSuffixSeparate.equals(a.getStreetNumberSuffixSeparate()))) {
+		if ((streetNumberSuffixSeparate == null && a.isStreetNumberSuffixSeparate() != null) 
+				|| (streetNumberSuffixSeparate != null && !streetNumberSuffixSeparate.equals(a.isStreetNumberSuffixSeparate()))) {
 			return false;
 		}
 		if ((streetType == null && a.getStreetType() != null) 
@@ -1391,7 +1391,7 @@ public class Address {
 		
 	}
 
-	public Boolean getStreetNumberSuffixSeparate() {
+	public Boolean isStreetNumberSuffixSeparate() {
 		return streetNumberSuffixSeparate;
 	}
 }
