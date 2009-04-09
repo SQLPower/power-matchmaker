@@ -277,6 +277,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			outputs.get(11).setData(address.getPostalCode());
 			outputs.get(12).setData(result.isValid());
 			addressCorrected = true;
+			pool.markAddressForDeletion(uniqueKeyValues);
 		} else {
 			addressCorrected = false;
 		}

@@ -43,7 +43,13 @@ public class AddressResult {
 		 * Address exists in the database, but has been changed in the
 		 * AddressPool since the last load or store call.
 		 */
-		DIRTY("DIRTY"); 
+		DIRTY("DIRTY"),
+		
+		/**
+		 * Address has been marked to be deleted. On the next store call, delete
+		 * this address from the address pool.
+		 */
+		DELETE("DELETE"); 
 		
 		private String name;
 		
@@ -147,6 +153,10 @@ public class AddressResult {
 	
 	public void markDirty() {
 		storageState = StorageState.DIRTY;
+	}
+	
+	public void markDelete() {
+		storageState = StorageState.DELETE;
 	}
 	
 	StorageState getStorageState() {

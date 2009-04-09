@@ -365,11 +365,14 @@ public class AddressPool extends MonitorableImpl{
 		setProgress(0);
 		
 		List<AddressResult> dirtyAddresses = new ArrayList<AddressResult>();
+		List<AddressResult> deleteAddresses = new ArrayList<AddressResult>();
 		List<AddressResult> newAddresses = new ArrayList<AddressResult>();
 		
 		for (List<Object> key: addresses.keySet()) {
 			AddressResult result = addresses.get(key);
-			if (result.getStorageState() == StorageState.DIRTY) {
+			if (result.getStorageState() == StorageState.DELETE) {
+				deleteAddresses.add(result);
+			} else if (result.getStorageState() == StorageState.DIRTY) {
 				dirtyAddresses.add(result);
 			} else if (result.getStorageState() == StorageState.NEW) {
 				newAddresses.add(result);
@@ -377,15 +380,16 @@ public class AddressPool extends MonitorableImpl{
 
 		}
 
-		setJobSize(dirtyAddresses.size() + newAddresses.size());
+		setJobSize(deleteAddresses.size() + dirtyAddresses.size() + newAddresses.size());
 		
+		engineLogger.debug("# of Delete Address Records:" + deleteAddresses.size());
 		engineLogger.debug("# of Dirty Address Records:" + dirtyAddresses.size());
 		engineLogger.debug("# of New Address Records:" + newAddresses.size());
 		
 		Connection con = null;
 		PreparedStatement ps = null;
 		Statement stmt = null;
-		StringBuilder sql = new StringBuilder();
+		StringBuilder sql;
 		AddressResult result = null;
 		
 		try {
@@ -395,6 +399,39 @@ public class AddressPool extends MonitorableImpl{
 			SQLTable resultTable = project.getResultTable();
 			int keySize = project.getSourceTableIndex().getChildCount();
 
+			if (deleteAddresses.size() > 0) {
+				stmt = con.createStatement();
+				
+				for (AddressResult currentResult : deleteAddresses) {
+					sql = new StringBuilder("DELETE FROM ");
+					appendFullyQualifiedTableName(sql, resultTable);
+					sql.append(" WHERE ");
+					
+					int j = 0;
+					for (Object keyValue: currentResult.getKeyValues()) {
+						if (j > 0) {
+							sql.append("AND ");
+						}
+						if (keyValue == null) {
+							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(j).append(" is null ");
+						} else if (keyValue instanceof String || keyValue instanceof Character) {
+							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(j).append("=" + SQL.quote(keyValue.toString()) + " ");
+						} else {
+							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(j).append("=" + keyValue + " ");
+						}
+						j++;
+					}
+					
+					engineLogger.debug("Preparing the following address result to be deleted: " + currentResult);
+					engineLogger.debug("Executing statement " + sql);
+					
+					stmt.execute(sql.toString());
+					incrementProgress();
+				}
+				
+				if (stmt != null) stmt.close();
+				stmt = null;
+			}
 			
 			if (dirtyAddresses.size() > 0) {
 				
@@ -405,6 +442,7 @@ public class AddressPool extends MonitorableImpl{
 					result = dirtyAddresses.get(i);
 					
 					//First, create and UPDATE PreparedStatement to update dirty records
+					sql = new StringBuilder();
 					sql.append("UPDATE ");
 				
 					appendFullyQualifiedTableName(sql, resultTable);
@@ -727,7 +765,35 @@ public class AddressPool extends MonitorableImpl{
 		return rowCount;
 	}
 
+	/**
+	 * Returns an AddressResult with the given list of unique key values. If one
+	 * cannot be found, it returns null.
+	 * 
+	 * @param uniqueKeyValues
+	 *            A {@link List} of unique key values that identify the
+	 *            {@link AddressResult} to be returned
+	 * @return An AddressResult with the given list of unique key values. If one
+	 *         cannot be found, it returns null.
+	 */
 	public AddressResult findAddress(List<Object> uniqueKeyValues) {
 		return addresses.get(uniqueKeyValues);
+	}
+
+	/**
+	 * Tries to find an AddressResult with the given unique key values. If it
+	 * can find one, it then calls {@link AddressResult#markDelete()} on it. On
+	 * the next call to {@link AddressPool#store(Logger, boolean, boolean)},
+	 * that {@link AddressResult} will be deleted from the persistent storage.
+	 * If one cannot be found, then nothing further is done.
+	 * 
+	 * @param uniqueKeyValues
+	 *            A {@link List} of unique key values that identify the
+	 *            AddressResult to be marked for deletion.
+	 */
+	public void markAddressForDeletion(List<Object> uniqueKeyValues) {
+		AddressResult result = addresses.get(uniqueKeyValues);
+		if (result != null) {
+			result.markDelete();
+		}
 	}
 }
