@@ -75,6 +75,22 @@ public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project>
 		}
 	}
 
+	public Project findByOid(long oid) {
+		Session session = getHibernateSession();
+		Query query = session.createQuery("from Project m where m.oid = :oid");
+		query.setParameter("oid", oid);
+		List projects = query.list();
+		if (projects.size() == 0) {
+			return null;
+		} else if (projects.size() == 1) {
+			Project project = (Project) projects.get(0);
+			project.setSession(getMatchMakerSession());
+			return project;
+		} else {
+			throw new IllegalStateException("More than one project with oid \""+oid+"\"");
+		}
+	}
+	
 	public boolean isThisProjectNameAcceptable(String name) {
 		Long count = countProjectByName(name);
 		return (count == 0);

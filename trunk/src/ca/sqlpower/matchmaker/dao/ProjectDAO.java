@@ -51,6 +51,16 @@ public interface ProjectDAO extends MatchMakerDAO<Project> {
 	public Project findByName(String name);
 
 	/**
+	 * Finds the project with the given oid
+	 * 
+	 * @param oid
+	 *            The oid of the project to look for.
+	 * @return The {@link Project} with the given oid, or null if there is no
+	 *         such project
+	 */
+	public Project findByOid(long oid);
+	
+	/**
 	 * check to see if there is any project under given name
 	 * @param name
 	 * @return true if no project found under given name, false otherwise
