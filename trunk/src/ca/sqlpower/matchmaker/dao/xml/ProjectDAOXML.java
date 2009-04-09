@@ -216,7 +216,7 @@ public class ProjectDAOXML implements ProjectDAO {
         }
         println("<?xml version='1.0' encoding='UTF-8'?>");
         println("");
-        println("<matchmaker-projects export-format=\"1.0.0\">");
+        println("<matchmaker-projects export-format=\""+ ProjectSAXHandler.SUPPORTED_EXPORT_VERSION.toString() + "\">");
         indent++;
         
         int projectID = 0;
