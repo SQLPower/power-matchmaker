@@ -244,7 +244,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
         String className = getClass().getName();
         Long projectOid = project.getOid();
         
-        return new String[] { javaPath, className, "match_oid=" + projectOid };
+        return new String[] { javaPath, className, "project_id=" + projectOid };
     }
 
 	public boolean isStarted() {
