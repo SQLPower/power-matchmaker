@@ -23,6 +23,7 @@ package ca.sqlpower.matchmaker.swingui;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -122,18 +123,20 @@ public class SwingSessionContextTest extends TestCase {
                 logger.debug("Stub DSCollection.write("+location+")");
             }
 
+            public void write(OutputStream out) throws IOException {
+                logger.debug("Stub call: DataSourceCollection.write()");
+            }
+
             public void write() throws IOException {
                 logger.debug("Stub DSCollection.write()");
             }
 
 			public void addUndoableEditListener(UndoableEditListener l) {
 				logger.debug("Stub call: DataSourceCollection.addUndoableEditListener()");
-				
 			}
 
 			public void removeUndoableEditListener(UndoableEditListener l) {
 				logger.debug("Stub call: DataSourceCollection.removeUndoableEditListener()");
-				
 			}
 
         };
