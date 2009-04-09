@@ -362,7 +362,7 @@ public class ProjectXMLDAOTest extends TestCase {
     }
     
     public void testReadNewerVersion() throws Exception {
-        String xml = "<?xml version=\"1.0\"?><matchmaker-projects export-format=\"1.1.0\"/>";
+        String xml = "<?xml version=\"1.0\"?><matchmaker-projects export-format=\"1.2.0\"/>";
         ByteArrayInputStream in = new ByteArrayInputStream(xml.getBytes());
         ProjectDAOXML xmldao = new ProjectDAOXML(session, in);
         try {

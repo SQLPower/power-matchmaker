@@ -76,7 +76,7 @@ public class ProjectSAXHandler extends DefaultHandler {
      * major version number and the supported minor version or less. There is no
      * compatibility between major versions.
      */
-    public static final Version SUPPORTED_EXPORT_VERSION = new Version(1,0,0);
+    public static final Version SUPPORTED_EXPORT_VERSION = new Version(1,1,0);
     
     private final DateFormat df = new SimpleDateFormat(ProjectDAOXML.DATE_FORMAT);
     
