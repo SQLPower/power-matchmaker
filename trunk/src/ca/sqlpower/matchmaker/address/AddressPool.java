@@ -180,7 +180,7 @@ public class AddressPool extends MonitorableImpl{
 		t.addColumn(outputSuite);
 		SQLColumn outputSuitePrefix = new SQLColumn(t, OUTPUT_SUITE_PREFIX, Types.BOOLEAN, 1, 0);
 		t.addColumn(outputSuitePrefix);
-		SQLColumn outputSuiteType = new SQLColumn(t, OUTPUT_SUITE_TYPE, Types.VARCHAR, 6, 0);
+		SQLColumn outputSuiteType = new SQLColumn(t, OUTPUT_SUITE_TYPE, Types.VARCHAR, 15, 0);
 		t.addColumn(outputSuiteType);
 		SQLColumn outputUnparsedAddress = new SQLColumn(t, OUTPUT_UNPARSED_ADDRESS, Types.VARCHAR, 150, 0);
 		t.addColumn(outputUnparsedAddress);
@@ -435,7 +435,7 @@ public class AddressPool extends MonitorableImpl{
 					sql.append(OUTPUT_STREET_NAME).append("=" + SQL.quote(outputAddress.getStreet()) + ", ");					// 21
 					sql.append(OUTPUT_STREET_NUMBER).append("=" + outputAddress.getStreetNumber() + ", ");				// 22
 					sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=" + SQL.quote(outputAddress.getStreetNumberSuffix()) + ", ");			// 23
-					sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=" + outputAddress.getStreetNumberSuffixSeparate() + ", ");			// 23.5
+					sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=" + outputAddress.isStreetNumberSuffixSeparate() + ", ");			// 23.5
 					sql.append(OUTPUT_STREET_TYPE).append("=" + SQL.quote(outputAddress.getStreetType()) + ", ");					// 24
 					sql.append(OUTPUT_STREET_TYPE_PREFIX).append("=" + outputAddress.isStreetTypePrefix() + ", ");			// 25
 					sql.append(OUTPUT_SUITE).append("=" + SQL.quote(outputAddress.getSuite()) + ", ");						// 26
@@ -533,53 +533,93 @@ public class AddressPool extends MonitorableImpl{
 					for (Object keyValue: result.getKeyValues()) {
 						ps.setObject(j, keyValue);
 						j++;
+						engineLogger.debug("Setting key value " + j + " to " + keyValue);
 					}
-
-					ps.setString(j, result.getInputAddress().getUnparsedAddressLine1());
-					ps.setString(j + 1, result.getInputAddress().getUnparsedAddressLine2());
-					ps.setString(j + 2, result.getInputAddress().getMunicipality());
-					ps.setString(j + 3, result.getInputAddress().getProvince());
-					ps.setString(j + 4, result.getInputAddress().getCountry());
-					ps.setString(j + 5, result.getInputAddress().getPostalCode());
+					
+					Address inputAddress = result.getInputAddress();
+					engineLogger.debug("Setting input unparsed address line 1 to " + inputAddress.getUnparsedAddressLine1());
+					ps.setString(j, inputAddress.getUnparsedAddressLine1());
+					engineLogger.debug("Setting input unparsed address line 2 to " + inputAddress.getUnparsedAddressLine2());
+					ps.setString(j + 1, inputAddress.getUnparsedAddressLine2());
+					engineLogger.debug("Setting input municipality to " + inputAddress.getMunicipality());
+					ps.setString(j + 2, inputAddress.getMunicipality());
+					engineLogger.debug("Setting input province to " + inputAddress.getProvince());
+					ps.setString(j + 3, inputAddress.getProvince());
+					engineLogger.debug("Setting input country to " + inputAddress.getCountry());
+					ps.setString(j + 4, inputAddress.getCountry());
+					engineLogger.debug("Setting input postal code to " + inputAddress.getPostalCode());
+					ps.setString(j + 5, inputAddress.getPostalCode());
 				
 					Address outputAddress = result.getOutputAddress();
+					engineLogger.debug("Setting output suite to " + outputAddress.getSuite());
 					ps.setString(j + 6, outputAddress.getSuite());
+					engineLogger.debug("Setting output delivery installation name to " + outputAddress.getDeliveryInstallationName());
 					ps.setString(j + 7, outputAddress.getDeliveryInstallationName());
+					engineLogger.debug("Setting output delivery nstallation type to " + outputAddress.getDeliveryInstallationType());
 					ps.setString(j + 8, outputAddress.getDeliveryInstallationType());
+					engineLogger.debug("Setting output direction prefix to " + outputAddress.isDirectionPrefix());
 					ps.setBoolean(j + 9, outputAddress.isDirectionPrefix());
+					engineLogger.debug("Setting output failed parsing string to " + outputAddress.getFailedParsingString());
 					ps.setString(j + 10, outputAddress.getFailedParsingString());
+					engineLogger.debug("Setting output general delivery name to " + outputAddress.getGeneralDeliveryName());
 					ps.setString(j + 11, outputAddress.getGeneralDeliveryName());
+					engineLogger.debug("Setting output lock box number to " + outputAddress.getLockBoxNumber());
 					ps.setString(j + 12, outputAddress.getLockBoxNumber());
+					engineLogger.debug("Setting output lock box type to " + outputAddress.getLockBoxType());
 					ps.setString(j + 13, outputAddress.getLockBoxType());
+					engineLogger.debug("Setting output municipality to " + outputAddress.getMunicipality());
 					ps.setString(j + 14, outputAddress.getMunicipality());
+					engineLogger.debug("Setting output postal code to " + outputAddress.getPostalCode());
 					ps.setString(j + 15, outputAddress.getPostalCode());
+					engineLogger.debug("Setting output province to " + outputAddress.getProvince());
 					ps.setString(j + 16, outputAddress.getProvince());
+					engineLogger.debug("Setting output rural route number to " + outputAddress.getRuralRouteNumber());
 					ps.setString(j + 17, outputAddress.getRuralRouteNumber());
+					engineLogger.debug("Setting output rural route type to " + outputAddress.getRuralRouteType());
 					ps.setString(j + 18, outputAddress.getRuralRouteType());
+					engineLogger.debug("Setting output street direciton to " + outputAddress.getStreetDirection());
 					ps.setString(j + 19, outputAddress.getStreetDirection());
+					engineLogger.debug("Setting output street to " + outputAddress.getStreet());
 					ps.setString(j + 20, outputAddress.getStreet());
+					engineLogger.debug("Setting output street number to " + outputAddress.getStreetNumber());
 					Integer streetNumber = outputAddress.getStreetNumber();
 					if (streetNumber == null) {
 						ps.setNull(j + 21, Types.INTEGER);
 					} else {
 						ps.setInt(j + 21, streetNumber);
 					}
+					engineLogger.debug("Setting output street number suffix to " + outputAddress.getStreetNumberSuffix());
 					ps.setString(j + 22, outputAddress.getStreetNumberSuffix());
-					ps.setObject(j + 23, (Boolean) outputAddress.getStreetNumberSuffixSeparate(), Types.BOOLEAN);
+					engineLogger.debug("Setting output street number suffix separate to " + outputAddress.isStreetNumberSuffixSeparate());
+					Boolean isStreetNumberSuffixSeparate = outputAddress.isStreetNumberSuffixSeparate();
+					if (isStreetNumberSuffixSeparate == null) {
+						ps.setNull(j + 23, Types.BOOLEAN);
+					} else {
+						ps.setBoolean(j + 23, outputAddress.isStreetNumberSuffixSeparate());
+					}
+					engineLogger.debug("Setting output suite to " + outputAddress.getSuite());
 					ps.setString(j + 24, outputAddress.getStreetType());
+					engineLogger.debug("Setting output streetTypePrefix to " + outputAddress.isStreetTypePrefix());
 					ps.setBoolean(j + 25, outputAddress.isStreetTypePrefix());
+					engineLogger.debug("Setting output suite to " + outputAddress.getSuite());
 					ps.setString(j + 26, outputAddress.getSuite());
+					engineLogger.debug("Setting output suitePrefix to " + outputAddress.isSuitePrefix());
 					ps.setBoolean(j + 27, outputAddress.isSuitePrefix());
+					engineLogger.debug("Setting output suiteType to " + outputAddress.getSuiteType());
 					ps.setString(j + 28, outputAddress.getSuiteType());
+					engineLogger.debug("Setting output type to " + outputAddress.getType());
 					RecordType type = outputAddress.getType();
 					ps.setString(j + 29, type == null ? null : type.toString());
+					engineLogger.debug("Setting output unparsedAddressLine1 to " + outputAddress.getUnparsedAddressLine1());
 					ps.setString(j + 30, outputAddress.getUnparsedAddressLine1());
+					engineLogger.debug("Setting output urbanBeforeRural to " + outputAddress.isUrbanBeforeRural());
 					Boolean urbanBeforeRural = outputAddress.isUrbanBeforeRural();
 					if (urbanBeforeRural == null) {
 						ps.setNull(j + 31, Types.BOOLEAN);
 					} else {
 						ps.setBoolean(j + 31, outputAddress.isUrbanBeforeRural());
 					}
+					engineLogger.debug("Setting valid to " + result.isValid());
 					ps.setBoolean(j + 32, result.isValid());
 
 					engineLogger.debug("Preparing the following address to be inserted: " + result);
@@ -631,8 +671,8 @@ public class AddressPool extends MonitorableImpl{
 			throw new RuntimeException(
 					"Unexpected exception while storing address validation results. Current result: " +
 							result == null ? "null" :
-							"Input Address: " + result.getInputAddress() +
-							", Output Address: " + result.getOutputAddress(), ex);
+							"Input Address:\n" + result.getInputAddress() + "\n" +
+							"Output Address:\n" + result.getOutputAddress(), ex);
 		} finally {
 			setFinished(true);
 			if (ps != null) try { ps.close(); } catch (SQLException e) { engineLogger.error("Error while closing PreparedStatement", e); }
