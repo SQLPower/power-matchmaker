@@ -174,6 +174,12 @@ public class ProjectDAOXML implements ProjectDAO {
         return null;
     }
 
+    public Project findByOid(long oid) {
+    	// TODO Auto-generated method stub
+    	logger.debug("Stub call: ProjectDAOXML.findByOid()");
+    	return null;
+    }
+    
     public boolean isThisProjectNameAcceptable(String name) {
         // TODO Auto-generated method stub
         logger.debug("Stub call: ProjectDAOXML.isThisProjectNameAcceptable()");
