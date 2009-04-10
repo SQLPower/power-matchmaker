@@ -286,7 +286,7 @@ log4j.logger.org.hibernate.jdbc=info
 # Tail end of automatically-generated log4j config file; just set up Appenders.
 
 log4j.appender.R=org.apache.log4j.RollingFileAppender
-log4j.appender.R.File=matchmaker.log
+log4j.appender.R.File=dqguru.log
 log4j.appender.R.MaxFileSize=10000KB
 log4j.appender.R.MaxBackupIndex=1
 log4j.appender.R.layout=org.apache.log4j.PatternLayout
