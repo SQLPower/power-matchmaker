@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -226,7 +226,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
        	}
 	}
 	
-	Action saveAction = new AbstractAction("Save Munge Process"){
+	Action saveAction = new AbstractAction("Save Transformation"){
 		public void actionPerformed(ActionEvent e) {
             applyChanges();
 		}
@@ -252,7 +252,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
     	ValidateResult result = handler.getWorstValidationStatus();
         if ( result.getStatus() == Status.FAIL) {
             JOptionPane.showMessageDialog(swingSession.getFrame(),
-                    "You have to fix the error before you can save the munge process",
+                    "You have to fix the error before you can save the transformation",
                     "Save",
                     JOptionPane.ERROR_MESSAGE);
             return false;
@@ -264,7 +264,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         if (dfs.isCyclic()) {
         	int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Your munge process contains at least one cycle, " + 
+				"Your transformation contains at least one cycle, " + 
 				"and may result in unexpected results. \n" + 
 				"Do you want to continue saving?", 
 				"Save",
@@ -304,16 +304,16 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Munge Process name is required");
+						"Transformation name is required");
 			} else if ( !value.equals(mmo.getName()) &&
 					parentProject.getMungeProcessByName(name.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Munge Process name is invalid or already exists.");
+						"Transformation name is invalid or already exists.");
 			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
-                        "Munge Process name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
+                        "Transformation name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
             } else if (mmo.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
-            	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
+            	return ValidateResult.createValidateResult(Status.FAIL, "Transformation name is invalid or already exists.");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}

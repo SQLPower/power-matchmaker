@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2009, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -110,11 +110,11 @@ public class AddressCorrectionMungeComponent extends AbstractMungeComponent {
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout(
 				"center:pref:grow", "fill:pref, pref"));
 
-		addressDataURL = "http://www.sqlpower.ca/page/matchmaker_address_data";
+		addressDataURL = "http://www.sqlpower.ca/page/dqguru_address_data";
 		addressDataRequired = new JLabel(
 				"<html> <p align =\"center\">You cannot continue without having a valid address database to compare against!<br> Please set the path to your address database in the User Preferences... <br> To purchase one, click on the following link:<br> <a href=\""
 						+ addressDataURL
-						+ "\">http://www.sqlpower.ca/page/matchmaker_address_data</a><html>");
+						+ "\">http://www.sqlpower.ca/page/dqguru_address_data</a><html>");
 		addressDataRequired.addMouseListener(HyperlinkTextSelectedListener);
 
 		builder.add(addressDataRequired);

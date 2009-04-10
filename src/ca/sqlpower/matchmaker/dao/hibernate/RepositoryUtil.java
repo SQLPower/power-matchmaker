@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -186,7 +186,7 @@ public class RepositoryUtil {
      */
     public static void createOrUpdateRepositorySchema(SPDataSource ds) throws RepositoryException {
         logger.debug(
-                "Attempting to check MatchMaker repository at " + ds.getName() +
+                "Attempting to check DQguru repository at " + ds.getName() +
                 " with owner " + ds.getPlSchema());
         if (ds.getPlSchema() == null || ds.getPlSchema().length() == 0) {
             throw new RepositoryException(

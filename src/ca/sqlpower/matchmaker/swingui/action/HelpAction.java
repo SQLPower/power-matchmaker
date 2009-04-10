@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -66,9 +66,9 @@ public class HelpAction extends AbstractAction {
 		} catch (Exception ev) {
 			setEnabled(false);
 			SPSUtils.showExceptionDialogNoReport(parent,
-					"Could not load the help file. The MatchMakerHelp.jar file either " +
+					"Could not load the help file. The dqguruhelp.jar file either " +
 					"doesn't exist or isn't in your classpath.\nThis error usually " +
-					"occurrs because you are running the MatchMaker within an IDE.\n" +
+					"occurrs because you are running the DQguru within an IDE.\n" +
 					"The Help function is now disabled",
 					ev);
 		}         

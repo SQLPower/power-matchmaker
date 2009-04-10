@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2009, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -29,7 +29,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -47,6 +46,7 @@ import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.swingui.DataEntryPanel;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -260,15 +260,13 @@ public class AddressValidationEntryPanel implements DataEntryPanel {
 			logger.debug("The Problem details are: " + vr);
 			if (vr.getStatus() == Status.FAIL) {
 				problemsBuilder.append(new JLabel("<html>Fail: "
-						+ vr.getMessage() + "</html>", new ImageIcon(
-						AddressValidationPanel.class
-								.getResource("icons/fail.png")),
+						+ vr.getMessage() + "</html>", 
+						SPSUtils.createIcon("fail", "Fail"),
 						JLabel.LEFT));
 			} else if (vr.getStatus() == Status.WARN) {
 				problemsBuilder.append(new JLabel("<html>Warning: "
-						+ vr.getMessage() + "</html>", new ImageIcon(
-						AddressValidationPanel.class
-								.getResource("icons/warn.png")),
+						+ vr.getMessage() + "</html>", 
+						SPSUtils.createIcon("warn", "Warn"),
 						JLabel.LEFT));
 			}
 		}

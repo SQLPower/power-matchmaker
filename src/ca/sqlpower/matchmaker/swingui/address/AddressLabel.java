@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2009, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -48,6 +48,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.swingui.ColourScheme;
+import ca.sqlpower.swingui.SPSUtils;
 
 public class AddressLabel extends JComponent {
 	
@@ -93,7 +94,7 @@ public class AddressLabel extends JComponent {
 	 * The icon for valid address. It will appear as soon
 	 * as the address is corrected. 
 	 */
-	private ImageIcon checkIcon = new ImageIcon(getClass().getResource("icons/check.png"));
+	private ImageIcon checkIcon = SPSUtils.createIcon("check", "Check");
 	
 	/**
 	 * Red color for any missing fields in the addressLabel.

@@ -1,0 +1,19 @@
+<shortcuts>
+	<programGroup defaultName="SQL Power Suite"
+		location="applications"/>
+	<shortcut name="DQguru" target="javaw.exe"
+		programGroup="yes"
+		commandLine="-Xmx600m -jar dqguru.jar"
+		workingDirectory="$INSTALL_PATH"
+		description="DQguru Data Cleansing Tool"
+		iconFile="$INSTALL_PATH/dqguru.ico" desktop="yes"
+		startMenu="yes">
+	</shortcut>
+
+	<shortcut name="Uninstall DQguru"
+		target="$INSTALL_PATH/uninstaller/uninstaller.jar"
+		programGroup="yes"
+		description="Remove the DQguru Data Cleansing Tool"
+		iconFile="$INSTALL_PATH/uninstall.ico" desktop="no" >
+	</shortcut>
+</shortcuts>

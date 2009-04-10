@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -105,8 +105,8 @@ public class MatchMakerSplashScreen {
     		}
 		});
         
-		JLabel mmLogo = new JLabel(SPSUtils.createIcon("matchmaker_huge", "MatchMaker Huge Icon"), JLabel.CENTER);
-		JLabel title  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
+		JLabel mmLogo = new JLabel(SPSUtils.createIcon("dqguru_huge", "DQguru Huge Icon"), JLabel.CENTER);
+		JLabel title  = new JLabel("<html>" + "DQguru " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
 		Font f = title.getFont();
 		Font newf = new Font(f.getName(), f.getStyle(), (int) (f.getSize() * 1.5));
 		title.setFont(newf);
@@ -146,7 +146,7 @@ public class MatchMakerSplashScreen {
         }
         
         summary.append("</tr><tr>");
-        summary.append("<td>Power*MatchMaker Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
+        summary.append("<td>DQguru Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
         summary.append("</tr></table></html>");
         JLabel summaryLabel = new JLabel(summary.toString(), JLabel.CENTER);
         

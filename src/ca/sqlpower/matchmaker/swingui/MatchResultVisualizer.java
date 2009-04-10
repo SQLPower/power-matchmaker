@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -121,7 +121,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         public void actionPerformed(ActionEvent e) {
             try {
                 File dotFile = new File(
-                        System.getProperty("user.home"), "matchmaker_graph_"+project.getName()+".dot");
+                        System.getProperty("user.home"), "dqguru_graph_"+project.getName()+".dot");
                 JFileChooser fc = new JFileChooser(dotFile);
                 int choice = fc.showSaveDialog(getPanel());
                 if (choice == JFileChooser.APPROVE_OPTION) {
@@ -710,10 +710,10 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         
 		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
         	String errorText =
-        	    "The MatchMaker has detected changes in the source table structure.\n" +
+        	    "The DQguru has detected changes in the source table structure.\n" +
         	    "Your project will require modifications before the engines can run properly.\n" +
-        	    "The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
-        	    "Would you like the MatchMaker to modify the project now?";
+        	    "The DQguru can automatically modify the project but the changes may not be reversible.\n" +
+        	    "Would you like the DQguru to modify the project now?";
 			int response = JOptionPane.showOptionDialog(session.getFrame(), errorText,
 					"Source Table Changed", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
 					new String[] {"Fix Now", "Not Now"}, "Fix Now");

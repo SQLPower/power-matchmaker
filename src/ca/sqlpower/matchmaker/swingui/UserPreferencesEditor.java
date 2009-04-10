@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -41,6 +41,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -53,6 +55,8 @@ import com.sleepycat.je.DatabaseException;
 
 public class UserPreferencesEditor implements DataEntryPanel {
 
+	private static Logger logger = Logger.getLogger(UserPreferencesEditor.class);
+	
     /**
      * User preferences are not repository-specific, so they are stored
      * as properties of the session context.  This is the session context
@@ -176,12 +180,14 @@ public class UserPreferencesEditor implements DataEntryPanel {
 				} catch (DatabaseException e1) {
 					validatePathResult.setText("Invalid Address Data Path");
 					validatePathExInfo.setText(e1.toString());
+					logger.error("Invalid Address Data Path", e1);
 				} catch (Exception e2) {
 					validatePathResult.setText("Invalid Address Data Path");
 					validatePathExInfo.setText(e2.toString());
+					logger.error("Invalid Address Data Path", e2);
 				} finally {
 					if (testPath != null) {
-					testPath.close();
+						testPath.close();
 					}
 				}
 			}

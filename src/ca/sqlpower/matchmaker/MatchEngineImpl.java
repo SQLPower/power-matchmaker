@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -276,7 +276,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		for (MungeProcess currentProcess: mungeProcesses) {
 			munger = new MungeProcessor(currentProcess, logger);
 			setCurrentProcessor(munger);
-			progressMessage = "Running munge process " + currentProcess.getName();
+			progressMessage = "Running transformation " + currentProcess.getName();
 			logger.debug(getMessage());
 			munger.call(rowCount);
 			progress += munger.getProgress();
@@ -286,7 +286,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			matcher = new MatchProcessor(pool, currentProcess, results, logger);
 			setCurrentProcessor(matcher);
-			progressMessage = "Matching munge process " + currentProcess.getName();
+			progressMessage = "Matching transformation " + currentProcess.getName();
 			logger.debug(getMessage());
 			matcher.call();
             checkCancelled();
@@ -362,4 +362,76 @@ public class MatchEngineImpl extends AbstractEngine {
 	private synchronized void setCurrentProcessor(Monitorable processor) {
 		currentProcessor = processor;
 	}
+	
+//	public static void main(String[] args) {
+//		if (args.length != 1) {
+//			System.out.println("Usage: java -classpath " +
+//					"<location of matchmaker.jar> " +
+//					"ca.sqlpower.matchmaker.MatchEngineImpl.jar " +
+//					"project_id=<project ID number>");
+//			System.exit(1);
+//		}
+//		String arg = args[0];
+//		if (!Pattern.matches("project_id=\\d+", arg)) {
+//			System.out.println("Usage: java -classpath " +
+//					"<location of matchmaker.jar> " +
+//					"ca.sqlpower.matchmaker.MatchEngineImpl.jar " +
+//					"project_id=<project ID number>");
+//			System.out.println("Expected on argument of the form 'project_id=<project ID number>'");
+//			System.exit(1);
+//		}
+//		StringTokenizer tokenizer = new StringTokenizer(arg, "=");
+//		if (!tokenizer.nextToken().equals("project_id")) {
+//			System.out.println("Usage: java -classpath " +
+//					"<location of matchmaker.jar> " +
+//					"ca.sqlpower.matchmaker.MatchEngineImpl.jar " +
+//					"project_id=<project ID number>");
+//			System.out.println("Expected on argument of the form 'project_id=<project ID number>'");
+//			System.exit(1);
+//		}
+//		String projectIdString = tokenizer.nextToken();
+//		String repositoryDataSourceName = ""; //TODO: extract repository datasource name
+//		String repositoryUsername = "";
+//		String repositoryPassword = "";
+//		
+//		int projectId = Integer.parseInt(projectIdString);
+//		
+//		Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
+//		
+//		DataSourceCollection plDotIni = null;
+//        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
+//        
+//        try {
+//        	plDotIni = PlDotIni.loadPlDotIni(plDotIniPath);
+//        } catch (SQLObjectException ex) {
+//        	System.out.println("Couln't read the system or user pl.ini file");
+//        	ex.printStackTrace();
+//        	System.exit(1);
+//        }
+//        
+//        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
+//        MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(prefs, plDotIni);
+//        context.ensureDefaultRepositoryDefined();
+//        
+//		SPDataSource repositoryDataSource = plDotIni.getDataSource(repositoryDataSourceName);
+//        
+//		MatchMakerSession session = null;
+//        try {
+//			session = context.createSession(repositoryDataSource, repositoryUsername, repositoryPassword);
+//		} catch (RepositoryVersionException e) {
+//			System.err.println("Repository version is not compatible with this version of MatchMaker!");
+//			e.printStackTrace();
+//		} catch (PLSecurityException e) {
+//			e.printStackTrace();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		} catch (SQLObjectException e) {
+//			e.printStackTrace();
+//		} catch (MatchMakerConfigurationException e) {
+//			e.printStackTrace();
+//		}
+//        
+//		
+//		MatchEngineImpl engine = new MatchEngineImpl(session, null);
+//	}
 }

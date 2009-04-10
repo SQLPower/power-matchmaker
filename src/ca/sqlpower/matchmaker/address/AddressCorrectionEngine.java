@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2009, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -148,7 +148,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 			
 			for (MungeProcess process: mungeProcesses) {
 				checkCancelled();
-				message = "Running munge process " + process.getName();
+				message = "Running transformation " + process.getName();
 				logger.debug(getMessage());
 				AddressCorrectionMungeProcessor munger;
 
@@ -157,7 +157,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 						logger);
 				
 				setCurrentProcessor(munger);
-				message = "Running munge process " + process.getName();
+				message = "Running transformation " + process.getName();
 				logger.debug(getMessage());
 				munger.call(numRowsToProcess);
 				progress += munger.getProgress();
