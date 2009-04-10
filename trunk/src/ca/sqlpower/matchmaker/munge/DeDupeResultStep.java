@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -62,7 +62,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	private MungeStepOutput[] indexValues;
 
 	public DeDupeResultStep() {
-		super("Munge Results",true);
+		super("Transformation Results",true);
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
 		super.addInput(desc);
 	}

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -239,20 +239,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
     };
 
-	private Action aboutAction = new AbstractAction("About Power*MatchMaker...") {
+	private Action aboutAction = new AbstractAction("About DQguru...") {
 
 		public void actionPerformed(ActionEvent evt) {
 			// This is one of the few JDIalogs that can not get replaced
 			// with a call to ArchitectPanelBuilder, because an About
 			// box must have only ONE button...
 			final JDialog d = new JDialog(getFrame(),
-										  "About Power*MatchMaker");
+										  "About DQguru");
 			JPanel cp = new JPanel(new BorderLayout(12,12));
 			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
 			
-			ImageIcon icon = SPSUtils.createIcon("matchmaker_128", "MatchMaker Logo");
+			ImageIcon icon = SPSUtils.createIcon("dqguru_128", "DQguru Logo");
 			
-			final AboutPanel aboutPanel = new AboutPanel(icon, "Power*MatchMaker", "ca/sqlpower/matchmaker/matchmaker.version.properties", MatchMakerVersion.APP_VERSION);
+			final AboutPanel aboutPanel = new AboutPanel(icon, "DQguru", "ca/sqlpower/matchmaker/matchmaker.version.properties", MatchMakerVersion.APP_VERSION);
 			cp.add(aboutPanel, BorderLayout.CENTER);
 
 			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -305,9 +305,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action buildExampleTableAction;
 	private Action supportOnTheWebAction;
 	
-	private Action sqlQueryAction = new AbstractAction("SQL Query...") {
+	private Action sqlQueryAction = new AbstractAction("Universal SQL Access...") {
 		public void actionPerformed(ActionEvent e) {
-			QueryDialog d = new QueryDialog(MatchMakerSwingSession.this, frame, "SQL Query");
+			QueryDialog d = new QueryDialog(MatchMakerSwingSession.this, frame, "Universal SQL Access");
 			d.pack();
 			d.setVisible(true);
 		}
@@ -433,9 +433,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		});
 
-        frame = new JFrame("Power*MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
+        frame = new JFrame("DQguru: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
         statusLabel = new JLabel();
-        warningDialog = new JDialog(frame, "Power*MatchMaker Warnings");
+        warningDialog = new JDialog(frame, "DQguru Warnings");
         warningTextArea = new JTextArea(6, 40);
         JComponent cp = (JComponent) warningDialog.getContentPane();
         cp.setLayout(new BorderLayout(0, 10));
@@ -1245,7 +1245,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		
 				Object[] options = {"Wait", "Force Quit"};
 				int n = JOptionPane.showOptionDialog(frame, 
-						"There are still unfinished tasks running in the MatchMaker.\n" +
+						"There are still unfinished tasks running in the DQguru.\n" +
 						"You can either wait for them to finish and try closing again later" +
 						", or force the application to close. Quitting will leave these tasks unfinished.", 
 						"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 

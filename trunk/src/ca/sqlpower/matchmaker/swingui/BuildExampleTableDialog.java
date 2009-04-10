@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -166,7 +166,7 @@ public class BuildExampleTableDialog extends JDialog{
 		this.swingSession = swingSession;
 		sourceChooser = new SQLObjectChooser(swingSession, this);
 		tableName = new JTextField(30);
-		tableName.setText("MMExampleTable");
+		tableName.setText("DQguruExampleTable");
 		spinnerNumberModel = new SpinnerNumberModel(2000, 1, Integer.MAX_VALUE, 100);
 		rowCounter = new JSpinner(spinnerNumberModel);
 		buildGUI();
@@ -782,7 +782,6 @@ public class BuildExampleTableDialog extends JDialog{
 			"Keldorn",
 			"Kenesaw Mountain Landis",
 			"MegaZone",
-			"Oleúde José Ribeiro",
 			"Optimus Prime",
 			"Sony PlayStation",
 			"Matrix",
@@ -816,8 +815,6 @@ public class BuildExampleTableDialog extends JDialog{
 			"Coco Crisp",
 			"Wrigley Fields",
 			"Amor De Cosmos",
-			"Constant-Désiré Despradelle",
-			"Espen Thoresen Hværsaagod",
 			"Legal Tender Coxey",
 			"Mahershalalhashbaz Ali",
 			"Mister Thorne",

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -372,7 +372,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             	autoLogin();
             }
         } catch (Exception ex) {
-           	MMSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
+           	MMSUtils.showExceptionDialogNoReport("DQguru Startup Failed", ex);
         }
     }
 
@@ -430,9 +430,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) < 0) {
 			// schema is too old, prompt user to upgrade
 			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
-					"\nThe repository schema version is older than the MatchMaker required version." +
+					"\nThe repository schema version is older than the DQguru required version." +
 					"\nWould you like to upgrade the schema now?",
-					"MatchMaker Repository Problem", JOptionPane.YES_NO_OPTION,
+					"DQguru Repository Problem", JOptionPane.YES_NO_OPTION,
 					JOptionPane.WARNING_MESSAGE, null, new String[] {"Upgrade Now", "Not Now"}, "Upgrade Now");
 			
 			if (response == JOptionPane.YES_OPTION) {
@@ -449,9 +449,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) > 0) {
 			// schema too ...new? prompt user to download new mm or visit forum
 			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
-					"\nThe repository schema version is newer than the MatchMaker required version." +
-					"\nPlease download a newer version of the MatchMaker or visit our forum for help.",
-					"MatchMaker Repository Problem", JOptionPane.YES_NO_CANCEL_OPTION,
+					"\nThe repository schema version is newer than the DQguru required version." +
+					"\nPlease download a newer version of the DQguru or visit our forum for help.",
+					"DQguru Repository Problem", JOptionPane.YES_NO_CANCEL_OPTION,
 					JOptionPane.WARNING_MESSAGE, null, new String[] {"Download Now", "Visit Forum", "Not Now"}, "Download Now");
 			
 			if (response == JOptionPane.YES_OPTION) { 
@@ -517,10 +517,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
             }
             int choice = JOptionPane.showOptionDialog(null,   // blocking wait
-                    "The Power*MatchMaker keeps its list of database connections" +
+                    "The DQguru keeps its list of database connections" +
                     "\nin a file called PL.INI.  Your PL.INI "+message+"." +
                     "\n\nYou can browse for an existing PL.INI file on your system" +
-                    "\nor allow the Power*MatchMaker to create a new one in your home directory.",
+                    "\nor allow the DQguru to create a new one in your home directory.",
                     "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 
             if (choice == JOptionPane.CLOSED_OPTION) {

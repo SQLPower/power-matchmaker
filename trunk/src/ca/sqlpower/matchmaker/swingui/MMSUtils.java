@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -145,7 +145,7 @@ public class MMSUtils {
      * in the MatchMaker.
      */
     public static ImageIcon getFrameImageIcon() {
-        return SPSUtils.createIcon("matchmaker_24", "MatchMaker Logo");
+        return SPSUtils.createIcon("dqguru_24", "DQguru Logo");
     }
 
     /**
@@ -183,7 +183,7 @@ public class MMSUtils {
 	 */
     public static JDialog showExceptionDialog(Component parent, String message, Throwable t) {
     	try {
-    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION.toString(), "MatchMaker");
+    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION.toString(), "DQguru");
     		logger.debug(report.toString());
     		report.send();
     	} catch (Throwable seriousProblem) {

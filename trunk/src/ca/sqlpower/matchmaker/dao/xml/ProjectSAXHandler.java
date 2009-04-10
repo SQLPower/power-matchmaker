@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru.
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -193,7 +193,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                             "The export file format is "+fileFormat+", but I only understand "+
                             SUPPORTED_EXPORT_VERSION.getMajor()+"."+
                             SUPPORTED_EXPORT_VERSION.getMajor()+".x or older. Try importing " +
-                            "into a newer version of Power*MatchMaker.");
+                            "into a newer version of DQguru.");
                 }
 
             } else if (qName.equals("project")) {

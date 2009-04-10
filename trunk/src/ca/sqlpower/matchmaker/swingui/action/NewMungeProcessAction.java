@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -57,7 +57,7 @@ public class NewMungeProcessAction extends AbstractAction {
 	private static final int DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP = 350;
 
 	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Project parent) {
-	    super("New Munge Process");
+	    super("New Transformation");
         this.swingSession = swingSession;
         this.project = parent;
         if (parent == null) throw new IllegalArgumentException("Parent must be non null");
@@ -66,8 +66,8 @@ public class NewMungeProcessAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		MungeProcess process = new MungeProcess();
 		int count;
-    	for (count = 1; project.getMungeProcessByName("New Munge Process " + count) != null ; count++);
-    	process.setName("New Munge Process " + count);
+    	for (count = 1; project.getMungeProcessByName("New Transformation " + count) != null ; count++);
+    	process.setName("New Transformation " + count);
     	
     	// default not to reuse colours
     	List<Color> usedColors = new ArrayList<Color>();

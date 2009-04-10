@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of Power*MatchMaker.
+ * This file is part of DQguru
  *
- * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * DQguru is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * Power*MatchMaker is distributed in the hope that it will be useful,
+ * DQguru is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -94,7 +94,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane<MatchMakerF
 		mungeProcessTable = new JTable(mungeProcessTableModel);
 		TableCellRenderer renderer = new ColorRenderer(true);
         mungeProcessTable.setDefaultRenderer(Color.class, renderer );
-        mungeProcessTable.setName("Munge Processes");
+        mungeProcessTable.setName("Transformations");
         
         // adds a selection listener that enables/disables delete button
         mungeProcessTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
@@ -153,7 +153,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane<MatchMakerF
 		pb.add(status, cc.xy(4,row));
 		
 		row += 2;
-		pb.add(new JLabel("Munge Processes:"), cc.xy(4,row,"l,t"));
+		pb.add(new JLabel("Transformations:"), cc.xy(4,row,"l,t"));
 		
 		row += 2;
 		scrollPane = new JScrollPane(mungeProcessTable);
@@ -206,15 +206,15 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane<MatchMakerF
 		}
 	};
 	
-	Action deleteAction = new AbstractAction("Delete Munge Process") {
+	Action deleteAction = new AbstractAction("Delete Transformation") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mungeProcessTable.getSelectedRow();
 		
-			logger.debug("deleting munge process:"+selectedRow);
+			logger.debug("deleting transformation:"+selectedRow);
 			
 			if ( selectedRow >= 0 && selectedRow < mungeProcessTable.getRowCount()) {
 				int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Are you sure you want to delete the munge process?");
+				"Are you sure you want to delete the transformation?");
 				if (response != JOptionPane.YES_OPTION) {
 					return;
 				}
@@ -230,7 +230,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane<MatchMakerF
 				}
 			} else {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Please select one munge process to delete");
+						"Please select one transformation to delete");
 			}
 		}
 	};
