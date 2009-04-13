@@ -1,3 +1,14 @@
+0.9.5
+* The Power*MatchMaker is now the DQguru
+* The Table Explorer has been replaced with a more powerful SQL Query tool
+* Match Validation graph now has a 'reset cluster' function that allows the user to reset
+  only a connected cluster of matches, instead of reseting the entire set of matches
+* Support for deduping matches from a view
+* Munge processes have been renamed to transformations, and munge steps are renamed to transformers
+* Sort Words and Address Correction transformers
+* Support for Address Correction on Canadian mailing addresses, including a new Address Correction
+  transformer, Address Correction Project and Engine, and a new Validation screen.
+
 0.9.4
 * The Match Engine log reports how many matches each munge process found, and the total number of matches found by the engine
 * Added Munge Step icons in the Munge Pen
