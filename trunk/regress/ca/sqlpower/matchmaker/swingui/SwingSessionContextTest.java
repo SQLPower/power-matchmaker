@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -137,6 +138,18 @@ public class SwingSessionContextTest extends TestCase {
 
 			public void removeUndoableEditListener(UndoableEditListener l) {
 				logger.debug("Stub call: DataSourceCollection.removeUndoableEditListener()");
+			}
+
+			public URI getServerBaseURI() {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: DataSourceCollection.getServerBaseURI()");
+				return null;
+			}
+
+			public void setServerBaseURI(URI serverBaseURI) {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: DataSourceCollection.setServerBaseURI()");
+				
 			}
 
         };
