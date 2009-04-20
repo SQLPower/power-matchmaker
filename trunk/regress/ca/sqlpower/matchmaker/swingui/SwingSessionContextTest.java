@@ -146,12 +146,6 @@ public class SwingSessionContextTest extends TestCase {
 				return null;
 			}
 
-			public void setServerBaseURI(URI serverBaseURI) {
-				// TODO Auto-generated method stub
-				logger.debug("Stub call: DataSourceCollection.setServerBaseURI()");
-				
-			}
-
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
