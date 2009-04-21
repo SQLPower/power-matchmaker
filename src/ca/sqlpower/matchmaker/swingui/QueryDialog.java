@@ -63,7 +63,7 @@ public class QueryDialog extends JDialog {
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		setSize(900,450);	
 		
-		queryPanel = SQLQueryUIComponents.createQueryPanel(session, session.getContext().getPlDotIni(), this);
+		queryPanel = SQLQueryUIComponents.createQueryPanel(session, session.getContext().getPlDotIni(), session, this);
 		queryPanel.setMinimumSize(new Dimension(100,100));		
 		
 		dragTree = new JTree();

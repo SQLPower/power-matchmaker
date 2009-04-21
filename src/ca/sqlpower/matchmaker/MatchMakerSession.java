@@ -26,6 +26,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
+import ca.sqlpower.sqlobject.SQLDatabaseMapping;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
@@ -45,7 +46,7 @@ import ca.sqlpower.util.Version;
  *
  * @version $Id$
  */
-public interface MatchMakerSession {
+public interface MatchMakerSession extends SQLDatabaseMapping {
 
     /**
      * The session context that created this session.
