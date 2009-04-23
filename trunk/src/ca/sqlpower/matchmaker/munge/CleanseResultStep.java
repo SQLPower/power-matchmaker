@@ -225,41 +225,45 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 
 	private void update(int type, int columnIndex, Object data) throws Exception {
 		ResultSet rs = inputStep.getResultSet();
-		switch (type) {
-		case Types.INTEGER:
-		case Types.BIGINT:
-		case Types.SMALLINT:
-		case Types.TINYINT:
-			rs.updateInt(columnIndex, ((BigDecimal) data).intValue());
+		logger.debug("attempting update : " + data + ", " + columnIndex);
+		if (data == null) {
+			rs.updateNull(columnIndex);
+		} else {
+			switch (type) {
+			case Types.INTEGER:
+			case Types.BIGINT:
+			case Types.SMALLINT:
+			case Types.TINYINT:
+				rs.updateInt(columnIndex, ((BigDecimal) data).intValue());
+				break;
+			case Types.BOOLEAN:
+				rs.updateBoolean(columnIndex, ((Boolean) data).booleanValue());
+				break;
+			case Types.LONGVARCHAR:
+			case Types.CHAR:
+			case Types.VARCHAR:
+				rs.updateString(columnIndex, ((String) data));
+				break;
+			case Types.DOUBLE:
+			case Types.FLOAT:
+			case Types.NUMERIC:
+			case Types.DECIMAL:
+				rs.updateBigDecimal(columnIndex, ((BigDecimal) data));
+				break;
+			case Types.DATE:
+				Date d = (Date) data;
+				rs.updateDate(columnIndex, new java.sql.Date(d.getTime()));
+				break;
+			case Types.TIME:
+				rs.updateTime(columnIndex, new Time(((Date)data).getTime()));
+				break;
+			case Types.TIMESTAMP:
+				rs.updateTimestamp(columnIndex, new Timestamp(((Date)data).getTime()));
+				break;
+			default:
+				logger.error("Unsupported sql type! " + type);
 			break;
-		case Types.BOOLEAN:
-			rs.updateBoolean(columnIndex, ((Boolean) data).booleanValue());
-			break;
-		case Types.LONGVARCHAR:
-		case Types.CHAR:
-		case Types.VARCHAR:
-			logger.debug("attempting update : " + data + ", " + columnIndex);
-			rs.updateString(columnIndex, ((String) data));
-			break;
-		case Types.DOUBLE:
-		case Types.FLOAT:
-		case Types.NUMERIC:
-		case Types.DECIMAL:
-			rs.updateBigDecimal(columnIndex, ((BigDecimal) data));
-			break;
-		case Types.DATE:
-			Date d = (Date) data;
-			rs.updateDate(columnIndex, new java.sql.Date(d.getTime()));
-			break;
-		case Types.TIME:
-			rs.updateTime(columnIndex, new Time(((Date)data).getTime()));
-			break;
-		case Types.TIMESTAMP:
-			rs.updateTimestamp(columnIndex, new Timestamp(((Date)data).getTime()));
-			break;
-		default:
-			logger.error("Unsupported sql type! " + type);
-		break;
+			}
 		}
 		logger.debug("attempting updaterow");
 		try {
