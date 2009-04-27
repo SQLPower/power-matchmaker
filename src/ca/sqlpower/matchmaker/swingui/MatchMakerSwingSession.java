@@ -308,7 +308,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action sqlQueryAction = new AbstractAction("Universal SQL Access...") {
 		public void actionPerformed(ActionEvent e) {
 			QueryDialog d = new QueryDialog(MatchMakerSwingSession.this, frame, "Universal SQL Access");
-			d.pack();
 			d.setVisible(true);
 		}
 	};
