@@ -61,7 +61,7 @@ public class QueryDialog extends JDialog {
 		super(sessionframe, title);
 		this.session = session;
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		setSize(900,450);	
+		setSize(900,650);	
 		
 		queryPanel = SQLQueryUIComponents.createQueryPanel(session, session.getContext().getPlDotIni(), session, this);
 		queryPanel.setMinimumSize(new Dimension(100,100));		
