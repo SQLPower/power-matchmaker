@@ -262,7 +262,6 @@ public class BuildExampleTableDialog extends JDialog{
 		
 		panel.add(progress, cc.xyw(2, row, 3));
 		
-		setLocationRelativeTo(swingSession.getFrame());
 		setContentPane(panel);
 		pack();
 	}

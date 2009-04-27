@@ -41,6 +41,7 @@ public class BuildExampleTableAction extends AbstractAction{
 	public void actionPerformed(ActionEvent e) {
 		JDialog dialog = new BuildExampleTableDialog(swingSession);
 		dialog.setModal(true);
+		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
 	}
 	
