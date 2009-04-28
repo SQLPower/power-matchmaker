@@ -235,6 +235,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		public void actionPerformed(ActionEvent arg0) {
 			Color colour = swingSession.getCustomColour(mmo.getColour());
 		    if (colour != null) {
+		    	// TODO add colour(Color) only if it's not in the color(JComboBox) yet
 		    	color.addItem(colour);
 		    	color.setSelectedItem(colour);
 		    }
