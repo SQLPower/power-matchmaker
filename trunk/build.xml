@@ -56,6 +56,38 @@
 	</condition>
 	
 	<!-- 
+		Actually, I wanted to test for if this is Linux so to know which
+		launch4j binaries to use, but unfortunately, there is no 'linux' 
+		value, just unix. So if it's unix, then we will try to use the linux binary.
+	-->
+	<condition property="isUnix">
+		<os family="unix"/>
+	</condition>
+
+	<condition property="isNotUnix">
+		<not>
+			<os family="unix"/>
+		</not>
+	</condition>
+	
+	<condition property="launch4j.dir" value="ext-tools/launch4j/launch4j-macosx" >
+		<isset property="isMac"/>
+	</condition>
+	
+	<condition property="launch4j.dir" value="ext-tools/launch4j/launch4j-linux" >
+		<isset property="isUnix"/>
+	</condition>
+	
+	<condition property="launch4j.dir" value="ext-tools/launch4j/launch4j-win32" >
+		<isset property="isWindows"/>
+	</condition>
+	
+	<taskdef name="launch4j"
+	    classname="net.sf.launch4j.ant.Launch4jTask"
+	    classpath="${launch4j.dir}/launch4j.jar
+	        :${launch4j.dir}/lib/xstream.jar" />
+	
+	<!-- 
 		Sets if we want to actually run a build on the SQL Power Library.
 		It may be useful to set it to copy only if we already know that the
 		library has been built. For example, when running the builds on a 
@@ -224,7 +256,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz, downloadpage">
+	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_launch4j,generic_install,source_only_tgz, downloadpage">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -468,6 +500,24 @@
     				manifest="${build}/manifest">
     	</jar>
 		
+    	<launch4j>
+			<config dontwrapjar="true" 
+					headertype="gui"
+					jarpath="dqguru.jar"
+					outfile="${staging.dir}/dqguru.exe"
+					errtitle="Java Runtime Required"
+					priority="normal"
+					downloadurl="http://java.com/download"
+					supporturl="http://www.sqlpower.ca/forum"
+					customprocname="false"
+					stayalive="false"
+					icon="src/icons/dqguru.ico">
+				<jre minVersion="1.5.0"
+					 maxHeapSize="600"
+				/>
+			</config>
+		</launch4j>
+		
 		<copy todir="${staging.dir}/lib">
     	    <fileset dir="lib" includes="*.jar"/>
     		<!--fileset dir="${build}" includes="architecthelp.jar" /-->
@@ -584,6 +634,7 @@
 							<description>DQguru Core Files</description>
 							<fileset dir="../staging/" targetdir="$INSTALL_PATH">
 								<include name="dqguru.jar"/>
+								<include name="dqguru.exe"/>
 							</fileset>
 							<fileset dir="../staging/lib" targetdir="$INSTALL_PATH/lib">
 								<include name="*.jar"/>
@@ -622,6 +673,28 @@
 	</target>
 	
 	<property name="izpack2exe.dir" value="${izpack.dir}/utils/izpack2exe"/>
+	
+	<target name="windows_exe_installer_launch4j" depends="windows_jar_installer">
+		<launch4j>
+			<config dontwrapjar="false" 
+					headertype="gui"
+					jar="${dist.dir}/DQguru-Setup-Windows-${app.version}.jar"
+					outfile="${dist.dir}/DQguru-Setup-Windows-${app.version}.exe"
+					errtitle="Java Runtime Required"
+					priority="normal"
+					downloadurl="http://java.com/download"
+					supporturl="http://www.sqlpower.ca/forum"
+					customprocname="false"
+					stayalive="false"
+					icon="src/icons/dqguru.ico">
+				<singleInstance
+					mutexName="DQguru Installer"
+					windowTitle="DQguru Installer"
+				/>
+				<jre minVersion="1.5.0"/>
+			</config>
+		</launch4j>
+	</target>
 	
 	<!-- 
 		Uses izpack python script to convert the Windows JDBC JAR installer into EXE executables

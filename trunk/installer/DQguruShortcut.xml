@@ -1,9 +1,9 @@
 <shortcuts>
 	<programGroup defaultName="SQL Power Suite"
 		location="applications"/>
-	<shortcut name="DQguru" target="javaw.exe"
+	<shortcut name="DQguru" target="$INSTALL_PATH/dqguru.exe"
 		programGroup="yes"
-		commandLine="-Xmx600m -jar dqguru.jar"
+		commandLine=""
 		workingDirectory="$INSTALL_PATH"
 		description="DQguru Data Cleansing Tool"
 		iconFile="$INSTALL_PATH/dqguru.ico" desktop="yes"
