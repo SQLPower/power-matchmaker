@@ -11,7 +11,7 @@
 	</shortcut>
 
 	<shortcut name="Uninstall DQguru"
-		target="$INSTALL_PATH/uninstaller/uninstaller.jar"
+		target="$INSTALL_PATH/uninstaller/uninstaller.exe"
 		programGroup="yes"
 		description="Remove the DQguru Data Cleansing Tool"
 		iconFile="$INSTALL_PATH/uninstall.ico" desktop="no" >
