@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.swingui.MonitorableWorker;
+import ca.sqlpower.swingui.SPSwingWorker;
 
 /**
  * A subclass of {@link MonitorableWorker} that will load an {@link AddressPool} in
@@ -32,7 +32,7 @@ import ca.sqlpower.swingui.MonitorableWorker;
  * to that panel. This is to be able to provide a progress bar when loading the 
  * validation screen.
  */
-public class AddressPoolLoadingWorker extends MonitorableWorker {
+public class AddressPoolLoadingWorker extends SPSwingWorker {
 
 	private static final Logger logger = Logger.getLogger(AddressPoolLoadingWorker.class);
 	

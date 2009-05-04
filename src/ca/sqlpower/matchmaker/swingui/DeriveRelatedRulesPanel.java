@@ -53,9 +53,9 @@ import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLRelationship;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.MonitorableDataEntryPanel;
-import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
@@ -107,7 +107,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
     private final FormValidationHandler validationHandler;
 	
 
-	private class DeriveAction extends MonitorableWorker {
+	private class DeriveAction extends SPSwingWorker {
 
 		/**
          * Indicates that the derive process has begun.
