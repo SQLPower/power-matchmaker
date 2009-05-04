@@ -49,7 +49,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
-import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -72,7 +71,7 @@ public class LoginDialog implements SwingWorkerRegistry {
 
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 
-    private class LoginAction extends MonitorableWorker implements ActionListener {
+    private class LoginAction extends SPSwingWorker implements ActionListener {
 
         private boolean loginWasSuccessful = false;
         

@@ -86,9 +86,9 @@ import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.JDefaultButton;
-import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -554,7 +554,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
     }
     
-    private class AutoMatchWorker extends MonitorableWorker {
+    private class AutoMatchWorker extends SPSwingWorker {
 
     	private AutoMatcher autoMatcher;
     	private MungeProcess mungeProcess;
