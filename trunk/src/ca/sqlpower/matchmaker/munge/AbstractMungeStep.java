@@ -122,7 +122,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	
 	//The set of methods that can be to be overwritten by the subclasses. 
 	/**
-	 * A method that is called when a step is opened. Default is No-op. 
+	 * A method that is called when a step is opened. Default is No-op.
+	 * Subclasses that override this method should keep in mind that this method
+	 * could be called before the step has its parameters properly configured.
 	 */
 	public void doOpen(EngineMode mode, Logger log) throws Exception {}
 	
