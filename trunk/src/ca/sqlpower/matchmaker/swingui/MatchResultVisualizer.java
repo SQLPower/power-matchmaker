@@ -586,15 +586,18 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			pool.store();
 		}
 
-		public Integer getJobSize() {
+		@Override
+		protected Integer getJobSizeImpl() {
 			return autoMatcher.getJobSize() + pool.getJobSize();
 		}
 
-		public String getMessage() {
+		@Override
+		protected String getMessageImpl() {
 			return autoMatcher.getMessage();
 		}
 
-		public int getProgress() {
+		@Override
+		protected int getProgressImpl() {
 			int amProgress = autoMatcher.getProgress();
             if (!autoMatcher.isFinished()) {
 				return amProgress;
@@ -603,11 +606,13 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			}
 		}
 
-		public boolean hasStarted() {
+		@Override
+		protected boolean hasStartedImpl() {
 			return autoMatcher.hasStarted();
 		}
 
-		public boolean isFinished() {
+		@Override
+		protected boolean isFinishedImpl() {
 			return (autoMatcher.isFinished() && pool.isFinished()) || isCancelled();
 		}
     	

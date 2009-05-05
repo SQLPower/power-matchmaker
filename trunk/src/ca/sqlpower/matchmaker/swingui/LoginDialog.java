@@ -75,19 +75,11 @@ public class LoginDialog implements SwingWorkerRegistry {
 
         private boolean loginWasSuccessful = false;
         
-        /**
-         * Indicates that the login process has begun.
-         */
-        private boolean started;
-        
-        /**
-         * Indicated that the login process has terminated (with either
-         * success or failure).
-         */
-        private boolean finished;
-
         public LoginAction(SwingWorkerRegistry registry) {
         	super(registry);
+        	setMessage("Logging in...");
+        	setJobSize(null);
+        	setProgress(0);
         }
         
         public void actionPerformed(ActionEvent e) {
@@ -137,7 +129,6 @@ public class LoginDialog implements SwingWorkerRegistry {
                 userID.setEnabled(true);
                 password.setEnabled(true);
                 dbList.setEnabled(true);
-                this.finished = true;
             }
         }
 
@@ -146,8 +137,6 @@ public class LoginDialog implements SwingWorkerRegistry {
         public void doStuff() throws Exception {
         	logger.debug("LoginAction.doStuff() was invoked!");
             loginWasSuccessful = false;
-            started = true;
-            finished = false;
             
             // Reset exception to null for each login. Without it,
             // cleanup() would think there was an error if one existed
@@ -165,7 +154,6 @@ public class LoginDialog implements SwingWorkerRegistry {
         	logger.debug("LoginAction.cleanup() starting");
             try {
                 if (getDoStuffException() != null) {
-                	finished = true;
                 	if (getDoStuffException() instanceof RepositoryVersionException) {
                 		sessionContext.handleRepositoryVersionException(dbSource,
                 				(RepositoryVersionException) getDoStuffException());
@@ -192,29 +180,9 @@ public class LoginDialog implements SwingWorkerRegistry {
                 password.setEnabled(true);
                 dbList.setEnabled(true);
                 logger.debug("Progress bar has been set to NOT visible");
-                finished = true;
             }
         }
         
-		public Integer getJobSize() {
-			return null;
-		}
-
-		public String getMessage() {
-			return "Logging in...";
-		}
-
-		public int getProgress() {
-			return 0;
-		}
-
-		public boolean hasStarted() {
-			return started;
-		}
-
-		public boolean isFinished() {
-			return finished;
-		}
     }
 
     /**

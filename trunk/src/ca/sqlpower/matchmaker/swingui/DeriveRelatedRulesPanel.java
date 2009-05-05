@@ -109,25 +109,16 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 
 	private class DeriveAction extends SPSwingWorker {
 
-		/**
-         * Indicates that the derive process has begun.
-         */
-        private boolean started;
-        
-        /**
-         * Indicated that the derive process has terminated (with either
-         * success or failure).
-         */
-        private boolean finished;
-		
 		public DeriveAction(SwingWorkerRegistry registry) {
 			super(registry);
+			setMessage("Deriving related rules...");
+			setJobSize(null);
+			setProgress(0);
 		}
 
 		@Override
 		public void cleanup() throws Exception {
         	logger.debug("DeriveRelatedRulesAction.cleanup() starting");
-        	finished = true;
         	if (dialog != null) dialog.dispose();
         	swingSession.setSelectNewChild(true);
 		}
@@ -135,7 +126,6 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		@Override
 		/** Called (once) by run() in superclass */
 		public void doStuff() throws Exception {
-            started = true;
 			
             long start = System.currentTimeMillis();
             
@@ -440,33 +430,6 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			}
 		}
 
-		public Integer getJobSize() {
-			return null;
-		}
-
-		public String getMessage() {
-			return "Deriving related rules...";
-		}
-
-		public int getProgress() {
-			return 0;
-		}
-
-		public boolean hasStarted() {
-			return started;
-		}
-
-		public boolean isFinished() {
-			return finished;
-		}
-
-		public void setStarted(boolean started) {
-			this.started = started;
-		}
-
-		public void setFinished(boolean finished) {
-			this.finished = finished;
-		}
 	}
 
 	public DeriveRelatedRulesPanel(MatchMakerSwingSession swingSession, Project project) {
@@ -557,8 +520,6 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 	
 	public boolean applyChanges() {
 		swingSession.setSelectNewChild(false);
-		deriveAction.setStarted(false);
-		deriveAction.setFinished(false);
 		try {
         	progressBar.setVisible(true);
         	logger.debug("Progress Bar has been set to visible");
@@ -568,7 +529,6 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
         } catch (Exception ex) {
             SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
                     "Error in deriving related rules.", ex );
-            deriveAction.setFinished(true);
             return false;
         }
         return true;

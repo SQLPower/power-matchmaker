@@ -36,9 +36,6 @@ public class AddressPoolLoadingWorker extends SPSwingWorker {
 
 	private static final Logger logger = Logger.getLogger(AddressPoolLoadingWorker.class);
 	
-	private boolean started = false;
-	private boolean finished = false;
-	private String message = "";
 	private MatchMakerSwingSession session;
 	private AddressPool pool;
 	private AddressValidationPanel panel;
@@ -59,35 +56,24 @@ public class AddressPoolLoadingWorker extends SPSwingWorker {
 			throw new Exception("An error occured while loading the Address Pool", getDoStuffException());
 		}
 		session.setCurrentEditorComponent(panel);
-		finished = true;
+		setMessage("");
 	}
 
 	@Override
 	public void doStuff() throws Exception {
-		finished = false;
-		started = true;
-		message = "Loading invalid addresses";
+		setMessage("Loading invalid addresses");
 		pool.load(logger);
 		panel = new AddressValidationPanel(session, pool);
 	}
 
-	public Integer getJobSize() {
+	@Override
+	protected Integer getJobSizeImpl() {
 		return (pool.getJobSize() == null) ? null : pool.getJobSize();
 	}
 
-	public String getMessage() {
-		return message;
-	}
-
-	public int getProgress() {
+	@Override
+	protected int getProgressImpl() {
 		return pool.getProgress();
 	}
 
-	public boolean hasStarted() {
-		return started;
-	}
-
-	public boolean isFinished() {
-		return finished;
-	}
 }
