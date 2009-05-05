@@ -67,6 +67,11 @@ public class GoogleAddressLookup extends AbstractMungeStep {
      */
     private final MungeStepOutput<BigDecimal> statusCode;
     
+    /**
+     * The Google Maps API key used to access the Google Maps API.
+     */
+    private String key;
+    
     private final MungeStepOutput<String> country;
     private final MungeStepOutput<String> adminArea;
     private final MungeStepOutput<String> subAdminArea;
@@ -104,13 +109,10 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         setParameter(GOOGLE_GEOCODER_URL, "http://maps.google.com/maps/geo");
         setParameter(LOOKUP_RATE_LIMIT, "2.0");
     }
-    
+     
     @Override
     public void doOpen(EngineMode mode, Logger logger) throws Exception {
-        String key = getParameter(GOOGLE_MAPS_API_KEY);
-        if (key == null || key.length() == 0) {
-            throw new IllegalStateException("Can't open step: Google Maps API Key is required.");
-        }
+        key = getParameter(GOOGLE_MAPS_API_KEY);
     }
 
     @Override
@@ -120,7 +122,11 @@ public class GoogleAddressLookup extends AbstractMungeStep {
             output.setData(null);
         }
 
-        String key = getParameter(GOOGLE_MAPS_API_KEY);
+        if (key == null || key.length() == 0) {
+        	throw new IllegalStateException("Google Address Lookup transformer was " +
+        			"called without a Google Maps API Key. " +
+        			"Check your Google Address Lookup transformer settings.");
+        }
         String url = getParameter(GOOGLE_GEOCODER_URL);
         String address = (String) getMSOInputs().get(0).getData();
         url += "?output=json&key="+key+"&q="+URLEncoder.encode(address, "utf-8");
