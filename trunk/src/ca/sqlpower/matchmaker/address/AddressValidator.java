@@ -423,24 +423,77 @@ public class AddressValidator {
 						suggestionExists = true;
 					}
 				}
-//            			Partial implementation of how street suffixs are supposed to be appended but is not consistent with the test data.
-//            			if (pc.getStreetAddressFromNumber() == a.getStreetNumber() && pc.getStreetAddressNumberSuffixFromCode() != null) {
-//            				if (a.getStreetNumberSuffix() == null) {
-//            					errorList.add(ValidateResult.createValidateResult(
-//                						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
-//                				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
-//                				errorCount++;
-//            				} else {
-//            					char pcSuffix = pc.getStreetAddressNumberSuffixFromCode().charAt(0);
-//            					char aSuffix = a.getStreetNumberSuffix().charAt(0);
-//            					if (!(pcSuffix >= 65 && (aSuffix >= pcSuffix || aSuffix == 49 || aSuffix == 50 || aSuffix == 51))) {
-//            						errorList.add(ValidateResult.createValidateResult(
-//                    						Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
-//                    				suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
-//                    				errorCount++;
-//            					}
-//            				}
-//            			}
+
+				if (pc.getStreetAddressFromNumber().equals(a.getStreetNumber()) && pc.getStreetAddressNumberSuffixFromCode() != null  && pc.getStreetAddressNumberSuffixFromCode().trim().length() > 0) {
+					if (a.getStreetNumberSuffix() == null) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
+						suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
+						isValid = false;
+						if (countErrors) {
+							errorCount++;
+							suggestionExists = true;
+						}
+					} else {
+						char pcSuffix = pc.getStreetAddressNumberSuffixFromCode().charAt(0);
+						char aSuffix = a.getStreetNumberSuffix().charAt(0);
+						if (a.getStreetNumberSuffix().equals("1/4")) {
+							aSuffix = '1';
+						} else if (a.getStreetNumberSuffix().equals("1/2")) {
+							aSuffix = '2';
+						} else if (a.getStreetNumberSuffix().equals("3/4")) {
+							aSuffix = '3';
+						}
+						if ((pcSuffix >= 65 && (aSuffix < pcSuffix && aSuffix >= 65))
+								|| (pcSuffix == 49 && aSuffix > 51)
+								|| (pcSuffix == 50 && (aSuffix > 51 || aSuffix == 49))
+								|| (pcSuffix == 51 && aSuffix != 51)) {
+							errorList.add(ValidateResult.createValidateResult(
+									Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
+							suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
+							isValid = false;
+							if (countErrors) {
+								errorCount++;
+								suggestionExists = true;
+							}
+						}
+					}
+				}
+				if (pc.getStreetAddressToNumber().equals(a.getStreetNumber()) && pc.getStreetAddressNumberSuffixToCode() != null && pc.getStreetAddressNumberSuffixToCode().trim().length() > 0) {
+					if (a.getStreetNumberSuffix() == null) {
+						errorList.add(ValidateResult.createValidateResult(
+								Status.FAIL, "Street number suffix comes after the allowed street number suffixes for this postal code."));
+						suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixToCode());
+						isValid = false;
+						if (countErrors) {
+							errorCount++;
+							suggestionExists = true;
+						}
+					} else {
+						char pcSuffix = pc.getStreetAddressNumberSuffixToCode().charAt(0);
+						char aSuffix = a.getStreetNumberSuffix().charAt(0);
+						if (a.getStreetNumberSuffix().equals("1/4")) {
+							aSuffix = '1';
+						} else if (a.getStreetNumberSuffix().equals("1/2")) {
+							aSuffix = '2';
+						} else if (a.getStreetNumberSuffix().equals("3/4")) {
+							aSuffix = '3';
+						}
+						if ((pcSuffix >= 65 && ((aSuffix > pcSuffix && aSuffix >= 65) || aSuffix == 49 || aSuffix == 50 || aSuffix == 51))
+								|| (pcSuffix == 49 && (aSuffix == 50 || aSuffix == 51))
+								|| (pcSuffix == 50 && aSuffix == 51)) {
+							errorList.add(ValidateResult.createValidateResult(
+									Status.FAIL, "Street number suffix comes after the allowed street number suffixes for this postal code."));
+							suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixToCode());
+							isValid = false;
+							if (countErrors) {
+								errorCount++;
+								suggestionExists = true;
+							}
+						}
+					}
+				}
+				
 				if (a.getStreetNumberSuffix() != null && a.getStreetNumberSuffix().length() > 0 && 
 						a.getStreetNumberSuffix().charAt(0) > 64 && a.isStreetNumberSuffixSeparate() != null && 
 						a.isStreetNumberSuffixSeparate()) {
