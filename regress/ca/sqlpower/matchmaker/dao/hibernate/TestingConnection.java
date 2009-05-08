@@ -20,15 +20,23 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.sql.Array;
+import java.sql.Blob;
 import java.sql.CallableStatement;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.NClob;
 import java.sql.PreparedStatement;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.Struct;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -86,7 +94,6 @@ public class TestingConnection implements Connection {
     
     
     ////////// Connection interface is below this line ///////////
-
     public void clearWarnings() throws SQLException {
         if (disabled) throw new SQLException("This connection is disabled");
         con.clearWarnings();
@@ -266,4 +273,60 @@ public class TestingConnection implements Connection {
         if (disabled) throw new SQLException("This connection is disabled");
         con.setTypeMap(arg0);
     }
+
+	public Array createArrayOf(String typeName, Object[] elements)
+			throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public Blob createBlob() throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public Clob createClob() throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public NClob createNClob() throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public SQLXML createSQLXML() throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public Struct createStruct(String typeName, Object[] attributes)
+			throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public Properties getClientInfo() throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public String getClientInfo(String name) throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public boolean isValid(int timeout) throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public void setClientInfo(Properties properties)
+			throws SQLClientInfoException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public void setClientInfo(String name, String value)
+			throws SQLClientInfoException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
+
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+				throw new UnsupportedOperationException("Currently it is only possible to wrap JDBC 3.");
+	}
 }
