@@ -19,8 +19,6 @@
 
 package ca.sqlpower.matchmaker.swingui.address;
 
-import static ca.sqlpower.matchmaker.address.AddressValidator.different;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -47,6 +45,7 @@ import javax.swing.border.LineBorder;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.Address;
+import ca.sqlpower.matchmaker.address.steps.ValidateStepUtil;
 import ca.sqlpower.swingui.ColourScheme;
 import ca.sqlpower.swingui.SPSUtils;
 
@@ -247,7 +246,7 @@ public class AddressLabel extends JComponent {
 		}
 		if (!isFieldMissing(currentAddress.getAddress())) {
 			logger.debug("Current Address is: " + currentAddress);
-		    if (comparisonAddress != null && different(currentAddress.getAddress(), comparisonAddress.getAddress())) {
+		    if (comparisonAddress != null && ValidateStepUtil.different(currentAddress.getAddress(), comparisonAddress.getAddress())) {
 		        addressLabel.setForeground(comparisonColour);
 		    } else {
 		    	addressLabel.setForeground(getForeground());
@@ -274,7 +273,7 @@ public class AddressLabel extends JComponent {
 		setTextBounds(addressTextField, addressLine1Hotspot);
 		y += fm.getHeight();
 		if (!isFieldMissing(currentAddress.getMunicipality())) {
-		    if (comparisonAddress != null && different(currentAddress.getMunicipality(), comparisonAddress.getMunicipality())) {
+		    if (comparisonAddress != null && ValidateStepUtil.different(currentAddress.getMunicipality(), comparisonAddress.getMunicipality())) {
                 municipalityLabel.setForeground(comparisonColour);
 		    } else {
 		    	municipalityLabel.setForeground(getForeground());
@@ -302,7 +301,7 @@ public class AddressLabel extends JComponent {
 		}
 		setTextBounds(municipalityTextField, municipalityHotspot);
 		if (!isFieldMissing(currentAddress.getProvince())) {
-            if (comparisonAddress != null && different(currentAddress.getProvince(), comparisonAddress.getProvince())) {
+            if (comparisonAddress != null && ValidateStepUtil.different(currentAddress.getProvince(), comparisonAddress.getProvince())) {
             	provinceLabel.setForeground(comparisonColour);
             } else {
             	provinceLabel.setForeground(getForeground());
@@ -330,7 +329,7 @@ public class AddressLabel extends JComponent {
 		}
 		setTextBounds(provinceTextField, provinceHotsopt);
 		if (!isFieldMissing(currentAddress.getPostalCode())) {
-            if (comparisonAddress != null && different(currentAddress.getPostalCode(), comparisonAddress.getPostalCode())) {
+            if (comparisonAddress != null && ValidateStepUtil.different(currentAddress.getPostalCode(), comparisonAddress.getPostalCode())) {
             	postalCodeLabel.setForeground(comparisonColour);
             } else {
             	postalCodeLabel.setForeground(getForeground());

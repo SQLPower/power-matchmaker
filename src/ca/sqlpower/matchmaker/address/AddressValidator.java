@@ -30,6 +30,26 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.LargeVolumeReceiver.LVRRecordType;
 import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
+import ca.sqlpower.matchmaker.address.steps.GeneralDeliveryNameAndTypeStep;
+import ca.sqlpower.matchmaker.address.steps.GeneralDeliveryNameStep;
+import ca.sqlpower.matchmaker.address.steps.MunicipalityNameStep;
+import ca.sqlpower.matchmaker.address.steps.PostalCodeStep;
+import ca.sqlpower.matchmaker.address.steps.ProvinceNameStep;
+import ca.sqlpower.matchmaker.address.steps.SERPRuralZeroPostalCodeStep;
+import ca.sqlpower.matchmaker.address.steps.StreetAddressNumberSuffixStep;
+import ca.sqlpower.matchmaker.address.steps.StreetAndRouteForStreetTypeStep;
+import ca.sqlpower.matchmaker.address.steps.StreetDirectionCodeStep;
+import ca.sqlpower.matchmaker.address.steps.StreetNameStep;
+import ca.sqlpower.matchmaker.address.steps.StreetNumberSequenceCodeStep;
+import ca.sqlpower.matchmaker.address.steps.StreetNumberStep;
+import ca.sqlpower.matchmaker.address.steps.StreetNumberSuffixSpacingStep;
+import ca.sqlpower.matchmaker.address.steps.StreetTypeCodeStep;
+import ca.sqlpower.matchmaker.address.steps.StreetTypePrefixStep;
+import ca.sqlpower.matchmaker.address.steps.SuiteNumberMissingStep;
+import ca.sqlpower.matchmaker.address.steps.SuiteNumberPrefixStep;
+import ca.sqlpower.matchmaker.address.steps.SuiteNumberSignStep;
+import ca.sqlpower.matchmaker.address.steps.ValidateState;
+import ca.sqlpower.matchmaker.address.steps.ValidateStepUtil;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -82,14 +102,7 @@ public class AddressValidator {
      */
     private boolean validSuggestion = true;
 
-    /**
-     * This value is used in generating suggestions. If true then the suggestion had to
-     * modify the address in a way that was not an error but created a valid alternative.
-     * This occurs in places where the parser has difficulty like additional information
-     * coming after the delivery installation name (ie: RR 4 STN A 21 YONGE puts A 21 YONGE
-     * as the delivery installation name).
-     */
-	private boolean reparsed;
+
 	
 	/**
 	 * If true then this address is valid due to SERP standards. If false then the address
@@ -274,410 +287,75 @@ public class AddressValidator {
 				break;
 			}
 			postalCodesProcessed++;
-			//Some suggestions don't increase the error count as they are not a severe error but they still have
-			//a more valid suggestion. This tracks if there is a valid suggestion and the parsed address is not completely
-			//correct
-			boolean suggestionExists = false;
-			List<ValidateResult> errorList = new ArrayList<ValidateResult>();
-			int errorCount = 0;
-			boolean isValid = true;
-			reparsed = false;
+
 			Address suggestion = new Address(a);
-			if (different(pc.getPostalCode(), a.getPostalCode())) {
-				if (a.getPostalCode() != null) {
-					isValid = false;
-				}
-				errorList.add(ValidateResult.createValidateResult(
-						Status.FAIL, "Postal codes do not agree"));
-				suggestion.setPostalCode(pc.getPostalCode());
-				errorCount++;
-				suggestionExists = true;
-			}
-			if (!pc.getProvinceCode().equals(a.getProvince())) {
-				errorList.add(ValidateResult.createValidateResult(
-						Status.FAIL, "Province code does not agree with postal code"));
-				suggestion.setProvince(pc.getProvinceCode());
-				errorCount++;
-				suggestionExists = true;
-			}
-			if (different(pc.getMunicipalityName(), a.getMunicipality())) {
-				if (municipality != null) {
-					// it might be a valid alternate name
-					if (!municipality.isNameAcceptable(a.getMunicipality(), a.getPostalCode())) {
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "Municipality is not a valid alternate within postal code"));
-						suggestion.setMunicipality(municipality.getOfficialName());
-						errorCount++;
-						suggestionExists = true;
-					}
-				} else {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Municipality does not agree with postal code"));
-					suggestion.setMunicipality(pc.getMunicipalityName());
-					errorCount++;
-					suggestionExists = true;
-				}
+			ValidateState state = new ValidateState();
+			new PostalCodeStep().validate(pc, a, suggestion, state);
+			new ProvinceNameStep().validate(pc, a, suggestion, state);
+			new MunicipalityNameStep(municipality).validate(pc, a, suggestion, state);
+			if (new SERPRuralZeroPostalCodeStep().validate(pc, a, suggestion, state)) {
+			    suggestions.add(suggestion);
+			    serpValid = true;
+			    return;
 			}
 			
-        	//Special case on D-33 of the SERP handbook. Any address that has a postal code in
-        	//the CPC database with a 0 in the second position is valid. We still need to correct
-			//the province and municipality however.
-        	if (a.getPostalCode() != null && a.getPostalCode().charAt(1) == '0') {
-        		
-        		//Optional lock box name fix on rural routes
-				if ("BOX".equals(a.getLockBoxType())) {
-					if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
-						results.add(ValidateResult.createValidateResult(
-								Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
-						suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
-					} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
-						results.add(ValidateResult.createValidateResult(
-								Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
-						suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
-					}
-				}
-        		
-        		suggestions.add(suggestion);
-        		serpValid = true;
-        		logger.debug("SERP valid because postal code has a 0 in the second position.");
-        		return;
-        	}
         	
 			if ((pc.getRecordType() == RecordType.STREET || pc.getRecordType() == RecordType.STREET_AND_ROUTE) &&
 					!(suggestion.getType() == RecordType.ROUTE && pc.getRecordType() == RecordType.STREET_AND_ROUTE)) {
 				
-				//If the address parsed was a route only and the correct address is street and route
-				//we only show the route address so missing or invalid street information is not an actual error
-				boolean countErrors = true;
-				
-				if (suggestion.getType() == null) {
-					if (pc.getRecordType() == RecordType.STREET) {
-						suggestion.setType(RecordType.STREET);
-					} else if (pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
-						suggestion.setType(RecordType.STREET_AND_ROUTE);
-						if (suggestion.isUrbanBeforeRural() == null) {
-							suggestion.setUrbanBeforeRural(true);
-						}
-					}
-				} else if (suggestion.getType() != PostalCode.RecordType.STREET && suggestion.getType() != PostalCode.RecordType.STREET_AND_ROUTE) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Address type does not match best suggestion."));
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				} else if (suggestion.isUrbanBeforeRural() == null) {
-					suggestion.setUrbanBeforeRural(true);
-				}
-				if (different(pc.getStreetName(), a.getStreet())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street name does not agree with postal code"));
-					suggestion.setStreet(pc.getStreetName());
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-				if (different(pc.getStreetTypeCode(), a.getStreetType()) && !Address.isStreetTypeValidAlternate(a.getStreetType(), pc.getStreetTypeCode())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street type does not agree with postal code"));
-					suggestion.setStreetType(pc.getStreetTypeCode());
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-				if (a.isStreetTypePrefix() != isStreetTypePrefix(suggestion, pc)) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street type prefix does not agree with postal code"));
-					suggestion.setStreetTypePrefix(isStreetTypePrefix(suggestion, pc));
-					if (countErrors) {
-						suggestionExists = true;
-					}
-				}
-				if (different(pc.getStreetDirectionCode(), a.getStreetDirection()) && !Address.isStreetDirectionsEquivalent(pc.getStreetDirectionCode(), a.getStreetDirection())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street direction does not agree with postal code"));
-					suggestion.setStreetDirection(pc.getStreetDirectionCode());
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-				if (a.getStreetNumber() == null) {
-					isValid = false;
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street number missing from urban address."));
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-					logger.debug("Urban address missing street number is " + a.getAddress());
-				} else if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
-						(pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
-					isValid = false;
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street number does not fall into the range of allowed street numbers for this postal code."));
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-
-				if (pc.getStreetAddressFromNumber().equals(a.getStreetNumber()) && pc.getStreetAddressNumberSuffixFromCode() != null  && pc.getStreetAddressNumberSuffixFromCode().trim().length() > 0) {
-					if (a.getStreetNumberSuffix() == null) {
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
-						suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
-						isValid = false;
-						if (countErrors) {
-							errorCount++;
-							suggestionExists = true;
-						}
-					} else {
-						char pcSuffix = pc.getStreetAddressNumberSuffixFromCode().charAt(0);
-						char aSuffix = a.getStreetNumberSuffix().charAt(0);
-						if (a.getStreetNumberSuffix().equals("1/4")) {
-							aSuffix = '1';
-						} else if (a.getStreetNumberSuffix().equals("1/2")) {
-							aSuffix = '2';
-						} else if (a.getStreetNumberSuffix().equals("3/4")) {
-							aSuffix = '3';
-						}
-						if ((pcSuffix >= 65 && (aSuffix < pcSuffix && aSuffix >= 65))
-								|| (pcSuffix == 49 && aSuffix > 51)
-								|| (pcSuffix == 50 && (aSuffix > 51 || aSuffix == 49))
-								|| (pcSuffix == 51 && aSuffix != 51)) {
-							errorList.add(ValidateResult.createValidateResult(
-									Status.FAIL, "Street number suffix comes before the allowed street number suffixes for this postal code."));
-							suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixFromCode());
-							isValid = false;
-							if (countErrors) {
-								errorCount++;
-								suggestionExists = true;
-							}
-						}
-					}
-				}
-				if (pc.getStreetAddressToNumber().equals(a.getStreetNumber()) && pc.getStreetAddressNumberSuffixToCode() != null && pc.getStreetAddressNumberSuffixToCode().trim().length() > 0) {
-					if (a.getStreetNumberSuffix() == null) {
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "Street number suffix comes after the allowed street number suffixes for this postal code."));
-						suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixToCode());
-						isValid = false;
-						if (countErrors) {
-							errorCount++;
-							suggestionExists = true;
-						}
-					} else {
-						char pcSuffix = pc.getStreetAddressNumberSuffixToCode().charAt(0);
-						char aSuffix = a.getStreetNumberSuffix().charAt(0);
-						if (a.getStreetNumberSuffix().equals("1/4")) {
-							aSuffix = '1';
-						} else if (a.getStreetNumberSuffix().equals("1/2")) {
-							aSuffix = '2';
-						} else if (a.getStreetNumberSuffix().equals("3/4")) {
-							aSuffix = '3';
-						}
-						if ((pcSuffix >= 65 && ((aSuffix > pcSuffix && aSuffix >= 65) || aSuffix == 49 || aSuffix == 50 || aSuffix == 51))
-								|| (pcSuffix == 49 && (aSuffix == 50 || aSuffix == 51))
-								|| (pcSuffix == 50 && aSuffix == 51)) {
-							errorList.add(ValidateResult.createValidateResult(
-									Status.FAIL, "Street number suffix comes after the allowed street number suffixes for this postal code."));
-							suggestion.setStreetNumberSuffix(pc.getStreetAddressNumberSuffixToCode());
-							isValid = false;
-							if (countErrors) {
-								errorCount++;
-								suggestionExists = true;
-							}
-						}
-					}
-				}
-				
-				if (a.getStreetNumberSuffix() != null && a.getStreetNumberSuffix().length() > 0 && 
-						a.getStreetNumberSuffix().charAt(0) > 64 && a.isStreetNumberSuffixSeparate() != null && 
-						a.isStreetNumberSuffixSeparate()) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street number suffix is alphabetic and should not be separate from the street number"));
-					suggestion.setStreetNumberSuffixSeparate(false);
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				} else if (a.getStreetNumberSuffix() != null && a.getStreetNumberSuffix().length() > 0 && 
-						a.getStreetNumberSuffix().charAt(0) < 58 && a.isStreetNumberSuffixSeparate() != null && 
-						!a.isStreetNumberSuffixSeparate()) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Street number suffix is numeric and should be separate from the street number"));
-					suggestion.setStreetNumberSuffixSeparate(true);
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-				if (a.getStreetNumber() != null) {
-					if (pc.getStreetAddressSequenceType() == AddressSequenceType.ODD && a.getStreetNumber() % 2 == 0) {
-						isValid = false;
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "Street number is even when it should be odd."));
-						if (countErrors) {
-							errorCount++;
-							suggestionExists = true;
-						}
-					} else if (pc.getStreetAddressSequenceType() == AddressSequenceType.EVEN && a.getStreetNumber() % 2 == 1) {
-						isValid = false;
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "Street number is odd when it should be even."));
-						if (countErrors) {
-							errorCount++;
-							suggestionExists = true;
-						}
-					}
-				}
-			
-				if (!a.isSuitePrefix() && a.getSuite() != null && !Address.isSuiteTypeExactMatch(a.getSuiteType())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Suite number should be a prefix if the suite type is invalid."));
-					suggestion.setSuitePrefix(true);
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-				if (a.getSuite() != null && a.getSuite().length() > 0 && a.getSuite().charAt(0) == '#') {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Suite numbers should not have # prepended."));
-					suggestion.setSuite(a.getSuite().substring(1));
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-				
-				if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null && pc.getStreetAddressFromNumber().equals(pc.getStreetAddressToNumber()) 
-						&& pc.getSuiteFromNumber() != null && pc.getSuiteToNumber() != null && pc.getSuiteFromNumber().trim().length() > 0 && pc.getSuiteToNumber().trim().length() > 0
-						&& suggestion.getSuite() == null) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Suite number missing when postal code requires it."));
-					isValid = false;
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-
-				// TODO all the other fields
+			    new StreetAndRouteForStreetTypeStep().validate(pc, a, suggestion, state);
+				new StreetNameStep().validate(pc, a, suggestion, state);
+				new StreetNumberStep().validate(pc, a, suggestion, state);
+				new StreetTypeCodeStep().validate(pc, a, suggestion, state);
+				new StreetTypePrefixStep(db).validate(pc, a, suggestion, state);
+				new StreetDirectionCodeStep().validate(pc, a, suggestion, state);
+				new StreetNameStep().validate(pc, a, suggestion, state);
+				new StreetAddressNumberSuffixStep().validate(pc, a, suggestion, state);
+				new StreetNumberSuffixSpacingStep().validate(pc, a, suggestion, state);
+				new StreetNumberSequenceCodeStep().validate(pc, a, suggestion, state);
+				new SuiteNumberPrefixStep().validate(pc, a, suggestion, state);
+				new SuiteNumberSignStep().validate(pc, a, suggestion, state);
+				new SuiteNumberMissingStep().validate(pc, a, suggestion, state);
 			}
 			if (pc.getRecordType() == RecordType.GENERAL_DELIVERY) {
 				if (suggestion.getType() != PostalCode.RecordType.GENERAL_DELIVERY) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Address type does not match best suggestion."));
-					errorCount++;
-					suggestionExists = true;
+					state.incrementErrorCount("Address type does not match best suggestion.");
 				}
 				suggestion.setType(RecordType.GENERAL_DELIVERY);
-				if (!Address.isGeneralDeliveryExactMatch(a.getGeneralDeliveryName())) {
-					if ((Address.isGeneralDelivery(a.getGeneralDeliveryName()) || a.getGeneralDeliveryName() == null) && !a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
-							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_ENGLISH)) {
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "English general delivery name is incorrectly spelled and/or abbreviated."));
-						suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_ENGLISH);
-						errorCount++;
-						suggestionExists = true;
-					} else if ((Address.isGeneralDelivery(a.getGeneralDeliveryName()) || a.getGeneralDeliveryName() == null) && a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE)
-							&& different(a.getGeneralDeliveryName(), Address.GENERAL_DELIVERY_FRENCH)) {
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "French general delivery name is incorrectly spelled and/or abbreviated."));
-						suggestion.setGeneralDeliveryName(Address.GENERAL_DELIVERY_FRENCH);
-						errorCount++;
-						suggestionExists = true;
-					}
-				}
-				
-				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
-					int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-					if (count > 0) {
-						suggestionExists = true;
-					}
-					errorCount += count;
-				} else {
-					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
-					if (a.getProvince() != null) {
-						join.addCondition(db.postalCodeProvince, a.getProvince());
-					}
-					if (a.getMunicipality() != null) {
-						join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
-					}
-					if (a.getType() != null) {
-						join.addCondition(db.postalCodeRecordType, a.getType().getRecordTypeCode());
-					}
-					ForwardCursor<PostalCode> matches = null;
-					try {
-						matches = join.entities();
-						for (PostalCode similarPC : matches) {
-							if (similarPC != pc) {
-								int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-								if (count > 0) {
-									suggestionExists = true;
-								}
-								errorCount += count;
-							}
-						}
-					} finally {
-						if (matches != null) matches.close();
-					}
-				}
+				new GeneralDeliveryNameStep().validate(pc, a, suggestion, state);
+				new GeneralDeliveryNameAndTypeStep(db).validate(pc, a, suggestion, state);
 				
 			}
 			if (pc.getRecordType() == RecordType.LOCK_BOX) {
 				if (suggestion.getType() != PostalCode.RecordType.LOCK_BOX) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Address type does not match best suggestion."));
-					errorCount++;
-					suggestionExists = true;
+					state.incrementErrorCount("Address type does not match best suggestion.");
 				}
 				suggestion.setType(RecordType.LOCK_BOX);
 				
 				if (!Address.isLockBoxExactMatch(a.getLockBoxType())) {
-					if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "English lock box name is incorrectly spelled and/or abbreviated."));
-						suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
-						errorCount++;
-						suggestionExists = true;
-					} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
-						errorList.add(ValidateResult.createValidateResult(
-								Status.FAIL, "French lock box name is incorrectly spelled and/or abbreviated."));
-						suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
-						errorCount++;
-						suggestionExists = true;
+					if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && ValidateStepUtil.different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
+					    suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
+					    state.incrementErrorCount("English lock box name is incorrectly spelled and/or abbreviated.");
+					} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && ValidateStepUtil.different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
+					    suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
+					    state.incrementErrorCount("French lock box name is incorrectly spelled and/or abbreviated.");
 					}
 				}
 				
 				if (a.getLockBoxNumber() != null && a.getLockBoxNumber().length() > 0 && a.getLockBoxNumber().charAt(0) == '#') {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Lock box number should not start with a #."));
-					suggestion.setLockBoxNumber(a.getLockBoxNumber().substring(1));
-					errorCount++;
-					suggestionExists = true;
+				    suggestion.setLockBoxNumber(a.getLockBoxNumber().substring(1));
+					state.incrementErrorCount("Lock box number should not start with a #.");
 				}
 				
 				if (!pc.containsLockBoxNumber(suggestion)) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Lock box number should does not fall in the postal code lock box range."));
-					if (pc.getLockBoxBagFromNumber().equals(pc.getLockBoxBagToNumber())) {
-						suggestion.setLockBoxNumber(new Integer(pc.getLockBoxBagFromNumber()).toString());
-					}
-					errorCount++;
-					suggestionExists = true;
+				    if (pc.getLockBoxBagFromNumber().equals(pc.getLockBoxBagToNumber())) {
+				        suggestion.setLockBoxNumber(new Integer(pc.getLockBoxBagFromNumber()).toString());
+				    }
+					state.incrementErrorCount("Lock box number should does not fall in the postal code lock box range.");
 				}
 				
 				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
-					int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-					if (count > 0) {
-						suggestionExists = true;
-					}
-					errorCount += count;
+					ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
 				} else {
 					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
 					if (a.getProvince() != null) {
@@ -694,11 +372,7 @@ public class AddressValidator {
 						matches = join.entities();
 						for (PostalCode similarPC : matches) {
 							if (similarPC != pc && similarPC.containsLockBoxNumber(suggestion)) {
-								int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-								if (count > 0) {
-									suggestionExists = true;
-								}
-								errorCount += count;
+								ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
 							}
 						}
 					} finally {
@@ -709,10 +383,7 @@ public class AddressValidator {
 			if ((pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) &&
 					!(suggestion.getType() == RecordType.STREET && pc.getRecordType() == RecordType.STREET_AND_ROUTE)) {
 				
-				//If the address parsed was a street only and the correct address is street and route
-				//we only show the street address so missing or invalid route information is not an actual error
-				boolean countErrors = true;
-				
+
 				if (suggestion.getType() == null) {
 					if (pc.getRecordType() == RecordType.ROUTE) {
 						suggestion.setType(RecordType.ROUTE);
@@ -723,33 +394,18 @@ public class AddressValidator {
 						}
 					}
 				} else if (suggestion.getType() != RecordType.ROUTE && suggestion.getType() != RecordType.STREET_AND_ROUTE) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Address type does not match best suggestion."));
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
+					state.incrementErrorCount("Address type does not match best suggestion.");
 				} else if (suggestion.isUrbanBeforeRural() == null) {
 					suggestion.setUrbanBeforeRural(false);
 				}
 				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Invalid rural route type."));
-					suggestion.setRuralRouteType(Address.getRuralRouteShortForm(a.getRuralRouteType()));
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
+				    suggestion.setRuralRouteType(Address.getRuralRouteShortForm(a.getRuralRouteType()));
+					state.incrementErrorCount("Invalid rural route type.");
 				}
 				
 				
 				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
-					int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-					if (count > 0 && countErrors) {
-						suggestionExists = true;
-					}
-					int errors = count;
-					if (countErrors) errorCount += errors;
+					ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
 				} else {
 					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
 					if (a.getProvince() != null) {
@@ -766,14 +422,9 @@ public class AddressValidator {
 						matches = join.entities();
 						for (PostalCode similarPC : matches) {
 							if (similarPC != pc && similarPC.getRouteServiceNumber() != null && similarPC.getRouteServiceNumber().trim().length() > 0 
-									&& !different(suggestion.getRuralRouteNumber(), new Integer(similarPC.getRouteServiceNumber()).toString()) &&
+									&& !ValidateStepUtil.different(suggestion.getRuralRouteNumber(), new Integer(similarPC.getRouteServiceNumber()).toString()) &&
 									(suggestion.getType() != PostalCode.RecordType.STREET && suggestion.getType() != PostalCode.RecordType.STREET_AND_ROUTE)) {
-								int count = correctDeliveryInstallation(a, pc, suggestion, errorList);
-								if (count > 0 && countErrors) {
-									suggestionExists = true;
-								}
-								int errors = count;
-								if (countErrors) errorCount += errors;
+								ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
 							}
 						}
 					} finally {
@@ -782,36 +433,21 @@ public class AddressValidator {
 				}
 				
 				if (a.getRuralRouteNumber() == null && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Missing rural route number."));
-					suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
+				    suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
+					state.incrementErrorCount("Missing rural route number.");
 				}
 				if (a.getRuralRouteNumber() != null && a.getRuralRouteNumber().length() > 0 && a.getRuralRouteNumber().charAt(0) == '#') {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Rural route number should not start with a #."));
-					suggestion.setRuralRouteNumber(a.getRuralRouteNumber().substring(1));
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
+				    suggestion.setRuralRouteNumber(a.getRuralRouteNumber().substring(1));
+					state.incrementErrorCount("Rural route number should not start with a #.");
 				}
-				if (pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0 && different(suggestion.getRuralRouteNumber(), new Integer(pc.getRouteServiceNumber()).toString())) {
-					errorList.add(ValidateResult.createValidateResult(
-							Status.FAIL, "Incorrect rural route number."));
-					suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
-					if (countErrors) {
-						errorCount++;
-						suggestionExists = true;
-					}
+				if (pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0 && ValidateStepUtil.different(suggestion.getRuralRouteNumber(), new Integer(pc.getRouteServiceNumber()).toString())) {
+				    suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
+					state.incrementErrorCount("Incorrect rural route number.");
 				}
 			}
 			
 
-			if (suggestionExists || reparsed) {
+			if (state.isSuggestionExists() || state.isReparsed()) {
 				//Special case: if multiple postal codes exist where one has a smaller street range
 				//than the other (802-806 vs 802-812) and the address falls in both ranges, and the
 				//streets differ by a type that the address is missing (BAYVIEW AVE vs BAYVIEW ST 
@@ -821,8 +457,8 @@ public class AddressValidator {
 				if (smallestErrorPostalCode != null && postalCodeStreetRangesCoverAddress(a, pc, smallestErrorPostalCode) && 
 						checkIfFirstPostalCodeStreetRangeInsideSecond(pc, smallestErrorPostalCode) &&
 						checkIfStreetErrorMatchesBothPostalCodes(a, pc, smallestErrorPostalCode)) {
-					if (errorCount > smallestErrorCount) {
-						errorCount = smallestErrorCount;
+					if (state.getErrorCount() > smallestErrorCount) {
+						state.setErrorCount(smallestErrorCount);
 					}
 					addToFrontOfList = true;
 					validSpecialCase = true;
@@ -839,11 +475,11 @@ public class AddressValidator {
 					validSpecialCase = false;
 				}
 				
-				List<Address> addresses = addressSuggestionsByError.get(errorCount);
+				List<Address> addresses = addressSuggestionsByError.get(state.getErrorCount());
 				if (addresses == null) {
 					addresses = new ArrayList<Address>();
 					addresses.add(suggestion);
-					addressSuggestionsByError.put(errorCount, addresses);
+					addressSuggestionsByError.put(state.getErrorCount(), addresses);
 				} else if (!addresses.contains(suggestion)) {
 					if (addToFrontOfList) {
 						addresses.add(0, suggestion);
@@ -851,11 +487,11 @@ public class AddressValidator {
 						addresses.add(suggestion);
 					}
 				}
-				if (errorCount < smallestErrorCount || addToFrontOfList) {
+				if (state.getErrorCount() < smallestErrorCount || addToFrontOfList) {
 					smallestErrorPostalCode = pc;
-					smallestErrorList = errorList;
-					smallestErrorCount = errorCount;
-					smallestErrorIsValid = isValid;
+					smallestErrorList = state.getErrorList();
+					smallestErrorCount = state.getErrorCount();
+					smallestErrorIsValid = state.isValid();
 					bestSuggestion = suggestion;
 				}
 			} else {
@@ -933,129 +569,6 @@ public class AddressValidator {
 	}
 
 	/**
-	 * Given an address to correct, a postal code to correct to and a partially validated suggestion,
-	 * this method will check the delivery installation information and update the suggestion accordingly.
-	 * If there are corrections to be made errors will be added to the given error list and the number
-	 * of errors will be returned.
-	 */
-	private int correctDeliveryInstallation(Address a, PostalCode pc, Address suggestion, List<ValidateResult> errorList) {
-		int errorCount = 0;
-		if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
-			if (a.getDeliveryInstallationType() != null && pc.getDeliveryInstallationTypeDescription() != null &&
-					((a.getDeliveryInstallationType().equals("STN") && pc.getDeliveryInstallationTypeDescription().equals("SUCC"))
-							|| (a.getDeliveryInstallationType().equals("SUCC") && pc.getDeliveryInstallationTypeDescription().equals("STN")))) {
-				//no problem
-			} else {
-				errorList.add(ValidateResult.createValidateResult(
-						Status.FAIL, "Invalid delivery installation type."));
-				suggestion.setDeliveryInstallationType(pc.getDeliveryInstallationTypeDescription());
-				errorCount++;
-			}
-		}
-		
-		if (different(pc.getDeliveryInstallationQualifierName(), a.getDeliveryInstallationName())) {
-			if (a.getDeliveryInstallationName() != null) {
-				String diName = a.getDeliveryInstallationName().trim();
-				while (diName.length() > 0) {
-					if (!different(pc.getDeliveryInstallationQualifierName(), diName)) {
-						suggestion.setDeliveryInstallationName(diName);
-						suggestion.setAdditionalInformationSuffix(a.getDeliveryInstallationName().substring(diName.length()).trim());
-						reparsed = true;
-					}
-					if (diName.lastIndexOf(' ') < 0) {
-						break;
-					}
-					diName = diName.substring(0, diName.lastIndexOf(' ')).trim();
-				}
-			}
-			if (!reparsed) {
-				errorList.add(ValidateResult.createValidateResult(
-						Status.FAIL, "Invalid delivery installation name."));
-				suggestion.setDeliveryInstallationName(pc.getDeliveryInstallationQualifierName());
-				errorCount++;
-			}
-		}
-		return errorCount;
-	}
-
-	/**
-     * Given an address that has a corrected street name and the postal code retrieved by
-     * the addresses's postal code this method will decide if the street type should
-     * be appended before or after the street name.
-     * @param suggestion The suggested street address.
-     * @param pc The postal code retrieved by the address being corrected.
-     * @return True if the address street type should be placed before the street name, false otherwise.
-     */
-    boolean isStreetTypePrefix(Address suggestion, PostalCode pc) {
-    	if (!db.isStreetTypeFrench(suggestion.getStreetType())) {
-    		return false;
-    	}
-    	if (suggestion.getStreetType() == null) {
-    		return false;
-    	}
-    	String typeShortForm = db.getShortFormStreetType(suggestion.getStreetType());
-    	if (typeShortForm == null) {
-    		typeShortForm = suggestion.getStreetType();
-    	}
-    	//French people like to put the street type after the street name if it is numeric and is followed
-    	//by 'e', 're' or if the street name is an ordinal number.
-    	String street = suggestion.getStreet().split(" ")[0];
-    	if (street != null) {
-    		try {
-    			Integer.parseInt(street);
-    			return false;
-    		} catch (NumberFormatException e) {
-    			//street type goes in front still.
-    		}
-    		try {
-    			if (street.length() > 1) {
-    				Integer.parseInt(street.substring(0, street.length() - 1));
-    				if (street.substring(street.length() - 1).equals("E")) {
-    					return false;
-    				}
-    			}
-    		} catch (NumberFormatException e) {
-    			//street type goes in front still.
-    		}
-    		try {
-    			if (street.length() > 2) {
-    				Integer.parseInt(street.substring(0, street.length() - 2));
-    				if (street.substring(street.length() - 2).equals("RE")) {
-    					return false;
-    				}
-    			}
-    		} catch (NumberFormatException e) {
-    			//street type goes in front still.
-    		}
-    		try {
-    			if (street.length() > 3) {
-    				Integer.parseInt(street.substring(0, street.length() - 3));
-    				if (street.substring(street.length() - 3).equals("IER")) {
-    					return false;
-    				}
-    			}
-    		} catch (NumberFormatException e) {
-    			//street type goes in front still.
-    		}
-    	}
-    	return true;
-    }
-
-    /**
-     * Compares two strings case insensitively, also considering null to be equivalent
-     * to the empty string. Leading and trailing whitespace is ignored.
-     * 
-     * @param s1 One string to compare
-     * @param s2 The other string to compare
-     * @return True iff strings s1 and s2 differ according to the rules outlined
-     * above.
-     */
-    public static boolean different(String s1, String s2) {
-        if (s1 == null) s1 = "";
-        if (s2 == null) s2 = "";
-        return !s1.trim().equalsIgnoreCase(s2.trim());
-    }
-    /**
      * Runs the validation process on {@link #address}. You don't have to call
      * this method explicitly--it will be called when you try to access the
      * validation results or suggestions. This method is public so you can call

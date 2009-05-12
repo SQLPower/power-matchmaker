@@ -47,66 +47,6 @@ public class AddressValidatorTest extends TestCase {
         addressDB = new AddressDatabase(new File(bdbPath));
     }
 	
-	/**
-	 * Tests that if the street type is in Quebec it should
-	 * come after a number
-	 */
-	public void testStreetTypeQCAfterNumber() throws Exception {
-		Address a = new Address();
-		a.setStreet("34");
-		a.setStreetType("COUR");
-		PostalCode pc = new PostalCode();
-		pc.setProvinceCode("QC");
-		
-		AddressValidator validator = new AddressValidator(addressDB, a);
-		assertFalse(validator.isStreetTypePrefix(a, pc));
-	}
-	
-	/**
-	 * Tests that if the street type is in Quebec it should
-	 * come after a number followed by E (ie: 37E).
-	 */
-	public void testStreetTypeQCAfterNumberE() throws Exception {
-		Address a = new Address();
-		a.setStreet("34E");
-		a.setStreetType("COUR");
-		PostalCode pc = new PostalCode();
-		pc.setProvinceCode("QC");
-		
-		AddressValidator validator = new AddressValidator(addressDB, a);
-		assertFalse(validator.isStreetTypePrefix(a, pc));
-	}
-	
-	/**
-	 * Tests that if the street type is in Quebec it should
-	 * come after a number followed by RE (ie: 37RE);
-	 */
-	public void testStreetTypeQCAfterNumberRE() throws Exception {
-		Address a = new Address();
-		a.setStreet("34RE");
-		a.setStreetType("COUR");
-		PostalCode pc = new PostalCode();
-		pc.setProvinceCode("QC");
-		
-		AddressValidator validator = new AddressValidator(addressDB, a);
-		assertFalse(validator.isStreetTypePrefix(a, pc));
-	}
-	
-	/**
-	 * Tests that if the street type is in Quebec it should
-	 * come before a generic street name
-	 */
-	public void testStreetTypeQCBeforeString() throws Exception {
-		Address a = new Address();
-		a.setStreet("A STREET NAME");
-		a.setStreetType("COUR");
-		PostalCode pc = new PostalCode();
-		pc.setProvinceCode("QC");
-		
-		AddressValidator validator = new AddressValidator(addressDB, a);
-		assertTrue(validator.isStreetTypePrefix(a, pc));
-	}
-	
     /**
      * Test to ensure the validator can deal with well formed street information
      * missing a postal code.
