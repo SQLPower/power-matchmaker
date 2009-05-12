@@ -377,4 +377,20 @@ public class AddressDatabase {
 		}
 		return false;
 	}
+	
+	public PrimaryIndex<Long, PostalCode> getPostalCodePK() {
+        return postalCodePK;
+    }
+	
+	public SecondaryIndex<String, Long, PostalCode> getPostalCodeProvince() {
+        return postalCodeProvince;
+    }
+	
+	public SecondaryIndex<String, Long, PostalCode> getPostalCodeMunicipality() {
+        return postalCodeMunicipality;
+    }
+	
+	public SecondaryIndex<Integer, Long, PostalCode> getPostalCodeRecordType() {
+        return postalCodeRecordType;
+    }
 }
