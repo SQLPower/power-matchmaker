@@ -32,11 +32,20 @@ import ca.sqlpower.matchmaker.address.LargeVolumeReceiver.LVRRecordType;
 import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.matchmaker.address.steps.GeneralDeliveryNameAndTypeStep;
 import ca.sqlpower.matchmaker.address.steps.GeneralDeliveryNameStep;
+import ca.sqlpower.matchmaker.address.steps.LockBoxNameAndTypeStep;
+import ca.sqlpower.matchmaker.address.steps.LockBoxNumberContainsNumSignStep;
+import ca.sqlpower.matchmaker.address.steps.LockBoxNumberStep;
+import ca.sqlpower.matchmaker.address.steps.LockBoxTypeStep;
 import ca.sqlpower.matchmaker.address.steps.MunicipalityNameStep;
 import ca.sqlpower.matchmaker.address.steps.PostalCodeStep;
 import ca.sqlpower.matchmaker.address.steps.ProvinceNameStep;
+import ca.sqlpower.matchmaker.address.steps.RouteDINameAndTypeStep;
+import ca.sqlpower.matchmaker.address.steps.RouteNumberContainsNumSignStep;
+import ca.sqlpower.matchmaker.address.steps.RouteNumberStep;
+import ca.sqlpower.matchmaker.address.steps.RouteTypeStep;
 import ca.sqlpower.matchmaker.address.steps.SERPRuralZeroPostalCodeStep;
 import ca.sqlpower.matchmaker.address.steps.StreetAddressNumberSuffixStep;
+import ca.sqlpower.matchmaker.address.steps.StreetAndRouteForRouteTypeStep;
 import ca.sqlpower.matchmaker.address.steps.StreetAndRouteForStreetTypeStep;
 import ca.sqlpower.matchmaker.address.steps.StreetDirectionCodeStep;
 import ca.sqlpower.matchmaker.address.steps.StreetNameStep;
@@ -49,7 +58,6 @@ import ca.sqlpower.matchmaker.address.steps.SuiteNumberMissingStep;
 import ca.sqlpower.matchmaker.address.steps.SuiteNumberPrefixStep;
 import ca.sqlpower.matchmaker.address.steps.SuiteNumberSignStep;
 import ca.sqlpower.matchmaker.address.steps.ValidateState;
-import ca.sqlpower.matchmaker.address.steps.ValidateStepUtil;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -332,118 +340,21 @@ public class AddressValidator {
 				}
 				suggestion.setType(RecordType.LOCK_BOX);
 				
-				if (!Address.isLockBoxExactMatch(a.getLockBoxType())) {
-					if (!a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && ValidateStepUtil.different(a.getLockBoxType(), Address.LOCK_BOX_ENGLISH)) {
-					    suggestion.setLockBoxType(Address.LOCK_BOX_ENGLISH);
-					    state.incrementErrorCount("English lock box name is incorrectly spelled and/or abbreviated.");
-					} else if (a.getProvince().equals(AddressDatabase.QUEBEC_PROVINCE_CODE) && ValidateStepUtil.different(a.getLockBoxType(), Address.LOCK_BOX_FRENCH)) {
-					    suggestion.setLockBoxType(Address.LOCK_BOX_FRENCH);
-					    state.incrementErrorCount("French lock box name is incorrectly spelled and/or abbreviated.");
-					}
-				}
+				new LockBoxTypeStep().validate(pc, a, suggestion, state);
+				new LockBoxNumberContainsNumSignStep().validate(pc, a, suggestion, state);
+				new LockBoxNumberStep().validate(pc, a, suggestion, state);
+				new LockBoxNameAndTypeStep(db).validate(pc, a, suggestion, state);
 				
-				if (a.getLockBoxNumber() != null && a.getLockBoxNumber().length() > 0 && a.getLockBoxNumber().charAt(0) == '#') {
-				    suggestion.setLockBoxNumber(a.getLockBoxNumber().substring(1));
-					state.incrementErrorCount("Lock box number should not start with a #.");
-				}
-				
-				if (!pc.containsLockBoxNumber(suggestion)) {
-				    if (pc.getLockBoxBagFromNumber().equals(pc.getLockBoxBagToNumber())) {
-				        suggestion.setLockBoxNumber(new Integer(pc.getLockBoxBagFromNumber()).toString());
-				    }
-					state.incrementErrorCount("Lock box number should does not fall in the postal code lock box range.");
-				}
-				
-				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
-					ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
-				} else {
-					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
-					if (a.getProvince() != null) {
-						join.addCondition(db.postalCodeProvince, a.getProvince());
-					}
-					if (a.getMunicipality() != null) {
-						join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
-					}
-					if (a.getType() != null) {
-						join.addCondition(db.postalCodeRecordType, a.getType().getRecordTypeCode());
-					}
-					ForwardCursor<PostalCode> matches = null;
-					try {
-						matches = join.entities();
-						for (PostalCode similarPC : matches) {
-							if (similarPC != pc && similarPC.containsLockBoxNumber(suggestion)) {
-								ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
-							}
-						}
-					} finally {
-						if (matches != null) matches.close();
-					}
-				}
 			}
 			if ((pc.getRecordType() == RecordType.ROUTE || pc.getRecordType() == RecordType.STREET_AND_ROUTE) &&
 					!(suggestion.getType() == RecordType.STREET && pc.getRecordType() == RecordType.STREET_AND_ROUTE)) {
 				
-
-				if (suggestion.getType() == null) {
-					if (pc.getRecordType() == RecordType.ROUTE) {
-						suggestion.setType(RecordType.ROUTE);
-					} else if (pc.getRecordType() == RecordType.STREET_AND_ROUTE) {
-						suggestion.setType(RecordType.STREET_AND_ROUTE);
-						if (suggestion.isUrbanBeforeRural() == null) {
-							suggestion.setUrbanBeforeRural(false);
-						}
-					}
-				} else if (suggestion.getType() != RecordType.ROUTE && suggestion.getType() != RecordType.STREET_AND_ROUTE) {
-					state.incrementErrorCount("Address type does not match best suggestion.");
-				} else if (suggestion.isUrbanBeforeRural() == null) {
-					suggestion.setUrbanBeforeRural(false);
-				}
-				if (!Address.RURAL_ROUTE_TYPES.contains(a.getRuralRouteType())) {
-				    suggestion.setRuralRouteType(Address.getRuralRouteShortForm(a.getRuralRouteType()));
-					state.incrementErrorCount("Invalid rural route type.");
-				}
+				new StreetAndRouteForRouteTypeStep().validate(pc, a, suggestion, state);
+				new RouteTypeStep().validate(pc, a, suggestion, state);
+				new RouteDINameAndTypeStep(db).validate(pc, a, suggestion, state);
+				new RouteNumberStep().validate(pc, a, suggestion, state);
+				new RouteNumberContainsNumSignStep().validate(pc, a, suggestion, state);
 				
-				
-				if (a.getDeliveryInstallationName() != null || a.getDeliveryInstallationType() != null) {
-					ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
-				} else {
-					EntityJoin<Long, PostalCode> join = new EntityJoin<Long, PostalCode>(db.postalCodePK);
-					if (a.getProvince() != null) {
-						join.addCondition(db.postalCodeProvince, a.getProvince());
-					}
-					if (a.getMunicipality() != null) {
-						join.addCondition(db.postalCodeMunicipality, a.getMunicipality());
-					}
-					if (a.getType() != null) {
-						join.addCondition(db.postalCodeRecordType, a.getType().getRecordTypeCode());
-					}
-					ForwardCursor<PostalCode> matches = null;
-					try {
-						matches = join.entities();
-						for (PostalCode similarPC : matches) {
-							if (similarPC != pc && similarPC.getRouteServiceNumber() != null && similarPC.getRouteServiceNumber().trim().length() > 0 
-									&& !ValidateStepUtil.different(suggestion.getRuralRouteNumber(), new Integer(similarPC.getRouteServiceNumber()).toString()) &&
-									(suggestion.getType() != PostalCode.RecordType.STREET && suggestion.getType() != PostalCode.RecordType.STREET_AND_ROUTE)) {
-								ValidateStepUtil.correctDeliveryInstallation(a, pc, suggestion, state);
-							}
-						}
-					} finally {
-						if (matches != null) matches.close();
-					}
-				}
-				
-				if (a.getRuralRouteNumber() == null && pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0) {
-				    suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
-					state.incrementErrorCount("Missing rural route number.");
-				}
-				if (a.getRuralRouteNumber() != null && a.getRuralRouteNumber().length() > 0 && a.getRuralRouteNumber().charAt(0) == '#') {
-				    suggestion.setRuralRouteNumber(a.getRuralRouteNumber().substring(1));
-					state.incrementErrorCount("Rural route number should not start with a #.");
-				}
-				if (pc.getRouteServiceNumber() != null && pc.getRouteServiceNumber().trim().length() > 0 && ValidateStepUtil.different(suggestion.getRuralRouteNumber(), new Integer(pc.getRouteServiceNumber()).toString())) {
-				    suggestion.setRuralRouteNumber(new Integer(pc.getRouteServiceNumber()).toString());
-					state.incrementErrorCount("Incorrect rural route number.");
-				}
 			}
 			
 
