@@ -117,6 +117,8 @@ public class ValidateStepUtil {
      * of errors will be returned.
      */
     public static void correctDeliveryInstallation(Address a, PostalCode pc, Address suggestion, ValidateState state) {
+        if (pc.getDeliveryInstallationQualifierName() == null || pc.getDeliveryInstallationQualifierName().trim().length() == 0) return;
+        
     	if (different(a.getDeliveryInstallationType(), pc.getDeliveryInstallationTypeDescription())) {
     		if (a.getDeliveryInstallationType() != null && pc.getDeliveryInstallationTypeDescription() != null &&
     				((a.getDeliveryInstallationType().equals("STN") && pc.getDeliveryInstallationTypeDescription().equals("SUCC"))

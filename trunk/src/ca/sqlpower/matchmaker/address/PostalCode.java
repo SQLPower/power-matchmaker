@@ -515,7 +515,7 @@ public class PostalCode {
         }
         if (a.getType() == RecordType.ROUTE) {
         	if (a.getRuralRouteNumber() != null && getRouteServiceNumber() != null 
-        			&& !getRouteServiceNumber().equals(a.getRuralRouteNumber())) {
+        			&& !Integer.valueOf(getRouteServiceNumber()).equals(Integer.valueOf(a.getRuralRouteNumber()))) {
         		return false;
         	}
         }
@@ -533,6 +533,7 @@ public class PostalCode {
      * then true will also be returned. Returns false otherwise.
      */
 	public boolean containsLockBoxNumber(Address a) {
+	    if (a.getLockBoxNumber() == null) return false;
 		try {
 			int from = Integer.parseInt(getLockBoxBagFromNumber());
 			int to = Integer.parseInt(getLockBoxBagToNumber());
