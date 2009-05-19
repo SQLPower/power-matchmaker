@@ -39,7 +39,7 @@ public class SERPRuralZeroPostalCodeStep implements ValidateStep {
     public boolean validate(PostalCode pc, Address a, Address suggestion,
             ValidateState state) {
 
-        if (a.getPostalCode() != null && a.getPostalCode().charAt(1) == '0') {
+        if (a.getPostalCode() != null && a.getPostalCode().length() == 6 && a.getPostalCode().charAt(1) == '0') {
             
             //Optional lock box name fix on rural routes
             if ("BOX".equals(a.getLockBoxType())) {

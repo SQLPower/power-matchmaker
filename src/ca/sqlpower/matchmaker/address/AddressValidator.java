@@ -158,23 +158,39 @@ public class AddressValidator {
             municipality = municipalities.iterator().next();
         }
         
+        //Addresses containing a large volume receiver postal code type B, C, D, E, or F should
+        //not be modified from SERP handbook D-22.
+        if (a.getPostalCode() != null && db.containsLVRPostalCode(a.getPostalCode())) {
+            LargeVolumeReceiver lvr = db.findLargeVolumeReceiver(a.getPostalCode());
+            final LVRRecordType recordType = lvr.getLVRRecordType();
+            if (recordType == LVRRecordType.LVR_NAME_LOCK_BOX || recordType == LVRRecordType.LVR_NAME_STREET ||
+                    recordType == LVRRecordType.GOVERNMENT_NAME_LOCK_BOX || recordType == LVRRecordType.GOVERNMENT_NAME_STREET ||
+                    recordType == LVRRecordType.GENERAL_DELIVERY_NAME) {
+                serpValid = true;
+                logger.debug("SERP valid because the postal code is a large volume receiver.");
+                return;
+            }
+        }
+        
+        //This is for addresses with a valid postal code in the address database
+        //but the address line 1 information given does not match the types of
+        //addresses in the database. In this case the postal code may be wrong and
+        //we need to look up other potential postal codes.
+        boolean postalCodeNeedsCorrection = true;
+        Set<PostalCode> addressesPostalCodes = db.findPostalCode(a.getPostalCode());
+        for (PostalCode pc : addressesPostalCodes) {
+            if (a.getType() != null && (a.getType().equals(pc.getRecordType())
+                    || (pc.getRecordType().equals(RecordType.STREET_AND_ROUTE)
+                            && (a.getType().equals(RecordType.STREET) || a.getType().equals(RecordType.ROUTE))))) {
+                postalCodeNeedsCorrection = false;
+                break;
+            }
+        }
+        
         // validate street
         
-        if (a.getPostalCode() != null) {
+        if (a.getPostalCode() != null && !postalCodeNeedsCorrection) {
         	
-        	//Addresses containing a large volume receiver postal code type B, C, D, E, or F should
-        	//not be modified from SERP handbook D-22.
-        	if (db.containsLVRPostalCode(a.getPostalCode())) {
-        		LargeVolumeReceiver lvr = db.findLargeVolumeReceiver(a.getPostalCode());
-        		final LVRRecordType recordType = lvr.getLVRRecordType();
-        		if (recordType == LVRRecordType.LVR_NAME_LOCK_BOX || recordType == LVRRecordType.LVR_NAME_STREET ||
-        				recordType == LVRRecordType.GOVERNMENT_NAME_LOCK_BOX || recordType == LVRRecordType.GOVERNMENT_NAME_STREET ||
-        				recordType == LVRRecordType.GENERAL_DELIVERY_NAME) {
-        			serpValid = true;
-        			logger.debug("SERP valid because the postal code is a large volume receiver.");
-        			return;
-        		}
-        	}
         	
             Set<PostalCode> pcSet = db.findPostalCode(a.getPostalCode());
             List<PostalCode> pcList = new ArrayList<PostalCode>(pcSet);
@@ -193,8 +209,10 @@ public class AddressValidator {
             
         }
         
-        if (a.getPostalCode() == null) {
-            results.add(ValidateResult.createValidateResult(Status.FAIL, "Postal Code is missing"));
+        if (a.getPostalCode() == null || postalCodeNeedsCorrection) {
+            if (a.getPostalCode() == null) { 
+                results.add(ValidateResult.createValidateResult(Status.FAIL, "Postal Code is missing"));
+            }
             
             //If the address line 1 and 2 are missing along with the postal code this will return too many results to
             //reasonably process.

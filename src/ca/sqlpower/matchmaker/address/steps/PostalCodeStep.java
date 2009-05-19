@@ -31,9 +31,6 @@ public class PostalCodeStep implements ValidateStep {
     public boolean validate(PostalCode pc, Address a, Address suggestion,
             ValidateState state) {
         if (ValidateStepUtil.different(pc.getPostalCode(), a.getPostalCode())) {
-            if (a.getPostalCode() != null) {
-                state.setValid(false);
-            }
             suggestion.setPostalCode(pc.getPostalCode());
             state.incrementErrorCount("Postal codes do not agree");
         }

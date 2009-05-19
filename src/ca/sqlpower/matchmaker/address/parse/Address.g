@@ -138,10 +138,10 @@ public boolean setStartsUrbanNotRural(boolean b) {
 }
 
 address
-	:	{couldBeUrban()}?=> streetAddressStart	
-	|	{couldBeRural()}?=> ruralRouteAddress
-	|	{couldBeLockBox()}?=> lockBoxAddress
-	|	{couldBeGD()}?=> generalDeliveryAddress	
+	:	streetAddressStart	
+	|	ruralRouteAddress
+	|	lockBoxAddress
+	|	generalDeliveryAddress	
 	|	failedParse				//Default to keep address information if all else fails
 	;
 	

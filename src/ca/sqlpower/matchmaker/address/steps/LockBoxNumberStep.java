@@ -35,8 +35,10 @@ public class LockBoxNumberStep implements ValidateStep {
         if (!pc.containsLockBoxNumber(suggestion)) {
             if (pc.getLockBoxBagFromNumber().equals(pc.getLockBoxBagToNumber())) {
                 suggestion.setLockBoxNumber(new Integer(pc.getLockBoxBagFromNumber()).toString());
+            } else {
+                state.setValid(false);
             }
-            state.incrementErrorCount("Lock box number should does not fall in the postal code lock box range.");
+            state.incrementErrorCount("Lock box number does not fall in the postal code lock box range.");
         }
         return false;
     }
