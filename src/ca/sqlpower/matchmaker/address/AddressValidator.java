@@ -56,6 +56,7 @@ import ca.sqlpower.matchmaker.address.steps.StreetTypeCodeStep;
 import ca.sqlpower.matchmaker.address.steps.StreetTypePrefixStep;
 import ca.sqlpower.matchmaker.address.steps.SuiteNumberMissingStep;
 import ca.sqlpower.matchmaker.address.steps.SuiteNumberPrefixStep;
+import ca.sqlpower.matchmaker.address.steps.SuiteNumberRangeStep;
 import ca.sqlpower.matchmaker.address.steps.SuiteNumberSignStep;
 import ca.sqlpower.matchmaker.address.steps.ValidateState;
 import ca.sqlpower.validation.Status;
@@ -342,6 +343,7 @@ public class AddressValidator {
 				new SuiteNumberPrefixStep().validate(pc, a, suggestion, state);
 				new SuiteNumberSignStep().validate(pc, a, suggestion, state);
 				new SuiteNumberMissingStep().validate(pc, a, suggestion, state);
+				new SuiteNumberRangeStep().validate(pc, a, suggestion, state);
 			}
 			if (pc.getRecordType() == RecordType.GENERAL_DELIVERY) {
 				if (suggestion.getType() != PostalCode.RecordType.GENERAL_DELIVERY) {
