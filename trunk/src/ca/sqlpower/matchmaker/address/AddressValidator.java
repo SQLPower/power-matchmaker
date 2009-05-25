@@ -379,46 +379,15 @@ public class AddressValidator {
 			
 
 			if (state.isSuggestionExists() || state.isReparsed()) {
-				//Special case: if multiple postal codes exist where one has a smaller street range
-				//than the other (802-806 vs 802-812) and the address falls in both ranges, and the
-				//streets differ by a type that the address is missing (BAYVIEW AVE vs BAYVIEW ST 
-				//with address BAYVIEW) then the postal code with the smaller range should be taken
-				//as more valid.
-				boolean addToFrontOfList = false;
-				if (smallestErrorPostalCode != null && postalCodeStreetRangesCoverAddress(a, pc, smallestErrorPostalCode) && 
-						checkIfFirstPostalCodeStreetRangeInsideSecond(pc, smallestErrorPostalCode) &&
-						checkIfStreetErrorMatchesBothPostalCodes(a, pc, smallestErrorPostalCode)) {
-					if (state.getErrorCount() > smallestErrorCount) {
-						state.setErrorCount(smallestErrorCount);
-					}
-					addToFrontOfList = true;
-					validSpecialCase = true;
-				} else if (smallestErrorPostalCode != null && postalCodeStreetRangesCoverAddress(a, pc, smallestErrorPostalCode) && 
-						checkIfFirstPostalCodeStreetRangeInsideSecond(smallestErrorPostalCode, pc) &&
-						checkIfStreetErrorMatchesBothPostalCodes(a, pc, smallestErrorPostalCode)) {
-					validSpecialCase = true;
-					List<Address> addresses = addressSuggestionsByError.get(smallestErrorCount);
-					addresses.remove(bestSuggestion);
-					addresses.add(0, bestSuggestion);
-				} else if (smallestErrorPostalCode != null && postalCodeStreetRangesCoverAddress(a, pc, smallestErrorPostalCode) &&
-						checkIfStreetErrorMatchesBothPostalCodes(a, pc, smallestErrorPostalCode) &&
-						!checkIfFirstPostalCodeStreetRangeInsideSecond(smallestErrorPostalCode, pc)) {
-					validSpecialCase = false;
-				}
-				
 				List<Address> addresses = addressSuggestionsByError.get(state.getErrorCount());
 				if (addresses == null) {
 					addresses = new ArrayList<Address>();
 					addresses.add(suggestion);
 					addressSuggestionsByError.put(state.getErrorCount(), addresses);
 				} else if (!addresses.contains(suggestion)) {
-					if (addToFrontOfList) {
-						addresses.add(0, suggestion);
-					} else {
-						addresses.add(suggestion);
-					}
+					addresses.add(suggestion);
 				}
-				if (state.getErrorCount() < smallestErrorCount || addToFrontOfList) {
+				if (state.getErrorCount() < smallestErrorCount) {
 					smallestErrorPostalCode = pc;
 					smallestErrorList = state.getErrorList();
 					smallestErrorCount = state.getErrorCount();
