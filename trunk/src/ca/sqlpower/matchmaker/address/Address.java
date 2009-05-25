@@ -575,6 +575,7 @@ public class Address {
         type = source.type;
         unparsedAddressLine1 = source.unparsedAddressLine1;
         urbanBeforeRural = source.urbanBeforeRural;
+        additionalInformationSuffix = source.additionalInformationSuffix;
     }
     
     /**
