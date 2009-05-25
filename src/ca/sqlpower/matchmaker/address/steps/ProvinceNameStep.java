@@ -29,7 +29,8 @@ public class ProvinceNameStep implements ValidateStep {
 
     public boolean validate(PostalCode pc, Address a, Address suggestion,
             ValidateState state) {
-        if (!pc.getProvinceCode().equals(a.getProvince())) {
+        if (!pc.getProvinceCode().equals(a.getProvince())
+        		&& !Address.getValidProvinceCodesFromAlt(a.getProvince()).contains(pc.getProvinceCode())) {
             suggestion.setProvince(pc.getProvinceCode());
             state.incrementErrorCount("Province code does not agree with postal code");
         }

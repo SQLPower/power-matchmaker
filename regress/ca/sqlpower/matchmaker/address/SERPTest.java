@@ -110,7 +110,7 @@ public class SERPTest extends TestCase {
     		if (firstLineRead) {
     			String streetAddress = line.substring(109,159).trim();
     			String municipality = line.substring(159, 189).trim();
-    			String province = line.substring(189, 191).trim();
+    			String province = line.substring(189, 214).trim();
     			String postalCode = line.substring(214).trim();
     			
 //    			logger.debug("Next address is '" + streetAddress + ", " + municipality + ", " + province + ", " + postalCode);
@@ -130,7 +130,7 @@ public class SERPTest extends TestCase {
     			
     			String resultStreetAddress = resultLine.substring(109,159).trim();
     			String resultMunicipality = resultLine.substring(159, 189).trim();
-    			String resultProvince = resultLine.substring(189, 191).trim();
+    			String resultProvince = resultLine.substring(189, 214).trim();
     			String resultPostalCode = resultLine.substring(214, 220).trim();
     			
     			//XXX:not handling optional cases, they are currently being handled as valid
