@@ -38,7 +38,7 @@ public class StreetNumberStep implements ValidateStep {
             logger.debug("Urban address missing street number is " + a.getAddress());
         } else if (pc.getStreetAddressFromNumber() != null && pc.getStreetAddressToNumber() != null &&
                 (pc.getStreetAddressFromNumber() > a.getStreetNumber() || pc.getStreetAddressToNumber() < a.getStreetNumber())) {
-            state.incrementErrorAndSetValidate("Street number does not fall into the range of allowed street numbers for this postal code.", true);
+            state.incrementErrorAndSetValidate("Street number does not fall into the range of allowed street numbers for this postal code.", false);
         }
         return false;
     }
