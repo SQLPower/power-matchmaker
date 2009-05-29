@@ -45,7 +45,7 @@ import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetMasterAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetNoMatchAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetUnmatchAction;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -68,7 +68,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+		JDBCDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 		

@@ -37,7 +37,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -49,7 +49,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
     TestingMatchMakerSession session;
     Connection con;
     SQLDatabase db;
-    SPDataSource ds;
+    JDBCDataSource ds;
     SQLTable sourceTable;
     SQLInputStep step;
     CleanseEngineImpl engine;
@@ -183,6 +183,6 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 	
 	
 	protected abstract void createTables() throws Exception;
-	protected abstract SPDataSource getDS();
+	protected abstract JDBCDataSource getDS();
 	protected abstract String getFullTableName();
 }

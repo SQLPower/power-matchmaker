@@ -35,7 +35,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.security.EmailNotification;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.EmailNotification.EmailRecipient;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Email;
 import ca.sqlpower.util.UnknownFreqCodeException;
@@ -190,7 +190,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	 * that's required by the matchmaker odbc engine, since we will not
 	 * use this odbc engine forever, check for not null is acceptable for now.
 	 */
-	protected static boolean hasODBCDSN(SPDataSource dataSource) {
+	protected static boolean hasODBCDSN(JDBCDataSource dataSource) {
 		final String odbcDsn = dataSource.getOdbcDsn();
 		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
 			return false;

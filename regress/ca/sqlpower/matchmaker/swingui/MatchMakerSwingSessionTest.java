@@ -33,7 +33,7 @@ import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 
@@ -44,7 +44,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
     private MatchMakerSwingSession session;
     PlFolder folder1;
     PlFolder folder2;
-    SPDataSource ds;
+    JDBCDataSource ds;
     
     @Override
     protected void setUp() throws Exception {
@@ -54,8 +54,8 @@ public class MatchMakerSwingSessionTest extends TestCase {
         
         SwingSessionContext stubContext = new StubSwingSessionContext() {
             @Override
-            public List<SPDataSource> getDataSources() {
-                List<SPDataSource> dsList = new ArrayList<SPDataSource>();
+            public List<JDBCDataSource> getDataSources() {
+                List<JDBCDataSource> dsList = new ArrayList<JDBCDataSource>();
                 dsList.add(ds);
                 return dsList;
             }

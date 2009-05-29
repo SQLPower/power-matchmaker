@@ -63,7 +63,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -504,8 +504,8 @@ public class BuildExampleTableDialog extends JDialog{
 	/**
 	 * Gets the selected datasource
 	 */
-	private SPDataSource getDataSource() {
-		return (SPDataSource)sourceChooser.getDataSourceComboBox().getSelectedItem();
+	private JDBCDataSource getDataSource() {
+		return (JDBCDataSource)sourceChooser.getDataSourceComboBox().getSelectedItem();
 	}
 	
 	/**

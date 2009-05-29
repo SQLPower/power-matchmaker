@@ -19,7 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 
 /**
  * This tests that the cleanse engine will run if the plSchema and the 
@@ -51,7 +51,7 @@ public class MultiPlatformCleanseTest extends AbstractCleanseEngineImplTest {
 	}
 
 	@Override
-	protected SPDataSource getDS() {
+	protected JDBCDataSource getDS() {
 		return DBTestUtil.getOracleDS();
 	}
 

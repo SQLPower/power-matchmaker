@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
@@ -153,7 +153,7 @@ public class CachableTable {
     /**
      * Returns the SPDataSource for the current table
      */
-    public SPDataSource getSPDataSource() {
+    public JDBCDataSource getJDBCDataSource() {
     	if (cachedTable != null) {
     		return cachedTable.getParentDatabase().getDataSource();
     	}
@@ -165,8 +165,8 @@ public class CachableTable {
     	
     	MatchMakerSession session = mmo.getSession();
         MatchMakerSessionContext context = session.getContext();
-        List<SPDataSource> dataSources = context.getDataSources();
-        for (SPDataSource spd : dataSources) {
+        List<JDBCDataSource> dataSources = context.getDataSources();
+        for (JDBCDataSource spd : dataSources) {
 			if (spd != null && dsName.equals(spd.getName())) {
 				return spd;
 			}
@@ -209,10 +209,10 @@ public class CachableTable {
 			logger.debug("mmo.parent="+mmo.getParent());
 			
 			SQLDatabase db = null;
-			if (getSPDataSource() == null) {
+			if (getJDBCDataSource() == null) {
 				db = mmo.getSession().getDatabase();
 			} else {
-				db = mmo.getSession().getDatabase(getSPDataSource());
+				db = mmo.getSession().getDatabase(getJDBCDataSource());
 			}
 			
 			if (SQLObjectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){

@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.DatabaseConnectedTestCase;
 import ca.sqlpower.sqlobject.SQLTable;
 
@@ -69,12 +69,12 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
     protected SQLInputStep inputStep;
 
     @Override
-    protected SPDataSource getDataSource() throws IOException {
+    protected JDBCDataSource getJDBCDataSource() throws IOException {
         // for performance reasons, most MatchMaker tests do not start off with
         // a clean, empty schema. They reuse the same connection.
         // this test wants to start fresh with every test method, so we have to
         // use a slightly different connection spec.
-        SPDataSource ds = new SPDataSource(DBTestUtil.getHSQLDBInMemoryDS());
+        JDBCDataSource ds = new JDBCDataSource(DBTestUtil.getHSQLDBInMemoryDS());
         ds.setUrl("jdbc:hsqldb:mem:refresh?shutdown=true");
         return ds;
     }

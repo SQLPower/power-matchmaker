@@ -31,6 +31,7 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 
 
@@ -62,7 +63,7 @@ private Project project;
     	project = createNewObjectUnderTest();
     }
 	
-	protected SPDataSource getDS() {
+	protected JDBCDataSource getDS() {
 		return DBTestUtil.getSqlServerDS();
 	}
 	

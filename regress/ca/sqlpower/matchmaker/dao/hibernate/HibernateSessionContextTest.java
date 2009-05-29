@@ -30,8 +30,8 @@ import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
 
 public class HibernateSessionContextTest extends TestCase {
@@ -45,7 +45,7 @@ public class HibernateSessionContextTest extends TestCase {
      * The sole data source the setUp() method puts in the session context.  Provided
      * here for convenience.  You could get the same data source with ctx.getDataSources().get(0).
      */
-	private SPDataSource ds;
+	private JDBCDataSource ds;
     
 	/**
 	 * The Preferences node that we will use in this test. We want to keep
@@ -57,7 +57,7 @@ public class HibernateSessionContextTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        DataSourceCollection ini = new PlDotIni();
+        DataSourceCollection<JDBCDataSource> ini = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
         ds = DBTestUtil.getOracleDS();
         ini.addDataSource(ds);
         ctx = new MatchMakerHibernateSessionContext(prefs, ini);
@@ -75,7 +75,7 @@ public class HibernateSessionContextTest extends TestCase {
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
 			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     public void testCheckSchemaVersion() throws Exception {
-        SPDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
+	    JDBCDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
 
         Version v = new Version();
         v.setMajor(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getMajor() - 1);

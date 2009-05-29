@@ -33,8 +33,8 @@ import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -276,7 +276,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     }
     
 	public void testResultTableExistsWhenTrue() throws Exception {
-		SPDataSource ds = new SPDataSource(new PlDotIni());
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -296,7 +296,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 * to the Project object.
 	 */
 	public void testResultTableExistsWhenFalse() throws Exception {
-		SPDataSource ds = new SPDataSource(new PlDotIni());
+		JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -319,7 +319,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 */
 	public void testResultTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-		SPDataSource ds = new SPDataSource(new PlDotIni());
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -334,7 +334,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
-		SPDataSource ds = new SPDataSource(new PlDotIni());
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -353,7 +353,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 * to the Project object.
 	 */
 	public void testSourceTableExistsWhenFalse() throws Exception {
-		SPDataSource ds = new SPDataSource(new PlDotIni());
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -376,7 +376,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 */
 	public void testSourceTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-		SPDataSource ds = new SPDataSource(new PlDotIni());
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Sc" +
 				"hema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -393,7 +393,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	public void testVerifyResultTableSS() throws SQLException, InstantiationException,
 											IllegalAccessException, SQLObjectException {
 		
-		SPDataSource ds = DBTestUtil.getSqlServerDS();
+	    JDBCDataSource ds = DBTestUtil.getSqlServerDS();
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());
@@ -504,7 +504,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	public void testVerifyResultTableORA() throws SQLException, InstantiationException,
 											IllegalAccessException, SQLObjectException {
 		
-		SPDataSource ds = DBTestUtil.getOracleDS();
+	    JDBCDataSource ds = DBTestUtil.getOracleDS();
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());

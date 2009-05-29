@@ -45,8 +45,8 @@ import ca.sqlpower.architect.ArchitectSessionContextImpl;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SPDataSourceType;
+import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.JDBCDataSourceType;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -100,7 +100,7 @@ public class RepositoryUtil {
         SQLDatabase database = SQLObjectUtils.getAncestor(target, SQLDatabase.class);
         SQLCatalog catalog = SQLObjectUtils.getAncestor(target, SQLCatalog.class);
         SQLSchema schema = SQLObjectUtils.getAncestor(target, SQLSchema.class);
-        SPDataSource targetDS = database.getDataSource();
+        JDBCDataSource targetDS = database.getDataSource();
 
         logger.debug("Generating DDL for new repository in data source: " + targetDS.getName());
         logger.debug("Target Catalog: " + catalog + "; Schema: " + schema);
@@ -184,7 +184,7 @@ public class RepositoryUtil {
      * but was unfit for use for some reason (the exception message will explain the
      * reason).
      */
-    public static void createOrUpdateRepositorySchema(SPDataSource ds) throws RepositoryException {
+    public static void createOrUpdateRepositorySchema(JDBCDataSource ds) throws RepositoryException {
         logger.debug(
                 "Attempting to check DQguru repository at " + ds.getName() +
                 " with owner " + ds.getPlSchema());
@@ -268,7 +268,7 @@ public class RepositoryUtil {
      * @param ds
      * @throws RepositoryException If anything goes wrong while trying to create the schema
      */
-    private static void createRepositorySchema(SPDataSource ds) throws RepositoryException {
+    private static void createRepositorySchema(JDBCDataSource ds) throws RepositoryException {
         SQLDatabase db = null;
         Connection con = null;
         Statement stmt = null;
@@ -337,7 +337,7 @@ public class RepositoryUtil {
 	 * @throws ClassNotFoundException, IllegalAccessException, InstantiationException 
 	 *             When creating  ddlg from the datasource fails.
 	 */
-    public static void upgradeSchema(SPDataSource dbSource, Version curVer, Version reqVer) 
+    public static void upgradeSchema(JDBCDataSource dbSource, Version curVer, Version reqVer) 
     		throws SQLException, ParserConfigurationException, SAXException, IOException,
     		InstantiationException, IllegalAccessException, ClassNotFoundException {
     	logger.debug("Creating DDLG from datasource.");
@@ -424,7 +424,7 @@ public class RepositoryUtil {
 	 * 
 	 * @throws SQLException
 	 */
-    private static void invalidateSchemaVersion(SPDataSource dbSource) throws SQLException {
+    private static void invalidateSchemaVersion(JDBCDataSource dbSource) throws SQLException {
     	String schemaQualifier = dbSource.getPlSchema() + ".";
 
     	Connection con = null;
@@ -478,7 +478,7 @@ public class RepositoryUtil {
      * @throws SAXException
      * @throws IOException
      */
-    private static List<String> readUpgradeScripts(final String repositorySchemaQualifier, SPDataSourceType dbSourceType,
+    private static List<String> readUpgradeScripts(final String repositorySchemaQualifier, JDBCDataSourceType dbSourceType,
 			Version curVer, Version reqVer) throws ParserConfigurationException, SAXException, IOException {
 		
     	String scriptResourcePath = "ca/sqlpower/matchmaker/dao/hibernate/upgrade_"+curVer+"_"+reqVer+".xml";

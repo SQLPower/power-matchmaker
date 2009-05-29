@@ -26,7 +26,7 @@ import javax.swing.AbstractAction;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 
 /**
  * An action that "refreshes" the session by closing it and creating a new one
@@ -51,7 +51,7 @@ public class RefreshAction extends AbstractAction {
 
         // Save information we need in order to recreate the session
         SwingSessionContext context = swingSession.getContext();
-        SPDataSource ds = swingSession.getDatabase().getDataSource();
+        JDBCDataSource ds = swingSession.getDatabase().getDataSource();
         
         // this will prompt the user to save their work
         swingSession.setCurrentEditorComponent(null);

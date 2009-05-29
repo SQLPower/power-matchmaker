@@ -64,6 +64,7 @@ import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -157,7 +158,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * not set up properly. 
      */
 	public MatchMakerHibernateSessionImpl(MatchMakerSessionContext context,
-			SPDataSource ds) throws PLSecurityException,
+			JDBCDataSource ds) throws PLSecurityException,
 			UnknownFreqCodeException, SQLException, SQLObjectException,
 			MatchMakerConfigurationException, RepositoryVersionException {
         this.instanceID = nextInstanceID++;
@@ -366,7 +367,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * @throws MatchMakerConfigurationException If the given data source is not
      * properly configured. 
      */
-    private SessionFactory buildHibernateSessionFactory(SPDataSource ds) throws MatchMakerConfigurationException {
+    private SessionFactory buildHibernateSessionFactory(JDBCDataSource ds) throws MatchMakerConfigurationException {
         SessionFactory factory;
         Configuration cfg = new Configuration();
 
@@ -484,14 +485,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     	logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
     			catalog + "." + schema + "." + tableName);
     	
-    	SPDataSource ds = null;
+    	JDBCDataSource ds = null;
     	
     	if (spDataSourceName == null || spDataSourceName.length() == 0) {
     		ds = getDatabase().getDataSource();
     	} else {
     		for (SPDataSource spd : context.getDataSources()) {
     			if (spd.getName().equals(spDataSourceName)) {
-    				ds = spd;
+    				ds = (JDBCDataSource) spd;
     			}
     		}
     		if (ds == null) {
@@ -530,14 +531,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
                 catalog + "." + schema + "." + tableName);
         
-        SPDataSource ds = null;
+        JDBCDataSource ds = null;
         
         if (spDataSourceName == null || spDataSourceName.length() == 0) {
             ds = getDatabase().getDataSource();
         } else {
             for (SPDataSource spd : context.getDataSources()) {
                 if (spd.getName().equals(spDataSourceName)) {
-                    ds = spd;
+                    ds = (JDBCDataSource) spd;
                 }
             }
             if (ds == null) {
@@ -612,7 +613,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     	} 
     }
 
-	public SQLDatabase getDatabase(SPDataSource dataSource) {
+	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
 		SQLDatabase db = databases.get(dataSource);
 		if (db == null) {
 			db = new SQLDatabase(dataSource);

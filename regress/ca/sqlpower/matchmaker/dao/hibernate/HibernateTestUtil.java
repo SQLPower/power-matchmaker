@@ -24,7 +24,7 @@ import org.hibernate.cfg.Configuration;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 
 public class HibernateTestUtil {
@@ -42,7 +42,7 @@ public class HibernateTestUtil {
 	 * 			plSchema and plDbType
 	 * @return a new hibernate session
 	 */	
-	static SessionFactory buildHibernateSessionFactory(SPDataSource ds) {
+	static SessionFactory buildHibernateSessionFactory(JDBCDataSource ds) {
 		Configuration cfg = new Configuration();
 		SessionFactory sessionFactory = null;
 		

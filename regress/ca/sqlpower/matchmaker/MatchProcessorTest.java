@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResult;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLTable;
 
@@ -56,7 +56,7 @@ public class MatchProcessorTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		
-		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+		JDBCDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		SQLDatabase db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 		MMTestUtils.createResultTable(con);

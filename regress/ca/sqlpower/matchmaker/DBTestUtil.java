@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.HSQLDBDDLGenerator;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 
@@ -64,7 +65,7 @@ public class DBTestUtil {
      * @throws ClassNotFoundException If the JDBC driver can't be found
      * @throws SQLException If there is a JDBC error (invalid username, password, or database url)
      */
-    public static TestingConnection connectToDatabase(SPDataSource dataSource)
+    public static TestingConnection connectToDatabase(JDBCDataSource dataSource)
     throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
         
         if (connections.get(dataSource) == null) {
@@ -83,11 +84,11 @@ public class DBTestUtil {
      * Returns a new SPDataSource which is configured to connect to
      * our SQL Server 2000 test database.  The pl schema is in plautotest.
      */
-    public static SPDataSource getSqlServerDS() { 
+    public static JDBCDataSource getSqlServerDS() { 
     	/*
     	 * Setup information for SQL Server
     	 */
-    	PlDotIni pl = new PlDotIni();
+    	PlDotIni<JDBCDataSource> pl = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
     	try {
     		pl.read(new File("testbed/pl.regression.ini"));
     	} catch (IOException e) {
@@ -102,11 +103,11 @@ public class DBTestUtil {
      * Returns a new SPDataSource which is configured to connect to
      * our Oracle 8i test database.  The PL schema is in mm_test.
      */
-    public static SPDataSource getOracleDS() { 
+    public static JDBCDataSource getOracleDS() { 
         /*
          * Setup information for Oracle
          */
-    	PlDotIni pl = new PlDotIni();
+    	PlDotIni<JDBCDataSource> pl = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
     	try {
     		pl.read(new File("testbed/pl.regression.ini"));
     	} catch (IOException e) {
@@ -122,12 +123,12 @@ public class DBTestUtil {
      * Returns a new SPDataSource which is configured to create
      * an in-memory (non persistent) HSQLDB instance.  The PL schema is in pl.
      */
-    public static SPDataSource getHSQLDBInMemoryDS() {
+    public static JDBCDataSource getHSQLDBInMemoryDS() {
         final String hsqlUserName = "sa";
         final String hsqlPassword = "";
         final String hsqlUrl = "jdbc:hsqldb:mem:aname";
         
-        SPDataSource hsqlDataSource = new SPDataSource(new PlDotIni());
+        JDBCDataSource hsqlDataSource = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
         hsqlDataSource.getParentType().setJdbcDriver("org.hsqldb.jdbcDriver");
         hsqlDataSource.getParentType().setDDLGeneratorClass(HSQLDBDDLGenerator.class.getName());
         hsqlDataSource.setName("In-memory HSQLDB");

@@ -19,7 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 
 
 public class SQLServerCleanseEngineImplTest extends AbstractCleanseEngineImplTest {
@@ -27,7 +27,7 @@ public class SQLServerCleanseEngineImplTest extends AbstractCleanseEngineImplTes
 		return "MM_TEST.MM_TEST.CLEANSE_TEST";
 	}
 	
-	protected SPDataSource getDS() {
+	protected JDBCDataSource getDS() {
 		return DBTestUtil.getSqlServerDS();
 	}
 

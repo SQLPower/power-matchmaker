@@ -47,6 +47,7 @@ import javax.swing.event.ListDataListener;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -245,11 +246,11 @@ public class LoginDialog implements SwingWorkerRegistry {
     private JProgressBar progressBar = new JProgressBar();
     
     /**
-     * The SPDatasource object the user picked from the combo box on the login dialog.
+     * The {@link JDBCDataSource} object the user picked from the combo box on the login dialog.
      * Once the login process has been initiated, this is the data source of the repository
      * database.
      */
-    private SPDataSource dbSource;
+    private JDBCDataSource dbSource;
 	
     private ConnectionComboBoxModel connectionModel;
 	private JComponent panel;
@@ -275,7 +276,7 @@ public class LoginDialog implements SwingWorkerRegistry {
 
 		public void contentsChanged(ListDataEvent e) {
 		    if ( e.getType() == ListDataEvent.CONTENTS_CHANGED ) {
-		        SPDataSource dbSource = (SPDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
+		        JDBCDataSource dbSource = (JDBCDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
 		        dbSourceName.setText(dbSource.getName());
 		        userID.setText(dbSource.getUser());
 		        password.setText(dbSource.getPass());

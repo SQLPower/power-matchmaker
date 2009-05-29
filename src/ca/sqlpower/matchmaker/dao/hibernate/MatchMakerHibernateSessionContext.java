@@ -37,8 +37,10 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.JDBCDataSourceType;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SPDataSourceType;
+import ca.sqlpower.sql.SpecificDataSourceCollection;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
@@ -62,7 +64,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * The list of database connections that this session context knows about.  This
      * implementation uses the <blink><marquee>AWESOME</marquee></blink> pl.ini file
      */
-    private final DataSourceCollection plDotIni;
+    private final DataSourceCollection<JDBCDataSource> plDotIni;
     
     /**
      * The prefs node that we use for persisting all the basic user settings that are
@@ -82,10 +84,10 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * 
      * @param plIni The data source collection that this context will use.
      */
-    public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection plIni) {
+    public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection<JDBCDataSource> plIni) {
         logger.debug("Creating new session context");
         this.sessions = new LinkedList<MatchMakerSession>();
-        this.plDotIni = plIni;
+        this.plDotIni = new SpecificDataSourceCollection<JDBCDataSource>(plIni, JDBCDataSource.class);
         this.prefs = prefs;
     }
 
@@ -94,9 +96,9 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * given data source collection.
      */
     private void ensureHSQLDBIsSetup() {
-        List<SPDataSourceType> types = plDotIni.getDataSourceTypes();
-        SPDataSourceType hsql = null;
-        for (SPDataSourceType dst : types) {
+        List<JDBCDataSourceType> types = plDotIni.getDataSourceTypes();
+        JDBCDataSourceType hsql = null;
+        for (JDBCDataSourceType dst : types) {
             if ("HSQLDB".equals(dst.getName())) {
                 hsql = dst;
                 break;
@@ -121,14 +123,14 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#getDataSources()
      */
-    public List<SPDataSource> getDataSources() {
+    public List<JDBCDataSource> getDataSources() {
         return plDotIni.getConnections();
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSession createSession(SPDataSource ds, String username,
+    public MatchMakerSession createSession(JDBCDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
 			SQLObjectException, MatchMakerConfigurationException,
 			RepositoryVersionException {
@@ -137,7 +139,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 		// password
         //and use that for the login attempt.  We do not want to change the
         //default userID and password for the connection in here.
-        SPDataSource tempDbSource = new SPDataSource(ds);
+        JDBCDataSource tempDbSource = new JDBCDataSource(ds);
         tempDbSource.setUser(username);
         tempDbSource.setPass(password);
 
@@ -153,7 +155,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     
     public MatchMakerSession createDefaultSession() throws RepositoryException {
         ensureHSQLDBIsSetup();
-        SPDataSource ds = makeDefaultDataSource();
+        JDBCDataSource ds = makeDefaultDataSource();
         
         // this throws an exception if there is a non-recoverable schema problem
         RepositoryUtil.createOrUpdateRepositorySchema(ds);
@@ -186,10 +188,10 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * collection, or if it's not found, creates a new repository data source
      * and adds it to the collection.
      */
-    private SPDataSource makeDefaultDataSource() {
-        SPDataSource ds = getPlDotIni().getDataSource(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
+    private JDBCDataSource makeDefaultDataSource() {
+        JDBCDataSource ds = getPlDotIni().getDataSource(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
         if (ds == null) {
-            ds = new SPDataSource(getPlDotIni());
+            ds = new JDBCDataSource(getPlDotIni());
             ds.setName(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
             ds.setPlSchema("public");
             ds.setUser("sa");
@@ -197,8 +199,8 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
             ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository;shutdown=true");
 
             // find HSQLDB parent type
-            SPDataSourceType hsqldbType = null;
-            for (SPDataSourceType type : getPlDotIni().getDataSourceTypes()) {
+            JDBCDataSourceType hsqldbType = null;
+            for (JDBCDataSourceType type : getPlDotIni().getDataSourceTypes()) {
                 if ("HSQLDB".equals(type.getName())) {
                     hsqldbType = type;
                     break;
@@ -220,7 +222,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         return ds;
     }
 
-    public DataSourceCollection getPlDotIni() {
+    public DataSourceCollection<JDBCDataSource> getPlDotIni() {
         return plDotIni;
     }
 

@@ -24,14 +24,14 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.swingui.SPDataSourcePanel;
+import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.swingui.JDBCDataSourcePanel;
 
 /**
  * The MMDataSourcePanel is an SPDataSourcePanel with an extra field
  * for setting the PL schema owner.
  */
-public class MMDataSourcePanel extends SPDataSourcePanel {
+public class MMDataSourcePanel extends JDBCDataSourcePanel {
 	private static final Logger logger = Logger.getLogger(MMDataSourcePanel.class);
 	
 	/**
@@ -44,7 +44,7 @@ public class MMDataSourcePanel extends SPDataSourcePanel {
 	 * 
 	 * @param ds The data source to edit.
 	 */
-	MMDataSourcePanel(SPDataSource ds) {
+	MMDataSourcePanel(JDBCDataSource ds) {
 		super(ds);
 		repositorySchemaOwnerField = new JTextField(ds.getPlSchema());
 		repositorySchemaOwnerField.putClientProperty(EXTRA_FIELD_LABEL_PROP, "Repository Qualifier");

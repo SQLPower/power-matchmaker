@@ -41,7 +41,7 @@ import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -68,7 +68,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	static Connection sCon;
 	static Connection con;
 	static SQLDatabase db;
-	static SPDataSource ds;
+	static JDBCDataSource ds;
 	static SQLTable sourceTable;
 	static SQLTable childTable;
 	static SQLTable grandChildTable;
@@ -1019,7 +1019,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	
 	protected abstract String getFullTableName();
 	
-	protected abstract SPDataSource getDS();
+	protected abstract JDBCDataSource getDS();
 	
 	private void runProcessor() throws Exception {
 		con.setAutoCommit(false);

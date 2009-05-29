@@ -27,7 +27,7 @@ import java.util.prefs.PreferenceChangeListener;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
@@ -72,7 +72,7 @@ public interface MatchMakerSessionContext {
 	public static final String ADDRESS_CORRECTION_DATA_PATH = "MatchMakerSessionContext.ADDRESS_CORRECTION_DATA_PATH";
 
     
-    public List<SPDataSource> getDataSources();
+    public List<JDBCDataSource> getDataSources();
 
     /**
      * Creates a MatchMaker session object, which entails logging into a database
@@ -92,7 +92,7 @@ public interface MatchMakerSessionContext {
      * @throws SQLObjectException If some SQLObject operations fail
      * @throws MatchMakerConfigurationException  If there is a user-fixable configuration problem.
      */
-    public MatchMakerSession createSession(SPDataSource ds, String username,
+    public MatchMakerSession createSession(JDBCDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
 			SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException;
 
@@ -111,7 +111,7 @@ public interface MatchMakerSessionContext {
      * Such implementations could delegate to PlDotIni and the databases.xml stuff,
      * as well as a JNDI implementation.
      */
-    public DataSourceCollection getPlDotIni();
+    public DataSourceCollection<JDBCDataSource> getPlDotIni();
     
     /**
      * Returns the email smtp host address set in the preferences

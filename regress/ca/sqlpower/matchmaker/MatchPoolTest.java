@@ -38,7 +38,7 @@ import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -68,7 +68,7 @@ public class MatchPoolTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+	    JDBCDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 
