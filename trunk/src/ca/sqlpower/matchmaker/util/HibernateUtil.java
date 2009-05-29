@@ -22,7 +22,7 @@ package ca.sqlpower.matchmaker.util;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 
-import ca.sqlpower.sql.SPDataSourceType;
+import ca.sqlpower.sql.JDBCDataSourceType;
 
 
 /**
@@ -46,7 +46,7 @@ public class HibernateUtil {
      * This method shouldn't exist. We should put hibernate dialect information in the
      * data source type section of the PL.INI, and not do any cross-referencing.
      */
-	public static String guessHibernateDialect(SPDataSourceType dsType){
+	public static String guessHibernateDialect(JDBCDataSourceType dsType){
 		if (dsType == null ) throw new IllegalArgumentException("No dialect for a null database type");
 		String dbString = dsType.getName().toLowerCase();
 

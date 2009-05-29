@@ -31,11 +31,11 @@ import java.util.prefs.Preferences;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
-	List<SPDataSource> dataSources = new ArrayList<SPDataSource>();
+	List<JDBCDataSource> dataSources = new ArrayList<JDBCDataSource>();
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
 	Collection<MatchMakerSession> sessions = new LinkedList<MatchMakerSession>();
@@ -54,11 +54,11 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		sessions.add(session);
 	}
 	
-	public List<SPDataSource> getDataSources() {
+	public List<JDBCDataSource> getDataSources() {
 		return dataSources;
 	}
 
-	public void setDataSou2rces(List<SPDataSource> dataSources) {
+	public void setDataSou2rces(List<JDBCDataSource> dataSources) {
 		this.dataSources = dataSources;
 	}
 
@@ -80,7 +80,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		sessions.add(session);
 	}
 
-	public MatchMakerSession createSession(SPDataSource ds, String username,
+	public MatchMakerSession createSession(JDBCDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException, RepositoryVersionException{
 		return session;
 	}

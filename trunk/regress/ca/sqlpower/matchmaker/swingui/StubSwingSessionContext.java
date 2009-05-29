@@ -36,6 +36,7 @@ import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -48,12 +49,12 @@ public class StubSwingSessionContext implements SwingSessionContext {
 
     Logger logger = Logger.getLogger(StubSwingSessionContext.class);
 
-    public MatchMakerSwingSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
+    public MatchMakerSwingSession createSession(JDBCDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
         logger.debug("Stub call: StubSwingSessionContext.createSession()");
         return null;
     }
 
-    public List<SPDataSource> getDataSources() {
+    public List<JDBCDataSource> getDataSources() {
         logger.debug("Stub call: StubSwingSessionContext.getDataSources()");
         return null;
     }

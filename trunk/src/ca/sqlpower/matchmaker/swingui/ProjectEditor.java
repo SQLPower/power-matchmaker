@@ -54,6 +54,7 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -622,7 +623,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	        try {
 	        	if (!project.doesResultTableExist() ||
 	        			!project.verifyResultTableStructure()) {
-	        		MMSUtils.createResultTable(swingSession.getFrame(), (SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem(), project);
+	        		MMSUtils.createResultTable(swingSession.getFrame(), (JDBCDataSource) resultChooser.getDataSourceComboBox().getSelectedItem(), project);
 	        		
 	        		SQLTable resultTable = swingSession.findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
 	        				project.getResultTableSchema(), project.getResultTableName());

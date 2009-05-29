@@ -114,7 +114,7 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
@@ -1443,7 +1443,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		return enginesEnabled;
 	}
 
-	public SQLDatabase getDatabase(SPDataSource dataSource) {
+	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
 		return sessionImpl.getDatabase(dataSource);
 	}
 	

@@ -33,7 +33,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -53,7 +53,7 @@ public class MatchEngineImplTest extends TestCase {
     final private Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+	    JDBCDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 		MMTestUtils.createResultTable(con);

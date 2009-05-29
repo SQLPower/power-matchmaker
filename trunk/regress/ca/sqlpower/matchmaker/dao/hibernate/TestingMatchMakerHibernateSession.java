@@ -42,6 +42,7 @@ import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -54,7 +55,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
     private static final Logger logger = Logger.getLogger(TestingMatchMakerHibernateSession.class);
         
-    private final SPDataSource dataSource;
+    private final JDBCDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
     private TestingMatchMakerContext context = new TestingMatchMakerContext();
     private final TestingConnection con;
@@ -77,7 +78,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
      * @param dataSource an architect data source describing the connection
      * @throws RuntimeException
      */
-    public TestingMatchMakerHibernateSession(SPDataSource dataSource) throws RuntimeException {
+    public TestingMatchMakerHibernateSession(JDBCDataSource dataSource) throws RuntimeException {
         super();
         try {
             this.dataSource = dataSource;
@@ -265,12 +266,12 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    		return findPhysicalTableByName(catalog, schema, tableName);
 	    	}
 	    	
-	    	SPDataSource ds = null;
+	    	JDBCDataSource ds = null;
 	    	SQLDatabase tempDB = null;
 	    	if (context == null || context.getDataSources() == null) {
 	    		tempDB = getDatabase();
 	    	} else {
-		    	for (SPDataSource spd : context.getDataSources()) {
+		    	for (JDBCDataSource spd : context.getDataSources()) {
 		    		if (spd.getName().equals(spDataSourceName)) {
 		    			ds = spd;
 		    		}
@@ -337,7 +338,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	}
 
 
-	public SQLDatabase getDatabase(SPDataSource dataSource) {
+	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
 		SQLDatabase db = databases.get(dataSource);
 		if (db == null) {
 			db = new SQLDatabase(dataSource);

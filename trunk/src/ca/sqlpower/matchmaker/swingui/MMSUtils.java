@@ -61,7 +61,7 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -98,7 +98,7 @@ public class MMSUtils {
      */
     public static JDialog showDbcsDialog(
             final Window parentWindow,
-            final SPDataSource dataSource,
+            final JDBCDataSource dataSource,
             final Runnable onAccept) {
         
         final DataEntryPanel dbcsPanel = new MMDataSourcePanel(dataSource);
@@ -219,7 +219,7 @@ public class MMSUtils {
 	 * that can save, execute, or copy the SQL to the clipboard.
 	 */
 	public static void createResultTable(final Frame frame,
-			SPDataSource dataSource, final Project project) throws InstantiationException,
+			JDBCDataSource dataSource, final Project project) throws InstantiationException,
 			IllegalAccessException, HeadlessException, SQLException,
 			SQLObjectException, ClassNotFoundException {
 

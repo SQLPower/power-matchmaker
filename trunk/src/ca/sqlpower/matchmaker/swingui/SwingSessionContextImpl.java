@@ -66,6 +66,7 @@ import ca.sqlpower.matchmaker.swingui.munge.SQLInputMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -146,7 +147,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     private final DataSourceDialogFactory dsDialogFactory = new DataSourceDialogFactory() {
 
-		public JDialog showDialog(Window parentWindow, SPDataSource dataSource,	Runnable onAccept) {
+		public JDialog showDialog(Window parentWindow, JDBCDataSource dataSource,	Runnable onAccept) {
 			return MMSUtils.showDbcsDialog(parentWindow, dataSource, onAccept);
 		}
     	
@@ -219,7 +220,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSwingSession createSession(SPDataSource ds,
+    public MatchMakerSwingSession createSession(JDBCDataSource ds,
 			String username, String password) throws PLSecurityException,
 			SQLException, SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException {
     	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
@@ -243,7 +244,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getDataSources()
      */
-    public List<SPDataSource> getDataSources() {
+    public List<JDBCDataSource> getDataSources() {
         return context.getDataSources();
     }
 
@@ -316,12 +317,12 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         swingPrefs.put(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, ds.getName());
     }
 
-    public SPDataSource getAutoLoginDataSource() {
+    public JDBCDataSource getAutoLoginDataSource() {
         String lastDSName = swingPrefs.get(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, null);
         if (lastDSName == null) {
             lastDSName = DEFAULT_REPOSITORY_DATA_SOURCE_NAME;
         }
-        for (SPDataSource ds : getDataSources()) {
+        for (JDBCDataSource ds : getDataSources()) {
             if (ds.getName().equals(lastDSName)) return ds;
         }
         return null;
@@ -382,7 +383,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	 * or is out of date, then the MatchMaker will attempt to create/update it.
 	 */
 	private void autoLogin() {
-		SPDataSource dbSource = getAutoLoginDataSource();
+		JDBCDataSource dbSource = getAutoLoginDataSource();
 		final MatchMakerSession sessionDelegate;
 		try {
 			if (dbSource != null) {
@@ -420,7 +421,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @param dbSource Used for running upgrade scripts to the schema.
      * @param e Stores information of the schema problem.
      */
-	public void handleRepositoryVersionException(final SPDataSource dbSource,
+	public void handleRepositoryVersionException(final JDBCDataSource dbSource,
 			RepositoryVersionException e) {
 		Throwable t = null;
 		
@@ -501,7 +502,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @throws IOException
      */
     private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws IOException {
-        DataSourceCollection plDotIni = null;
+        DataSourceCollection<JDBCDataSource> plDotIni = null;
         String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
         while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
             logger.debug("readPlDotIni returns null, trying again...");
@@ -558,7 +559,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         return new MatchMakerHibernateSessionContext(prefs, plDotIni);
     }
 
-    private static DataSourceCollection readPlDotIni(String plDotIniPath) {
+    private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) {
         if (plDotIniPath == null) {
             return null;
         }
@@ -567,7 +568,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             return null;
         }
 
-        DataSourceCollection pld = new PlDotIni();
+        DataSourceCollection pld = new PlDotIni<SPDataSource>(SPDataSource.class);
         
         // First, read the defaults
         try {

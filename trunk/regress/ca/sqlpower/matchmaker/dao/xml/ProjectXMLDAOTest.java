@@ -54,8 +54,8 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLTable;
@@ -75,7 +75,7 @@ public class ProjectXMLDAOTest extends TestCase {
 
     private FakeSQLDatabase db;
     private TestingMatchMakerContext context;
-    private PlDotIni plIni;
+    private PlDotIni<JDBCDataSource> plIni;
     
     @Override
     protected void setUp() throws Exception {
@@ -118,11 +118,11 @@ public class ProjectXMLDAOTest extends TestCase {
 
         con.registerResultSet("SELECT.*FROM cat.schem.match_table.*", rs);
         
-        plIni = new PlDotIni();
+        plIni = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
         plIni.addDataSource(db.getDataSource());
         context = new TestingMatchMakerContext() {
             @Override
-            public List<SPDataSource> getDataSources() {
+            public List<JDBCDataSource> getDataSources() {
                 return getPlDotIni().getConnections();
             }
             
@@ -141,7 +141,7 @@ public class ProjectXMLDAOTest extends TestCase {
                 return db;
             }
             @Override
-            public SQLDatabase getDatabase(SPDataSource dataSource) {
+            public SQLDatabase getDatabase(JDBCDataSource dataSource) {
                 return db;
             }
         };

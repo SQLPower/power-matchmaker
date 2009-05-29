@@ -38,6 +38,7 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -466,6 +467,6 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     protected abstract long insertSampleMungeStepData(
             long parentGroupOid, String lastUpdateUser) throws Exception;
     
-	protected abstract SPDataSource getDS();
+	protected abstract JDBCDataSource getDS();
 	protected abstract SPDataSource getAlternateDS();
 }

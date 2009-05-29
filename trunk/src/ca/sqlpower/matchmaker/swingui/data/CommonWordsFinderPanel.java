@@ -36,6 +36,7 @@ import ca.sqlpower.architect.swingui.dbtree.DBTreeModel;
 import ca.sqlpower.matchmaker.data.CommonWordsFinder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -70,7 +71,7 @@ public class CommonWordsFinderPanel {
         connectionChooser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    SPDataSource ds = (SPDataSource) connectionChooser.getSelectedItem();
+                    JDBCDataSource ds = (JDBCDataSource) connectionChooser.getSelectedItem();
 
                     // Gets the session's shared SQLDatabase for this data source
                     SQLDatabase db = session.getDatabase(ds);

@@ -35,7 +35,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
@@ -183,7 +183,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		return null;
 	}
 
-	public SQLDatabase getDatabase(SPDataSource dataSource) {
+	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
 		logger.debug("Stub call: StubMatchMakerSession.getDatabase()");
 		return null;
 	}

@@ -44,6 +44,7 @@ import javax.swing.text.Document;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.AddressDatabase;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
@@ -114,7 +115,7 @@ public class UserPreferencesEditor implements DataEntryPanel {
         loginDialogRadioButton.setSelected(!context.isAutoLoginEnabled());
         
         // only add data sources that are marked as being repositories
-        for (SPDataSource ds : context.getPlDotIni().getConnections()) {
+        for (JDBCDataSource ds : context.getPlDotIni().getConnections()) {
             if (ds.getPlSchema() != null && ds.getPlSchema().length() > 0) {
                 autoLoginDataSourceBox.addItem(ds);
             }

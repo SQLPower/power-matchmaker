@@ -35,7 +35,7 @@ import javax.swing.JProgressBar;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -169,7 +169,7 @@ public class SQLObjectChooser {
 
 	private JLabel status = new JLabel();
 
-	private SPDataSource dataSource;
+	private JDBCDataSource dataSource;
 
 	private SQLCatalog catalog;
 
@@ -196,7 +196,7 @@ public class SQLObjectChooser {
 		this(session, owner, session.getDatabase().getDataSource());
 	}
 
-	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner, final SPDataSource defaultDS) {
+	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner, final JDBCDataSource defaultDS) {
 		this.session = session;
 			
 		db = session.getDatabase(defaultDS);
@@ -311,7 +311,7 @@ public class SQLObjectChooser {
 				schemaTerm.setText("Schema");
 				schemaTerm.setEnabled(false);
 
-				dataSource = (SPDataSource) dataSourceComboBox
+				dataSource = (JDBCDataSource) dataSourceComboBox
 						.getSelectedItem();
 				db = session.getDatabase(dataSource);
 				db.populate();

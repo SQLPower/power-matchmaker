@@ -24,6 +24,7 @@ import java.util.Date;
 
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLDatabaseMapping;
@@ -238,7 +239,7 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      * one already exists it will be returned, if it does not one will
      * be created and remembered for next time.
      */
-    public SQLDatabase getDatabase(SPDataSource dataSource);
+    public SQLDatabase getDatabase(JDBCDataSource dataSource);
 
 	/**
 	 * Call this method to close the session's opened resources.

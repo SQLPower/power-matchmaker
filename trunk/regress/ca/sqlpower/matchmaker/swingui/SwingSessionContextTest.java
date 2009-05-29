@@ -46,8 +46,9 @@ import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.DatabaseListChangeListener;
+import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.JDBCDataSourceType;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class SwingSessionContextTest extends TestCase {
@@ -58,13 +59,13 @@ public class SwingSessionContextTest extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        final DataSourceCollection dsCollection = new DataSourceCollection() {
+        final DataSourceCollection<JDBCDataSource> dsCollection = new DataSourceCollection<JDBCDataSource>() {
 
-            public void addDataSource(SPDataSource spds) {
+            public void addDataSource(JDBCDataSource spds) {
                 logger.debug("Stub DSCollection.addDataSource("+spds+")");
             }
 
-			public void addDataSourceType(SPDataSourceType spdst) {
+			public void addDataSourceType(JDBCDataSourceType spdst) {
                 logger.debug("Stub DSCollection.addDataSourceType("+spdst+")");
 			}
 
@@ -72,30 +73,30 @@ public class SwingSessionContextTest extends TestCase {
                 logger.debug("Stub DSCollection.addDatabaseListChangeListener("+l+")");
             }
 
-            public List<SPDataSource> getConnections() {
+            public List<JDBCDataSource> getConnections() {
                 logger.debug("Stub DSCollection.getConnections()");
-                List<SPDataSource> connections = new ArrayList<SPDataSource>();
+                List<JDBCDataSource> connections = new ArrayList<JDBCDataSource>();
                 connections.add(DBTestUtil.getOracleDS());
                 return connections;
             }
 
-			public List<SPDataSourceType> getDataSourceTypes() {
+			public List<JDBCDataSourceType> getDataSourceTypes() {
                 logger.debug("Stub DSCollection.getConnections()");
-                List<SPDataSourceType> connectionTypes = new ArrayList<SPDataSourceType>();
+                List<JDBCDataSourceType> connectionTypes = new ArrayList<JDBCDataSourceType>();
                 connectionTypes.add(DBTestUtil.getOracleDS().getParentType());
                 return connectionTypes;
 			}
 
-            public SPDataSource getDataSource(String name) {
+            public JDBCDataSource getDataSource(String name) {
                 logger.debug("Stub DSCollection.getDataSource("+name+")");
                 return null;
             }
 
-            public void mergeDataSource(SPDataSource spds) {
+            public void mergeDataSource(JDBCDataSource spds) {
                 logger.debug("Stub DSCollection.mergeDataSource("+spds+")");
             }
 
-            public void mergeDataSourceType(SPDataSourceType spdst) {
+            public void mergeDataSourceType(JDBCDataSourceType spdst) {
                 logger.debug("Stub DSCollection.mergeDataSourceType("+spdst+")");
             }
 
@@ -107,11 +108,11 @@ public class SwingSessionContextTest extends TestCase {
                 logger.debug("Stub DSCollection.read("+in+")");
             }
             
-            public void removeDataSource(SPDataSource spds) {
+            public void removeDataSource(JDBCDataSource spds) {
                 logger.debug("Stub DSCollection.removeDataSource("+spds+")");
             }
             
-            public boolean removeDataSourceType(SPDataSourceType spdst) {
+            public boolean removeDataSourceType(JDBCDataSourceType spdst) {
                 logger.debug("Stub DSCollection.removeDataSourceType("+spdst+")");
                 return false;
             }
@@ -146,10 +147,24 @@ public class SwingSessionContextTest extends TestCase {
 				return null;
 			}
 
+            public <C extends JDBCDataSource> List<C> getConnections(
+                    Class<C> classType) {
+                // TODO Auto-generated method stub
+                logger.debug("Stub call: DataSourceCollection<JDBCDataSource>.getConnections()");
+                return null;
+            }
+
+            public <C extends JDBCDataSource> C getDataSource(String name,
+                    Class<C> classType) {
+                // TODO Auto-generated method stub
+                logger.debug("Stub call: DataSourceCollection<JDBCDataSource>.getDataSource()");
+                return null;
+            }
+
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
-            public MatchMakerSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
+            public MatchMakerSession createSession(JDBCDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
                 logger.debug("Stub MMSContext.createSession()");
                 return null;
             }
@@ -159,12 +174,12 @@ public class SwingSessionContextTest extends TestCase {
                 return null;
             }
 
-            public List<SPDataSource> getDataSources() {
+            public List<JDBCDataSource> getDataSources() {
                 logger.debug("Stub MMSContext.getDataSources()");
                 return dsCollection.getConnections();
             }
 
-            public DataSourceCollection getPlDotIni() {
+            public DataSourceCollection<JDBCDataSource> getPlDotIni() {
                 logger.debug("Stub MMSContext.getPlDotIni()");
                 return dsCollection;
             }

@@ -21,7 +21,7 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.SQLException;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 
 /**
  * This is a class to test the merge processor on a sql server test server.
@@ -107,7 +107,7 @@ public class MergeProcessorOnBetterDataModelSQLServerTest extends AbstractMergeP
 		project.setResultTableCatalog("MM_TEST");
 	}
 
-	protected SPDataSource getDS() {
+	protected JDBCDataSource getDS() {
 		return DBTestUtil.getSqlServerDS();
 	}
 }

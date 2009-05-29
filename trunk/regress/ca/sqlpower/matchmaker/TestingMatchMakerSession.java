@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -218,12 +219,12 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 
     public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
 
-    	SPDataSource ds = null;
+        JDBCDataSource ds = null;
     	
     	if (spDataSourceName == null || spDataSourceName.length() == 0) {
     		ds = getDatabase().getDataSource();
     	} else {
-	    	for (SPDataSource spd : context.getDataSources()) {
+	    	for (JDBCDataSource spd : context.getDataSources()) {
 	    		if (spd.getName().equals(spDataSourceName)) {
 	    			ds = spd;
 	    		}
@@ -313,7 +314,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		return appUserEmail;
 	}
 	
-	public SQLDatabase getDatabase(SPDataSource dataSource) {
+	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
 		SQLDatabase db = databases.get(dataSource);
 		if (db == null) {
 			db = new SQLDatabase(dataSource);

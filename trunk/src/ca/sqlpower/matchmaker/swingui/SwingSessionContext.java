@@ -34,6 +34,7 @@ import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -41,14 +42,14 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
 public interface SwingSessionContext extends MatchMakerSessionContext {
 
     //////// MatchMakerSessionContext implementation //////////
-    public MatchMakerSwingSession createSession(SPDataSource ds,
+    public MatchMakerSwingSession createSession(JDBCDataSource ds,
 			String username, String password) throws PLSecurityException,
 			SQLException, SQLObjectException, MatchMakerConfigurationException,
 			RepositoryVersionException;
 
-    public List<SPDataSource> getDataSources();
+    public List<JDBCDataSource> getDataSources();
 
-    public DataSourceCollection getPlDotIni();
+    public DataSourceCollection<JDBCDataSource> getPlDotIni();
 
     public String getLastImportExportAccessPath();
 

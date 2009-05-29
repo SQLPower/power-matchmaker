@@ -36,7 +36,7 @@ import javax.swing.JTree;
 
 import ca.sqlpower.architect.swingui.dbtree.DBTreeCellRenderer;
 import ca.sqlpower.architect.swingui.dbtree.DBTreeModel;
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRoot;
@@ -72,7 +72,7 @@ public class QueryDialog extends JDialog {
 			if (session.getContext().getPlDotIni().getConnections().size() == 0) {
 				dragTree.setVisible(false);
 			} else {
-				for (SPDataSource source : session.getContext().getPlDotIni().getConnections()) {
+				for (JDBCDataSource source : session.getContext().getPlDotIni().getConnections()) {
 					rootNode.addChild(new SQLDatabase(source));
 				}
 				dragTree.setVisible(true);
