@@ -67,6 +67,7 @@ import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.Olap4jDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -150,6 +151,13 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		public JDialog showDialog(Window parentWindow, JDBCDataSource dataSource,	Runnable onAccept) {
 			return MMSUtils.showDbcsDialog(parentWindow, dataSource, onAccept);
 		}
+
+        public JDialog showDialog(Window parentWindow,
+                Olap4jDataSource dataSource,
+                DataSourceCollection<? super JDBCDataSource> dsCollection,
+                Runnable onAccept) {
+            throw new UnsupportedOperationException("There is no editor implemented in DQ Guru for Olap4j at current.");
+        }
     	
     };
     
@@ -568,7 +576,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             return null;
         }
 
-        DataSourceCollection pld = new PlDotIni<SPDataSource>(SPDataSource.class);
+        DataSourceCollection pld = new PlDotIni();
         
         // First, read the defaults
         try {
