@@ -34,9 +34,11 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.HSQLDBDDLGenerator;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SpecificDataSourceCollection;
 
 /**
  * A collection of useful static methods that you will probably need when
@@ -88,7 +90,7 @@ public class DBTestUtil {
     	/*
     	 * Setup information for SQL Server
     	 */
-    	PlDotIni<JDBCDataSource> pl = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
+    	PlDotIni pl = new PlDotIni();
     	try {
     		pl.read(new File("testbed/pl.regression.ini"));
     	} catch (IOException e) {
@@ -96,7 +98,7 @@ public class DBTestUtil {
     									"Did you remember to set the pl.regression.ini in the testbed folder?", e);
     	}
     	
-    	return pl.getDataSource("Test Sql Server");
+    	return pl.getDataSource("Test Sql Server", JDBCDataSource.class);
     }
 
     /**
@@ -107,7 +109,7 @@ public class DBTestUtil {
         /*
          * Setup information for Oracle
          */
-    	PlDotIni<JDBCDataSource> pl = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
+    	DataSourceCollection<JDBCDataSource> pl = new SpecificDataSourceCollection<JDBCDataSource>(new PlDotIni(), JDBCDataSource.class);
     	try {
     		pl.read(new File("testbed/pl.regression.ini"));
     	} catch (IOException e) {
@@ -128,7 +130,7 @@ public class DBTestUtil {
         final String hsqlPassword = "";
         final String hsqlUrl = "jdbc:hsqldb:mem:aname";
         
-        JDBCDataSource hsqlDataSource = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
+        JDBCDataSource hsqlDataSource = new JDBCDataSource(new PlDotIni());
         hsqlDataSource.getParentType().setJdbcDriver("org.hsqldb.jdbcDriver");
         hsqlDataSource.getParentType().setDDLGeneratorClass(HSQLDBDDLGenerator.class.getName());
         hsqlDataSource.setName("In-memory HSQLDB");

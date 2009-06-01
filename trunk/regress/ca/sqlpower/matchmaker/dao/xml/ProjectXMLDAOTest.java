@@ -75,7 +75,7 @@ public class ProjectXMLDAOTest extends TestCase {
 
     private FakeSQLDatabase db;
     private TestingMatchMakerContext context;
-    private PlDotIni<JDBCDataSource> plIni;
+    private PlDotIni plIni;
     
     @Override
     protected void setUp() throws Exception {
@@ -118,7 +118,7 @@ public class ProjectXMLDAOTest extends TestCase {
 
         con.registerResultSet("SELECT.*FROM cat.schem.match_table.*", rs);
         
-        plIni = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
+        plIni = new PlDotIni();
         plIni.addDataSource(db.getDataSource());
         context = new TestingMatchMakerContext() {
             @Override

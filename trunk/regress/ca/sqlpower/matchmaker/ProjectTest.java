@@ -276,7 +276,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     }
     
 	public void testResultTableExistsWhenTrue() throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -296,7 +296,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 * to the Project object.
 	 */
 	public void testResultTableExistsWhenFalse() throws Exception {
-		JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
+		JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -319,7 +319,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 */
 	public void testResultTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -334,7 +334,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -353,7 +353,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 * to the Project object.
 	 */
 	public void testSourceTableExistsWhenFalse() throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -376,7 +376,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 */
 	public void testSourceTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni<JDBCDataSource>(JDBCDataSource.class));
+	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Sc" +
 				"hema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");

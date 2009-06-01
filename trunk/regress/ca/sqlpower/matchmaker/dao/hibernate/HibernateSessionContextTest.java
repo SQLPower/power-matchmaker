@@ -32,6 +32,7 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sql.SpecificDataSourceCollection;
 import ca.sqlpower.util.Version;
 
 public class HibernateSessionContextTest extends TestCase {
@@ -57,7 +58,7 @@ public class HibernateSessionContextTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        DataSourceCollection<JDBCDataSource> ini = new PlDotIni<JDBCDataSource>(JDBCDataSource.class);
+        DataSourceCollection<JDBCDataSource> ini = new SpecificDataSourceCollection<JDBCDataSource>(new PlDotIni(), JDBCDataSource.class);
         ds = DBTestUtil.getOracleDS();
         ini.addDataSource(ds);
         ctx = new MatchMakerHibernateSessionContext(prefs, ini);
