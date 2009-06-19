@@ -62,6 +62,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -777,7 +778,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         ArchitectUtils.startup();
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 		ArchitectUtils.configureLog4j();
-
+		
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
