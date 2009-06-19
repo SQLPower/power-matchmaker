@@ -782,7 +782,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			logger.error("Unable to set native look and feel. Continuing with default.", e);
 		}
 		
 		SwingUtilities.invokeLater(new Runnable() {

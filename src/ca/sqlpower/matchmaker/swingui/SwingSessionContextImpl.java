@@ -46,7 +46,6 @@ import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
 
@@ -203,12 +202,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         this.context = delegateContext;
         ExceptionReport.init();
 
-        try {
-            UIManager.setLookAndFeel(
-                UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-        	logger.error("Unable to set native look and feel. Continuing with default.", ex);
-        }
         // Set a login action property so that if there is no connection selected 
         // in the dbConnectionManager GUI, the corresponding button will be disabled.
         loginDatabaseConnectionAction.putValue(DatabaseConnectionManager.DISABLE_IF_NO_CONNECTION_SELECTED, Boolean.TRUE);
