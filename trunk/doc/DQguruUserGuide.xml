@@ -2972,19 +2972,19 @@
             
         </section>
 
-		<section id="SQL Query">
+		<section id="Universal SQL Access">
 
-        <title>SQL Query</title>
+        <title>Universal SQL Access</title>
 
         <para>
-            SQL Query is a "fall-back" tool that lets you work at the
+            Universal SQL Access is a "fall-back" tool that lets you work at the
             raw SQL command level. This is an advanced topic and should
             only be used by those familiar with the intricacies of SQL
             commands and the details of your database.
         </para>
 
         <para>
-            SQL Query is started from the menu entry under the Tools
+            Universal SQL Access is started from the menu entry under the Tools
             menu, and begins with the GUI window shown below. The first
             thing you should do is select which database connection you
             wish to use. The list of Connections is the same as the main
@@ -2992,11 +2992,11 @@
         </para>
 
         <para>
-            The basic steps to using SQL Query are to type a command in
+            The basic steps to using Universal SQL Access are to type a command in
             the top (SQL Command) window and click the Execute button; the
             results are displayed in the bottom (SQL Results) window. To
             save you some typing, you can just drag the databases, tables
-            and columns shown in the DB tree of the SQL Query and drop on
+            and columns shown in the DB tree of the Universal SQL Access and drop on
             the top (SQL Command) window.
         </para>
 
@@ -3011,7 +3011,7 @@
             SQL Statements can be entered multiple at a time, can be more than
             one line long, but be careful! if you have multiple commands, do
             end the previous ones with a semicolon, which is unnecessary if there
-            is only one command. These statements are not interpreted by SQL Query
+            is only one command. These statements are not interpreted by Universal SQL Access
             itself, so anything that the given database and driver accepts can be
             used. For example, with Oracle, you can use PL*SQL statements. With
             most drivers you should be able to use stored procedures. Each SQL
@@ -3020,7 +3020,7 @@
             If you turn the Auto Commit off, you can decide to Commit or Rollback later.
         </para>
 
-        <section id="SQL Query.results">
+        <section id="Universal SQL Access.results">
 
             <title>Output (Results) Window</title>
 
@@ -3045,7 +3045,7 @@
 
         </section>
 
-        <section id="SQL Query.output_format">
+        <section id="Universal SQL Access.output_format">
 
             <title>Output Formats</title>
 
@@ -3112,7 +3112,7 @@
             </para>
 
             <para>
-                SQL Query is not perfect, but it is adequate for many
+                Universal SQL Access is not perfect, but it is adequate for many
                 purposes involving direct use of SQL (We will add more
                 useful features to it later).
             </para>
