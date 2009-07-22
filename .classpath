@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="jdbc_drivers"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="regress"/>
-	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>
 	<classpathentry kind="lib" path="lib/commons-digester.jar"/>
 	<classpathentry kind="lib" path="buildlib/ant.jar"/>
 	<classpathentry kind="lib" path="buildlib/diasparsoftToolkit-0.24.jar"/>
 	<classpathentry kind="lib" path="buildlib/gsbase-2.0.1.jar"/>
 	<classpathentry kind="lib" path="buildlib/junit-addons-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
 	<classpathentry kind="lib" path="lib/asm.jar"/>
 	<classpathentry kind="lib" path="lib/asm-attrs.jar"/>
 	<classpathentry kind="lib" path="lib/c3p0-0.9.0.jar"/>
@@ -48,6 +47,8 @@
 	<classpathentry kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/je-3.3.75.jar" sourcepath="libsrc/je-3.3.75_src.zip"/>
 	<classpathentry kind="lib" path="lib/antlr-3.1.1-runtime.jar" sourcepath="libsrc/antlr-3.1.1-runtime_src.zip"/>
+	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sqlpower_library"/>
+	<classpathentry kind="lib" path="buildlib/junit.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
