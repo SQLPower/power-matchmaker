@@ -686,6 +686,7 @@
 						</pack>
 					</packs>
 					<native type="izpack" name="ShellLink.dll"/>
+					<native type="izpack" name="ShellLink_x64.dll"/>
 					<native type="3rdparty" name="COIOSHelper.dll" stage="both">
 				        <os family="windows"/>
 				    </native>
@@ -718,30 +719,7 @@
 			</config>
 		</launch4j>
 	</target>
-	
-	<!-- 
-		Uses izpack python script to convert the Windows JDBC JAR installer into EXE executables
-		Note that this target requires the python command to be in your PATH
-	 -->
-	<target name="windows_exe_installer_with_python" depends="windows_jar_installer" if="isNotWindows">
-	  <exec executable="python" dir="${izpack2exe.dir}">
-	    <arg value="izpack2exe.py"/>
-	    <arg value="--file=../../../../${dist.dir}/DQguru-Setup-Windows-${app.version}.jar"/>
-	    <arg value="--no-upx"/>
-	  	<arg value="--output=../../../../${dist.dir}/DQguru-Setup-Windows-${app.version}.exe"/>
-	  </exec>
-	</target>
-	
-	<target name="windows_exe_installer_without_python" depends="windows_jar_installer" if="isWindows">
-	  <exec executable="cmd" dir="${izpack2exe.dir}">
-  	    <arg value="/c"/>
-  	    <arg value="izpack2exe.exe"/>
-	    <arg value="--file=..\..\..\..\${dist.dir}\DQguru-Setup-Windows-${app.version}.jar"/>
-	    <arg value="--no-upx"/>
-	  	<arg value="--output=..\..\..\..\${dist.dir}\DQguru-Setup-Windows-${app.version}.exe"/>
-	  </exec>
-	</target>
-	
+		
     <target name="generic_install" depends="stage">
 		<tar destfile="${dist.dir}/DQguru-generic-${app.version}.tar.gz"
 			compression="gzip">
