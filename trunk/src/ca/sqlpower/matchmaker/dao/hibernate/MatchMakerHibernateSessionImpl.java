@@ -74,7 +74,7 @@ import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.Version;
-import ca.sqlpower.util.VersionFormatException;
+import ca.sqlpower.util.VersionParseException;
 
 /**
  * An implementation of MatchMakerSession that uses Hibernate to
@@ -216,9 +216,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
 
         try {
-        	plSchemaVersion = new Version();
-        	plSchemaVersion.setVersion(versionString);
-        } catch (VersionFormatException e) {
+        	plSchemaVersion = new Version(versionString);
+        } catch (VersionParseException e) {
         	throw new RepositoryVersionException("Invalid repository schema version!", e);
         }
 

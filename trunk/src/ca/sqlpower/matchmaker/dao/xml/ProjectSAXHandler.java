@@ -76,7 +76,7 @@ public class ProjectSAXHandler extends DefaultHandler {
      * major version number and the supported minor version or less. There is no
      * compatibility between major versions.
      */
-    public static final Version SUPPORTED_EXPORT_VERSION = new Version(1,1,0);
+    public static final Version SUPPORTED_EXPORT_VERSION = new Version("1.1.0");
     
     private final DateFormat df = new SimpleDateFormat(ProjectDAOXML.DATE_FORMAT);
     
@@ -187,12 +187,13 @@ public class ProjectSAXHandler extends DefaultHandler {
                 String fileFormat = attributes.getValue("export-format");
                 checkMandatory("export-format", fileFormat);
                 Version formatVersion = new Version(fileFormat);
-                if (formatVersion.getMajor() > SUPPORTED_EXPORT_VERSION.getMajor() ||
-                        formatVersion.getMinor() > SUPPORTED_EXPORT_VERSION.getMinor()) {
+                
+                Version fileMajorMinorVersion = new Version(formatVersion, 2);
+                Version supportedMajorMinorVersion = new Version(SUPPORTED_EXPORT_VERSION, 2);
+                if (fileMajorMinorVersion.compareTo(supportedMajorMinorVersion) > 0) {
                     throw new SAXException(
-                            "The export file format is "+fileFormat+", but I only understand "+
-                            SUPPORTED_EXPORT_VERSION.getMajor()+"."+
-                            SUPPORTED_EXPORT_VERSION.getMajor()+".x or older. Try importing " +
+                            "The export file format is " + fileFormat + ", but I only understand " +
+                            supportedMajorMinorVersion.toString() + ".x or older. Try importing " +
                             "into a newer version of DQguru.");
                 }
 

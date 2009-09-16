@@ -78,10 +78,13 @@ public class HibernateSessionContextTest extends TestCase {
     public void testCheckSchemaVersion() throws Exception {
 	    JDBCDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
 
-        Version v = new Version();
-        v.setMajor(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getMajor() - 1);
-        v.setMinor(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getMinor());
-        v.setTiny(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getTiny());
+	    Version schemaVersion = RepositoryUtil.MIN_PL_SCHEMA_VERSION;
+	    StringBuffer buffer = new StringBuffer();
+	    buffer.append(((Integer) schemaVersion.getParts()[0] - 1));
+	    for (int i = 1; i < schemaVersion.getParts().length; i++) {
+	        buffer.append(".").append(schemaVersion.getParts()[i].toString());
+	    }
+        Version v = new Version(buffer.toString());
         
         // this is very simplistic, and assumes that the startup sequence of
         // MatchMakerHibernateSessionImpl checks the schema version before accessing
