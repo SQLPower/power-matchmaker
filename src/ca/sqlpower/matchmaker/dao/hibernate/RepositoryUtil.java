@@ -55,7 +55,7 @@ import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.util.Version;
-import ca.sqlpower.util.VersionFormatException;
+import ca.sqlpower.util.VersionParseException;
 
 /**
  * A collection of utilities for dealing with (creating, verifying, upgrading,
@@ -69,7 +69,7 @@ public class RepositoryUtil {
      * The minimum PL Schema version according to that we can work with.
      * Should be checked every time a session is created.
      */
-    public static final Version MIN_PL_SCHEMA_VERSION = new Version(6, 0, 3);
+    public static final Version MIN_PL_SCHEMA_VERSION = new Version("6.0.3");
 
     /**
      * Class can not be instantiated.
@@ -219,7 +219,7 @@ public class RepositoryUtil {
             Version reposVersion;
             try {
                 reposVersion = new Version(rs.getString(1));
-            } catch (VersionFormatException e) {
+            } catch (VersionParseException e) {
                 throw new RepositoryVersionException(
                         "Invalid repository schema version!", e);
             }
