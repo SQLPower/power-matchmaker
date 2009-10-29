@@ -184,7 +184,7 @@ public class AddressPool extends MonitorableImpl{
 		t.addColumn(outputSuiteType);
 		SQLColumn outputUnparsedAddress = new SQLColumn(t, OUTPUT_UNPARSED_ADDRESS, Types.VARCHAR, 150, 0);
 		t.addColumn(outputUnparsedAddress);
-		SQLColumn outputType = new SQLColumn(t, OUTPUT_TYPE, Types.VARCHAR, 8, 0);
+		SQLColumn outputType = new SQLColumn(t, OUTPUT_TYPE, Types.VARCHAR, 20, 0);
 		t.addColumn(outputType);
 		SQLColumn outputUrbanBeforeRural = new SQLColumn(t, OUTPUT_URBAN_BEFORE_RURAL, Types.BOOLEAN, 1, 0);
 		t.addColumn(outputUrbanBeforeRural);
