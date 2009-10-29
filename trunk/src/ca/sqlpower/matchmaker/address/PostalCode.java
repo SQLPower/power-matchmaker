@@ -597,7 +597,7 @@ public class PostalCode {
 	 */
     public boolean contains(PostalCode pc) {
 		if (pc.getStreetAddressFromNumber() == null || pc.getStreetAddressToNumber() == null || getStreetAddressFromNumber() == null || getStreetAddressToNumber() == null) return false;
-		if (pc.getStreetAddressFromNumber() == getStreetAddressFromNumber() && pc.getStreetAddressToNumber() == getStreetAddressToNumber()) return false;
+		if (pc.getStreetAddressFromNumber().equals(getStreetAddressFromNumber()) && pc.getStreetAddressToNumber().equals(getStreetAddressToNumber())) return false;
 		if (((pc.getStreetAddressFromNumber() > getStreetAddressFromNumber() && pc.getStreetAddressToNumber() <= getStreetAddressToNumber()) 
 				|| (pc.getStreetAddressToNumber() < getStreetAddressToNumber() && pc.getStreetAddressFromNumber() >= getStreetAddressFromNumber())) && 
 				(getStreetAddressSequenceType() == AddressSequenceType.CONSECUTIVE ||
