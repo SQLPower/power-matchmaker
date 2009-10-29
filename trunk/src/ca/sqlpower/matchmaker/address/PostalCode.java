@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.address;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
 import com.sleepycat.persist.model.Relationship;
@@ -514,8 +517,10 @@ public class PostalCode {
         	}
         }
         if (a.getType() == RecordType.ROUTE) {
-        	if (a.getRuralRouteNumber() != null && getRouteServiceNumber() != null 
-        			&& !Integer.valueOf(getRouteServiceNumber()).equals(Integer.valueOf(a.getRuralRouteNumber()))) {
+        	String routeServiceNum = getRouteServiceNumber();
+			String ruralRouteNumber = a.getRuralRouteNumber();
+			if (ruralRouteNumber != null && routeServiceNum != null 
+        			&& !extractIntegerFromString(routeServiceNum).equals(extractIntegerFromString(ruralRouteNumber))) {
         		return false;
         	}
         }
@@ -525,7 +530,25 @@ public class PostalCode {
         
         return true;
     }
-
+    
+    /**
+     * Strips non-numeric characters from a String and extracts an Integer from it
+     */
+    private Integer extractIntegerFromString(String str) {
+    	try {
+    		return Integer.valueOf(str);
+    	} catch (NumberFormatException ex) {
+    		Pattern p = Pattern.compile("\\d+");
+    		Matcher m = p.matcher(str);
+    		StringBuilder number = new StringBuilder();
+    		while (m.find()) {
+    			number.append(str.substring(m.start(), m.end()));
+    		}
+    		String numString = number.toString();
+			return Integer.valueOf(numString);
+    	}
+    }
+    
     /**
      * Returns true if the address given has a lock box number between the to and from
      * lock box number of this postal code inclusive. If the to or from lock box numbers
