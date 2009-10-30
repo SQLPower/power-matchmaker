@@ -218,6 +218,7 @@ public class AddressValidator {
             //If the address line 1 and 2 are missing along with the postal code this will return too many results to
             //reasonably process.
             if (a.getUnparsedAddressLine1() == null && a.getUnparsedAddressLine2() == null) {
+            	validSuggestion = false; //there will be no/too many suggestions so this has to be false
             	return;
             }
             
