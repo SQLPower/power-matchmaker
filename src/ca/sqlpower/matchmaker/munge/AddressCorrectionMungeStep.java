@@ -421,6 +421,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 				if (getProject().getMungeSettings().isAutoWriteAutoValidatedAddresses()) {
 					logger.debug("Automatically writing back an auto-validated address");
 					Address correctedAddress = validator.getSuggestions().get(0);
+					logger.debug("Replacing address \n" + address + " with \n" + correctedAddress);
 					
 					logger.debug("Top suggestion from validator is: " + correctedAddress);
 					
