@@ -146,13 +146,15 @@ public class AddressCorrectionEngine extends AbstractEngine {
 				logger.info(message);
 			}
 			
+			MungeSettings settings = getProject().getMungeSettings();
+			
 			for (MungeProcess process: mungeProcesses) {
 				checkCancelled();
 				message = "Running transformation " + process.getName();
 				logger.debug(getMessage());
 				AddressCorrectionMungeProcessor munger;
 
-				munger = new AddressCorrectionMungeProcessor(process, pool,
+				munger = new AddressCorrectionMungeProcessor(process, pool, settings,
 						mode,
 						logger);
 				
@@ -169,7 +171,6 @@ public class AddressCorrectionEngine extends AbstractEngine {
 				numWritten += munger.getNumWritten();
 			}
 			
-			MungeSettings settings = getProject().getMungeSettings();
 			setCurrentProcessor(pool);
 			
 			if (mode == AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES) {
