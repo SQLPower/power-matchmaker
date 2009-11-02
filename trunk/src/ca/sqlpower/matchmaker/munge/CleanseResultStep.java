@@ -323,25 +323,25 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
     
     private PreparedStatement getUpdateStatment(List<MungeStepOutput> inputs) throws SQLObjectException, SQLException{
 		boolean first = true;
-		String sql = "UPDATE " + DDLUtils.toQualifiedName(getProject().getSourceTable()) + " SET ";
+		StringBuilder sql = new StringBuilder("UPDATE " + DDLUtils.toQualifiedName(getProject().getSourceTable()) + " SET ");
 		for (int x = 0; x<inputs.size(); x++) {
 			if (inputs.get(x) != null) {
 				if (!first) {
-					sql += ", ";
+					sql.append(", ");
 				}
-				sql += getProject().getSourceTable().getColumn(x).getName() + "=?";
+				sql.append(getProject().getSourceTable().getColumn(x).getName() + "=?");
 				first = false;
 			}
 		}
-		sql += " WHERE ";
+		sql.append(" WHERE ");
 		SQLIndex pk = getProject().getSourceTable().getPrimaryKeyIndex();
 		first = true;
 		for (Column col : pk.getChildren()) {
 			if (!first) {
-				sql += " AND ";
+				sql.append(" AND ");
 			}
-			sql += col.getName() + "=?";
+			sql.append(col.getName() + "=?");
 		}
-		return getProject().createSourceTableConnection().prepareStatement(sql);
+		return getProject().createSourceTableConnection().prepareStatement(sql.toString());
     }
 }
