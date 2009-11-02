@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 
@@ -47,10 +48,13 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 	private int numCorrectable = 0;
 	private int numIncorrectable = 0;
 	private int numWritten = 0;
+
+	private final MungeSettings settings;
 	
-	public AddressCorrectionMungeProcessor(MungeProcess mungeProcess, AddressPool pool, AddressCorrectionEngineMode mode, Logger logger) {
+	public AddressCorrectionMungeProcessor(MungeProcess mungeProcess, AddressPool pool, MungeSettings settings, AddressCorrectionEngineMode mode, Logger logger) {
 		super(mungeProcess, logger);
 		this.pool = pool;
+		this.settings = settings;
 		this.mode = mode;
 	}
 
@@ -121,10 +125,15 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 				monitorableHelper.incrementProgress();
 			}
 			
-			for (MungeStep step: processOrder) {
-				step.commit();
+			if (settings.getDebug()) {
+				for (MungeStep step: processOrder) {
+					step.rollback();
+				}
+			} else {
+				for (MungeStep step: processOrder) {
+					step.commit();
+				}
 			}
-
 		} catch (Throwable t) {
 			for (MungeStep step: processOrder) {
 				try {
