@@ -71,7 +71,9 @@ public class DQguruEngineRunner {
 		JDBCDataSource repositoryDS = plIni.getDataSource(repositoryDSName);
 		MatchMakerSession session = context.createSession(repositoryDS, username, password);
 		Project project = session.getProjectByName(projectName);
-
+		
+		if (project == null) throw new NullPointerException("Could not find project '" + projectName + "'");
+		
 		ProjectMode type = project.getType();
 		
 		MatchMakerEngine engine = null;
