@@ -500,6 +500,12 @@
     				manifest="${build}/manifest">
     	</jar>
 		
+		<manifest file="${build}/dqguruenginerunner_manifest">
+    		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.DQguruEngineRunner"/>
+    		<attribute name="Class-Path" value="dqguru.jar" />
+    	</manifest>
+		<jar destfile="${staging.dir}/dqguru-engine-runner.jar" manifest="${build}/dqguruenginerunner_manifest"/>	
+		
     	<launch4j>
 			<config dontwrapjar="true" 
 					headertype="gui"
@@ -655,6 +661,7 @@
 							<fileset dir="../staging/" targetdir="$INSTALL_PATH">
 								<include name="dqguru.jar"/>
 								<include name="dqguru.exe"/>
+								<include name="dqguru-engine-runner.jar"/>
 							</fileset>
 							<fileset dir="../staging/lib" targetdir="$INSTALL_PATH/lib">
 								<include name="*.jar"/>
@@ -726,7 +733,7 @@
 			<tarfileset
 			    prefix="dqguru-${app.version}"
 				dir="${staging.dir}"
-				includes="LICENSE, LEGAL, lib/*.jar, dqguru.jar, jdbc/*.ini, jdbc/*.jar" />
+				includes="LICENSE, LEGAL, lib/*.jar, dqguru.jar, dqguru-engine-runner.jar, jdbc/*.ini, jdbc/*.jar" />
 			<tarfileset
 			    prefix="dqguru-${app.version}"
 				dir="doc"
@@ -757,6 +764,7 @@
            vmoptions="-Xmx600m">
 			<jarfileset dir="${staging.dir}" includes="lib/*.jar"/>
 			<jarfileset dir="${staging.dir}" includes="dqguru.jar"/>
+			<jarfileset dir="${staging.dir}" includes="dqguru-engine-runner.jar"/>
 			<!-- Add any jdbc drivers as resources the directory jdbc is referenced
 					in the manifest as well as various targets. -->
 			<javafileset dir="${staging.dir}" includes="jdbc/*.jar jdbc/*.ini"/>
