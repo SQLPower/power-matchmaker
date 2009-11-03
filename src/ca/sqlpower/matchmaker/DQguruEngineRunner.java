@@ -56,11 +56,42 @@ public class DQguruEngineRunner {
 	public static void main(String[] args) throws RepositoryVersionException,
 			PLSecurityException, SQLException, SQLObjectException,
 			MatchMakerConfigurationException, IOException, EngineSettingException, SourceTableException {
-		// TODO: Get args from the commandline
-		String repositoryDSName = args[0];
-		String username = args[1];
-		String password = args[2];
-		String projectName = args[3];
+		String repositoryDSName = null;
+		String username = null;
+		String password = null;
+		String projectName = null;
+		
+		for (int i = 0; i < args.length; i++) {
+			String arg = args[i];
+			if (arg.equals("--repository") || arg.equals("-r")) {
+				arg = args[i + 1];
+				repositoryDSName = arg;
+				i++;
+			} else if (arg.equals("--username") || arg.equals("-u")) {
+				arg = args[i + 1];
+				username = arg;
+				i++;
+			} else if (arg.equals("--password") || arg.equals("-P")) {
+				arg = args[i + 1];
+				password = arg;
+				i++;
+			} else if (arg.equals("--project") || arg.equals("-p")) {
+				arg = args[i + 1];
+				projectName = arg;
+				i++;
+			} else {
+				if (!arg.equals("--help") && !arg.equals("-h")) {
+					System.out.println("Cannot recognize argument '" + arg + "'");
+				}
+				printUsage();
+				System.exit(1);
+			}
+		}
+
+		if (repositoryDSName == null || username == null || password == null || projectName == null) {
+			printUsage();
+			System.exit(1);
+		}
 
 		Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
 
@@ -96,6 +127,15 @@ public class DQguruEngineRunner {
 		engine.call();
 	}
 	
+	private static void printUsage() {
+		System.out.println("Usage: java -jar dqguru-engine-runner.jar [JVM options] [args...]");
+		System.out.println("Mandatory arguments include:");
+		System.out.println("\t--repository | -r <repository name>\tName of the Repository Datasource");
+		System.out.println("\t--username | -u <username>\t\tRepository Username");
+		System.out.println("\t--password | -P <password>\t\tRepository Password");
+		System.out.println("\t--project | -p <project>\t\tDQguru Project Name");
+	}
+
 	private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) throws IOException {
         if (plDotIniPath == null) {
             return null;
