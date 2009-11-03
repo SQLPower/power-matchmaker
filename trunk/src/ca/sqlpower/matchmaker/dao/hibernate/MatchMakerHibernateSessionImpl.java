@@ -72,7 +72,6 @@ import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
-import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionParseException;
 
@@ -159,7 +158,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      */
 	public MatchMakerHibernateSessionImpl(MatchMakerSessionContext context,
 			JDBCDataSource ds) throws PLSecurityException,
-			UnknownFreqCodeException, SQLException, SQLObjectException,
+			SQLException, SQLObjectException,
 			MatchMakerConfigurationException, RepositoryVersionException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
