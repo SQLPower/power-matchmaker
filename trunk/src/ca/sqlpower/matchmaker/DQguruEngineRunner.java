@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.prefs.Preferences;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
@@ -75,22 +74,26 @@ public class DQguruEngineRunner {
 
 		ProjectMode type = project.getType();
 		
+		MatchMakerEngine engine = null;
+		
 		switch(type) {
 		case ADDRESS_CORRECTION:
-			runAddressCorrectionEngine(session, project);
+			engine = project.getAddressCorrectionEngine();
 			break;
 		case BUILD_XREF:
+			throw new UnsupportedOperationException("Cross-reference (Xref) engine not yet supported");
 		case CLEANSE:
+			engine = project.getCleansingEngine();
+			break;
 		case FIND_DUPES:
+			engine = project.getMatchingEngine();
+			break;
 		default:
+			throw new UnsupportedOperationException("No supported engine for project type " + type);
 		}
+		engine.call();
 	}
 	
-	private static void runAddressCorrectionEngine(MatchMakerSession session, Project project) throws EngineSettingException, SourceTableException {
-		AddressCorrectionEngine addressCorrectionEngine = project.getAddressCorrectionEngine();
-		addressCorrectionEngine.call();
-	}
-
 	private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) throws IOException {
         if (plDotIniPath == null) {
             return null;
@@ -101,7 +104,6 @@ public class DQguruEngineRunner {
         }
 
         DataSourceCollection pld = new PlDotIni();
-        
         // First, read the defaults
         pld.read(SwingSessionContextImpl.class.getClassLoader().getResourceAsStream("ca/sqlpower/sql/default_database_types.ini"));
         // Now, merge in the user's own config
