@@ -858,7 +858,7 @@
 		</fail>
 	</target>
 	
-	<target name="osx_tgz" depends="osx_dist">
+	<target name="osx_tgz" depends="osx_dist" if="isUnix">
 		<!-- NOTE: This generally won't work on Windows as it typically doesn't have 'tar' installed -->
 		<exec executable="tar" dir="${staging.dir}">
 			<arg value="-cpzf"/>
