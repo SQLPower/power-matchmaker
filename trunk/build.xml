@@ -859,10 +859,18 @@
 	</target>
 	
 	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
-		<tar destfile="${dist.dir}/DQguru-OSX-${app.version}.tar.gz"
+		<!-- NOTE: This generally won't work on Windows as it typically doesn't have 'tar' installed -->
+		<exec executable="tar" dir="${staging.dir}">
+			<arg value="-cpzf"/>
+			<arg value="${dist.dir}/DQguru-OSX-${app.version}.tar.gz"/>
+			<arg value="../LICENSE"/>
+			<arg value="DQguru.app"/>
+		</exec>
+		
+<!--		<tar destfile="${dist.dir}/DQguru-OSX-${app.version}.tar.gz"
 					compression="gzip">
 			<tarfileset dir="${staging.dir}" includes="DQguru.app/**"/>
-		</tar>
+		</tar> -->
 	</target>
 	
 	
