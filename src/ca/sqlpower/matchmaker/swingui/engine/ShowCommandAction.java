@@ -89,8 +89,7 @@ class ShowCommandAction extends AbstractAction {
 	 * Displays the resulting command line to the user in a pop-up dialog.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		editor.applyChanges();
-		final String[] cmd = engine.createCommandLine();
+		final String cmd = engine.createCommandLine();
 		final JDialog d = new JDialog(parent,
 				"DQguru Engine Command Line");
 
@@ -106,17 +105,7 @@ class ShowCommandAction extends AbstractAction {
 		CellConstraints cc = new CellConstraints();
 
 		final JTextArea cmdText = new JTextArea(15, 60);
-		for (String arg : cmd) {
-			boolean hasSpace = arg.contains(" ");
-			if (hasSpace) {
-				cmdText.append("\"");
-			}
-			cmdText.append(arg);
-			if (hasSpace) {
-				cmdText.append("\"");
-			}
-			cmdText.append(" ");
-		}
+		cmdText.setText(cmd);
 		cmdText.setEditable(false);
 		cmdText.setWrapStyleWord(true);
 		cmdText.setLineWrap(true);

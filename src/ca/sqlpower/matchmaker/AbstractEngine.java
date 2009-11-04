@@ -40,8 +40,8 @@ import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Email;
 import ca.sqlpower.util.UnknownFreqCodeException;
 /**
- * Common ground for all C engines.  This class handles events
- * output capture, monitoring and starting and stoping the engine. 
+ * Common ground for all engines.  This class handles events
+ * output capture, monitoring and starting and stopping the engine. 
  *
  */
 public abstract class AbstractEngine implements MatchMakerEngine {
@@ -237,14 +237,38 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	    }
 	}
     
-    public String[] createCommandLine() {
+    public String createCommandLine() {
         String javaHome = System.getProperty("java.home");
         String sep = System.getProperty("file.separator");
+        String userDir = System.getProperty("user.dir") + sep + "dqguru-engine-runner.jar";
         String javaPath = javaHome + sep + "bin" + sep + "java";
-        String className = getClass().getName();
-        Long projectOid = project.getOid();
+        String dbName = session.getDatabase().getName();
+        String username = session.getDBUser();
+        String password = session.getDatabase().getDataSource().getPass();
+        String projectName = project.getName();
         
-        return new String[] { javaPath, className, "project_id=" + projectOid };
+        String[] cmd = { javaPath, "-jar", userDir, 
+        		"--repository", dbName,
+        		"--username", username,
+        		"--password", password,
+        		"--project", projectName };
+        
+        StringBuilder cmdText = new StringBuilder();
+        
+        for (String arg : cmd) {
+			boolean hasSpace = arg.contains(" ");
+			boolean isEmpty = arg.length() == 0;
+			if (hasSpace || isEmpty) {
+				cmdText.append("\"");
+			}
+			cmdText.append(arg);
+			if (hasSpace || isEmpty) {
+				cmdText.append("\"");
+			}
+			cmdText.append(" ");
+		}
+        
+        return cmdText.toString() ;
     }
 
 	public boolean isStarted() {
