@@ -71,12 +71,9 @@ public interface MatchMakerEngine extends Monitorable,
 	 * Creates the command line to run the match engine, based on the
 	 * current engine settings for the appropriate engine. 
 	 * 
-	 * @return The command line for running the engine. Each command line parameter
-	 * is a separate item in the array, and the first item in the array is the program
-	 * name itself.  All characters stand for their literal value. There are no escaping
-	 * or quoting characters.
+	 * @return The command line for running the engine.
 	 */
-	public String[] createCommandLine();
+	public String createCommandLine();
 
 	/**
 	 * Returns the logger instance that all engine messages are logged to.  Engine messages
