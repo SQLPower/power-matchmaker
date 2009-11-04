@@ -858,12 +858,12 @@
 		</fail>
 	</target>
 	
-	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
+	<target name="osx_tgz" depends="osx_dist">
 		<!-- NOTE: This generally won't work on Windows as it typically doesn't have 'tar' installed -->
 		<exec executable="tar" dir="${staging.dir}">
 			<arg value="-cpzf"/>
-			<arg value="${dist.dir}/DQguru-OSX-${app.version}.tar.gz"/>
-			<arg value="../LICENSE"/>
+			<arg value="../${dist.dir}/DQguru-OSX-${app.version}.tar.gz"/>
+			<arg value="LICENSE"/>
 			<arg value="DQguru.app"/>
 		</exec>
 		
