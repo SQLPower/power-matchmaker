@@ -61,6 +61,7 @@ public class DQguruEngineRunner {
 		String password = null;
 		String projectName = null;
 		String logfilePath = null;
+		boolean debugMode = false;
 		
 		for (int i = 0; i < args.length; i++) {
 			String arg = args[i];
@@ -84,6 +85,8 @@ public class DQguruEngineRunner {
 				arg = args[i + 1];
 				logfilePath = arg;
 				i++;
+			} else if (arg.equals("--debug") || arg.equals("-d")) {
+				debugMode = true;
 			} else {
 				if (!arg.equals("--help") && !arg.equals("-h")) {
 					System.out.println("Cannot recognize argument '" + arg + "'");
@@ -139,6 +142,10 @@ public class DQguruEngineRunner {
 			project.getMungeSettings().setLog(new File(logfilePath));
 		}
 		
+		if (debugMode == true) {
+			project.getMungeSettings().setDebug(debugMode);
+		}
+		
 		engine.call();
 	}
 	
@@ -151,6 +158,7 @@ public class DQguruEngineRunner {
 		System.out.println("\t--project | -p <project>\t\tDQguru Project Name");
 		System.out.println("\nOptional arguments include:");
 		System.out.println("\t--log | -l <log path>\t\t\tPath of the engine log");
+		System.out.println("\t--debug | -d\t\t\t\tEnable debug");
 	}
 
 	private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) throws IOException {
