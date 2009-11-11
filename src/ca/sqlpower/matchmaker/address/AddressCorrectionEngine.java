@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import ca.sqlpower.matchmaker.AbstractEngine;
 import ca.sqlpower.matchmaker.EngineInvocationResult;
@@ -102,8 +104,13 @@ public class AddressCorrectionEngine extends AbstractEngine {
 		int numIncorrectable = 0;
 		int numWritten = 0;
 		
-		List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
 		try {
+			String logFilePath = getProject().getMungeSettings().getLog().getAbsolutePath();
+			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
+			FileAppender fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
+			logger.addAppender(fileAppender);
+
+			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
 			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
 				if (mp.getActive()) {
 					mungeProcesses.add(mp);

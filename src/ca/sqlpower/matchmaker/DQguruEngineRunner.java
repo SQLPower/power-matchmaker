@@ -60,6 +60,7 @@ public class DQguruEngineRunner {
 		String username = null;
 		String password = null;
 		String projectName = null;
+		String logfilePath = null;
 		
 		for (int i = 0; i < args.length; i++) {
 			String arg = args[i];
@@ -78,6 +79,10 @@ public class DQguruEngineRunner {
 			} else if (arg.equals("--project") || arg.equals("-p")) {
 				arg = args[i + 1];
 				projectName = arg;
+				i++;
+			} else if (arg.equals("--log") || arg.equals("-l")) {
+				arg = args[i + 1];
+				logfilePath = arg;
 				i++;
 			} else {
 				if (!arg.equals("--help") && !arg.equals("-h")) {
@@ -100,6 +105,11 @@ public class DQguruEngineRunner {
 		MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(prefs, plIni);
 		
 		JDBCDataSource repositoryDS = plIni.getDataSource(repositoryDSName);
+		if (repositoryDS == null) {
+			System.out.println("Could not find repository '" + repositoryDSName + "'");
+			System.exit(1);
+		}
+		
 		MatchMakerSession session = context.createSession(repositoryDS, username, password);
 		Project project = session.getProjectByName(projectName);
 		
@@ -124,16 +134,23 @@ public class DQguruEngineRunner {
 		default:
 			throw new UnsupportedOperationException("No supported engine for project type " + type);
 		}
+		
+		if (logfilePath != null) {
+			project.getMungeSettings().setLog(new File(logfilePath));
+		}
+		
 		engine.call();
 	}
 	
 	private static void printUsage() {
 		System.out.println("Usage: java -jar dqguru-engine-runner.jar [JVM options] [args...]");
 		System.out.println("Mandatory arguments include:");
-		System.out.println("\t--repository | -r <repository name>\tName of the Repository Datasource");
+		System.out.println("\t--repository | -r <repository name>\tName of Repository Datasource");
 		System.out.println("\t--username | -u <username>\t\tRepository Username");
 		System.out.println("\t--password | -P <password>\t\tRepository Password");
 		System.out.println("\t--project | -p <project>\t\tDQguru Project Name");
+		System.out.println("\nOptional arguments include:");
+		System.out.println("\t--log | -l <log path>\t\t\tPath of the engine log");
 	}
 
 	private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) throws IOException {
