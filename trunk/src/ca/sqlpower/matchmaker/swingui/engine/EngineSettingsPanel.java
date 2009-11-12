@@ -500,7 +500,7 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 					Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				setText(value.toString());
+				setText(value == null ? null : value.toString());
 				return this;
 			}
 		});
