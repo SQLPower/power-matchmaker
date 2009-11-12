@@ -3,14 +3,23 @@ grammar Address;
 @header {
 package ca.sqlpower.matchmaker.address.parse;
 
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.address.*;
+
+import com.sleepycat.je.DatabaseException;
 }
 
 @lexer::header {
 package ca.sqlpower.matchmaker.address.parse;
+
+import org.apache.log4j.Logger;
 }
 
 @members {
+private static final Logger logger = Logger.getLogger(AddressParser.class);
 
 /**
  *  This is an odd tri state boolean. It will be null if the address starts as
@@ -134,7 +143,22 @@ public boolean setStartsUrbanNotRural(boolean b) {
   startsUrbanNotRural = b;
   return true;
 }
+ 
+@Override
+public void emitErrorMessage(String msg) {
+  logger.debug("ANTLR Error Message: " + msg);
+}
 
+}
+
+@lexer::members {
+
+private static final Logger logger = Logger.getLogger(AddressLexer.class);
+
+@Override
+public void emitErrorMessage(String msg) {
+  logger.debug("ANTLR Error Message: " + msg);
+}
 }
 
 address
