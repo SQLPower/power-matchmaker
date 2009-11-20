@@ -146,6 +146,12 @@ public class SwingSessionContextTest extends TestCase {
 				logger.debug("Stub call: DataSourceCollection.getServerBaseURI()");
 				return null;
 			}
+			
+			public URI getMondrianServerBaseURI() {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: DataSourceCollection.getMondrianServerBaseURI()");
+				return null;
+			}
 
             public <C extends JDBCDataSource> List<C> getConnections(
                     Class<C> classType) {
