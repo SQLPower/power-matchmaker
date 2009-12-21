@@ -36,6 +36,7 @@ import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -289,7 +290,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         
         // Now replace the in-memory cached version of the result table
         SQLObject resultTableParent = oldResultTable.getParent();
-        resultTableParent.removeChild(oldResultTable);
+        try {
+        	resultTableParent.removeChild(oldResultTable);
+        } catch (ObjectDependentException e) {
+        	throw new RuntimeException(e);
+        }
         resultTableParent.addChild(t);
         
 		setResultTable(t);

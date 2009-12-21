@@ -171,23 +171,19 @@ public class ListToSQLIndex implements UserType  {
 
             logger.debug("binding '" + ind.getName() + "' to parameter: " + indexItemPos);
             st.setString(indexItemPos, ind.getName());
-            try {
-				// It is required to increment the index by 1 since the inital
-				// index is for the SQLIndex name. The index needs to increase
-				// to synchronize with setting the values of the columns
-				for (SQLIndex.Column c : (List<SQLIndex.Column>) ind.getChildren()) {
-					indexItemPos++;
-					logger.debug("binding '" + c.getName() + "' to parameter: " + indexItemPos);
-					st.setString(indexItemPos, c.getName());
-				}
-				// fill in the rest of the values
-				for (int i = indexItemPos + 1; i < COLUMN_COUNT + index; i++) {
-					logger.debug("binding null to parameter: " + i);
-					st.setNull(i, Types.VARCHAR);
-				}
-			} catch (SQLObjectException e) {
-				throw new SQLObjectRuntimeException(e);
-			}
+            // It is required to increment the index by 1 since the inital
+            // index is for the SQLIndex name. The index needs to increase
+            // to synchronize with setting the values of the columns
+            for (SQLIndex.Column c : (List<SQLIndex.Column>) ind.getChildren()) {
+            	indexItemPos++;
+            	logger.debug("binding '" + c.getName() + "' to parameter: " + indexItemPos);
+            	st.setString(indexItemPos, c.getName());
+            }
+            // fill in the rest of the values
+            for (int i = indexItemPos + 1; i < COLUMN_COUNT + index; i++) {
+            	logger.debug("binding null to parameter: " + i);
+            	st.setNull(i, Types.VARCHAR);
+            }
         } else if (value == null) {
         	for (int i = index; i < COLUMN_COUNT + index; i++) {
         		logger.debug("binding null to parameter: " + i);

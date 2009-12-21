@@ -222,7 +222,7 @@ public class SQLObjectChooser {
         try {
             db.populate();
             if (db.isCatalogContainer()) {
-                List<SQLCatalog> catalogs = db.getChildren();
+                List<SQLCatalog> catalogs = db.getChildren(SQLCatalog.class);
                 setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
                 if ( catalogs != null && catalogs.size() > 0 ) {
                     catalogTerm.setText(catalogs.get(0).getNativeTerm());
@@ -230,7 +230,7 @@ public class SQLObjectChooser {
                 }
             } else if (db.isSchemaContainer()) {
 
-                List<SQLSchema> schemas = db.getChildren();
+                List<SQLSchema> schemas = db.getChildren(SQLSchema.class);
                 
                 setComboBoxStateAndItem(schemaComboBox, schemas, -1);
                 if ( schemas != null && schemas.size() > 0 ) {
@@ -238,7 +238,7 @@ public class SQLObjectChooser {
                     schemaTerm.setEnabled(true);
                 }
             } else {
-                List<SQLTable> tables = db.getChildren();
+                List<SQLTable> tables = db.getChildren(SQLTable.class);
                 setComboBoxStateAndItem(tableComboBox, tables, -1);
             }
         } catch (SQLObjectException ex) {
@@ -317,7 +317,7 @@ public class SQLObjectChooser {
 				db.populate();
 
 				if (db.isCatalogContainer()) {
-					List<SQLCatalog> catalogs = db.getChildren();
+					List<SQLCatalog> catalogs = db.getChildren(SQLCatalog.class);
 					setComboBoxStateAndItem(catalogComboBox,catalogs,-1);
 					if ( catalogs != null && catalogs.size() > 0 ) {
 						catalogTerm.setText(catalogs.get(0).getNativeTerm());
@@ -325,14 +325,14 @@ public class SQLObjectChooser {
 					}
 				} else if (db.isSchemaContainer()) {
 
-					List<SQLSchema> schemas = db.getChildren();
+					List<SQLSchema> schemas = db.getChildren(SQLSchema.class);
 					setComboBoxStateAndItem(schemaComboBox,schemas,-1);
 					if ( schemas != null && schemas.size() > 0 ) {
 						schemaTerm.setText(schemas.get(0).getNativeTerm());
 						schemaTerm.setEnabled(true);
 					}
 				} else {
-					List<SQLTable> tables = db.getChildren();
+					List<SQLTable> tables = db.getChildren(SQLTable.class);
 					setComboBoxStateAndItem(tableComboBox,tables,-1);
 				}
 			} else if (catalog != catalogComboBox.getSelectedItem()) {
@@ -357,14 +357,14 @@ public class SQLObjectChooser {
 					catalogTerm.setText(catalog.getNativeTerm());
 					catalogTerm.setEnabled(true);
 					if (catalog.isSchemaContainer()) {
-						List<SQLSchema> schemas = catalog.getChildren();
+						List<SQLSchema> schemas = catalog.getChildren(SQLSchema.class);
 						setComboBoxStateAndItem(schemaComboBox,schemas,-1);
 						if ( schemas != null && schemas.size() > 0 ) {
 							schemaTerm.setText(schemas.get(0).getNativeTerm());
 							schemaTerm.setEnabled(true);
 						}
 					} else {
-						List<SQLTable> tables = catalog.getChildren();
+						List<SQLTable> tables = catalog.getChildren(SQLTable.class);
 						setComboBoxStateAndItem(tableComboBox,tables,-1);
 					}
 				}
@@ -384,7 +384,7 @@ public class SQLObjectChooser {
 				} else {
 					schemaTerm.setText(schema.getNativeTerm());
 					schemaTerm.setEnabled(true);
-					List<SQLTable> tables = schema.getChildren();
+					List<SQLTable> tables = schema.getChildren(SQLTable.class);
 					setComboBoxStateAndItem(tableComboBox,tables,-1);
 				}
 			} else if (table != tableComboBox.getSelectedItem()) {

@@ -46,7 +46,7 @@ public class TableIndex {
      */
     public SQLIndex getTableIndex() throws SQLObjectException {
     	if (table.getSourceTable() != null && sourceTableIndex != null) {
-    		sourceTableIndex.setParent(table.getSourceTable().getIndicesFolder());
+    		sourceTableIndex.setParent(table.getSourceTable());
     		resolveTableIndexColumns(sourceTableIndex);
     	}
     	return sourceTableIndex;

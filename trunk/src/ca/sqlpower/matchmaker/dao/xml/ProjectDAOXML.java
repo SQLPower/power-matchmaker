@@ -447,21 +447,17 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     private void printIndex(SQLIndex idx) {
-        try {
-            print("<unique-index");
-            printAttribute("name", idx.getName());
-            niprintln(">");
-            indent++;
-            for (SQLIndex.Column c : idx.getChildren()) {
-                print("<column");
-                printAttribute("name", c.getName());
-                niprintln(" />");
-            }
-            indent--;
-            println("</unique-index>");
-        } catch (SQLObjectException ex) {
-            throw new SQLObjectRuntimeException(ex);
-        }
+    	print("<unique-index");
+    	printAttribute("name", idx.getName());
+    	niprintln(">");
+    	indent++;
+    	for (SQLIndex.Column c : idx.getChildren(SQLIndex.Column.class)) {
+    		print("<column");
+    		printAttribute("name", c.getName());
+    		niprintln(" />");
+    	}
+    	indent--;
+    	println("</unique-index>");
     }
     
     /**
