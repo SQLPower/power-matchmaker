@@ -802,7 +802,7 @@ public class MergeProcessor extends AbstractProcessor {
 				firstIndex = false;
 			}
 			boolean firstCol = true;
-			for (SQLIndex.Column col : index.getChildren()) {
+			for (SQLIndex.Column col : index.getChildren(SQLIndex.Column.class)) {
 				if (!firstCol) {
 					sql.append(" AND ");
 				} else {

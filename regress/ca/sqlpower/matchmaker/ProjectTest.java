@@ -234,7 +234,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
     	SQLTable resultTable = project.createResultTable();
     	
-    	List<SQLIndex> indices = resultTable.getIndicesFolder().getChildren();
+    	List<SQLIndex> indices = resultTable.getChildren(SQLIndex.class);
     	assertEquals(1, indices.size());
 
     	SQLIndex rtidx = indices.get(0);
@@ -478,7 +478,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
+		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
 		
 		
 		int successCount = 0;
@@ -585,7 +585,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
+		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
 		
 		
 		int successCount = 0;

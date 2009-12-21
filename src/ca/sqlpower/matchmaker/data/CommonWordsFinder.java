@@ -57,11 +57,11 @@ public class CommonWordsFinder {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            con = column.getParentTable().getParentDatabase().getConnection();
+            con = column.getParent().getParentDatabase().getConnection();
             stmt = con.createStatement();
             
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT ").append(column.getName()).append(" FROM ").append(SQLObjectUtils.toQualifiedName(column.getParentTable(), SQLDatabase.class));
+            sql.append("SELECT ").append(column.getName()).append(" FROM ").append(SQLObjectUtils.toQualifiedName(column.getParent(), SQLDatabase.class));
             rs = stmt.executeQuery(sql.toString());
             
             Pattern wordSep = Pattern.compile(wordSeparator);

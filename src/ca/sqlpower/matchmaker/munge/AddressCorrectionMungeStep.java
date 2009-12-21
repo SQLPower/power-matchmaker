@@ -240,7 +240,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
 		List<Object> uniqueKeyValues = new ArrayList<Object>();
 
-		for (Column col: uniqueKey.getChildren()) {
+		for (Column col: uniqueKey.getChildren(Column.class)) {
 			MungeStepOutput output = inputStep.getOutputByName(col.getName());
 			if (output == null) {
 				throw new IllegalStateException("Input step is missing unique key column '" + col.getName() + "'");
@@ -384,7 +384,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		
 		List<Object> uniqueKeyValues = new ArrayList<Object>();
 		
-		for (Column col: uniqueKey.getChildren()) {
+		for (Column col: uniqueKey.getChildren(Column.class)) {
 			MungeStepOutput output = inputStep.getOutputByName(col.getName());
 			if (output == null) {
 				throw new IllegalStateException("Input step is missing unique key column '" + col.getName() + "'");

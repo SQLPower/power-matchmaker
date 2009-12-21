@@ -147,7 +147,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		if (ps != null) {
 			ResultSet rs = inputStep.getResultSet();
 			SQLIndex pk = getProject().getSourceTable().getPrimaryKeyIndex();
-			for (Column col : pk.getChildren()) {
+			for (Column col : pk.getChildren(Column.class)) {
 				count++;
 				int pos = getProject().getSourceTable().getColumns().indexOf(col.getColumn());
 				//pos is shifted by 1 to account for the result set data starting at 1
@@ -336,7 +336,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		sql.append(" WHERE ");
 		SQLIndex pk = getProject().getSourceTable().getPrimaryKeyIndex();
 		first = true;
-		for (Column col : pk.getChildren()) {
+		for (Column col : pk.getChildren(Column.class)) {
 			if (!first) {
 				sql.append(" AND ");
 			}

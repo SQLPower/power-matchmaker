@@ -433,7 +433,7 @@ public class TableMergeRules
 			if (index == null) {
 				return null;
 			}
-			for (SQLIndex.Column column : index.getChildren()) {
+			for (SQLIndex.Column column : index.getChildren(SQLIndex.Column.class)) {
 			    try {
 			        logger.debug(BeanUtils.describe(column));
 			    } catch (Exception e) {

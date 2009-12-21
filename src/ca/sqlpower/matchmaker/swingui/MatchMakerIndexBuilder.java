@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -145,7 +146,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 					index.setQualifier(null);
 					index.setFilterCondition(null);
 					while (index.getChildCount() > 0) {
-						index.removeChild(0);
+						index.removeChild(index.getChildren().get(0));
 					}
 					contains = true;
 				}
@@ -165,6 +166,11 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 				            "Unexpected error when adding Column to the Index",
 				            e);
+			return false;
+		} catch (ObjectDependentException e) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+		            "Unexpected error when adding Column to the Index",
+		            e);
 			return false;
 		}
 	}
