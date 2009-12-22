@@ -40,6 +40,7 @@ import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class MatchEngineImplTest extends TestCase {
 
@@ -63,7 +64,7 @@ public class MatchEngineImplTest extends TestCase {
 
 		sourceTable = db.getTableByName(null, "pl", "source_table");
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
-		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
+		sourceTableIndex.addChild(new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
 		sourceTable.addIndex(sourceTableIndex);
 		plSchema.addChild(sourceTable);
 

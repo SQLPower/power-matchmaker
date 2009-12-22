@@ -34,6 +34,7 @@ import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 /**
  * This is a class that implements UserType and is used for
@@ -66,11 +67,11 @@ public class ListToSQLIndex implements UserType  {
 
 				SQLIndex.Column c;
 				if (oldIndexColumn.getColumn() != null) {
-					c = newIndex.new Column(
+					c = new Column(
 							oldIndexColumn.getColumn(),
 							oldIndexColumn.getAscendingOrDescending());
 				} else {
-					c = newIndex.new Column(
+					c = new Column(
 							oldIndexColumn.getName(),
 							oldIndexColumn.getAscendingOrDescending());
 				}
@@ -148,7 +149,7 @@ public class ListToSQLIndex implements UserType  {
                     if (columnName != null) {
                     	try {
 							SQLIndex.Column c;
-							c = index.new Column(columnName, AscendDescend.UNSPECIFIED);
+							c = new Column(columnName, AscendDescend.UNSPECIFIED);
 							index.addChild(c);
 						} catch (SQLObjectException e) {
 							throw new SQLObjectRuntimeException(e);
