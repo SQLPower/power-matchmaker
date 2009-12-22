@@ -53,6 +53,7 @@ import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class MatchResultVisualizerTest extends TestCase {
 	
@@ -90,8 +91,7 @@ public class MatchResultVisualizerTest extends TestCase {
 //				10, 0));
 
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
-		sourceTableIndex.addChild(
-		        sourceTableIndex.new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
+		sourceTableIndex.addChild(new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
 		sourceTable.addIndex(sourceTableIndex);
 
 		plSchema.addChild(sourceTable);

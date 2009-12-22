@@ -39,6 +39,7 @@ import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
@@ -157,7 +158,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 	        }
 	        
 	        for (SQLColumn column : selectedColumns) {
-	    		index.addChild(index.new Column(column, AscendDescend.UNSPECIFIED));
+	    		index.addChild(new Column(column, AscendDescend.UNSPECIFIED));
 			}
 	    	indexModel.setSelectedItem(index);
 			logger.debug("Index columns after save: "+index.getChildren());

@@ -44,6 +44,7 @@ import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.testutil.MockJDBCDriver;
 
 public class ProjectTest extends MatchMakerTestCase<Project> {
@@ -145,8 +146,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	project.setSourceTable(sourceTable);
@@ -224,8 +225,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	project.setSourceTable(sourceTable);
@@ -419,8 +420,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	try {
@@ -530,8 +531,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	try {

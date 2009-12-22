@@ -355,7 +355,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
 		for (int i = 0; i < si.getChildCount() * 2; i++) {
-			newidx.addChild(newidx.new Column(t.getColumn(i), AscendDescend.ASCENDING));
+			newidx.addChild(new Column(t.getColumn(i), AscendDescend.ASCENDING));
 		}
 		t.addIndex(newidx);
 		

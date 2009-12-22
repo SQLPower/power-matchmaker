@@ -133,9 +133,9 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		table.addColumn(new SQLColumn(table, "test3", 4, 10, 0));
 		
 		SQLIndex idx = new SQLIndex("test_index", true, null, null, null);
-		idx.addChild(idx.new Column("test1", AscendDescend.UNSPECIFIED));
-		idx.addChild(idx.new Column("test2", AscendDescend.UNSPECIFIED));
-		idx.addChild(idx.new Column("test3", AscendDescend.UNSPECIFIED));
+		idx.addChild(new Column("test1", AscendDescend.UNSPECIFIED));
+		idx.addChild(new Column("test2", AscendDescend.UNSPECIFIED));
+		idx.addChild(new Column("test3", AscendDescend.UNSPECIFIED));
 		m.setSourceTableIndex(idx);
 		
 		table.addIndex(idx);
@@ -235,7 +235,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     	SQLColumn sqlCol = new SQLColumn(sourceTable, "testSQLCol",
     			Types.INTEGER, 10, 10);
     	sourceTable.addColumn(sqlCol);
-    	Column col = sourceTableIndex.new Column(sqlCol, AscendDescend.UNSPECIFIED);
+    	Column col = new Column(sqlCol, AscendDescend.UNSPECIFIED);
     	sourceTableIndex.addChild(col);
     	
     	Project project = createNewObjectUnderTest();

@@ -193,7 +193,7 @@ public class AddressPool extends MonitorableImpl{
 		
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
 		for (int i = 0; i < si.getChildCount(); i++) {
-			newidx.addChild(newidx.new Column(t.getColumn(i), AscendDescend.ASCENDING));
+			newidx.addChild(new Column(t.getColumn(i), AscendDescend.ASCENDING));
 		}
 		t.addIndex(newidx);
 		
