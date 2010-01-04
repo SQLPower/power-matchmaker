@@ -115,7 +115,7 @@ public class AddressPool extends MonitorableImpl{
 	 * @return A {@link SQLTable} representing the result table.
 	 */
 	public static SQLTable buildAddressCorrectionResultTable(SQLTable resultTable, SQLIndex si) throws SQLObjectException {
-		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
+		SQLTable t = new SQLTable(resultTable.getSQLParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
 		
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();

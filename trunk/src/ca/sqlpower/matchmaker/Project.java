@@ -289,7 +289,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		}
         
         // Now replace the in-memory cached version of the result table
-        SQLObject resultTableParent = oldResultTable.getParent();
+        SQLObject resultTableParent = oldResultTable.getSQLParent();
         try {
         	resultTableParent.removeChild(oldResultTable);
         } catch (ObjectDependentException e) {
@@ -312,7 +312,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	public SQLTable buildDedupeResultTable(SQLTable resultTable, SQLIndex si) 
 		throws SQLObjectException {
 		
-		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
+		SQLTable t = new SQLTable(resultTable.getSQLParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
 
 		addResultTableColumns(t, si, "dup_candidate_1");
 		addResultTableColumns(t, si, "dup_candidate_2");
