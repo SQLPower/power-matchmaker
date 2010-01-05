@@ -52,10 +52,10 @@ import ca.sqlpower.matchmaker.dao.hibernate.RepositoryUtil;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SQLObjectChooser;
+import ca.sqlpower.object.SPObjectUtils;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObject;
-import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
@@ -92,9 +92,9 @@ public class CreateRepositoryAction extends AbstractAction {
                 return;
             }
             
-            SQLDatabase targetDB = SQLObjectUtils.getAncestor(target, SQLDatabase.class);
-            SQLCatalog targetCatalog = SQLObjectUtils.getAncestor(target, SQLCatalog.class);
-            SQLSchema targetSchema = SQLObjectUtils.getAncestor(target, SQLSchema.class);
+            SQLDatabase targetDB = SPObjectUtils.getAncestor(target, SQLDatabase.class);
+            SQLCatalog targetCatalog = SPObjectUtils.getAncestor(target, SQLCatalog.class);
+            SQLSchema targetSchema = SPObjectUtils.getAncestor(target, SQLSchema.class);
             
             // set the repository owner in the data source
             StringBuilder targetOwner = new StringBuilder();

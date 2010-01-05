@@ -45,6 +45,7 @@ import ca.sqlpower.architect.ArchitectSessionContextImpl;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.object.SPObjectUtils;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.JDBCDataSourceType;
 import ca.sqlpower.sql.SQL;
@@ -52,7 +53,6 @@ import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionParseException;
@@ -97,9 +97,9 @@ public class RepositoryUtil {
      */
     public static List<String> makeRepositoryCreationScript(SQLObject target) 
     throws SQLException, SQLObjectException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
-        SQLDatabase database = SQLObjectUtils.getAncestor(target, SQLDatabase.class);
-        SQLCatalog catalog = SQLObjectUtils.getAncestor(target, SQLCatalog.class);
-        SQLSchema schema = SQLObjectUtils.getAncestor(target, SQLSchema.class);
+        SQLDatabase database = SPObjectUtils.getAncestor(target, SQLDatabase.class);
+        SQLCatalog catalog = SPObjectUtils.getAncestor(target, SQLCatalog.class);
+        SQLSchema schema = SPObjectUtils.getAncestor(target, SQLSchema.class);
         JDBCDataSource targetDS = database.getDataSource();
 
         logger.debug("Generating DDL for new repository in data source: " + targetDS.getName());
