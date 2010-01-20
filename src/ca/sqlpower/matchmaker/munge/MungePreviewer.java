@@ -149,7 +149,6 @@ public class MungePreviewer extends MungeProcessor {
 		}
 		listeners = new ArrayList<PreviewListener>();
 		refreshEnabled = true;
-		refreshPreview();
 	}
 	
 	/**
@@ -253,6 +252,8 @@ public class MungePreviewer extends MungeProcessor {
 	 * never reached in the munge process.
 	 */
 	public ArrayList<ArrayList> getPreviewOutputForStep(MungeStep ms) {
+		if (previewStepOutputData == null) return null;
+		
 		return previewStepOutputData.get(ms);
 	}
 	
@@ -263,6 +264,8 @@ public class MungePreviewer extends MungeProcessor {
 	 * empty list will be returned.
 	 */
 	public ArrayList<ArrayList> getPreviewInputForStep(MungeStep ms) {
+		if (previewStepInputData == null) return null;
+		
 		return previewStepInputData.get(ms);
 	}
 	
@@ -303,6 +306,7 @@ public class MungePreviewer extends MungeProcessor {
 				}
 				return;
 			}
+			refreshPreview();
 		}
 	}
 
