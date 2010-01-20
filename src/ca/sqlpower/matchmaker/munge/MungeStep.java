@@ -219,6 +219,14 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	void open(Logger logger) throws Exception;
 
 	/**
+	 * Refreshes the munge step which performs different operations based on the
+	 * implementation. At the least this method will update inputs and outputs
+	 * to match changes in a table. This method may also refresh data in a step
+	 * for preview, refresh a connection to a database, or other behaviour.
+	 */
+	void refresh(Logger logger) throws Exception;
+
+	/**
 	 * In addition to performing the same function as {@link #open(Logger)},
 	 * this version allows client code to pass in flags to a step if it has
 	 * multiple modes of behaviour. The flag variable would have to of a type

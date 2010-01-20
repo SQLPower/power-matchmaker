@@ -188,8 +188,8 @@ public class MungePreviewer extends MungeProcessor {
 				}
 				step.open(logger);
 
-				previewStepOutputData.put(step, new ArrayList());
-				previewStepInputData.put(step, new ArrayList());
+				previewStepOutputData.put(step, new ArrayList<ArrayList>());
+				previewStepInputData.put(step, new ArrayList<ArrayList>());
 			}
 			
 			for (int i = 0; i < MAX_ROWS_PREVIEWED; i++) {

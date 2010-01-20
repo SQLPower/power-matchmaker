@@ -112,9 +112,7 @@ public class MatchEngineImplTest extends TestCase {
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessOne.addChild(outputStep);
 
-		inputStep.open(logger);
-        inputStep.rollback();
-		inputStep.close();
+		inputStep.refresh(logger);
 
 		outputStep.addInput(new InputDescriptor("result2", Object.class));
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
@@ -161,9 +159,7 @@ public class MatchEngineImplTest extends TestCase {
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessTwo.addChild(outputStep);
 
-		inputStep.open(logger);
-		inputStep.rollback();
-		inputStep.close();
+		inputStep.refresh(logger);
 
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		

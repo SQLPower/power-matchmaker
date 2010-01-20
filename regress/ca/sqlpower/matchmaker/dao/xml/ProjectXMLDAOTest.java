@@ -199,9 +199,7 @@ public class ProjectXMLDAOTest extends TestCase {
         inputStep.setParameter("my_boolean_value", true);
         inputStep.setParameter("my_numeric_value", 1234);
         inputStep.setParameter("my_string_value", "farnsworth");
-        inputStep.open(logger); // this allows the step to grab the column information from the source table
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger); // this allows the step to grab the column information from the source table
         
         MungeStep step = new ConcatMungeStep();
         mp.addChild(step);

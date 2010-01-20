@@ -130,9 +130,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		MungeStep mrs = step.getOutputStep();
 		mungep.addChild(mrs);
 		
-		step.open(logger);
-        step.rollback();
-		step.close();
+		step.refresh(logger);
 		mrs.open(logger);
         mrs.rollback();
 		mrs.close();

@@ -44,9 +44,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         sqlx("ALTER TABLE customer DROP COLUMN name");
         db.refresh();
         
-        inputStep.open(logger);
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger);
         
         assertEquals(2, inputStep.getChildCount());
         assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
@@ -61,9 +59,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         sqlx("ALTER TABLE customer ADD COLUMN responsible_salesperson VARCHAR(42)");
         db.refresh();
         
-        inputStep.open(logger);
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger);
         
         assertEquals(4, inputStep.getChildCount());
         assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
@@ -88,9 +84,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         sqlx("ALTER TABLE customer DROP COLUMN name");
         db.refresh();
         
-        inputStep.open(logger);
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger);
         
         assertNull("Concat input is still connected to the NAME output, which has been removed from its parent step!",
                 step.getInputs().get(0).getCurrent());
@@ -109,9 +103,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         sqlx("ALTER TABLE customer ALTER COLUMN dob VARCHAR(50)"); // strange idea, but nyeh
         db.refresh();
         
-        inputStep.open(logger);
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger);
         
         assertFalse(inputStep.getChildren().contains(dobOutput));
         MungeStepOutput<?> newDobOutput = inputStep.getOutputByName("DOB");
@@ -135,9 +127,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         sqlx("ALTER TABLE customer ALTER COLUMN dob VARCHAR(50)"); // strange idea, but nyeh
         db.refresh();
         
-        inputStep.open(logger);
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger);
         
         assertNull(step.getInputs().get(0).getCurrent());
         assertFalse(inputStep.getChildren().contains(dobOutput));
@@ -162,9 +152,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         sqlx("ALTER TABLE customer ALTER COLUMN dob VARCHAR(50)"); // strange idea, but nyeh
         db.refresh();
         
-        inputStep.open(logger);
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger);
         
         assertFalse(inputStep.getChildren().contains(dobOutput));
         MungeStepOutput<?> newDobOutput = inputStep.getOutputByName("DOB");

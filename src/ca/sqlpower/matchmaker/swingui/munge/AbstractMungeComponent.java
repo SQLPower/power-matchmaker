@@ -241,16 +241,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession s) {
         if (step == null) throw new NullPointerException("Null step");
         
-        // This is a kluge to work around the problem that AbstractMungeComponent doesn't
-        // know how to deal with steps when their number of outputs has changed, and now that
-        // the SQLInputStep automatically reconfigures its outputs to match the underlying
-        // table when it's opened, the assumption that outputs can't be reconfigured is false.
-        // If AbstractMungeComponent later learns how to deal with dynamic output reconfiguration,
-        // this code can be erased.
         try {
-            step.open(logger);
-            step.rollback();
-            step.close();
+        	step.refresh(logger);
         } catch (Exception e1) {
             throw new RuntimeException("Failed to refresh step " + step.getName(), e1);
         }

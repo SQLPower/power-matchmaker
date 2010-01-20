@@ -132,6 +132,11 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		validateDatabase();
 		
 	}
+	
+	@Override
+	public void refresh(Logger logger) throws Exception {
+		validateDatabase();
+	}
 
 	/**
 	 * This will get the address database's path from the context and

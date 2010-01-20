@@ -93,9 +93,7 @@ public class NewMungeProcessAction extends AbstractAction {
 		process.addChild(inputStep);
 		
 		try {
-			inputStep.open(logger);
-            inputStep.rollback();
-			inputStep.close();
+			inputStep.refresh(logger);
 		} catch (Exception ex) {
 			throw new RuntimeException("Could not set up the input munge step!", ex);
 		}

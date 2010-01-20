@@ -95,9 +95,14 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		// contain the munge results from the last munge processor run.
 		results.clear();
 
-        Project project = getProject();
-        SQLIndex uniqueIndex = project.getSourceTableIndex();
-
+        refresh(logger);
+	}
+    
+    @Override
+    public void refresh(Logger logger) throws Exception {
+    	Project project = getProject();
+    	SQLIndex uniqueIndex = project.getSourceTableIndex();
+    	
 		indexValues = new MungeStepOutput[uniqueIndex.getChildCount()];
 		for (int i=0; i < uniqueIndex.getChildren().size(); i++) {
 			SQLIndex.Column c = uniqueIndex.getChild(i);
@@ -105,7 +110,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 			indexValues[i] = inputStep.getOutputByName(c.getName());
 			logger.debug("Found MungeStepOuput " + indexValues[i]);
 		}
-	}
+    }
 	
 	@Override
 	public Boolean doCall() throws Exception {

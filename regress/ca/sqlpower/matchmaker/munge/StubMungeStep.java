@@ -289,4 +289,8 @@ public class StubMungeStep implements MungeStep {
 		logger.debug("Stub call: StubMungeStep.checkPreconditions()");
 		return null;
 	}
+	
+	public void refresh(Logger logger) throws Exception {
+		logger.debug("Stub call: StubMungeStep.refresh()");
+	}
 }
