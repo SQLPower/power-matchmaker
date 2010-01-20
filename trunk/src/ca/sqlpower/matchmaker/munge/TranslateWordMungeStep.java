@@ -106,12 +106,6 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		
-		if (translateGroup == null) {
-			throw new NullPointerException("Translate Word transformer was called " +
-					"without a translate group selected. Check your Translate Word " +
-					"transformer settings");
-		}
-		
 		if (data != null) {
 			for (MatchMakerTranslateWord translateWord : translateGroup.getChildren()) {
 				from = translateWord.getFrom();
@@ -153,6 +147,16 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 */
 	@Override
 	public void doOpen(EngineMode mode, Logger logger) throws Exception {
+		refresh(logger);
+		if (translateGroup == null) {
+			throw new NullPointerException("Translate Word transformer was called " +
+					"without a translate group selected. Check your Translate Word " +
+					"transformer settings");
+		}
+	}
+	
+	@Override
+	public void refresh(Logger logger) throws Exception {
 		String oid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
 		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (getSession().getDAO(MatchMakerTranslateGroup.class));
 		if (oid != null) {

@@ -131,7 +131,26 @@ public class SQLInputStep extends AbstractMungeStep {
     
     @Override
     public void doOpen(EngineMode mode, Logger logger) throws Exception {
+    	if ((!isPreviewMode() || previewRS == null) && rs != null) {
+    		throw new IllegalStateException("The input step is already open");
+    	}
     	
+    	refreshAndSetup(logger, false);
+    }
+    
+    @Override
+    public void refresh(Logger logger) throws Exception {
+    	refreshAndSetup(logger, true);
+    }
+
+	/**
+	 * Helper refresh method. For a normal refresh the result set should be
+	 * nulled out if preview is not enabled. If this method is used to
+	 * initialize the step instead by the {@link #doOpen(EngineMode, Logger)}
+	 * method the result set should not be nulled out. The behaviour chosen is
+	 * selected by the boolean nullOutRS.
+	 */
+    private void refreshAndSetup(Logger logger, boolean nullOutRS) throws Exception {
     	if (isPreviewMode() && previewRS != null) {
     		previewRS.beforeFirst();
     		rs = previewRS;
@@ -140,10 +159,6 @@ public class SQLInputStep extends AbstractMungeStep {
     			previewRS = new CachedRowSet();
     		}
     	
-    		if (rs != null) {
-    			throw new IllegalStateException("The input step is already open");
-    		}
-
     		this.table = getProject().getSourceTable();
     		if (!getName().equals(table.getName())) {
     			setName(table.getName());
@@ -184,20 +199,24 @@ public class SQLInputStep extends AbstractMungeStep {
     		    stmt.setMaxRows(MungePreviewer.MAX_ROWS_PREVIEWED);
     		}
     		logger.debug("Attempting to execute input query: " + sql);
-    		rs = stmt.executeQuery(sql.toString());
+    		ResultSet tempRs = stmt.executeQuery(sql.toString());
 
-    		logger.debug("ResultSet fetch size is: " + rs.getFetchSize());
-    		if (rs.getFetchSize() < DEFAULT_FETCH_SIZE) {
-    			rs.setFetchSize(DEFAULT_FETCH_SIZE);
+    		logger.debug("ResultSet fetch size is: " + tempRs.getFetchSize());
+    		if (tempRs.getFetchSize() < DEFAULT_FETCH_SIZE) {
+    			tempRs.setFetchSize(DEFAULT_FETCH_SIZE);
     		}
     		
     		if (isPreviewMode()) {
-    			previewRS.populate(rs);
+    			previewRS.populate(tempRs);
     			previewRS.beforeFirst();
-    			rs.close();
-    			stmt.close();
-    			con.close();
     			rs = previewRS;
+    			tempRs.close();
+    			stmt.close();
+    		} else if (!nullOutRS) {
+    			rs = tempRs;
+    		}
+    		if (isPreviewMode() || nullOutRS) {
+    			con.close();
     		}
     	}
     }

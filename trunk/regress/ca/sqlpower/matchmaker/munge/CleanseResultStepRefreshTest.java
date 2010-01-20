@@ -47,9 +47,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
 
         resultStep = new CleanseResultStep();
         mungeProcess.addChild(resultStep);
-        resultStep.open(logger);
-        resultStep.rollback();
-        resultStep.close();
+        resultStep.refresh(logger);
         
         assertEquals(3, resultStep.getInputCount());
     }
@@ -57,9 +55,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
     public void testRefreshDisconnectedOutputStepWithDroppedColumn() throws Exception {
         sqlx("ALTER TABLE customer DROP COLUMN name");
         db.refresh();
-        resultStep.open(logger);
-        resultStep.rollback();
-        resultStep.close();
+        resultStep.refresh(logger);
         
         assertEquals(2, resultStep.getInputCount());
         assertEquals("CUSTOMER_ID", resultStep.getInputDescriptor(0).getName());
@@ -69,9 +65,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
     public void testRefreshDisconnectedOutputStepWithAddedColumn() throws Exception {
         sqlx("ALTER TABLE customer ADD COLUMN eats_chitlins BOOLEAN");
         db.refresh();
-        resultStep.open(logger);
-        resultStep.rollback();
-        resultStep.close();
+        resultStep.refresh(logger);
 
         assertEquals(4, resultStep.getInputCount());
         assertEquals("CUSTOMER_ID", resultStep.getInputDescriptor(0).getName());
@@ -89,9 +83,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
         
         sqlx("ALTER TABLE customer DROP COLUMN name");
         db.refresh();
-        resultStep.open(logger);
-        resultStep.rollback();
-        resultStep.close();
+        resultStep.refresh(logger);
 
         assertEquals(2, resultStep.getInputCount());
         assertEquals("CUSTOMER_ID", resultStep.getInputDescriptor(0).getName());
@@ -106,9 +98,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
         
         sqlx("ALTER TABLE customer ALTER COLUMN name DECIMAL(10)");
         db.refresh();
-        resultStep.open(logger);
-        resultStep.rollback();
-        resultStep.close();
+        resultStep.refresh(logger);
 
         assertEquals(3, resultStep.getInputCount());
         assertEquals("CUSTOMER_ID", resultStep.getInputDescriptor(0).getName());
@@ -130,9 +120,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
 
         sqlx("ALTER TABLE customer ALTER COLUMN name DECIMAL(10)");
         db.refresh();
-        resultStep.open(logger);
-        resultStep.rollback();
-        resultStep.close();
+        resultStep.refresh(logger);
 
         assertEquals(3, resultStep.getInputCount());
         assertEquals("NAME", resultStep.getInputDescriptor(1).getName());

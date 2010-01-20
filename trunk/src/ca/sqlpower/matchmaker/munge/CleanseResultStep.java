@@ -68,7 +68,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	public CleanseResultStep() throws SQLObjectException {
 		super("Table!", false);
 	}
-
+	
 	private void refreshInputs() throws SQLObjectException {
         Set<Input> orphanInputs = new HashSet<Input>(getInputs());
         for (SQLColumn c : table.getColumns()) {
@@ -280,6 +280,11 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	
 	@Override
 	public void doOpen(EngineMode mode, Logger logger) throws Exception {		
+		refresh(logger);
+	}
+	
+	@Override
+	public void refresh(Logger logger) throws Exception {
 		table = getProject().getSourceTable();
 		
 		//checks if the database supports updatable result sets.

@@ -127,6 +127,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * could be called before the step has its parameters properly configured.
 	 */
 	public void doOpen(EngineMode mode, Logger log) throws Exception {}
+
+	/**
+	 * Refreshes the munge step. This will do different operations depending on
+	 * the munge step including refreshing the outputs and inputs on the step.
+	 * Default is a no-op. Subclasses that override this method should keep in
+	 * mind that this method could be called before the step has its parameters
+	 * properly configured.
+	 */
+    public void refresh(Logger logger) throws Exception {
+    	//do nothing on default cases.
+    }
 	
 	/**
 	 * A method that is called when an step is "run/called". Default is No-op. 
@@ -808,4 +819,5 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     public List<ValidateResult> checkPreconditions() {
     	return Collections.emptyList();
     }
+
 }

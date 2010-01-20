@@ -114,9 +114,7 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
         p.addMungeProcess(mungeProcess);
         inputStep = new SQLInputStep();
         mungeProcess.addChild(inputStep);
-        inputStep.open(logger);
-        inputStep.rollback();
-        inputStep.close();
+        inputStep.refresh(logger);
         
         assertEquals(3, inputStep.getChildCount());
         assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
