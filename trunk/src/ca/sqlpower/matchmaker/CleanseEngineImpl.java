@@ -211,7 +211,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 				setCurrentProcessor(munger);
 				progressMessage = "Running cleanse process " + currentProcess.getName();
 				logger.debug(getMessage());
-				munger.call();
+				munger.call(rowCount);
                 checkCancelled();
 				progress += munger.getProgress();
 			}
