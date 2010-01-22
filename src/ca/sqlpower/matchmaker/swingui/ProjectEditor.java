@@ -56,6 +56,8 @@ import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
+import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator.CacheType;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -624,7 +626,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	        	if (!project.doesResultTableExist() ||
 	        			!project.verifyResultTableStructure()) {
 	        		MMSUtils.createResultTable(swingSession.getFrame(), (JDBCDataSource) resultChooser.getDataSourceComboBox().getSelectedItem(), project);
-	        		
+
+	        		// Don't use the cache because we know the newly created result table won't be in it.
+	        		DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_TYPE, CacheType.NO_CACHE);
 	        		SQLTable resultTable = swingSession.findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
 	        				project.getResultTableSchema(), project.getResultTableName());
 					if (resultTable == null) return false;
