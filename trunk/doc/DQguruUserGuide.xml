@@ -1,21 +1,21 @@
 <?xml version='1.0' encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.0//EN" "http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
 
-<book id="Power_MatchMaker_User_Guide" lang="en">
+<book id="DQguru_User_Guide" lang="en">
 
 	<bookinfo>
 
 		<!-- $Id$ -->
 
 		<title id="book">DQguru User Guide</title>
-
+            
 		<mediaobject>
-			<imageobject id="matchmaker_logo">
-				<imagedata fileref="doc/images/matchmaker_logo_i.png"
+			<imageobject id="dqguru_logo">
+				<imagedata fileref="doc/images/dqguru_logo_i.png"
 					format="PNG" width="5in" />
 			</imageobject>
 		</mediaobject>
-
+        
 		<corpauthor>
 			<!-- Whether or not this link is underlined depends on the stylesheet, not the DocBook markup -->
 			<ulink url="http://www.sqlpower.ca/">
@@ -35,7 +35,7 @@
 
 		<title>Introduction</title>
 
-		<section id="intro.about_matchmaker">
+		<section id="intro.about_dqguru">
 
 			<title>About DQguru</title>
 
@@ -202,7 +202,7 @@
 			<mediaobject>
 
 				<imageobject>
-					<imagedata fileref="doc/images/MatchMakerUI_i.png"
+					<imagedata fileref="doc/images/DQGuru_UI_i.png"
 						format="PNG" width="5in" />
 				</imageobject>
 
@@ -361,7 +361,7 @@
 
 			</section>
 
-			<section id="getting_started.basic_concepts.munge">
+			<section id="getting_started.basic_concepts.transformations">
 
 				<title>Transformations</title>
 
@@ -389,6 +389,31 @@
 
 
 				<itemizedlist>
+                
+                    <listitem>
+                        <para>
+                            Address Correction - Splits address data
+                            into smaller chunks. Also provides validation.
+                        </para>
+                    </listitem>
+                    
+
+					<listitem>
+						<para>
+							Boolean, Date, Number, String Constant - 
+                            Returns a constant of the specified 
+                            type, or a null value.                        
+						</para>
+					</listitem>
+                    
+                    
+                    <listitem>
+						<para>
+							Boolean, Date, Number to String - Returns a string 
+                            from a boolean, formatted date, or number.
+						</para>
+					</listitem>                    
+                    
 
 					<listitem>
 						<para>
@@ -397,6 +422,21 @@
 							the join.
 						</para>
 					</listitem>
+                    
+                    <listitem>
+						<para>
+							CSV Writer - Concatenates and writes the 
+                            input values to a .csv file, separating
+                            the values using the given separator.
+						</para>
+					</listitem>                                    
+                    
+                                       
+					<listitem>
+						<para>
+							Date to String - Formats a date as specified.
+						</para>
+					</listitem>                                                                             
 
 
 					<listitem>
@@ -408,11 +448,24 @@
 						</para>
 					</listitem>
 
+					<listitem>
+						<para>
+							Google Address Lookup - Looks up the given
+                            address string using a Google Maps API.
+						</para>
+					</listitem>
 
 					<listitem>
 						<para>
 							Lowercase, Uppercase - Converts the data to
 							the appropriate case.
+						</para>
+					</listitem>
+                    
+                    <listitem>
+						<para>
+							MD5 Checksum - Returns the calculated
+                            MD5 checksum of a string.
 						</para>
 					</listitem>
 
@@ -426,11 +479,34 @@
 					</listitem>
 
 
+                    <listitem>
+						<para>
+							Sort Words - Sorts a delimited list of 
+                            words, outputting them using a 
+                            specified output delimiter.
+						</para>
+					</listitem>
+
 					<listitem>
 						<para>
 							String Substitution - Replaces all
 							occurrences of a specified word with another
 							word.
+						</para>
+					</listitem>
+                    
+                    <listitem>
+                        <para>
+                            String to Boolean - Compares a string against
+                            regular expressions or lists to determine a
+                            boolean return value.                    
+                        </para>
+                    </listitem>
+                    
+                    <listitem>
+						<para>
+							String to Date - Converts a string formatted
+                            as a date into a date type.
 						</para>
 					</listitem>
 
@@ -461,6 +537,13 @@
 							.
 						</para>
 					</listitem>
+                    
+                    <listitem>
+						<para>
+							Trim Spaces - Returns the string, with 
+                            leading and trailing spaces removed.
+						</para>
+					</listitem>
 
 
 					<listitem>
@@ -474,7 +557,7 @@
 				<para>
 					For more information, see
 					<xref
-						linkend="working_with.overview_project.munge_processes" />
+						linkend="working_with.overview_project.transformations" />
 					.
 				</para>
 
@@ -722,7 +805,7 @@
 							on your data. These can include translation
 							rules. For more information, see
 							<xref
-								linkend="working_with.overview_project.munge_processes" />
+								linkend="working_with.overview_project.transformations" />
 							and
 							<xref
 								linkend="working_with.overview_project.translation" />
@@ -830,8 +913,8 @@
 						Note: To view a demo of creating a Find
 						Duplicates project, go to
 						<ulink
-							url="http://www.sqlpower.ca/page/MatchMaker">
-							www.sqlpower.ca/page/MatchMaker
+							url="http://www.sqlpower.ca/page/DQguru">
+							www.sqlpower.ca/page/DQguru
 						</ulink>
 						.
 					</para>
@@ -888,8 +971,8 @@
                                 in the user preferences. An Address Correction Database
                                 can be obtained from                        
                                 <ulink
-                                    url="http://www.sqlpower.ca/page/matchmaker_address_data">
-                                    www.sqlpower.ca/page/matchmaker_address_data
+                                    url="http://www.sqlpower.ca/page/dqguru_address_data">
+                                    www.sqlpower.ca/page/dqguru_address_data
                                 </ulink>
                                 and is required for address correction. The Address Correction
                                 Database contains all known valid mailing addresses in Canada.
@@ -1297,7 +1380,7 @@
 			</section>
 
 			<section
-				id="working_with.overview_project.munge_processes">
+				id="working_with.overview_project.transformations">
 
 				<title>Defining Transformations</title>
 
@@ -1364,7 +1447,7 @@
 						<para>
 
 							Use the large white area in the centre,
-							called the Munge Pen, to define the transformer
+							called the Play Pen, to define the transformer
 							to include in the transformation.
 
 						</para>
@@ -1372,7 +1455,7 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/MungePen_i.png" format="PNG" width="5in" />
+									fileref="doc/images/PlayPen_i.png" format="PNG" width="5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -1385,7 +1468,7 @@
 									By default, the first step in the
 									process (the input step) and the
 									last step in the process (the output
-									step) are already added to the Munge
+									step) are already added to the Play
 									Pen. The input step is typically one
 									or more source tables. The output
 									step may be a results table or a
@@ -1439,8 +1522,8 @@
 						<para>
 
 							 To add a transformer to the process, drag and
-							drop a step into the Munge Pen. You can also
-							right-click in the Munge Pen, click Add
+							drop a step into the Play Pen. You can also
+							right-click in the Play Pen, click Add
 							Transformer, then select the step.
 
 						</para>
@@ -1527,7 +1610,7 @@
 
 			</section>
 
-			<section id="working_with.overview_project.munge_pdf">
+			<section id="working_with.overview_project.transformation_pdf">
 
 				<title>Creating a PDF Copy of a Transformation</title>
 
@@ -1566,7 +1649,7 @@
 
 						<para>
 
-							Select File » Export Munge Pen to PDF.
+							Select File » Export Play Pen to PDF.
 
 						</para>
 
@@ -1728,8 +1811,8 @@
 			<para>
 				Note: To view a demo of creating a De-duping
 				project, go to
-				<ulink url="http://www.sqlpower.ca/page/MatchMaker">
-					www.sqlpower.ca/page/MatchMaker
+				<ulink url="http://www.sqlpower.ca/page/DQguru">
+					www.sqlpower.ca/page/DQguru
 				</ulink>
 				.
 			</para>
@@ -1910,7 +1993,7 @@
 			</section>
 
 			<section
-				id="working_with.example_duplicate_project.munge">
+				id="working_with.example_duplicate_project.transformations">
 				<title>Step 4: Define Transformations</title>
 
 				<para>
@@ -1938,7 +2021,7 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/MungePenExample_i.png" format="PNG"
+									fileref="doc/images/PlayPenExample_i.png" format="PNG"
 									width="5in" />
 							</imageobject>
 						</mediaobject>
@@ -1967,7 +2050,7 @@
 
 							<listitem>
 								<para>
-									The transformer you can use to
+									The transformers you can use to
 									transform the data are shown on the
 									right side of the Playpen.
 								</para>
@@ -2475,8 +2558,8 @@
                 in the user Preferences. An Address Correction Database
                 can be obtained from                        
                 <ulink
-                    url="http://www.sqlpower.ca/page/matchmaker_address_data">
-                    www.sqlpower.ca/page/matchmaker_address_data
+                    url="http://www.sqlpower.ca/page/dqguru_address_data">
+                    www.sqlpower.ca/page/dqguru_address_data
                 </ulink>
                 and is required for address correction.
             </para> 
@@ -2598,7 +2681,7 @@
             </section>
 
             <section
-                id="working_with.example_address_project.munge">
+                id="working_with.example_address_project.transformations">
                 <title>Step 3: Define Tranformations</title>
 
                 <para>
