@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
@@ -97,6 +98,11 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	 * The level at which to show the engine debugging
 	 */
 	private Level messageLevel = Level.INFO;
+	
+	/**
+	 * A list of {@link EngineListener}s that are listening to this Engine.
+	 */
+	private List<EngineListener> engineListeners = new ArrayList<EngineListener>();
 	
 	protected Project getProject() {
 		return project;
@@ -277,10 +283,12 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 
 	public void setStarted(boolean started) {
 		this.started = started;
+		fireEngineStarted();
 	}
 
 	public void setFinished(boolean finished) {
 		this.finished = finished;
+		fireEngineStopped();
 	}
 		
     public void setMessageLevel(Level lev) {
@@ -368,5 +376,25 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 			rowCount = processCount.intValue();
 		}
 		return rowCount;
+	}
+	
+	public void addEngineListener(EngineListener listener) {
+		engineListeners.add(listener);
+	}
+	
+	public void removeEngineListener(EngineListener listener) {
+		engineListeners.remove(listener);
+	}
+	
+	public void fireEngineStarted() {
+		for (EngineListener l: engineListeners) {
+			l.engineStarted(new EngineEvent(this));
+		}
+	}
+	
+	public void fireEngineStopped() {
+		for (EngineListener l: engineListeners) {
+			l.engineStopped(new EngineEvent(this));
+		}
 	}
 }

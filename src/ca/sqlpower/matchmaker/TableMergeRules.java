@@ -434,12 +434,14 @@ public class TableMergeRules
 				return null;
 			}
 			for (SQLIndex.Column column : index.getChildren(SQLIndex.Column.class)) {
-			    try {
-			        logger.debug(BeanUtils.describe(column));
-			    } catch (Exception e) {
-			        e.printStackTrace();
-			    }
-			    if (column.getColumn() == null) {
+			    if (logger.isDebugEnabled()) {
+					try {
+						logger.debug(BeanUtils.describe(column));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				if (column.getColumn() == null) {
 			        throw new IllegalStateException("Found an index column with a null column name!");
 			    }
 				columns.add(column.getColumn()); 

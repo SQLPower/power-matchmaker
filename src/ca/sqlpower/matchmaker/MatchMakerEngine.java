@@ -90,4 +90,35 @@ public interface MatchMakerEngine extends Monitorable,
 	 * Sets the level at which to log the engine progress
 	 */
 	public void setMessageLevel(Level lev);
+	
+	/**
+	 * Adds an {@link EngineListener} to listen to this {@link MatchMakerEngine}
+	 * 
+	 * @param listener
+	 *            The {@link EngineListener} that will listen to this
+	 *            {@link MatchMakerEngine}.
+	 */
+	public void addEngineListener(EngineListener listener);
+	
+	/**
+	 * Removes an {@link EngineListener} to listen to this
+	 * {@link MatchMakerEngine}
+	 * 
+	 * @param listener
+	 *            The {@link EngineListener} to remove from this
+	 *            {@link MatchMakerEngine}.
+	 */
+	public void removeEngineListener(EngineListener listener);
+	
+	/**
+	 * Fires an event to all {@link EngineListener}s notifying that this
+	 * {@link MatchMakerEngine} has started.
+	 */
+	public void fireEngineStarted();
+	
+	/**
+	 * Fires an event to all {@link EngineListener}s notifying that this
+	 * {@link MatchMakerEngine} has stopped.
+	 */
+	public void fireEngineStopped();
 }

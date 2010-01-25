@@ -54,6 +54,8 @@ import javax.swing.SpinnerNumberModel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.EngineEvent;
+import ca.sqlpower.matchmaker.EngineListener;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -295,6 +297,8 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 	 * to handle the date.
 	 */
 	private Date expiryDate;
+
+	private EngineListener engineListener;
 	
 	public EngineSettingsPanel(final MatchMakerSwingSession swingSession, Project project, JFrame parentFrame, 
 			EngineType engineType) {
@@ -341,6 +345,18 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 			this.runEngineAction = new RunEngineAction(swingSession, project, engine, "Run Engine",
 				engineOutputPanel, this, engineStart, engineFinish);
 		}
+		
+		engineListener = new EngineListener() {
+			public void engineStopped(EngineEvent e) {
+				runEngineAction.setEnabled(true);
+			}
+			
+			public void engineStarted(EngineEvent e) {
+				runEngineAction.setEnabled(false);
+			}
+		};
+		
+		engine.addEngineListener(engineListener);
 		
 		this.panel = buildUI();
 		
@@ -793,5 +809,6 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 		handler.removePropertyChangeListener(propertyChangeListener);
 		debugMode.removeItemListener(itemListener);
 		messageLevel.removeActionListener(messageLevelActionListener);
+//		engine.removeEngineListener(engineListener);
 	}
 }
