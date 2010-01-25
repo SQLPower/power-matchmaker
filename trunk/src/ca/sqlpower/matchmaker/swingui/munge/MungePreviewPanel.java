@@ -41,6 +41,13 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.CleanseEngineImpl;
+import ca.sqlpower.matchmaker.EngineEvent;
+import ca.sqlpower.matchmaker.EngineListener;
+import ca.sqlpower.matchmaker.MatchEngineImpl;
+import ca.sqlpower.matchmaker.MergeEngineImpl;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.munge.MungePreviewer;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -164,6 +171,10 @@ public class MungePreviewPanel {
 	 */
 	private final JCheckBox enablePreviewCheckBox;
 	
+	private final EngineListener engineListener;
+
+	private Project project;
+	
 	public MungePreviewPanel(MungeProcess process, MungePen pen) {
 		this.mungePen = pen;
 		previewer = new MungePreviewer(process);
@@ -247,11 +258,60 @@ public class MungePreviewPanel {
 			}
 		});
         enablePreview(false);
+        
+        engineListener = new EngineListener() {
+			public void engineStopped(EngineEvent e) {
+				enablePreviewCheckBox.setEnabled(true);
+			}
+			
+			public void engineStarted(EngineEvent e) {
+				enablePreviewCheckBox.setEnabled(false);
+			}
+		};
+		
+		project = process.getParentProject();
+		switch(project.getType()) {
+		case FIND_DUPES:
+			MatchEngineImpl matchingEngine = project.getMatchingEngine();
+			matchingEngine.addEngineListener(engineListener);
+			if (matchingEngine.isStarted() && !matchingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
+			MergeEngineImpl mergingEngine = project.getMergingEngine();
+			mergingEngine.addEngineListener(engineListener);
+			if (mergingEngine.isStarted() && !mergingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
+			break;
+		case CLEANSE:
+			CleanseEngineImpl cleansingEngine = project.getCleansingEngine();
+			cleansingEngine.addEngineListener(engineListener);
+			cleansingEngine.addEngineListener(engineListener);
+			if (cleansingEngine.isStarted() && !cleansingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
+			break;
+		case ADDRESS_CORRECTION:
+			AddressCorrectionEngine addressCorrectionEngine = project.getAddressCorrectionEngine();
+			addressCorrectionEngine.addEngineListener(engineListener);
+			if (addressCorrectionEngine.isStarted() && !addressCorrectionEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
+			AddressCorrectionEngine addressCommittingEngine = project.getAddressCommittingEngine();
+			addressCommittingEngine.addEngineListener(engineListener);
+			if (addressCommittingEngine.isStarted() && !addressCommittingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
+			break;
+		}
 	}
 	
 	public void cleanup() {
 		previewer.removePreviewListener(listener);
 		previewer.cleanup();
+		switch(project.getType()) {
+		case FIND_DUPES:
+			project.getMatchingEngine().removeEngineListener(engineListener);
+			project.getMergingEngine().removeEngineListener(engineListener);
+			break;
+		case CLEANSE:
+			project.getCleansingEngine().removeEngineListener(engineListener);
+			break;
+		case ADDRESS_CORRECTION:
+			project.getAddressCorrectionEngine().removeEngineListener(engineListener);
+			project.getAddressCommittingEngine().removeEngineListener(engineListener);
+			break;
+		}
 	}
 	
 	public JPanel getPanel() {
