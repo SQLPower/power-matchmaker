@@ -260,7 +260,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 	private void addProjectMenuItems(JPopupMenu m, final Project project) {
 
-		m.addSeparator();
 		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
 
 		if (project.getType() == ProjectMode.FIND_DUPES) {
