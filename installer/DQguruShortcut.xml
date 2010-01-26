@@ -1,19 +1,19 @@
 <shortcuts>
 	<programGroup defaultName="SQL Power Suite"
 		location="applications"/>
-	<shortcut name="DQguru" target="$INSTALL_PATH/dqguru.exe"
+	<shortcut name="SQL Power DQguru" target="$INSTALL_PATH/dqguru.exe"
 		programGroup="yes"
 		commandLine=""
 		workingDirectory="$INSTALL_PATH"
-		description="DQguru Data Cleansing Tool"
+		description="SQL Power DQguru Data Cleansing Tool"
 		iconFile="$INSTALL_PATH/dqguru.ico" desktop="yes"
 		startMenu="yes">
 	</shortcut>
 
-	<shortcut name="Uninstall DQguru"
+	<shortcut name="Uninstall SQL Power DQguru"
 		target="$INSTALL_PATH/uninstaller/uninstaller.exe"
 		programGroup="yes"
-		description="Remove the DQguru Data Cleansing Tool"
+		description="Remove the SQL Power DQguru Data Cleansing Tool"
 		iconFile="$INSTALL_PATH/uninstall.ico" desktop="no" >
 	</shortcut>
 </shortcuts>

@@ -1,9 +1,9 @@
-                     Power*Architect release checklist
+                     SQL Power DQguru release checklist
 
 $Id: ReleaseChecklist.txt 1878 2007-10-29 15:23:22Z jfuerth $
 
 This file is intended as a guide for the person who is packaging, posting,
-and announcing a new release of the Power*MatchMaker.  This list is probably
+and announcing a new release of the SQL Power DQguru.  This list is probably
 not complete.  If you find yourself performing a step that is not mentioned
 here, please add it!
 
