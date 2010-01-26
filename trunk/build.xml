@@ -537,8 +537,8 @@
 					stayalive="false"
 					icon="installer/uninstall.ico">
 				<singleInstance
-					mutexName="DQguru Uninstaller"
-					windowTitle="DQguru Uninstaller"
+					mutexName="SQL Power DQguru Uninstaller"
+					windowTitle="SQL Power DQguru Uninstaller"
 				/>
 				<jre minVersion="1.5.0"/>
 			</config>
@@ -613,7 +613,7 @@
 	
 	
 	<target name="windows_jar_installer" depends="stage">
-		<izpack output="${dist.dir}/DQguru-Setup-Windows-${app.version}.jar"
+		<izpack output="${dist.dir}/SQL-Power-DQguru-Setup-Windows-${app.version}.jar"
 		        installerType="standard"
 			    basedir="${installer.dir}"
 		        izPackDir="${izpack.dir}/">
@@ -621,7 +621,7 @@
 				<installation version="1.0">
 					<!-- comment -->
 					<info>
-						<appname>DQguru</appname>
+						<appname>SQL Power DQguru</appname>
 						<appversion>@{app.version}</appversion>
 						<url>http://www.sqlpower.ca/</url>
 						<javaversion>1.5</javaversion>
@@ -709,8 +709,8 @@
 		<launch4j>
 			<config dontwrapjar="false" 
 					headertype="gui"
-					jar="${dist.dir}/DQguru-Setup-Windows-${app.version}.jar"
-					outfile="${dist.dir}/DQguru-Setup-Windows-${app.version}.exe"
+					jar="${dist.dir}/SQL-Power-DQguru-Setup-Windows-${app.version}.jar"
+					outfile="${dist.dir}/SQL-Power-DQguru-Setup-Windows-${app.version}.exe"
 					errtitle="Java Runtime Required"
 					priority="normal"
 					downloadurl="http://java.com/download"
@@ -728,7 +728,7 @@
 	</target>
 		
     <target name="generic_install" depends="stage">
-		<tar destfile="${dist.dir}/DQguru-generic-${app.version}.tar.gz"
+		<tar destfile="${dist.dir}/SQL-Power-DQguru-generic-${app.version}.tar.gz"
 			compression="gzip">
 			<tarfileset
 			    prefix="dqguru-${app.version}"
@@ -754,12 +754,12 @@
 
 		<!-- jarbundler is from sourceforge, defined near top of file -->
 		<jarbundler dir="${staging.dir}"
-           name="DQguru"
+           name="SQL Power DQguru"
            version="${app.version}"
            mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
            icon="src/icons/dqguru.icns"
            jvmversion="1.5+"
-           shortname="DQguru"
+           shortname="SQL Power DQguru"
            stubfile="osx_packaging_utils/DQguruStub"
            vmoptions="-Xmx600m">
 			<jarfileset dir="${staging.dir}" includes="lib/*.jar"/>
@@ -772,7 +772,7 @@
 		</jarbundler>
 
 		<!-- XXX this is stupid. we should modify the jarbundler task to allow literal strings in the classpath -->
-		<replace file="${staging.dir}/DQguru.app/Contents/Info.plist"
+		<replace file="${staging.dir}/SQL Power DQguru.app/Contents/Info.plist"
 				 token="${basedir}/KICKME"
 				 value="$JAVAROOT" />
 
@@ -782,7 +782,7 @@
 	<target name="source_only_tgz" depends="getAppVersion"
 		description="Builds a source only tarball of the Architect">
 		<mkdir dir="${dist.dir}"/>
-		<tar destfile="${dist.dir}/DQguru-src-only-${app.version}.tar.gz"
+		<tar destfile="${dist.dir}/SQL-Power-DQguru-src-only-${app.version}.tar.gz"
 			 compression="gzip" longfile="gnu">
 			<tarfileset dir="."
 				prefix="matchmaker-src-only-${app.version}"
@@ -862,9 +862,9 @@
 		<!-- NOTE: This generally won't work on Windows as it typically doesn't have 'tar' installed -->
 		<exec executable="tar" dir="${staging.dir}">
 			<arg value="-cpzf"/>
-			<arg value="../${dist.dir}/DQguru-OSX-${app.version}.tar.gz"/>
+			<arg value="../${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.tar.gz"/>
 			<arg value="LICENSE"/>
-			<arg value="DQguru.app"/>
+			<arg value="SQL Power DQguru.app"/>
 		</exec>
 		
 <!--		<tar destfile="${dist.dir}/DQguru-OSX-${app.version}.tar.gz"
@@ -886,32 +886,32 @@
 		<copy file="osx_packaging_utils/RWDQguru.dmg.sparseimage" tofile="${staging.dir}/RWDQguru.dmg.sparseimage" overwrite="true" />
 		<exec executable="hdiutil">
 					<arg value="detach" />
-					<arg value="/Volumes/DQguru" />
+					<arg value="/Volumes/SQL Power DQguru" />
 		</exec>
 		<exec executable="hdiutil">
 			<arg value="attach" />
 			<arg value="${staging.dir}/RWDQguru.dmg.sparseimage" />
 		</exec>
-		<delete dir="/Volumes/DQguru/DQguru.app/Contents/Resources/Java"/>
-		<copy todir="/Volumes/DQguru/DQguru.app/" overwrite="true"  >
-			<fileset dir="${staging.dir}/DQguru.app"></fileset>
+		<delete dir="/Volumes/SQL Power DQguru/SQL Power DQguru.app/Contents/Resources/Java"/>
+		<copy todir="/Volumes/SQL Power DQguru/SQL Power DQguru.app/" overwrite="true"  >
+			<fileset dir="${staging.dir}/SQL Power DQguru.app"></fileset>
 		</copy>
 		<exec executable="chmod">
 			<arg value="a+x"/>
-			<arg value="/Volumes/DQguru/DQguru.app/Contents/MacOS/DQguruStub"/>
+			<arg value="/Volumes/SQL Power DQguru/SQL Power DQguru.app/Contents/MacOS/DQguruStub"/>
 		</exec>
 		<exec executable="hdiutil">
 			<arg value="detach" />
-			<arg value="/Volumes/DQguru" />
+			<arg value="/Volumes/SQL Power DQguru" />
 		</exec>
-		<delete file="${dist.dir}/DQguru-OSX-${app.version}.dmg" />
+		<delete file="${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.dmg" />
 		<exec executable="hdiutil">
 			<arg value="convert"/>
 			<arg value="${staging.dir}/RWDQguru.dmg.sparseimage"/>
 			<arg value="-format"/>
 			<arg value="UDCO"/>
 			<arg value="-o"/>
-			<arg value="${dist.dir}/DQguru-OSX-${app.version}.dmg"/>
+			<arg value="${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.dmg"/>
 		</exec>
 
 		<javac srcdir="osx_packaging_utils"
@@ -923,7 +923,7 @@
 				 classname="ca.sqlpower.antbuild.AddLicenseToDMGTask"
 			     classpath="${build}"/>
 		<addLicenseToDMG
-				dmgFile="${dist.dir}/DQguru-OSX-${app.version}.dmg"
+				dmgFile="${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.dmg"
                 licenseFile="${staging.dir}/LICENSE"
 		        resourceTemplateFile="osx_packaging_utils/sla_template.r"/>
     </target>
@@ -956,7 +956,7 @@
 	</target>
 	
 	<target name="copy.sqlpower.library" depends="check.sqlpower.library.dir">
-		<copy file="${sqlpower.library.home}/build/sqlpower_library.jar" todir="${lib}"/>
+		<copy file="${sqlpower.library.home}/dist/sqlpower_library.jar" todir="${lib}"/>
 	</target>
 	
 	
