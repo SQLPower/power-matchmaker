@@ -106,7 +106,7 @@ public class MatchMakerSplashScreen {
 		});
         
 		JLabel mmLogo = new JLabel(SPSUtils.createIcon("dqguru_huge", "DQguru Huge Icon"), JLabel.CENTER);
-		JLabel title  = new JLabel("<html>" + "DQguru " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
+		JLabel title  = new JLabel("<html>" + "SQL Power DQguru " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
 		Font f = title.getFont();
 		Font newf = new Font(f.getName(), f.getStyle(), (int) (f.getSize() * 1.5));
 		title.setFont(newf);

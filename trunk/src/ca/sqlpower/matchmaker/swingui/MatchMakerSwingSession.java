@@ -240,20 +240,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
     };
 
-	private Action aboutAction = new AbstractAction("About DQguru...") {
+	private Action aboutAction = new AbstractAction("About SQL Power DQguru...") {
 
 		public void actionPerformed(ActionEvent evt) {
 			// This is one of the few JDIalogs that can not get replaced
 			// with a call to ArchitectPanelBuilder, because an About
 			// box must have only ONE button...
 			final JDialog d = new JDialog(getFrame(),
-										  "About DQguru");
+										  "About SQL Power DQguru");
 			JPanel cp = new JPanel(new BorderLayout(12,12));
 			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
 			
 			ImageIcon icon = SPSUtils.createIcon("dqguru_128", "DQguru Logo");
 			
-			final AboutPanel aboutPanel = new AboutPanel(icon, "DQguru", "ca/sqlpower/matchmaker/matchmaker.version.properties", MatchMakerVersion.APP_VERSION);
+			final AboutPanel aboutPanel = new AboutPanel(icon, "SQL Power DQguru", "ca/sqlpower/matchmaker/matchmaker.version.properties", MatchMakerVersion.APP_VERSION);
 			cp.add(aboutPanel, BorderLayout.CENTER);
 
 			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -433,7 +433,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		});
 
-        frame = new JFrame("DQguru: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
+        frame = new JFrame("SQL Power DQguru: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
         statusLabel = new JLabel();
         warningDialog = new JDialog(frame, "DQguru Warnings");
         warningTextArea = new JTextArea(6, 40);

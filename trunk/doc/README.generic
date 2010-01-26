@@ -1,8 +1,8 @@
-This generic distribution of DQguru is intended for platforms that
+This generic distribution of SQL Power DQguru is intended for platforms that
 we do not have a specific distribution for.  For example, NetBSD,
 FreeBSD, OpenBSD, Solaris, and all flavours of Linux.
 
-To launch DQguru from the command line, do the following:
+To launch SQL Power DQguru from the command line, do the following:
 
 % java -jar $DQ_HOME/dqguru.jar
 
