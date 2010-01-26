@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +30,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -45,6 +47,7 @@ import ca.sqlpower.architect.ArchitectSessionContextImpl;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.object.SPObjectUtils;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.JDBCDataSourceType;
@@ -105,8 +108,20 @@ public class RepositoryUtil {
         logger.debug("Generating DDL for new repository in data source: " + targetDS.getName());
         logger.debug("Target Catalog: " + catalog + "; Schema: " + schema);
         
+        // Try to find the MatchMaker's PL.INI (don't use the architect's)
+        Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
+        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
+        // If none, then try looking for the default path
+        if (plDotIniPath == null) {
+	        String userHome = System.getProperty("user.home");
+	        if (userHome == null) {
+	        	throw new IllegalStateException("user.home property is null!");
+	        }
+	        plDotIniPath = userHome + File.separator + "pl.ini";
+        }
+        
         // Load the architect file containing the default repository schema
-        ArchitectSessionContext mmRepositoryContext = new ArchitectSessionContextImpl();
+        ArchitectSessionContext mmRepositoryContext = new ArchitectSessionContextImpl(plDotIniPath);
         InputStream reposProjectInStream = ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/dao/hibernate/mm_repository.architect");
         ArchitectSession mmRepositorySession = mmRepositoryContext.createSession(reposProjectInStream);
         reposProjectInStream.close();
