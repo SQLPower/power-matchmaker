@@ -1,3 +1,15 @@
+0.9.6
+* The official name of the product is now SQL Power DQguru
+* Added a new command-line engine runner tool that allows the running of project engines without running the full GUI program. This is particularly useful for adding DQguru projects as part of an automatic batch process
+* Bugs Fixed
+  * Run Engine Button didn't disable itself when the engine was running
+  * Code that generates the repository was using the Architect's preferred pl.ini location
+  * IllegalArgumentException when creating a new de-duping project on an Oracle database
+  * Adding a Google Address Lookup transformer caused an exception
+  * Address Correction Engine 'debug mode' did not rollback changes if 'immediately commit auto-corrected addresses' was checked
+  * Updating the address pool on a SQL Server (2008) instance didn't work because it does explicitly support booleans
+  
+
 0.9.5
 * The Power*MatchMaker is now the DQguru
 * The Table Explorer has been replaced with a more powerful SQL Query tool
