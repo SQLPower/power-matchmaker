@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -130,6 +131,7 @@ import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.Version;
 
 /**
@@ -403,6 +405,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      */
 	private Map<AddressCorrectionEngine, EngineSettingsPanel> addressCorrectionEnginePanels;
 	
+	private final String DQGURU_SUPPORT_URL = "http://www.sqlpower.ca/page/dqguru_support";
+	
+	private final Action getPremiumSupportAction = new AbstractAction("Get Premium Support") {
+		public void actionPerformed(ActionEvent e) {
+			try {
+				BrowserUtil.launch(DQGURU_SUPPORT_URL);
+			} catch (IOException ex) {
+				MMSUtils.showExceptionDialog(frame, "Could not open URL '"
+						+ DQGURU_SUPPORT_URL + "' in your web browser", ex);
+			}
+		}
+		
+	};
+	
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
      * would use a LoginDialog instead of calling this constructor directly.
@@ -550,7 +566,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         buildExampleTableAction = new BuildExampleTableAction(this);
         helpMenu.add(buildExampleTableAction);
 
+        helpMenu.addSeparator();
+        helpMenu.add(getPremiumSupportAction);
+        
         supportOnTheWebAction = SPSUtils.forumAction;
+        supportOnTheWebAction.putValue(Action.NAME, "Community Support Forum");
         helpMenu.add(supportOnTheWebAction);
         
         menuBar.add(helpMenu);
