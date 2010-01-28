@@ -717,7 +717,7 @@
 					supporturl="http://www.sqlpower.ca/forum"
 					customprocname="false"
 					stayalive="false"
-					icon="src/icons/dqguru.ico">
+					icon="installer/installerIcon-dq.ico">
 				<singleInstance
 					mutexName="DQguru Installer"
 					windowTitle="DQguru Installer"
