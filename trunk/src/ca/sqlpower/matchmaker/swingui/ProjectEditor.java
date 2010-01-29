@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -57,7 +58,6 @@ import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
-import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator.CacheType;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -625,10 +625,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	        try {
 	        	if (!project.doesResultTableExist() ||
 	        			!project.verifyResultTableStructure()) {
-	        		MMSUtils.createResultTable(swingSession.getFrame(), (JDBCDataSource) resultChooser.getDataSourceComboBox().getSelectedItem(), project);
+	        		JDBCDataSource resultDataSource = (JDBCDataSource) resultChooser.getDataSourceComboBox().getSelectedItem();
+					MMSUtils.createResultTable(swingSession.getFrame(), resultDataSource, project);
 
-	        		// Don't use the cache because we know the newly created result table won't be in it.
-	        		DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_TYPE, CacheType.NO_CACHE);
+	        		// Invalidate the current cache because we just added a new result table and it won't be in the cache.
+					DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_STALE_DATE, new Date());
 	        		SQLTable resultTable = swingSession.findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
 	        				project.getResultTableSchema(), project.getResultTableName());
 					if (resultTable == null) return false;
