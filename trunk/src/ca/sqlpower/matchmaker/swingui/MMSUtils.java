@@ -243,7 +243,10 @@ public class MMSUtils {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
+		for (SQLIndex idx : project.getResultTable().getChildren(SQLIndex.class)) {
+			if (idx.isPrimaryKeyIndex()) continue;
+			ddlg.addIndex(idx);
+		}
 
 		final JDialog editor = new JDialog(frame,
 				"Create Result Table", true);

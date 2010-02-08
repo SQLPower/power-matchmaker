@@ -187,7 +187,7 @@ public class ProjectXMLDAOTest extends TestCase {
         p.setXrefTable(null);
         
         SQLTable sourceTable = p.getSourceTable();
-        sourceTable.getColumn(0).setPrimaryKeySeq(0);
+        sourceTable.addToPK(sourceTable.getColumn(0));
         p.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
         
         MungeProcess mp = new MungeProcess();

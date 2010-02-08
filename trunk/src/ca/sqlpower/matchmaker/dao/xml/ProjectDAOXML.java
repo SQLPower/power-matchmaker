@@ -241,7 +241,7 @@ public class ProjectDAOXML implements ProjectDAO {
             printElement("where-filter", p.getFilter());
             
             try {
-                if (p.getSourceTableIndex() != null) {
+                if (!p.getSourceTableIndex().isEmpty()) {
                     SQLIndex idx = p.getSourceTableIndex();
                     printIndex(idx);
                 }

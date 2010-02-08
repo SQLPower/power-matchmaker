@@ -236,9 +236,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	SQLTable resultTable = project.createResultTable();
     	
     	List<SQLIndex> indices = resultTable.getChildren(SQLIndex.class);
-    	assertEquals(1, indices.size());
+    	assertEquals(2, indices.size());
 
-    	SQLIndex rtidx = indices.get(0);
+    	SQLIndex rtidx = indices.get(1);
     	assertEquals(true, rtidx.isUnique());
     	final int idxColCount = rtidx.getChildCount();
     	assertEquals(idx.getChildCount() * 2, idxColCount);
@@ -631,7 +631,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         SQLTable sourceTable = new SQLTable(session.getDatabase(), true);
         session.getDatabase().addChild(sourceTable);
         sourceTable.addColumn(new SQLColumn(sourceTable, "pk1", Types.INTEGER, 10, 0));
-        sourceTable.getColumn(0).setPrimaryKeySeq(0);
+        sourceTable.addToPK(sourceTable.getColumn(0));
         
         project.setSourceTable(sourceTable);
         project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
