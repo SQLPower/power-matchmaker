@@ -158,7 +158,7 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
+		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(1));
 		
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
 	    	sql = sqlStatement.getSQLText();

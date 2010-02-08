@@ -257,7 +257,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	public SQLTable createResultTable() throws SQLObjectException {
 		SQLIndex si = getSourceTableIndex();
 
-		if (si == null) {
+		if (si.isEmpty()) {
 			throw new IllegalStateException(
 					"You have to set up the source table of a project " +
 					"before you can create its result table!");
@@ -437,7 +437,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 					"connection to check the result table");
 		}
 		SQLIndex si = getSourceTableIndex();
-		if (si == null) {
+		if (si.isEmpty()) {
 			throw new IllegalStateException("No unique index specified " +
 					"for the project, I don't know how to vertify the " +
 					"result table stucture.");

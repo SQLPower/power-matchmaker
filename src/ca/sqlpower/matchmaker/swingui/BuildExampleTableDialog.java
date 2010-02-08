@@ -306,9 +306,9 @@ public class BuildExampleTableDialog extends JDialog{
 		}
 		
 		SQLColumn id = new SQLColumn(table,"ID",Types.INTEGER,10,0);
-		id.setPrimaryKeySeq(0);
 		
 		table.addColumn(id);
+		table.addToPK(id);
 		table.addColumn(new SQLColumn(table,"FirstName",Types.VARCHAR,100,0));
 		table.addColumn(new SQLColumn(table,"LastName",Types.VARCHAR,100,0));
 		table.addColumn(new SQLColumn(table, "Email", Types.VARCHAR,100,0));
