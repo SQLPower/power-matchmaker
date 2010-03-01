@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -24,13 +24,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -41,13 +38,6 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.CleanseEngineImpl;
-import ca.sqlpower.matchmaker.EngineEvent;
-import ca.sqlpower.matchmaker.EngineListener;
-import ca.sqlpower.matchmaker.MatchEngineImpl;
-import ca.sqlpower.matchmaker.MergeEngineImpl;
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.munge.MungePreviewer;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -158,22 +148,12 @@ public class MungePreviewPanel {
 			stepSelectedOrModified(evt.getMungeStep());
 		}
 
-		public void previewDisabled(String reason) {
+		public void previewDisabled() {
 			panel.setVisible(false);
-			JOptionPane.showMessageDialog(mungePen, "Preview is disabled. " + reason, "Preview Disabled", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(mungePen, "Preview is disabled. Cannot connect to database or the process is incomplete.", "Preview Disabled", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 	};
-
-	/**
-	 * This check box is used to enable and disable this preview panel. The checkbox
-	 * should be placed somewhere the user can access it.
-	 */
-	private final JCheckBox enablePreviewCheckBox;
-	
-	private final EngineListener engineListener;
-
-	private Project project;
 	
 	public MungePreviewPanel(MungeProcess process, MungePen pen) {
 		this.mungePen = pen;
@@ -251,75 +231,15 @@ public class MungePreviewPanel {
 				return table.getCellRenderer(0, column).getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}
 		});
-        
-        enablePreviewCheckBox = new JCheckBox(new AbstractAction("Show Preview") {
-			public void actionPerformed(ActionEvent e) {
-				enablePreview(enablePreviewCheckBox.isSelected());
-			}
-		});
-        enablePreview(false);
-        
-        engineListener = new EngineListener() {
-			public void engineStopped(EngineEvent e) {
-				enablePreviewCheckBox.setEnabled(true);
-			}
-			
-			public void engineStarted(EngineEvent e) {
-				enablePreviewCheckBox.setEnabled(false);
-			}
-		};
-		
-		project = process.getParentProject();
-		switch(project.getType()) {
-		case FIND_DUPES:
-			MatchEngineImpl matchingEngine = project.getMatchingEngine();
-			matchingEngine.addEngineListener(engineListener);
-			if (matchingEngine.isStarted() && !matchingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
-			MergeEngineImpl mergingEngine = project.getMergingEngine();
-			mergingEngine.addEngineListener(engineListener);
-			if (mergingEngine.isStarted() && !mergingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
-			break;
-		case CLEANSE:
-			CleanseEngineImpl cleansingEngine = project.getCleansingEngine();
-			cleansingEngine.addEngineListener(engineListener);
-			cleansingEngine.addEngineListener(engineListener);
-			if (cleansingEngine.isStarted() && !cleansingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
-			break;
-		case ADDRESS_CORRECTION:
-			AddressCorrectionEngine addressCorrectionEngine = project.getAddressCorrectionEngine();
-			addressCorrectionEngine.addEngineListener(engineListener);
-			if (addressCorrectionEngine.isStarted() && !addressCorrectionEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
-			AddressCorrectionEngine addressCommittingEngine = project.getAddressCommittingEngine();
-			addressCommittingEngine.addEngineListener(engineListener);
-			if (addressCommittingEngine.isStarted() && !addressCommittingEngine.isFinished()) enablePreviewCheckBox.setEnabled(false);
-			break;
-		}
 	}
 	
 	public void cleanup() {
 		previewer.removePreviewListener(listener);
 		previewer.cleanup();
-		switch(project.getType()) {
-		case FIND_DUPES:
-			project.getMatchingEngine().removeEngineListener(engineListener);
-			project.getMergingEngine().removeEngineListener(engineListener);
-			break;
-		case CLEANSE:
-			project.getCleansingEngine().removeEngineListener(engineListener);
-			break;
-		case ADDRESS_CORRECTION:
-			project.getAddressCorrectionEngine().removeEngineListener(engineListener);
-			project.getAddressCommittingEngine().removeEngineListener(engineListener);
-			break;
-		}
 	}
 	
 	public JPanel getPanel() {
 		return panel;
-	}
-	
-	public JCheckBox getEnablePreviewCheckBox() {
-		return enablePreviewCheckBox;
 	}
 	
 	public MungeStep getLastModifiedOrSelectedStep() {
@@ -388,14 +308,12 @@ public class MungePreviewPanel {
 		panel.repaint();
 	}
 
-	private boolean enablePreview(boolean enable) {
+	public boolean enablePreview(boolean enable) {
 		previewer.setRefreshEnabled(enable);
-		panel.setVisible(previewer.isRefreshEnabled());
-		if (previewer.isRefreshEnabled()) {
+		panel.setVisible(enable);
+		if (enable) {
 			previewer.refreshPreview();
 		}
-		logger.debug("Show preview selected " + enablePreviewCheckBox.isSelected() + " is the preview enabled " + previewer.isRefreshEnabled());
-		enablePreviewCheckBox.setSelected(previewer.isRefreshEnabled());
 		return previewer.isRefreshEnabled();
 	}
 

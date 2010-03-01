@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -22,17 +22,19 @@ package ca.sqlpower.matchmaker.swingui.engine;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.SourceTableException;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.swingui.SPSwingWorker;
+import ca.sqlpower.matchmaker.util.SourceTableUtil;
 import ca.sqlpower.swingui.event.TaskTerminationEvent;
 import ca.sqlpower.swingui.event.TaskTerminationListener;
 
 /**
- * This action is used to run a {@link MatchMakerEngine} engine. It also is responsible
+ * This action is used to run the match engine. It also is responsible
  * for constructing the user interface that deals with engine output.
  */
 class RunEngineAction extends AbstractAction implements TaskTerminationListener{
@@ -74,28 +76,10 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 
 	
 	/**
-	 * Sets up the {@link RunEngineAction}.
+	 * Sets up the action.
 	 * 
-	 * @param session
-	 *            The session that this action will register a
-	 *            {@link SPSwingWorker} with.
-	 * @param project
-	 *            The {@link Project} that this engine will be running on.
-	 * @param engine
-	 *            The engine that this action will be running
-	 * @param name
-	 *            The name of this action. It will be displayed on whatever
-	 *            control (ex. button) is used to run the engine.
-	 * @param engineOutputPanel
-	 *            The {@link EngineOutputPanel} that the engine output will be
-	 *            displayed on.
-	 * @param editorPane
-	 *            The {@link EngineSettingsPanel} that this
-	 *            {@link RunEngineAction} is being run from.
-	 * @param startAction
-	 *            An action to be run when the engine is started. Can be null.
-	 * @param finishAction
-	 *            An action to be run when the engine is finished. Can be null.
+	 * @param startAction An action to be run when the engine is started. Can be null.
+	 * @param finishAction An action to be run when the engine is finished. Can be null.
 	 */
 	public RunEngineAction(MatchMakerSwingSession session, Project project, MatchMakerEngine engine, String name, 
 			EngineOutputPanel engineOutputPanel, EngineSettingsPanel editorPane, Runnable startAction, 
@@ -122,7 +106,24 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 			w.addTaskTerminationListener(this);
 			new Thread(w).start();
 		} catch (Exception ex) {
-		    MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
+			if (ex instanceof SourceTableException) {
+				String errorText = "The MatchMaker has detected changes in the " +
+						"source table structure.\nYour project will require modifications before the engines can run properly.\n" +
+						"The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
+						"Would you like the MatchMaker to modify the project now?";
+				int response = JOptionPane.showOptionDialog(session.getFrame(), errorText,
+						"Source Table Changed", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
+						new String[] {"Fix Now", "Not Now"}, "Modify Now");
+				if (response == JOptionPane.YES_OPTION) {
+					try {
+						SourceTableUtil.checkAndfixProject(session, project);
+					} catch (Exception ex1) {
+						MMSUtils.showExceptionDialog(editorPane.getPanel(), "Failed to fix project!", ex1);
+					}
+				}
+			} else {
+				MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
+			}
 		}
 	}
 

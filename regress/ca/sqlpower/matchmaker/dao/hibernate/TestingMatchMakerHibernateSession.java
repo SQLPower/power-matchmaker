@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -31,6 +31,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -42,11 +45,7 @@ import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
@@ -55,7 +54,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
     private static final Logger logger = Logger.getLogger(TestingMatchMakerHibernateSession.class);
         
-    private final JDBCDataSource dataSource;
+    private final SPDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
     private TestingMatchMakerContext context = new TestingMatchMakerContext();
     private final TestingConnection con;
@@ -78,7 +77,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
      * @param dataSource an architect data source describing the connection
      * @throws RuntimeException
      */
-    public TestingMatchMakerHibernateSession(JDBCDataSource dataSource) throws RuntimeException {
+    public TestingMatchMakerHibernateSession(SPDataSource dataSource) throws RuntimeException {
         super();
         try {
             this.dataSource = dataSource;
@@ -256,7 +255,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		return false;
 	}
 
-	 public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
+	 public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
 	    	logger.debug("Session.findSQLTableByName:" + spDataSourceName + " " + 
 	    			catalog + "." + schema + "." + tableName);
 	    	
@@ -266,12 +265,12 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    		return findPhysicalTableByName(catalog, schema, tableName);
 	    	}
 	    	
-	    	JDBCDataSource ds = null;
+	    	SPDataSource ds = null;
 	    	SQLDatabase tempDB = null;
 	    	if (context == null || context.getDataSources() == null) {
 	    		tempDB = getDatabase();
 	    	} else {
-		    	for (JDBCDataSource spd : context.getDataSources()) {
+		    	for (SPDataSource spd : context.getDataSources()) {
 		    		if (spd.getName().equals(spDataSourceName)) {
 		    			ds = spd;
 		    		}
@@ -297,7 +296,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    }
 	    
 	 	//Right now the other findPhicialTableByName uses this method, don't call it from here using an empty data source.
-	    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
+	    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
 	    	if (tableName == null || tableName.length() == 0) return null;
 	    	SQLDatabase tempDB = new SQLDatabase(dataSource);
 	    	try {
@@ -315,16 +314,16 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    }
 
 	    public boolean tableExists(String catalog, String schema,
-	    		String tableName) throws SQLObjectException {
+	    		String tableName) throws ArchitectException {
 	    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
 	    }
 	    
 	    public boolean tableExists(String spDataSourceName, String catalog, String schema,
-	    		String tableName) throws SQLObjectException {
+	    		String tableName) throws ArchitectException {
 	    	return (findPhysicalTableByName(spDataSourceName, catalog,schema,tableName) != null);
 	    }
 
-	    public boolean tableExists(SQLTable table) throws SQLObjectException {
+	    public boolean tableExists(SQLTable table) throws ArchitectException {
 	    	if ( table == null ) return false;
 	    	return tableExists(table.getParentDatabase().getDataSource().getName(),
 	    			table.getCatalogName(),
@@ -338,7 +337,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	}
 
 
-	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
 		SQLDatabase db = databases.get(dataSource);
 		if (db == null) {
 			db = new SQLDatabase(dataSource);
@@ -372,17 +371,5 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
 			listener.sessionClosing(evt);
 		}
-	}
-
-	public void addStatusMessage(String message) {
-		// no-op
-		logger.debug("Stub call: TestingMatchMakerHibernateSession.addStatusMessage()");
-		
-	}
-
-	public void removeStatusMessage() {
-		// no-op
-		logger.debug("Stub call: TestingMatchMakerHibernateSession.removeStatusMessage()");
-		
 	}
 }

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -37,6 +37,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -64,16 +68,12 @@ import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.Version;
-import ca.sqlpower.util.VersionParseException;
+import ca.sqlpower.util.VersionFormatException;
 
 /**
  * An implementation of MatchMakerSession that uses Hibernate to
@@ -152,13 +152,13 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
      *  
-     * @throws SQLObjectException if there was a problem connecting to the database
+     * @throws ArchitectException if there was a problem connecting to the database
      * @throws MatchMakerConfigurationException If there are some user settings that are
      * not set up properly. 
      */
 	public MatchMakerHibernateSessionImpl(MatchMakerSessionContext context,
-			JDBCDataSource ds) throws PLSecurityException,
-			SQLException, SQLObjectException,
+			SPDataSource ds) throws PLSecurityException,
+			UnknownFreqCodeException, SQLException, ArchitectException,
 			MatchMakerConfigurationException, RepositoryVersionException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
@@ -215,8 +215,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
 
         try {
-        	plSchemaVersion = new Version(versionString);
-        } catch (VersionParseException e) {
+        	plSchemaVersion = new Version();
+        	plSchemaVersion.setVersion(versionString);
+        } catch (VersionFormatException e) {
         	throw new RepositoryVersionException("Invalid repository schema version!", e);
         }
 
@@ -331,7 +332,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * The returned connection will be in Auto-Commit mode, but you can turn
      * auto-commit off if you like (almost always a good idea).
      * 
-     * @throws SQLObjectRuntimeException If it fails to connect to the database
+     * @throws ArchitectRuntimeException If it fails to connect to the database
      */
     public Connection getConnection() {
     	try {
@@ -340,8 +341,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return con;
     	} catch (SQLException ex) {
     	    throw new RuntimeException(ex);
-        } catch (SQLObjectException ex) {
-            throw new SQLObjectRuntimeException(ex);
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
         }
     }
 
@@ -365,7 +366,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * @throws MatchMakerConfigurationException If the given data source is not
      * properly configured. 
      */
-    private SessionFactory buildHibernateSessionFactory(JDBCDataSource ds) throws MatchMakerConfigurationException {
+    private SessionFactory buildHibernateSessionFactory(SPDataSource ds) throws MatchMakerConfigurationException {
         SessionFactory factory;
         Configuration cfg = new Configuration();
 
@@ -479,18 +480,18 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * If you change this method, you must also change the methods in TestingMatchMakerSession and 
      * TestingMatchMakerSession because they are actually the same method......
      */
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
     	logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
     			catalog + "." + schema + "." + tableName);
     	
-    	JDBCDataSource ds = null;
+    	SPDataSource ds = null;
     	
     	if (spDataSourceName == null || spDataSourceName.length() == 0) {
     		ds = getDatabase().getDataSource();
     	} else {
     		for (SPDataSource spd : context.getDataSources()) {
     			if (spd.getName().equals(spDataSourceName)) {
-    				ds = (JDBCDataSource) spd;
+    				ds = spd;
     			}
     		}
     		if (ds == null) {
@@ -515,28 +516,28 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     	}
     }
     
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
     	return findPhysicalTableByName(getDatabase().getDataSource().getName(), catalog, schema, tableName);
     }
 
     public boolean tableExists(String catalog, String schema,
-    		String tableName) throws SQLObjectException {
+    		String tableName) throws ArchitectException {
     	return tableExists(null, catalog, schema, tableName);
     }
     
     public boolean tableExists(String spDataSourceName, String catalog, String schema,
-    		String tableName) throws SQLObjectException {
+    		String tableName) throws ArchitectException {
         logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
                 catalog + "." + schema + "." + tableName);
         
-        JDBCDataSource ds = null;
+        SPDataSource ds = null;
         
         if (spDataSourceName == null || spDataSourceName.length() == 0) {
             ds = getDatabase().getDataSource();
         } else {
             for (SPDataSource spd : context.getDataSources()) {
                 if (spd.getName().equals(spDataSourceName)) {
-                    ds = (JDBCDataSource) spd;
+                    ds = spd;
                 }
             }
             if (ds == null) {
@@ -558,7 +559,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         }
     }
 
-    public boolean tableExists(SQLTable table) throws SQLObjectException {
+    public boolean tableExists(SQLTable table) throws ArchitectException {
     	if ( table == null ) return false;
     	return tableExists(table.getParentDatabase().getDataSource().getName(),
     			table.getCatalogName(),
@@ -611,7 +612,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     	} 
     }
 
-	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
 		SQLDatabase db = databases.get(dataSource);
 		if (db == null) {
 			db = new SQLDatabase(dataSource);
@@ -650,17 +651,5 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
 			listener.sessionClosing(evt);
 		}
-	}
-
-	public void addStatusMessage(String message) {
-		// no-op
-		logger.debug("Stub call: MatchMakerHibernateSessionImpl.addStatusMessage()");
-		
-	}
-
-	public void removeStatusMessage() {
-		// no-op
-		logger.debug("Stub call: MatchMakerHibernateSessionImpl.removeStatusMessage()");
-		
 	}
 }

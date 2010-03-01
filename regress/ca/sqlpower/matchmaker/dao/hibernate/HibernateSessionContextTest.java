@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -30,9 +30,8 @@ import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sql.SpecificDataSourceCollection;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
 
 public class HibernateSessionContextTest extends TestCase {
@@ -46,7 +45,7 @@ public class HibernateSessionContextTest extends TestCase {
      * The sole data source the setUp() method puts in the session context.  Provided
      * here for convenience.  You could get the same data source with ctx.getDataSources().get(0).
      */
-	private JDBCDataSource ds;
+	private SPDataSource ds;
     
 	/**
 	 * The Preferences node that we will use in this test. We want to keep
@@ -58,7 +57,7 @@ public class HibernateSessionContextTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        DataSourceCollection<JDBCDataSource> ini = new SpecificDataSourceCollection<JDBCDataSource>(new PlDotIni(), JDBCDataSource.class);
+        DataSourceCollection ini = new PlDotIni();
         ds = DBTestUtil.getOracleDS();
         ini.addDataSource(ds);
         ctx = new MatchMakerHibernateSessionContext(prefs, ini);
@@ -73,18 +72,13 @@ public class HibernateSessionContextTest extends TestCase {
 		assertNotNull(session);
 	}
     
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
-			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     public void testCheckSchemaVersion() throws Exception {
-	    JDBCDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
+        SPDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
 
-	    Version schemaVersion = RepositoryUtil.MIN_PL_SCHEMA_VERSION;
-	    StringBuffer buffer = new StringBuffer();
-	    buffer.append(((Integer) schemaVersion.getParts()[0] - 1));
-	    for (int i = 1; i < schemaVersion.getParts().length; i++) {
-	        buffer.append(".").append(schemaVersion.getParts()[i].toString());
-	    }
-        Version v = new Version(buffer.toString());
+        Version v = new Version();
+        v.setMajor(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getMajor() - 1);
+        v.setMinor(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getMinor());
+        v.setTiny(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getTiny());
         
         // this is very simplistic, and assumes that the startup sequence of
         // MatchMakerHibernateSessionImpl checks the schema version before accessing

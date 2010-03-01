@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -30,10 +30,10 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.table.TableUtils;
 
 /**
@@ -136,7 +136,7 @@ public class DisplayedNodeValueChooser {
 		private List<CustomTableColumn> candidateColumns
 							= new ArrayList<CustomTableColumn>();
 		
-		public OrderedColumnChooserTableModel(SQLTable sqlTable, List<SQLColumn> displayColumns) throws SQLObjectException {
+		public OrderedColumnChooserTableModel(SQLTable sqlTable, List<SQLColumn> displayColumns) throws ArchitectException {
 			List<Integer> oldColumns = new ArrayList<Integer>();
 			
 			for (SQLColumn col : displayColumns) {
@@ -290,19 +290,19 @@ public class DisplayedNodeValueChooser {
 	 * ordered and will be used for the display value of each node in the
 	 * provided node renderer.
 	 * 
-	 * @throws SQLObjectException if there is a problem finding the columns
+	 * @throws ArchitectException if there is a problem finding the columns
 	 * 						in the source table of the match
 	 */
 	public DisplayedNodeValueChooser(SourceTableNodeRenderer renderer,
 									Project project,
 									List<SQLColumn> displayColumns)
-									throws SQLObjectException {
+									throws ArchitectException {
 		super();
 		this.renderer = renderer;
 		this.occtm = new OrderedColumnChooserTableModel(project.getSourceTable(), displayColumns);
 	}
 	
-	public JComponent makeGUI() throws SQLObjectException {
+	public JComponent makeGUI() throws ArchitectException {
 		if (table == null) {
 			table = new JTable(occtm);
 			TableUtils.fitColumnWidths(table, 250, 10);

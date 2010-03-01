@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru.
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -38,6 +38,9 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -50,9 +53,6 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.util.SQLPowerUtils;
 
 /**
@@ -174,12 +174,6 @@ public class ProjectDAOXML implements ProjectDAO {
         return null;
     }
 
-    public Project findByOid(long oid) {
-    	// TODO Auto-generated method stub
-    	logger.debug("Stub call: ProjectDAOXML.findByOid()");
-    	return null;
-    }
-    
     public boolean isThisProjectNameAcceptable(String name) {
         // TODO Auto-generated method stub
         logger.debug("Stub call: ProjectDAOXML.isThisProjectNameAcceptable()");
@@ -216,7 +210,7 @@ public class ProjectDAOXML implements ProjectDAO {
         }
         println("<?xml version='1.0' encoding='UTF-8'?>");
         println("");
-        println("<matchmaker-projects export-format=\""+ ProjectSAXHandler.SUPPORTED_EXPORT_VERSION.toString() + "\">");
+        println("<matchmaker-projects export-format=\"1.0.0\">");
         indent++;
         
         int projectID = 0;
@@ -241,12 +235,12 @@ public class ProjectDAOXML implements ProjectDAO {
             printElement("where-filter", p.getFilter());
             
             try {
-                if (!p.getSourceTableIndex().isEmpty()) {
+                if (p.getSourceTableIndex() != null) {
                     SQLIndex idx = p.getSourceTableIndex();
                     printIndex(idx);
                 }
-            } catch (SQLObjectException ex) {
-                throw new SQLObjectRuntimeException(ex);
+            } catch (ArchitectException ex) {
+                throw new ArchitectRuntimeException(ex);
             }
             
             indent--;
@@ -278,10 +272,6 @@ public class ProjectDAOXML implements ProjectDAO {
         printAttribute("clear-match-pool", p.getMungeSettings().isClearMatchPool());
         printAttribute("auto-match-threshold", p.getMungeSettings().getAutoMatchThreshold());
         printAttribute("last-backup-number", p.getMungeSettings().getLastBackupNo());
-        printAttribute("use-batch-execution", p.getMungeSettings().isUseBatchExecution());
-        printAttribute("auto-write-autovalidated-addresses", p.getMungeSettings().isAutoWriteAutoValidatedAddresses());
-        printAttribute("pool-filter-setting", p.getMungeSettings().getPoolFilterSetting());
-        printAttribute("auto-validate-setting", p.getMungeSettings().getAutoValidateSetting());
         niprintln(" />");
 
         print("<merge-settings");
@@ -447,17 +437,21 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     private void printIndex(SQLIndex idx) {
-    	print("<unique-index");
-    	printAttribute("name", idx.getName());
-    	niprintln(">");
-    	indent++;
-    	for (SQLIndex.Column c : idx.getChildren(SQLIndex.Column.class)) {
-    		print("<column");
-    		printAttribute("name", c.getName());
-    		niprintln(" />");
-    	}
-    	indent--;
-    	println("</unique-index>");
+        try {
+            print("<unique-index");
+            printAttribute("name", idx.getName());
+            niprintln(">");
+            indent++;
+            for (SQLIndex.Column c : idx.getChildren()) {
+                print("<column");
+                printAttribute("name", c.getName());
+                niprintln(" />");
+            }
+            indent--;
+            println("</unique-index>");
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
+        }
     }
     
     /**

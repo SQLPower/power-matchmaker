@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,10 +20,10 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 
 public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 
@@ -45,7 +45,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		propertiesThatHaveSideEffects.add("parent");
 	}
 	@Override
-	protected ColumnMergeRules getTarget() throws SQLObjectException {
+	protected ColumnMergeRules getTarget() throws ArchitectException {
 		
 		TableMergeRules tmr = new TableMergeRules();
 		tmr.setSession(testingMatchMakerSession);
@@ -56,7 +56,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		return cmr;
 	}
 
-	public void testEquals() throws SQLObjectException {
+	public void testEquals() throws ArchitectException {
 		ColumnMergeRules m1 = getTarget();
 		ColumnMergeRules m2 = getTarget();
 		m1.setParent(null);

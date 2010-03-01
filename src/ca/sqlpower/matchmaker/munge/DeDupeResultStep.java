@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -24,10 +24,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
-import ca.sqlpower.sqlobject.SQLIndex;
 
 /**
  * This is a specific result step for a deduping project. Note that any inputs
@@ -62,7 +61,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	private MungeStepOutput[] indexValues;
 
 	public DeDupeResultStep() {
-		super("Transformation Results",true);
+		super("Munge Results",true);
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
 		super.addInput(desc);
 	}
@@ -85,7 +84,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
      * attempting to open this munge step.
 	 */
     @Override
-	public void doOpen(EngineMode mode, Logger logger) throws Exception {
+	public void doOpen(Logger logger) throws Exception {
         
         if (inputStep == null) {
             throw new IllegalStateException("Can't open when input step is null.");
@@ -95,14 +94,9 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		// contain the munge results from the last munge processor run.
 		results.clear();
 
-        refresh(logger);
-	}
-    
-    @Override
-    public void refresh(Logger logger) throws Exception {
-    	Project project = getProject();
-    	SQLIndex uniqueIndex = project.getSourceTableIndex();
-    	
+        Project project = getProject();
+        SQLIndex uniqueIndex = project.getSourceTableIndex();
+
 		indexValues = new MungeStepOutput[uniqueIndex.getChildCount()];
 		for (int i=0; i < uniqueIndex.getChildren().size(); i++) {
 			SQLIndex.Column c = uniqueIndex.getChild(i);
@@ -110,7 +104,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 			indexValues[i] = inputStep.getOutputByName(c.getName());
 			logger.debug("Found MungeStepOuput " + indexValues[i]);
 		}
-    }
+	}
 	
 	@Override
 	public Boolean doCall() throws Exception {

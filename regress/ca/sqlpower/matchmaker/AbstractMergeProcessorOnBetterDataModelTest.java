@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -32,6 +32,12 @@ import junit.framework.TestCase;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -41,14 +47,8 @@ import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * Like AbstractMergeProcessorTest, this is a test for the merge processor.
@@ -73,7 +73,7 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
 	static Connection sCon;
 	static Connection con;
 	static SQLDatabase db;
-	static JDBCDataSource ds;
+	static SPDataSource ds;
 	static SQLTable sourceTable;
 	static SQLTable childTable;
 	static SQLTable grandChildTable;
@@ -117,8 +117,8 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
 			public Connection getConnection() {
 				try {
 					return db.getConnection();
-				} catch (SQLObjectException e) {
-					throw new SQLObjectRuntimeException(e);
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
 				}
 			}
 
@@ -158,7 +158,7 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(1));
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 		
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
 	    	sql = sqlStatement.getSQLText();
@@ -886,7 +886,7 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
 	
 	protected abstract String getFullTableName();
 	
-	protected abstract JDBCDataSource getDS();
+	protected abstract SPDataSource getDS();
 	
 	private void runProcessor() throws Exception {
 		con.setAutoCommit(false);

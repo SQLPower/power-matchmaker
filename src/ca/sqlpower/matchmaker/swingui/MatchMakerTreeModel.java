@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -120,22 +120,7 @@ public class MatchMakerTreeModel implements TreeModel {
         /**
          * Shows the "run cleansing" UI.
          */
-        RUN_CLEANSING("Run Cleansing Engine"),
-        
-        /**
-         * Shows the "Run Address Correction" UI.
-         */
-        RUN_ADDRESS_CORRECTION("Run Address Correction Engine"),
-        
-        /**
-         * Shows the "Validate Addresses" UI.
-         */
-        VALIDATE_ADDRESSES("Validate Addresses"),
-        
-        /**
-         * Shows the "Commit Validated Addresses" UI.
-         */
-        COMMIT_VALIDATED_ADDRESSES("Commit Validated Addresses");
+        RUN_CLEANSING("Run Cleansing Engine");
         
         private final String name;
         
@@ -232,8 +217,6 @@ public class MatchMakerTreeModel implements TreeModel {
 	private static final ProjectActionType[] CLEANSING_ACTIONS = 
 		{ProjectActionType.RUN_CLEANSING, ProjectActionType.AUDIT_INFO};
 	
-	private static final ProjectActionType[] ADDRESSS_CORRECTION_ACTIONS = 
-		{ ProjectActionType.RUN_ADDRESS_CORRECTION, ProjectActionType.VALIDATE_ADDRESSES, ProjectActionType.COMMIT_VALIDATED_ADDRESSES };
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 	
@@ -286,10 +269,6 @@ public class MatchMakerTreeModel implements TreeModel {
 	            }
             } else if (project.getType() == ProjectMode.CLEANSE) {
             	for (ProjectActionType type : CLEANSING_ACTIONS) {
-            		actionNodes.add(new ProjectActionNode(type, project));
-            	}
-            } else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
-            	for (ProjectActionType type: ADDRESSS_CORRECTION_ACTIONS) {
             		actionNodes.add(new ProjectActionNode(type, project));
             	}
             }

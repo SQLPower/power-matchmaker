@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -47,6 +46,14 @@ import javax.swing.MutableComboBoxModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -55,17 +62,7 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
-import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObject;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLSchema;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -131,14 +128,13 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * @param project the project Object to be edited
 	 * @param folder the project's parent folder
 	 */
-    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder, Action cancelAction) throws SQLObjectException {
+    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws ArchitectException {
         if (project == null) throw new IllegalArgumentException("You can't edit a null project");
         if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
         
         this.swingSession = swingSession;
         this.project = project;
         this.folder = folder;
-        this.cancelAction = cancelAction;
         handler = new FormValidationHandler(status, true);
         handler.setValidatedAction(saveAction);
         panel = buildUI();
@@ -153,6 +149,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
+        	viewBuilderAction.setEnabled(false);
         }
     }
 
@@ -170,14 +167,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         		SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
 				refreshIndexComboBoxAndAction(sourceTable);
 				if (sourceTable != null) {
-					String trimmedResultTableName;
-					if (project.getType() == ProjectMode.FIND_DUPES) {
-						trimmedResultTableName = sourceTable.getName() + "_match_pool";
-					} else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
-						trimmedResultTableName = sourceTable.getName() + "_address_pool";
-					} else {
-						trimmedResultTableName = sourceTable.getName() + "_result";
-					}
+					String trimmedResultTableName = sourceTable.getName();
+					trimmedResultTableName += "_RESULT";
 					resultTableName.setText(trimmedResultTableName);
 				}
 				filterPanel.setTable(sourceTable);
@@ -244,8 +235,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
             }
 		}
 	};
-	
-	private Action cancelAction;
 
 	private Window getParentWindow() {
 	    return SPSUtils.getWindowInHierarchy(panel);
@@ -265,7 +254,32 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         if (owner instanceof JFrame) return (JFrame) owner;
         else return null;
     }
-			
+
+	private Action viewBuilderAction = new AbstractAction("View Builder") {
+		public void actionPerformed(ActionEvent e) {
+            SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
+            JDialog d;
+			if (t == null) {
+				JOptionPane.showMessageDialog(swingSession.getFrame(),
+						"No Table selected, can't create view builder",
+						"Error",
+						JOptionPane.ERROR_MESSAGE);
+			} else {
+				try {
+					d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
+					d.pack();
+					d.setSize(800, d.getPreferredSize().height);
+					d.setVisible(true);
+				} catch (ArchitectException ex) {
+                    SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+                    		"Couldn't create view builder", ex);
+                }
+            }
+		}
+	};
+
+	
+		
 	private Action createIndexAction = new AbstractAction("Pick Columns..."){
 		public void actionPerformed(ActionEvent e) {
 			SQLTable sourceTable = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
@@ -312,8 +326,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
         filterPanel = new FilterComponents(swingSession.getFrame());
 
+    	JButton viewBuilder = new JButton(viewBuilderAction);
     	JButton saveProject = new JButton(saveAction);
-    	JButton cancelProject = new JButton(cancelAction);
         JButton createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
@@ -349,6 +363,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		row+=2;
 		pb.addTitle("Source Table", cc.xy(2, row));
 		row+=2;
+		pb.add(viewBuilder, cc.xy(6,row,"f,f"));
 		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
 		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,row));
 		row+=2;
@@ -389,14 +404,13 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		// way, please fix this.
 		JPanel savePanel = new JPanel(new FlowLayout());
 		savePanel.add(saveProject);
-		savePanel.add(cancelProject);
 		pb.add(savePanel, cc.xy(4, row));
 
 		return pb.getPanel();
     }
 
 
-    private void setDefaultSelections() throws SQLObjectException {
+    private void setDefaultSelections() throws ArchitectException {
 
     	final SQLDatabase loginDB = swingSession.getDatabase();
 
@@ -485,7 +499,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				List<SQLIndex> uniqueIndices = newTable.getUniqueIndices();
 				SQLIndex sourceTableIndex = project.getSourceTableIndex();
 				
-				if (sourceTableIndex != null && !sourceTableIndex.isEmpty()) {
+				if (sourceTableIndex != null) {
 					boolean contains = false;
 					for (SQLIndex index : uniqueIndices) {
 						if (index.getName().equals(sourceTableIndex.getName())) {
@@ -500,7 +514,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				for ( SQLIndex index : uniqueIndices ) {
 					indexComboBox.addItem(index);
 				}
-			} catch (SQLObjectException e) {
+			} catch (ArchitectException e) {
 				throw new RuntimeException(e);
 			}
 			if ( indexComboBox.getItemCount() > 0 ) {
@@ -520,7 +534,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
      * Copies all the values from the GUI components into the PlMatch
      * object this component is editing, then persists it to the database.
      * @return true if save OK
-     * @throws SQLObjectRuntimeException if we cannot set the result table on a project
+     * @throws ArchitectRuntimeException if we cannot set the result table on a project
      */
     public boolean applyChanges() {
     	List<String> fail = handler.getFailResults();
@@ -597,17 +611,15 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	        try {
 	        	if (!project.doesResultTableExist() ||
 	        			!project.verifyResultTableStructure()) {
-	        		JDBCDataSource resultDataSource = (JDBCDataSource) resultChooser.getDataSourceComboBox().getSelectedItem();
-					MMSUtils.createResultTable(swingSession.getFrame(), resultDataSource, project);
-
-	        		// Invalidate the current cache because we just added a new result table and it won't be in the cache.
-					DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_STALE_DATE, new Date());
+	        		MMSUtils.createResultTable(swingSession.getFrame(), (SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem(), project);
+	        		
 	        		SQLTable resultTable = swingSession.findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
 	        				project.getResultTableSchema(), project.getResultTableName());
 					if (resultTable == null) return false;
 					project.setResultTable(resultTable);
 	        	}
-	        	if (!project.doesResultTableExist() || !project.verifyResultTableStructure()) {
+	        	if (!project.doesResultTableExist() ||
+	        			!project.verifyResultTableStructure()) {
 	        		return false;
 	        	}
 			} catch (Exception e) {
@@ -621,6 +633,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
+        	viewBuilderAction.setEnabled(false);
         	
         	if (project.getType() == ProjectMode.FIND_DUPES) {
 	        	// defaults the merge rules
@@ -689,8 +702,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			else {
 				try {
 					value.populate();
-				} catch (SQLObjectException e) {
-					throw new SQLObjectRuntimeException(e);
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
 				}
 				enableAction(true);
 
@@ -709,8 +722,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					try {
 						resultTable = swingSession.getDatabase().getTableByName(
 								catalogName, schemaName, tableName);
-					} catch (SQLObjectException e) {
-						throw new SQLObjectRuntimeException(e);
+					} catch (ArchitectException e) {
+						throw new ArchitectRuntimeException(e);
 					}
 					if ( value == resultTable ) {
 						return ValidateResult.createValidateResult(
@@ -790,8 +803,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				try {
 					resultTable = swingSession.getDatabase().getTableByName(
 							catalogName, schemaName, value);
-				} catch (SQLObjectException e) {
-					throw new SQLObjectRuntimeException(e);
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
 				}
 				if ( sourceTable == resultTable ) {
 					return ValidateResult.createValidateResult(Status.FAIL,
@@ -840,7 +853,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	}
 
 	public void discardChanges() {
-		
+		logger.error("Cannot discard chagnes");
 	}
 
 	public Project getCurrentEditingMMO() {

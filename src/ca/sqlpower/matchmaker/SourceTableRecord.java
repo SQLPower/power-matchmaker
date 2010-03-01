@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -34,12 +34,12 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.SQL;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 
 public class SourceTableRecord {
     
@@ -153,9 +153,9 @@ public class SourceTableRecord {
      * @param The list of column data you would like to retrieve. 
      * @return The values for the row of the source table which is uniquely
      * identified by this sourceTableRecord's keyValues list.
-     * @throws SQLException, SQLObjectException
+     * @throws SQLException, ArchitectException
      */
-    public List<Object> fetchValues(List<SQLColumn> shownColumns) throws SQLObjectException, SQLException {
+    public List<Object> fetchValues(List<SQLColumn> shownColumns) throws ArchitectException, SQLException {
         
     	SQLTable sourceTable = project.getSourceTable();
     	// if null, then retrieve all the row's data
@@ -256,9 +256,9 @@ public class SourceTableRecord {
      * 
      * @return The values for the row of the source table which is uniquely
      * identified by this sourceTableRecord's keyValues list.
-     * @throws SQLObjectException, SQLException 
+     * @throws ArchitectException, SQLException 
      */
-    public List<Object> fetchValues() throws SQLObjectException, SQLException {
+    public List<Object> fetchValues() throws ArchitectException, SQLException {
     	return fetchValues(null);
     }
     

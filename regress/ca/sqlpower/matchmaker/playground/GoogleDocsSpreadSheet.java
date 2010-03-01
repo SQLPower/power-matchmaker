@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -23,9 +23,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
-import ca.sqlpower.sqlobject.SQLObjectException;
 
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.spreadsheet.CellEntry;
@@ -39,9 +39,9 @@ public class GoogleDocsSpreadSheet {
 	 * The sheet is owned by matchmaker@sqlpower.ca called TranslationWords.
 	 * 
 	 * @return The MatchMakerTranslateWord group from the spread sheet 
-	 * @throws SQLObjectException If something goes wrong
+	 * @throws ArchitectException If something goes wrong
 	 */
-	public MatchMakerTranslateGroup getOnlineTranslateGroup() throws SQLObjectException {
+	public MatchMakerTranslateGroup getOnlineTranslateGroup() throws ArchitectException {
 		SpreadsheetService sss = new SpreadsheetService("SQLPower-Power*MatchMaker-0.9.1");
 		CellFeed cf;
 		
@@ -49,7 +49,7 @@ public class GoogleDocsSpreadSheet {
 			URL url = new URL("http://spreadsheets.google.com/feeds/cells/pIOfRi4wZwIh1eNPmWCRhPQ/1/public/values");
 			cf = sss.getFeed(url, CellFeed.class);
 		} catch (Exception e) {
-			throw new SQLObjectException("Error could not generate translation words from google spreadsheet!",e);
+			throw new ArchitectException("Error could not generate translation words from google spreadsheet!",e);
 		}
 
 		

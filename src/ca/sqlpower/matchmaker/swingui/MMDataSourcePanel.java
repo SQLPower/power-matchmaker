@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -24,14 +24,14 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.swingui.JDBCDataSourcePanel;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.SPDataSourcePanel;
 
 /**
  * The MMDataSourcePanel is an SPDataSourcePanel with an extra field
  * for setting the PL schema owner.
  */
-public class MMDataSourcePanel extends JDBCDataSourcePanel {
+public class MMDataSourcePanel extends SPDataSourcePanel {
 	private static final Logger logger = Logger.getLogger(MMDataSourcePanel.class);
 	
 	/**
@@ -44,7 +44,7 @@ public class MMDataSourcePanel extends JDBCDataSourcePanel {
 	 * 
 	 * @param ds The data source to edit.
 	 */
-	MMDataSourcePanel(JDBCDataSource ds) {
+	MMDataSourcePanel(SPDataSource ds) {
 		super(ds);
 		repositorySchemaOwnerField = new JTextField(ds.getPlSchema());
 		repositorySchemaOwnerField.putClientProperty(EXTRA_FIELD_LABEL_PROP, "Repository Qualifier");

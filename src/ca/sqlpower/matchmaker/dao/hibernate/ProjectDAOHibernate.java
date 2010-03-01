@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -75,22 +75,6 @@ public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project>
 		}
 	}
 
-	public Project findByOid(long oid) {
-		Session session = getHibernateSession();
-		Query query = session.createQuery("from Project m where m.oid = :oid");
-		query.setParameter("oid", oid);
-		List projects = query.list();
-		if (projects.size() == 0) {
-			return null;
-		} else if (projects.size() == 1) {
-			Project project = (Project) projects.get(0);
-			project.setSession(getMatchMakerSession());
-			return project;
-		} else {
-			throw new IllegalStateException("More than one project with oid \""+oid+"\"");
-		}
-	}
-	
 	public boolean isThisProjectNameAcceptable(String name) {
 		Long count = countProjectByName(name);
 		return (count == 0);

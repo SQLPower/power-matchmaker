@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -31,15 +31,13 @@ import javax.swing.MutableComboBoxModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.util.EditableJTable;
-import ca.sqlpower.object.ObjectDependentException;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
@@ -74,7 +72,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
     /** Handles the validation rules for this form. */
     private FormValidationHandler validationHandler;
 
-	public MatchMakerIndexBuilder(final SQLTable table, final MutableComboBoxModel indexModel, final MatchMakerSwingSession swingSession) throws SQLObjectException {
+	public MatchMakerIndexBuilder(final SQLTable table, final MutableComboBoxModel indexModel, final MatchMakerSwingSession swingSession) throws ArchitectException {
 		this.table = table;
 		this.indexModel = indexModel;
 		this.swingSession = swingSession;
@@ -147,7 +145,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 					index.setQualifier(null);
 					index.setFilterCondition(null);
 					while (index.getChildCount() > 0) {
-						index.removeChild(index.getChildren().get(0));
+						index.removeChild(0);
 					}
 					contains = true;
 				}
@@ -158,20 +156,15 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 	        }
 	        
 	        for (SQLColumn column : selectedColumns) {
-	    		index.addChild(new Column(column, AscendDescend.UNSPECIFIED));
+	    		index.addChild(index.new Column(column, AscendDescend.UNSPECIFIED));
 			}
 	    	indexModel.setSelectedItem(index);
 			logger.debug("Index columns after save: "+index.getChildren());
 			return true;
-		} catch (SQLObjectException e) {
+		} catch (ArchitectException e) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 				            "Unexpected error when adding Column to the Index",
 				            e);
-			return false;
-		} catch (ObjectDependentException e) {
-			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-		            "Unexpected error when adding Column to the Index",
-		            e);
 			return false;
 		}
 	}

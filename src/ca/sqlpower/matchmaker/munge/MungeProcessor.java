@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -28,11 +28,12 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.AbstractProcessor;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel.Edge;
 
 public class MungeProcessor extends AbstractProcessor {
 
+    private static final Logger logger = Logger.getLogger(MungeProcessor.class);
+    
     /**
      * The munging process this processor is responsible for executing.  The
      * graph of munge steps is retrieved fresh every time this processor is
@@ -55,16 +56,12 @@ public class MungeProcessor extends AbstractProcessor {
     }
     
     public Boolean call() throws Exception {
-    	return this.call(null, -1);
+    	return this.call(-1);
     }
     
     public Boolean call(int rowCount) throws Exception {
-    	return this.call(null, rowCount);
-    }
-    
-    public Boolean call(EngineMode mode, int rowCount) throws Exception {
     	if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
-    		engineLogger.setLevel(Level.DEBUG);
+    		logger.setLevel(Level.DEBUG);
     	}
     	
     	MungeResultStep resultStep = mungeProcess.getResultStep();
@@ -82,7 +79,7 @@ public class MungeProcessor extends AbstractProcessor {
 			
 			// open everything
 			for (MungeStep step: processOrder) {
-				step.open(mode, engineLogger);
+				step.open(engineLogger);
 			}
 			
 			// call until one step gives up
@@ -132,7 +129,7 @@ public class MungeProcessor extends AbstractProcessor {
 				try {
 					step.close();
 				} catch (Exception ex) {
-					engineLogger.error("Close failed; squishing exception in order" +
+					logger.error("Close failed; squishing exception in order" +
 							" not to obscure any earlier exceptions.", ex);
 				}
 			}
@@ -155,7 +152,7 @@ public class MungeProcessor extends AbstractProcessor {
     	dfs.performSearch(gm);
     	processOrder = dfs.getFinishOrder();
     	Collections.reverse(processOrder);
-    	engineLogger.debug("Order of processing: " + processOrder);
+    	logger.debug("Order of processing: " + processOrder);
 	}
     
     /**
@@ -166,18 +163,6 @@ public class MungeProcessor extends AbstractProcessor {
      */
     List<MungeStep> getProcessOrder() {
     	return processOrder;
-    }
-
-	/**
-	 * A package private method that will return the {@link MungeProcess} being
-	 * run by this {@link MungeProcessor}.
-	 */
-    MungeProcess getMungeProcess() {
-    	return mungeProcess;
-    }
-
-    Logger getLogger() {
-    	return engineLogger;
     }
 }
 

@@ -55,70 +55,6 @@
 		</not>
 	</condition>
 	
-	<!-- 
-		Actually, I wanted to test for if this is Linux so to know which
-		launch4j binaries to use, but unfortunately, there is no 'linux' 
-		value, just unix. So if it's unix, then we will try to use the linux binary.
-	-->
-	<condition property="isUnix">
-		<os family="unix"/>
-	</condition>
-
-	<condition property="isNotUnix">
-		<not>
-			<os family="unix"/>
-		</not>
-	</condition>
-	
-	<condition property="launch4j.dir" value="ext-tools/launch4j/launch4j-macosx" >
-		<isset property="isMac"/>
-	</condition>
-	
-	<condition property="launch4j.dir" value="ext-tools/launch4j/launch4j-linux" >
-		<isset property="isUnix"/>
-	</condition>
-	
-	<condition property="launch4j.dir" value="ext-tools/launch4j/launch4j-win32" >
-		<isset property="isWindows"/>
-	</condition>
-	
-	<taskdef name="launch4j"
-	    classname="net.sf.launch4j.ant.Launch4jTask"
-	    classpath="${launch4j.dir}/launch4j.jar
-	        :${launch4j.dir}/lib/xstream.jar" />
-	
-	<!-- 
-		Sets if we want to actually run a build on the SQL Power Library.
-		It may be useful to set it to copy only if we already know that the
-		library has been built. For example, when running the builds on a 
-		continuous integration engine like Hudson, where the library can be
-		built separately.
-	-->
-	<condition property="buildSQLPowerLibrary">
-		<not>
-			<isset property="only.copy.sqlpower.library"/>
-		</not>
-	</condition>
-	
-	<!--
-		Set the format of the findbugs report to html by default
-	-->
-	<condition property="findbugs.report.format" value="html">
-		<not>
-			<isset property="findbugs.report.format"/>
-		</not>
-	</condition>
-	
-	<!--
-		Set the format of the pmd report to html by default
-	-->
-	<condition property="pmd.report.format" value="html">
-		<not>
-			<isset property="pmd.report.format"/>
-		</not>
-	</condition>
-	
-	
 	<!-- A path that will include all jars in the lib and buildlib folders -->
 	<path id="compile.classpath">
 		<fileset dir="${lib}">
@@ -141,7 +77,7 @@
 	</path>
 	
 	<!-- Compiles the MatchMaker and places the .class files into build-->
-	<target name="compile" depends="build.sqlpower.library, copy.sqlpower.library, copyfiles">
+	<target name="compile" depends="copyfiles">
 		<mkdir dir="${build}"/>
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
@@ -207,7 +143,7 @@
 	</target>
 	
 	
-	<target name="copyfiles" depends="matchmaker.version.properties">
+	<target name="copyfiles">
 		<mkdir dir="${build}/icons"/>
 	    <copy todir="${build}/icons">
 			<fileset dir="src/icons/">
@@ -225,14 +161,6 @@
 			</fileset>
 		</copy>
 		
-		<copy todir="${build}/ca/sqlpower/matchmaker/address">
-			<fileset dir="src/ca/sqlpower/matchmaker/address">
-				<include name="*.property"/>
-			</fileset>
-		</copy>
-		
-		<copy file="${dist.dir}/matchmaker.version.properties" todir="${build}/ca/sqlpower/matchmaker"/>
-		
 		<!-- copies the template log4j config file into the build dir -->
 		<copy tofile="${build}/log4j.properties"
 			file="src/log4j.properties.example"/>
@@ -245,10 +173,6 @@
 
 	<!-- Compiles the regression test suite -->
 	<target name="compile-tests" depends="compile">
-		<ant dir="${sqlpower.library.home}" target="compile-tests">
-			<property name="build" value="${sqlpower.library.home}/build"/>
-			<property name="build.tests" value="${sqlpower.library.home}/build/tests"/>
-		</ant>
 		<mkdir dir="${build.tests}"/>
 		<javac srcdir="regress" destdir="${build.tests}"
 			classpathref="test.classpath"
@@ -256,7 +180,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_launch4j,generic_install,source_only_tgz, downloadpage">
+	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -269,23 +193,15 @@
 				<include name="*-${app.version}.pdf"/>
 			</fileset>
 		</copy>
-		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
-	</target>
-	
-	<!-- ================================= 
-          target: downloadpage              
-         ================================= -->
-    <target name="downloadpage" depends="getAppVersion">
-    	<mkdir dir="${dist.dir}"/>
-	    <get dest="${dist.dir}/index.html" src="http://www.sqlpower.ca/page/dqguru_download_template"/>
+	    <get dest="${dist.dir}/index.html" src="http://www.sqlpower.ca/page/matchmaker_download_template"/>
 		<replace file="${dist.dir}/index.html">
 			<replacefilter token="&lt;head&gt;" value="&lt;head&gt;&lt;base href=&quot;http://www.sqlpower.ca/page/&quot;&gt;"/>
 			<replacefilter token="@@app_version" value="${app.version}"/>
 			<replacefilter token="@@downloadLinkBase" value="${downloadLinkBase}"/>
 			<replacefilter token="@@docLinkBase" value="${docLinkBase}"/>
 		</replace>
-    </target>
-
+		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
+	</target>
 	
 	<!-- DOCUMENTATION
 		There are THREE main documentation targets, all built from the
@@ -312,8 +228,8 @@
 	<target name="xslt-stripwidths">
 		<xslt
 			style="doc/tools/strip-width.xsl"
-			in="doc/DQguruUserGuide.xml"
-			out="${java.io.tmpdir}/DQguruUserGuide-nowidth.xml"
+			in="doc/PowerMatchMakerUserGuide.xml"
+			out="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
 			classpathref="docbookclasspath">
 		</xslt>
 	</target>
@@ -330,7 +246,7 @@
 			to a new directory with spaces replaced with '%20'-->
 		<xslt
 			style="doc/tools/xslt/javahelp/javahelp.xsl"
-			in="${java.io.tmpdir}/DQguruUserGuide-nowidth.xml"
+			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
 			out="${build}/help/zzz"
 			classpathref="docbookclasspath">
 		</xslt>
@@ -382,7 +298,7 @@
 		</copy>
 
 		<!-- Jar the whole mess up and add to working classpath -->
-		<jar file="${build}/dqguruhelp.jar" basedir="${build}/help" update="false">
+		<jar file="${build}/matchmakerhelp.jar" basedir="${build}/help" update="false">
 		</jar>
 	</target>
 
@@ -392,8 +308,8 @@
 
 		<xslt
 			style="doc/tools/xslt/html/docbook.xsl"
-			in="${java.io.tmpdir}/DQguruUserGuide-nowidth.xml"
-			out="${build}/doc/html/DQguruUserGuide.html"
+			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
+			out="${build}/doc/html/PowerMatchMakerUserGuide.html"
 			classpathref="docbookclasspath">
 		</xslt>
 
@@ -413,8 +329,8 @@
 		<mkdir dir="${build}/doc/" />
         <xslt
 			style="doc/tools/xslt/fo/docbook.xsl"
-			in="doc/DQguruUserGuide.xml"
-			out="${build}/doc/DQguruUserGuide-${app.version}.fo"
+			in="doc/PowerMatchMakerUserGuide.xml"
+			out="${build}/doc/PowerMatchMakerUserGuide-${app.version}.fo"
 			classpathref="docbookclasspath">
 		</xslt>
 	</target>
@@ -472,7 +388,7 @@
 		
     	<copy todir="${staging.dir}/lib">
     	    <fileset dir="lib" includes="*.jar"/>
-    		<fileset dir="${build}" includes="dqguruhelp.jar" />
+    		<fileset dir="${build}" includes="matchmakerhelp.jar" />
     	</copy>
 		
     	<copy todir="${staging.dir}/doc">
@@ -480,7 +396,7 @@
     	   	<fileset dir="${build}/doc" includes="*.txt"/>
     	</copy>
 
-		<manifestclasspath property="dqguru.jar.classpath" jarfile="${staging.dir}/dqguru.jar">
+		<manifestclasspath property="matchmaker.jar.classpath" jarfile="${staging.dir}/matchmaker.jar">
     		<classpath>
 	    		<pathelement path="${staging.dir}/jdbc"/>
     			<fileset dir="${staging.dir}/">
@@ -491,58 +407,14 @@
 
     	<manifest file="${build}/manifest">
     		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"/>
-    		<attribute name="Class-Path" value="${dqguru.jar.classpath}" />
+    		<attribute name="Class-Path" value="${matchmaker.jar.classpath}" />
     	</manifest>
 
-    	<jar destfile="${staging.dir}/dqguru.jar" update="no"
+    	<jar destfile="${staging.dir}/matchmaker.jar" update="no"
     				basedir="${build}" 
     				includes="ca/** org/** icons/** log4j.properties default_database_types.ini"
     				manifest="${build}/manifest">
     	</jar>
-		
-		<manifest file="${build}/dqguruenginerunner_manifest">
-    		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.DQguruEngineRunner"/>
-    		<attribute name="Class-Path" value="dqguru.jar" />
-    	</manifest>
-		<jar destfile="${staging.dir}/dqguru-engine-runner.jar" manifest="${build}/dqguruenginerunner_manifest"/>	
-		
-    	<launch4j>
-			<config dontwrapjar="true" 
-					headertype="gui"
-					jarpath="dqguru.jar"
-					outfile="${staging.dir}/dqguru.exe"
-					errtitle="Java Runtime Required"
-					priority="normal"
-					downloadurl="http://java.com/download"
-					supporturl="http://www.sqlpower.ca/forum"
-					customprocname="false"
-					stayalive="false"
-					icon="src/icons/dqguru.ico">
-				<jre minVersion="1.5.0"
-					 maxHeapSize="600"
-				/>
-			</config>
-		</launch4j>
-		
-		<launch4j>
-			<config dontwrapjar="true" 
-					headertype="gui"
-					jarpath="uninstaller.jar"
-					outfile="${staging.dir}/uninstaller.exe"
-					errtitle="Java Runtime Required"
-					priority="normal"
-					downloadurl="http://java.com/download"
-					supporturl="http://www.sqlpower.ca/forum"
-					customprocname="false"
-					stayalive="false"
-					icon="installer/uninstall.ico">
-				<singleInstance
-					mutexName="SQL Power DQguru Uninstaller"
-					windowTitle="SQL Power DQguru Uninstaller"
-				/>
-				<jre minVersion="1.5.0"/>
-			</config>
-		</launch4j>
 		
 		<copy todir="${staging.dir}/lib">
     	    <fileset dir="lib" includes="*.jar"/>
@@ -564,14 +436,13 @@
 	<target name="getAppVersion">
 		<mkdir dir="${build}"/>
 		<!-- get the version number from source code ArchitectUtils -->
-		<delete file="${build}/ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.class"/>
 		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" includes="ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.java" debug="true"/>
 		<taskdef name="genVersion"
 					classname="ca.sqlpower.matchmaker.antbuild.MatchMakerVersionTask"
 			        classpath="${build}"/>
 		<genVersion/>
 		<tstamp>
-			<format property="date" pattern="yyyyMMddHHmmss"/>
+			<format property="date" pattern="yyyyMMdd"/>
 		</tstamp>
 		<condition property="app.ver.suffix" value="-${date}">
 			<isset property="nightly"/>
@@ -589,7 +460,7 @@
 		</condition>
 
 		<property name="app.version" value="${app_ver_major}.${app_ver_minor}.${app_ver_tiny}${app.ver.suffix}"/>
-		<property name="dist.dir" value="${dist.base}/dqguru-${app.version}"/>
+		<property name="dist.dir" value="${dist.base}/matchmaker-${app.version}"/>
 		<property name="reports" value="${dist.dir}/reports"/>
 
 		<condition property="downloadLinkBase" value="http://nightlybuild.sqlpower.ca/matchmaker/nightly/${app.version}">
@@ -604,16 +475,16 @@
 			<not><isset property="downloadLinkBase"/></not>
 		</condition>
 		<condition property="docLinkBase" 
-			value="http://download.sqlpower.ca/dqguru/${app.version}">
+			value="http://download.sqlpower.ca/matchmaker/${app.version}">
 			<not><isset property="docLinkBase"/></not>
 		</condition>
 
-		<echo message="Building DQguru version: ${app.version}"/>
+		<echo message="Building Power*MatchMaker version: ${app.version}"/>
 	</target>
 	
 	
 	<target name="windows_jar_installer" depends="stage">
-		<izpack output="${dist.dir}/SQL-Power-DQguru-Setup-Windows-${app.version}.jar"
+		<izpack output="${dist.dir}/MatchMaker-Setup-Windows-${app.version}.jar"
 		        installerType="standard"
 			    basedir="${installer.dir}"
 		        izPackDir="${izpack.dir}/">
@@ -621,7 +492,7 @@
 				<installation version="1.0">
 					<!-- comment -->
 					<info>
-						<appname>SQL Power DQguru</appname>
+						<appname>Power MatchMaker</appname>
 						<appversion>@{app.version}</appversion>
 						<url>http://www.sqlpower.ca/</url>
 						<javaversion>1.5</javaversion>
@@ -636,17 +507,10 @@
 						<langpack iso3="eng"/>
 					</locale>
 					<resources>
-						<res id="Installer.image" src="../src/icons/dqguru_huge.png"/>
-						<res src="DQguruShortcut.xml" id="shortcutSpec.xml"/>
+						<res id="Installer.image" src="../src/icons/matchmaker_huge.png"/>
+						<res src="MatchMakerShortcut.xml" id="shortcutSpec.xml"/>
 						<res id="LicencePanel.licence" src="../LICENSE" />
 					</resources>
-					<listeners>
-						<listener installer="SummaryLoggerInstallerListener"/>
-				       	<listener installer="RegistryInstallerListener"
-								  uninstaller="RegistryUninstallerListener">
-				          <os family="windows"/>
-				       	</listener>
-					</listeners>
 					<panels>
 						<panel classname="HelloPanel"/>
 						<panel classname="LicencePanel"/>
@@ -657,11 +521,9 @@
 					</panels>
 					<packs>
 						<pack name="Core" required="yes">
-							<description>DQguru Core Files</description>
+							<description>MatchMaker Core Files</description>
 							<fileset dir="../staging/" targetdir="$INSTALL_PATH">
-								<include name="dqguru.jar"/>
-								<include name="dqguru.exe"/>
-								<include name="dqguru-engine-runner.jar"/>
+								<include name="matchmaker.jar"/>
 							</fileset>
 							<fileset dir="../staging/lib" targetdir="$INSTALL_PATH/lib">
 								<include name="*.jar"/>
@@ -684,19 +546,22 @@
 							<fileset dir="../src/icons" targetdir="$INSTALL_PATH">
 								<include name="*.ico"/>
 							</fileset>
-							<fileset dir="." targetdir="$INSTALL_PATH">
-								<include name="*.ico"/>
-							</fileset>
-							<fileset dir="../staging/" targetdir="$INSTALL_PATH/uninstaller">
-								<include name="uninstaller.exe"/>
-							</fileset>
+							<parsable targetfile="${INSTALL_PATH}/matchmaker_file_association.reg" type="plain"/>				
+							<executable targetfile="regedit.exe" stage="postinstall" keep="true">
+							   <args>
+							     <arg value="\/s"/>
+							     <arg value="$INSTALL_PATH/matchmaker_file_association.reg"/>
+						      </args>
+						   </executable>
+							<executable targetfile="regedit.exe" stage="uninstall" keep="true">
+							   <args>
+							     <arg value="\/s"/>
+							     <arg value="$INSTALL_PATH/uninstall.reg"/>
+						      </args>
+						   </executable>
 						</pack>
 					</packs>
 					<native type="izpack" name="ShellLink.dll"/>
-					<native type="izpack" name="ShellLink_x64.dll"/>
-					<native type="3rdparty" name="COIOSHelper.dll" stage="both">
-				        <os family="windows"/>
-				    </native>
 				</installation>
 				]]>
 			</config>
@@ -705,37 +570,38 @@
 	
 	<property name="izpack2exe.dir" value="${izpack.dir}/utils/izpack2exe"/>
 	
-	<target name="windows_exe_installer_launch4j" depends="windows_jar_installer">
-		<launch4j>
-			<config dontwrapjar="false" 
-					headertype="gui"
-					jar="${dist.dir}/SQL-Power-DQguru-Setup-Windows-${app.version}.jar"
-					outfile="${dist.dir}/SQL-Power-DQguru-Setup-Windows-${app.version}.exe"
-					errtitle="Java Runtime Required"
-					priority="normal"
-					downloadurl="http://java.com/download"
-					supporturl="http://www.sqlpower.ca/forum"
-					customprocname="false"
-					stayalive="false"
-					icon="installer/installerIcon-dq.ico">
-				<singleInstance
-					mutexName="DQguru Installer"
-					windowTitle="DQguru Installer"
-				/>
-				<jre minVersion="1.5.0"/>
-			</config>
-		</launch4j>
+	<!-- 
+		Uses izpack python script to convert the Windows JDBC JAR installer into EXE executables
+		Note that this target requires the python command to be in your PATH
+	 -->
+	<target name="windows_exe_installer_with_python" depends="windows_jar_installer" if="isNotWindows">
+	  <exec executable="python" dir="${izpack2exe.dir}">
+	    <arg value="izpack2exe.py"/>
+	    <arg value="--file=../../../../${dist.dir}/MatchMaker-Setup-Windows-${app.version}.jar"/>
+	    <arg value="--no-upx"/>
+	  	<arg value="--output=../../../../${dist.dir}/MatchMaker-Setup-Windows-${app.version}.exe"/>
+	  </exec>
 	</target>
-		
+	
+	<target name="windows_exe_installer_without_python" depends="windows_jar_installer" if="isWindows">
+	  <exec executable="cmd" dir="${izpack2exe.dir}">
+  	    <arg value="/c"/>
+  	    <arg value="izpack2exe.exe"/>
+	    <arg value="--file=..\..\..\..\${dist.dir}\MatchMaker-Setup-Windows-${app.version}.jar"/>
+	    <arg value="--no-upx"/>
+	  	<arg value="--output=..\..\..\..\${dist.dir}\MatchMaker-Setup-Windows-${app.version}.exe"/>
+	  </exec>
+	</target>
+	
     <target name="generic_install" depends="stage">
-		<tar destfile="${dist.dir}/SQL-Power-DQguru-generic-${app.version}.tar.gz"
+		<tar destfile="${dist.dir}/MatchMaker-generic-${app.version}.tar.gz"
 			compression="gzip">
 			<tarfileset
-			    prefix="dqguru-${app.version}"
+			    prefix="matchmaker-${app.version}"
 				dir="${staging.dir}"
-				includes="LICENSE, LEGAL, lib/*.jar, dqguru.jar, dqguru-engine-runner.jar, jdbc/*.ini, jdbc/*.jar" />
+				includes="LICENSE, LEGAL, lib/*.jar, matchmaker.jar, jdbc/*.ini, jdbc/*.jar" />
 			<tarfileset
-			    prefix="dqguru-${app.version}"
+			    prefix="matchmaker-${app.version}"
 				dir="doc"
 				includes="README.generic" />
 		</tar>
@@ -754,17 +620,16 @@
 
 		<!-- jarbundler is from sourceforge, defined near top of file -->
 		<jarbundler dir="${staging.dir}"
-           name="SQL Power DQguru"
+           name="Power MatchMaker"
            version="${app.version}"
            mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
-           icon="src/icons/dqguru.icns"
+           icon="src/icons/matchmaker.icns"
            jvmversion="1.5+"
-           shortname="SQL Power DQguru"
-           stubfile="osx_packaging_utils/DQguruStub"
+           shortname="MatchMaker"
+           stubfile="osx_packaging_utils/PowerMatchMakerStub"
            vmoptions="-Xmx600m">
 			<jarfileset dir="${staging.dir}" includes="lib/*.jar"/>
-			<jarfileset dir="${staging.dir}" includes="dqguru.jar"/>
-			<jarfileset dir="${staging.dir}" includes="dqguru-engine-runner.jar"/>
+			<jarfileset dir="${staging.dir}" includes="matchmaker.jar"/>
 			<!-- Add any jdbc drivers as resources the directory jdbc is referenced
 					in the manifest as well as various targets. -->
 			<javafileset dir="${staging.dir}" includes="jdbc/*.jar jdbc/*.ini"/>
@@ -772,7 +637,7 @@
 		</jarbundler>
 
 		<!-- XXX this is stupid. we should modify the jarbundler task to allow literal strings in the classpath -->
-		<replace file="${staging.dir}/SQL Power DQguru.app/Contents/Info.plist"
+		<replace file="${staging.dir}/Power MatchMaker.app/Contents/Info.plist"
 				 token="${basedir}/KICKME"
 				 value="$JAVAROOT" />
 
@@ -782,7 +647,7 @@
 	<target name="source_only_tgz" depends="getAppVersion"
 		description="Builds a source only tarball of the Architect">
 		<mkdir dir="${dist.dir}"/>
-		<tar destfile="${dist.dir}/SQL-Power-DQguru-src-only-${app.version}.tar.gz"
+		<tar destfile="${dist.dir}/MatchMaker-src-only-${app.version}.tar.gz"
 			 compression="gzip" longfile="gnu">
 			<tarfileset dir="."
 				prefix="matchmaker-src-only-${app.version}"
@@ -858,19 +723,12 @@
 		</fail>
 	</target>
 	
-	<target name="osx_tgz" depends="osx_dist" if="isUnix">
-		<!-- NOTE: This generally won't work on Windows as it typically doesn't have 'tar' installed -->
-		<exec executable="tar" dir="${staging.dir}">
-			<arg value="-cpzf"/>
-			<arg value="../${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.tar.gz"/>
-			<arg value="LICENSE"/>
-			<arg value="SQL Power DQguru.app"/>
-		</exec>
-		
-<!--		<tar destfile="${dist.dir}/DQguru-OSX-${app.version}.tar.gz"
+	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
+		<tar destfile="${dist.dir}/MatchMaker-OSX-${app.version}.tar.gz"
 					compression="gzip">
-			<tarfileset dir="${staging.dir}" includes="DQguru.app/**"/>
-		</tar> -->
+			<tarfileset dir="${staging.dir}" includes="Power MatchMaker.app/**"/>
+			<tarfileset dir="${staging.dir}" includes="jdbc/*"/>
+		</tar>
 	</target>
 	
 	
@@ -883,35 +741,35 @@
 				     rm Power_Architect-1.0.19.dmg
 				     hdiutil convert -format UDCO -o Power_Architect-1.0.19.dmg RWArchitect.dmg
 				  -->
-		<copy file="osx_packaging_utils/RWDQguru.dmg.sparseimage" tofile="${staging.dir}/RWDQguru.dmg.sparseimage" overwrite="true" />
+		<copy file="osx_packaging_utils/RWMatchMaker.dmg.sparseimage" tofile="${staging.dir}/RWMatchMaker.dmg.sparseimage" overwrite="true" />
 		<exec executable="hdiutil">
 					<arg value="detach" />
-					<arg value="/Volumes/SQL Power DQguru" />
+					<arg value="/Volumes/Power*MatchMaker" />
 		</exec>
 		<exec executable="hdiutil">
 			<arg value="attach" />
-			<arg value="${staging.dir}/RWDQguru.dmg.sparseimage" />
+			<arg value="${staging.dir}/RWMatchMaker.dmg.sparseimage" />
 		</exec>
-		<delete dir="/Volumes/SQL Power DQguru/SQL Power DQguru.app/Contents/Resources/Java"/>
-		<copy todir="/Volumes/SQL Power DQguru/SQL Power DQguru.app/" overwrite="true"  >
-			<fileset dir="${staging.dir}/SQL Power DQguru.app"></fileset>
+		<delete dir="/Volumes/Power*MatchMaker/Power*MatchMaker.app/Contents/Resources/Java"/>
+		<copy todir="/Volumes/Power*MatchMaker/Power*MatchMaker.app/" overwrite="true"  >
+			<fileset dir="${staging.dir}/Power MatchMaker.app"></fileset>
 		</copy>
 		<exec executable="chmod">
 			<arg value="a+x"/>
-			<arg value="/Volumes/SQL Power DQguru/SQL Power DQguru.app/Contents/MacOS/DQguruStub"/>
+			<arg value="/Volumes/Power*MatchMaker/Power*MatchMaker.app/Contents/MacOS/PowerMatchMakerStub"/>
 		</exec>
 		<exec executable="hdiutil">
 			<arg value="detach" />
-			<arg value="/Volumes/SQL Power DQguru" />
+			<arg value="/Volumes/Power*MatchMaker" />
 		</exec>
-		<delete file="${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.dmg" />
+		<delete file="${dist.dir}/MatchMaker-OSX-${app.version}.dmg" />
 		<exec executable="hdiutil">
 			<arg value="convert"/>
-			<arg value="${staging.dir}/RWDQguru.dmg.sparseimage"/>
+			<arg value="${staging.dir}/RWMatchMaker.dmg.sparseimage"/>
 			<arg value="-format"/>
 			<arg value="UDCO"/>
 			<arg value="-o"/>
-			<arg value="${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.dmg"/>
+			<arg value="${dist.dir}/MatchMaker-OSX-${app.version}.dmg"/>
 		</exec>
 
 		<javac srcdir="osx_packaging_utils"
@@ -923,7 +781,7 @@
 				 classname="ca.sqlpower.antbuild.AddLicenseToDMGTask"
 			     classpath="${build}"/>
 		<addLicenseToDMG
-				dmgFile="${dist.dir}/SQL-Power-DQguru-OSX-${app.version}.dmg"
+				dmgFile="${dist.dir}/MatchMaker-OSX-${app.version}.dmg"
                 licenseFile="${staging.dir}/LICENSE"
 		        resourceTemplateFile="osx_packaging_utils/sla_template.r"/>
     </target>
@@ -933,29 +791,23 @@
 		This build target checks for the sqlpower-library project, which is
 		required by the MatchMaker to build. 
 	-->
-	<target name="check.sqlpower.library.dir">
+	<target name="sqlpower.library">
 		<echo message="Checking for sqlpower-library project..."/>
-		<fail message="Can't find sqlpower-library project! Set the property 'sqlpower.library.home' to point to the sqlpower-library project directory">
+		<fail message="Can't find sqlpower-library project! Please read the DEVELOPERS file to see how to get and set up the sqlpower-library project">
 			<condition>
 				<not>
 					<isset property="sqlpower.library.home"/>
 				</not>
 			</condition>
 		</fail>
-	</target>
-	
-	<target name="build.sqlpower.library" depends="check.sqlpower.library.dir" if="buildSQLPowerLibrary">
 		<echo message="Attempting to build sqlpower-library project..."/>
 		<ant dir="${sqlpower.library.home}" target="clean">
 			<property name="build" value="${sqlpower.library.home}/build"/>
 		</ant>
-		<ant dir="${sqlpower.library.home}" target="jar">
+		<ant dir="${sqlpower.library.home}">
 			<property name="build" value="${sqlpower.library.home}/build"/>
 			<property name="dist.dir" value="${sqlpower.library.home}/dist"/>
 		</ant>
-	</target>
-	
-	<target name="copy.sqlpower.library" depends="check.sqlpower.library.dir">
 		<copy file="${sqlpower.library.home}/dist/sqlpower_library.jar" todir="${lib}"/>
 	</target>
 	
@@ -980,10 +832,10 @@
 	 	<mkdir dir="${reports}"/>
 		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"
 			classpath="${pmd.jar}"/>
-		<property name="pmd-results" value="${reports}/pmd-ant-results.${pmd.report.format}"/>
+		<property name="pmd-results" value="${reports}/pmd-ant-results.html"/>
 		<pmd shortFilenames="true" targetjdk="1.5">
 			<ruleset>basic,imports</ruleset>
-			<formatter type="${pmd.report.format}" toFile="${pmd-results}"/>
+			<formatter type="html" toFile="${pmd-results}"/>
 			<fileset dir="${src}">
 				<include name="ca/sqlpower/**/*.java"/>
 			</fileset>
@@ -1016,8 +868,8 @@
 		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
 			classpath="${findbugs-ant.jar}"/>
 		<findbugs home="${findbugs.home}"
-			output="${findbugs.report.format}"
-			outputFile="${reports}/findbugs-ant-results.${findbugs.report.format}"
+			output="html"
+			outputFile="${reports}/findbugs-ant-results.html"
 			reportLevel="low"
 			jvmargs="-Xmx512m">  <!-- FindBugs can use up a lot of memory, so adjust the JVM memory here-->
 			<class location="${build}" />
@@ -1026,14 +878,5 @@
 			<auxClasspath path="${pmd.jar}" />
 			<systemProperty name="findbugs.maskedfields.locals" value='true'/>
 		</findbugs>
-	</target>
-	
-	<target name="matchmaker.version.properties" depends="getAppVersion">
-		<mkdir dir="${dist.dir}"/>
-		<propertyfile
-		    file="${dist.dir}/matchmaker.version.properties"
-		    comment="DQguru Version">
-		  <entry key="app.version" value="${app.version}"/>
-		</propertyfile>
 	</target>
 </project>

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -86,7 +86,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
 	private static Method paintBorder;
     
     public ExportMungePenToPDFAction(MatchMakerSwingSession session) {
-        super(session, "Export Playpen to PDF", "Export Playpen to PDF");
+        super(session, "Export Munge Pen to PDF", "Export Munge Pen to PDF");
     }
 
     /**
@@ -99,7 +99,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
         JFileChooser chooser = new JFileChooser();
         chooser.addChoosableFileFilter(SPSUtils.PDF_FILE_FILTER);
         if (!(session.getOldPane() instanceof MungeProcessEditor)) {
-        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the playpen at current.", "Cannot Export Playpen", JOptionPane.WARNING_MESSAGE);
+        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
         	return false;
         }
         monitor.setJobSize(((MungeProcessEditor) session.getOldPane()).getMungePen().getComponentCount());
@@ -146,7 +146,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
     @Override
     public void doStuff(MonitorableImpl monitor, Map<String, Object> properties) {
         if (!(session.getOldPane() instanceof MungeProcessEditor)) {
-        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the playpen at current.", "Cannot Export Playpen", JOptionPane.WARNING_MESSAGE);
+        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
         	return;
         }
 
@@ -167,9 +167,9 @@ public class ExportMungePenToPDFAction extends ProgressAction {
             out = new BufferedOutputStream(new FileOutputStream((File)properties.get(FILE_KEY)));
             d = new Document(ppSize);
             
-            d.addTitle("DQguru Transform PDF Export");
+            d.addTitle("MatchMaker Munge Pen PDF Export");
             d.addAuthor(System.getProperty("user.name"));
-            d.addCreator("DQguru version "+MatchMakerVersion.APP_VERSION);
+            d.addCreator("Power*MatchMaker version "+MatchMakerVersion.APP_VERSION);
             
             PdfWriter writer = PdfWriter.getInstance(d, out);
             d.open();
@@ -199,7 +199,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
             g.dispose();
         } catch (Exception ex) {
             SPSUtils.showExceptionDialogNoReport(session.getFrame(), 
-                    "Could not export the playpen", 
+                    "Could not export the munge pen", 
                     ex);
         } finally {
             if (d != null) {
@@ -207,7 +207,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
                     d.close();
                 } catch (Exception ex) {
                     SPSUtils.showExceptionDialogNoReport(session.getFrame(),
-                            "Could not close document for exporting playpen", 
+                            "Could not close document for exporting munge pen", 
                             ex);
                 }
             }
@@ -217,7 +217,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
                     out.close();
                 } catch (IOException ex) {
                     SPSUtils.showExceptionDialogNoReport(session.getFrame(),
-                        "Could not close pdf file for exporting playpen", 
+                        "Could not close pdf file for exporting munge pen", 
                         ex);
                 }
             }

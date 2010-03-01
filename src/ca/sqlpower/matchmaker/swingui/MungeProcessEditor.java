@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,12 +26,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -42,6 +42,7 @@ import javax.swing.JToolBar;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -53,7 +54,6 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.ColorCellRenderer;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -103,7 +103,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
      * @param process The process to edit
      */
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
-            Project project, MungeProcess process) throws SQLObjectException {
+            Project project, MungeProcess process) throws ArchitectException {
         super(swingSession, process);
         logger.debug("Creating a new munge process editor");
         
@@ -128,14 +128,10 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         this.mungePen = new MungePen(process, handler, parentProject);
         
-        stepPrecheckResults = new ArrayList<ValidateResult>();
-        
         for (MungeStep step : process.getChildren()) {
 			if (step instanceof AbstractMungeStep) {
 				((AbstractMungeStep) step).setPreviewMode(true);
 			}
-			
-			stepPrecheckResults.addAll(step.checkPreconditions());
         }
         
         buildUI();
@@ -145,7 +141,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 
     }
 
-	private void buildUI() throws SQLObjectException {
+	private void buildUI() throws ArchitectException {
 		panel = new JPanel(new BorderLayout());
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu", // columns
@@ -164,7 +160,9 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         color.setRenderer(renderer);
         subPanel.add(color, cc.xy(8, 6));
 		subPanel.add(new JButton(saveAction), cc.xy(2,8));
-		subPanel.add(mungePen.getEnablePreviewCheckBox(), cc.xy(4, 8));
+		JCheckBox previewCheckbox = new JCheckBox(showPreview);
+		subPanel.add(previewCheckbox, cc.xy(4, 8));
+		mungePen.enablePreview(previewCheckbox.isSelected());
 		subPanel.add(new JButton(customColour), cc.xy(8,8));
         panel.add(subPanel,BorderLayout.NORTH);
         
@@ -226,7 +224,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
        	}
 	}
 	
-	Action saveAction = new AbstractAction("Save Transformation"){
+	Action saveAction = new AbstractAction("Save Munge Process"){
 		public void actionPerformed(ActionEvent e) {
             applyChanges();
 		}
@@ -235,15 +233,23 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		public void actionPerformed(ActionEvent arg0) {
 			Color colour = swingSession.getCustomColour(mmo.getColour());
 		    if (colour != null) {
-		    	// TODO add colour(Color) only if it's not in the color(JComboBox) yet
 		    	color.addItem(colour);
 		    	color.setSelectedItem(colour);
 		    }
 		}
 	};
-
-
-	private List<ValidateResult> stepPrecheckResults;
+	
+	/**
+	 * An action that will toggle the preview feature on the munge pen on and off.
+	 */
+	Action showPreview = new AbstractAction("Show Preview") {
+		public void actionPerformed(ActionEvent arg0) {
+			if (arg0.getSource() instanceof JCheckBox) {
+				JCheckBox checkbox = (JCheckBox) arg0.getSource();
+				checkbox.setSelected(mungePen.enablePreview(checkbox.isSelected()));
+			}
+		}
+	};
     
     /**
      * Saves the process, possibly adding it to the parent project given in the
@@ -253,7 +259,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
     	ValidateResult result = handler.getWorstValidationStatus();
         if ( result.getStatus() == Status.FAIL) {
             JOptionPane.showMessageDialog(swingSession.getFrame(),
-                    "You have to fix the error before you can save the transformation",
+                    "You have to fix the error before you can save the munge process",
                     "Save",
                     JOptionPane.ERROR_MESSAGE);
             return false;
@@ -265,7 +271,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         if (dfs.isCyclic()) {
         	int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Your transformation contains at least one cycle, " + 
+				"Your munge process contains at least one cycle, " + 
 				"and may result in unexpected results. \n" + 
 				"Do you want to continue saving?", 
 				"Save",
@@ -305,16 +311,16 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Transformation name is required");
+						"Munge Process name is required");
 			} else if ( !value.equals(mmo.getName()) &&
 					parentProject.getMungeProcessByName(name.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Transformation name is invalid or already exists.");
+						"Munge Process name is invalid or already exists.");
 			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
-                        "Transformation name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
+                        "Munge Process name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
             } else if (mmo.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
-            	return ValidateResult.createValidateResult(Status.FAIL, "Transformation name is invalid or already exists.");
+            	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}

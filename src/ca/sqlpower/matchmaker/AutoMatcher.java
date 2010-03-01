@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,12 +26,12 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.MonitorableImpl;
 
 /**
@@ -59,7 +59,7 @@ public class AutoMatcher extends MonitorableImpl {
 	 * on a potential match record of the given munge process is either a master or
 	 * a duplicate. When this operation is over, the engine lock will be released.
 	 */
-	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException, InterruptedException {
+	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, ArchitectException, InterruptedException {
 	    final Project project = mungeProcess.getParentProject();
 	    project.acquireEngineLock(this);
 	    try {
@@ -79,7 +79,7 @@ public class AutoMatcher extends MonitorableImpl {
      * @param mungeProcess
      *            The munge process of this project to auto-match
      */
-	private void actuallyDoAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException {
+	private void actuallyDoAutoMatch(MungeProcess mungeProcess) throws SQLException, ArchitectException {
 	    Set<SourceTableRecord> visited = new HashSet<SourceTableRecord>();
 	    try {
 	        setStarted(true);
@@ -150,7 +150,7 @@ public class AutoMatcher extends MonitorableImpl {
 	private void makeAutoMatches(MungeProcess mungeProcess,
 			SourceTableRecord selected,
 			Set<SourceTableRecord> neighbours,
-			Set<SourceTableRecord> visited) throws SQLException, SQLObjectException {
+			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
 		logger.debug("makeAutoMatches called, selected's key values = " + selected.getKeyValues());
 		visited.add(selected);
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =

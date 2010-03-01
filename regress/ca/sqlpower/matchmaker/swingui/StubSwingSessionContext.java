@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.prefs.PreferenceChangeListener;
 
 import org.apache.log4j.Logger;
 
@@ -36,7 +35,6 @@ import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -49,12 +47,12 @@ public class StubSwingSessionContext implements SwingSessionContext {
 
     Logger logger = Logger.getLogger(StubSwingSessionContext.class);
 
-    public MatchMakerSwingSession createSession(JDBCDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
+    public MatchMakerSwingSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
         logger.debug("Stub call: StubSwingSessionContext.createSession()");
         return null;
     }
 
-    public List<JDBCDataSource> getDataSources() {
+    public List<SPDataSource> getDataSources() {
         logger.debug("Stub call: StubSwingSessionContext.getDataSources()");
         return null;
     }
@@ -173,25 +171,5 @@ public class StubSwingSessionContext implements SwingSessionContext {
 	public void ensureDefaultRepositoryDefined() {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubSwingSessionContext.ensureDefaultRepositoryDefined()");
-	}
-	
-	public void setAddressCorrectionDataPath(String path) {
-		logger.debug("Stub call: StubSwingSessionContext.setAddressCorrectionDataPath()");
-		
-	}
-	
-	public String getAddressCorrectionDataPath() {
-		logger.debug("Stub call: StubSwingSessionContext.getAddressCorrectionDataPath()");
-		return null;
-	}
-
-	public void addPreferenceChangeListener(PreferenceChangeListener l) {
-		logger.debug("Stub call: MatchMakerSessionContext.addPreferenceChangeListener()");
-		
-	}
-
-	public void removePreferenceChangeListener(PreferenceChangeListener l) {
-		logger.debug("Stub call: MatchMakerSessionContext.removePreferenceChangeListener()");
-		
 	}
 }

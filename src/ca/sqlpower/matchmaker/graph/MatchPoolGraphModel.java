@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,10 +20,8 @@
 
 package ca.sqlpower.matchmaker.graph;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -32,7 +30,6 @@ import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 
 /**
  * Models a match pool as a non-directed graph, where the nodes are the source table records
@@ -95,45 +92,4 @@ public class MatchPoolGraphModel implements GraphModel<SourceTableRecord, Potent
         return getInboundEdges(node);
     }
     
-    /**
-	 * Sets the Match Status to {@link MatchType#UNMATCH} for all
-	 * PotentialMatchRecords in the maximally connected component that the given
-	 * selected SourceTableRecord belongs to.
-	 * 
-	 * @param selectedNode
-	 *            The SourceTableRecord which belongs to the maximally connected
-	 *            component of this graph model (or 'cluster' as we're calling
-	 *            it) that we want to reset
-	 */
-    public void resetCluster(SourceTableRecord selectedNode) {
-    	List<SourceTableRecord> resetNodes = new ArrayList<SourceTableRecord>();
-    	resetNodeAndNeighbours(selectedNode, resetNodes);
-    }
-    
-    /**
-	 * Helper method for {@link #resetCluster(SourceTableRecord)} that resets
-	 * all PotentialMatchRecords for a given node and recursively does for for
-	 * all of its neighbours that have not been reset yet.
-	 * 
-	 * @param selectedNode
-	 *            The SourceTableRecord for which its PotentialMatchRecords will
-	 *            be reset
-	 * @param resetNodes
-	 *            A list of SourceTableRecords that already have been reset, so
-	 *            that we don't keep resetting them and end up with a stack
-	 *            overflow (yes it's already happened :P)
-	 */
-    private void resetNodeAndNeighbours(SourceTableRecord selectedNode, List<SourceTableRecord> resetNodes) {
-		resetNodes.add(selectedNode);
-		
-		for (PotentialMatchRecord p: getOutboundEdges(selectedNode)) {
-			p.setMatchStatus(MatchType.UNMATCH);
-		}
-		
-		for (SourceTableRecord s: getAdjacentNodes(selectedNode)) {
-			if (!resetNodes.contains(s)) {
-				resetNodeAndNeighbours(s, resetNodes);
-			}
-		}
-	}
 }

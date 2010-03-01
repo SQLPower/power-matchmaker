@@ -1,26 +1,3 @@
-0.9.6
-* The official name of the product is now SQL Power DQguru
-* Added a new command-line engine runner tool that allows the running of project engines without running the full GUI program. This is particularly useful for adding DQguru projects as part of an automatic batch process
-* Bugs Fixed
-  * Run Engine Button didn't disable itself when the engine was running
-  * Code that generates the repository was using the Architect's preferred pl.ini location
-  * IllegalArgumentException when creating a new de-duping project on an Oracle database
-  * Adding a Google Address Lookup transformer caused an exception
-  * Address Correction Engine 'debug mode' did not rollback changes if 'immediately commit auto-corrected addresses' was checked
-  * Updating the address pool on a SQL Server (2008) instance didn't work because it does explicitly support booleans
-  
-
-0.9.5
-* The Power*MatchMaker is now the DQguru
-* The Table Explorer has been replaced with a more powerful SQL Query tool
-* Match Validation graph now has a 'reset cluster' function that allows the user to reset
-  only a connected cluster of matches, instead of reseting the entire set of matches
-* Support for deduping matches from a view
-* Munge processes have been renamed to transformations, and munge steps are renamed to transformers
-* Sort Words and Address Correction transformers
-* Support for Address Correction on Canadian mailing addresses, including a new Address Correction
-  transformer, Address Correction Project and Engine, and a new Validation screen.
-
 0.9.4
 * The Match Engine log reports how many matches each munge process found, and the total number of matches found by the engine
 * Added Munge Step icons in the Munge Pen
@@ -28,7 +5,7 @@
 * The Example Table builder can now specify the number of rows to populate the table with
 * Improved match validation screen layout to more efficiently utilize space
 * Added merge rule derivation by foreign key constraints, and improved merge rule derivation performance
-* The Power*MatchMaker will attempt to rebuild the HSQLDB repository if it was deleted
+* The Power*MatchMaker will not attempt to rebuild the HSQLDB repository if it was deleted
 * Project Exporting and Importing using an XML file format
 * Ability to copy projects with the new project duplication feature
 * Ability to change merge actions in the merge rule list editor

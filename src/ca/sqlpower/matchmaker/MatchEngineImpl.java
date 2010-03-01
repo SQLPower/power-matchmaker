@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -19,6 +19,10 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -28,11 +32,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
 import ca.sqlpower.matchmaker.munge.MungeResult;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.EmailAppender;
 import ca.sqlpower.util.Monitorable;
 
@@ -76,7 +80,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		this.setProject(project);
 	}
 
-	public void checkPreconditions() throws EngineSettingException, SQLObjectException, SourceTableException {
+	public void checkPreconditions() throws EngineSettingException, ArchitectException, SourceTableException {
 		MatchMakerSession session = getSession();
         Project project = getProject();
         final MatchMakerSessionContext context = session.getContext();
@@ -170,7 +174,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Checking Match Engine Preconditions";
 			logger.info(progressMessage);
 			checkPreconditions();
-		} catch (SQLObjectException e) {
+		} catch (ArchitectException e) {
 			throw new RuntimeException(e);
 		}
 
@@ -232,7 +236,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Storing matches";
 			setCurrentProcessor(pool);
 			logger.info(progressMessage);
-			pool.store(getProject().getMungeSettings().isUseBatchExecution(), inDebugMode);
+			pool.store(inDebugMode);
             checkCancelled();
             progress += rowCount;
             setCurrentProcessor(null);
@@ -276,7 +280,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		for (MungeProcess currentProcess: mungeProcesses) {
 			munger = new MungeProcessor(currentProcess, logger);
 			setCurrentProcessor(munger);
-			progressMessage = "Running transformation " + currentProcess.getName();
+			progressMessage = "Running munge process " + currentProcess.getName();
 			logger.debug(getMessage());
 			munger.call(rowCount);
 			progress += munger.getProgress();
@@ -286,7 +290,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			matcher = new MatchProcessor(pool, currentProcess, results, logger);
 			setCurrentProcessor(matcher);
-			progressMessage = "Matching transformation " + currentProcess.getName();
+			progressMessage = "Matching munge process " + currentProcess.getName();
 			logger.debug(getMessage());
 			matcher.call();
             checkCancelled();
@@ -295,7 +299,32 @@ public class MatchEngineImpl extends AbstractEngine {
 		}
 	}
 
-
+	private int getNumRowsToProcess() throws SQLException {
+		Integer processCount = getProject().getMungeSettings().getProcessCount();
+		int rowCount;
+		Connection con = null;
+		Statement stmt = null;
+		try {
+			con = getProject().getSourceTable().getParentDatabase().getDataSource().createConnection();
+			
+			stmt = con.createStatement();
+			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
+			ResultSet result = stmt.executeQuery(rowCountSQL);
+			logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
+			if (result.next()) {
+				rowCount = result.getInt("ROW_COUNT");
+			} else {
+				throw new AssertionError("No rows came back from source table row count query!");
+			}
+		} finally {
+			if (stmt != null) stmt.close();
+			if (con != null) con.close();
+		}
+		if (processCount != null && processCount.intValue() > 0 && processCount.intValue() < rowCount) {
+			rowCount = processCount.intValue();
+		}
+		return rowCount;
+	}
 	
 	///////// Monitorable support ///////////
 	
@@ -362,76 +391,4 @@ public class MatchEngineImpl extends AbstractEngine {
 	private synchronized void setCurrentProcessor(Monitorable processor) {
 		currentProcessor = processor;
 	}
-	
-//	public static void main(String[] args) {
-//		if (args.length != 1) {
-//			System.out.println("Usage: java -classpath " +
-//					"<location of matchmaker.jar> " +
-//					"ca.sqlpower.matchmaker.MatchEngineImpl.jar " +
-//					"project_id=<project ID number>");
-//			System.exit(1);
-//		}
-//		String arg = args[0];
-//		if (!Pattern.matches("project_id=\\d+", arg)) {
-//			System.out.println("Usage: java -classpath " +
-//					"<location of matchmaker.jar> " +
-//					"ca.sqlpower.matchmaker.MatchEngineImpl.jar " +
-//					"project_id=<project ID number>");
-//			System.out.println("Expected on argument of the form 'project_id=<project ID number>'");
-//			System.exit(1);
-//		}
-//		StringTokenizer tokenizer = new StringTokenizer(arg, "=");
-//		if (!tokenizer.nextToken().equals("project_id")) {
-//			System.out.println("Usage: java -classpath " +
-//					"<location of matchmaker.jar> " +
-//					"ca.sqlpower.matchmaker.MatchEngineImpl.jar " +
-//					"project_id=<project ID number>");
-//			System.out.println("Expected on argument of the form 'project_id=<project ID number>'");
-//			System.exit(1);
-//		}
-//		String projectIdString = tokenizer.nextToken();
-//		String repositoryDataSourceName = ""; //TODO: extract repository datasource name
-//		String repositoryUsername = "";
-//		String repositoryPassword = "";
-//		
-//		int projectId = Integer.parseInt(projectIdString);
-//		
-//		Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
-//		
-//		DataSourceCollection plDotIni = null;
-//        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
-//        
-//        try {
-//        	plDotIni = PlDotIni.loadPlDotIni(plDotIniPath);
-//        } catch (SQLObjectException ex) {
-//        	System.out.println("Couln't read the system or user pl.ini file");
-//        	ex.printStackTrace();
-//        	System.exit(1);
-//        }
-//        
-//        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
-//        MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(prefs, plDotIni);
-//        context.ensureDefaultRepositoryDefined();
-//        
-//		SPDataSource repositoryDataSource = plDotIni.getDataSource(repositoryDataSourceName);
-//        
-//		MatchMakerSession session = null;
-//        try {
-//			session = context.createSession(repositoryDataSource, repositoryUsername, repositoryPassword);
-//		} catch (RepositoryVersionException e) {
-//			System.err.println("Repository version is not compatible with this version of MatchMaker!");
-//			e.printStackTrace();
-//		} catch (PLSecurityException e) {
-//			e.printStackTrace();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		} catch (SQLObjectException e) {
-//			e.printStackTrace();
-//		} catch (MatchMakerConfigurationException e) {
-//			e.printStackTrace();
-//		}
-//        
-//		
-//		MatchEngineImpl engine = new MatchEngineImpl(session, null);
-//	}
 }

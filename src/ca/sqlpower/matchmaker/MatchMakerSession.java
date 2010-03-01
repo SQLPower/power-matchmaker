@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -22,14 +22,12 @@ package ca.sqlpower.matchmaker;
 import java.sql.Connection;
 import java.util.Date;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLDatabaseMapping;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
@@ -47,7 +45,7 @@ import ca.sqlpower.util.Version;
  *
  * @version $Id$
  */
-public interface MatchMakerSession extends SQLDatabaseMapping {
+public interface MatchMakerSession {
 
     /**
      * The session context that created this session.
@@ -189,7 +187,7 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      * @return SQLTable if found or null if not
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException;
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException;
     
     /**
      * find the sql table that exists in the given spDataSource
@@ -203,14 +201,14 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      * @return SQLTable if found or null if not
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException;
 
     
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
      */
-    public boolean tableExists(String catalog, String schema, String tableName) throws SQLObjectException;
+    public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException;
     
     
     /**
@@ -218,13 +216,13 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      * of the given spDataSource, throws an error if the dsName is not empty 
      * and not found.
      */
-    public boolean tableExists(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;
+    public boolean tableExists(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException;
     
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
      */
-    public boolean tableExists(SQLTable table) throws SQLObjectException;
+    public boolean tableExists(SQLTable table) throws ArchitectException;
     
     /**
      * return true if the current user of session can select the sql table
@@ -239,7 +237,7 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      * one already exists it will be returned, if it does not one will
      * be created and remembered for next time.
      */
-    public SQLDatabase getDatabase(JDBCDataSource dataSource);
+    public SQLDatabase getDatabase(SPDataSource dataSource);
 
 	/**
 	 * Call this method to close the session's opened resources.
@@ -259,17 +257,4 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      * this method has no effect.
      */
 	public void removeSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener);
-	
-	/**
-	 * Adds a message onto the status label on the bottom frame of the Match Maker
-	 * 
-	 */
-	public void addStatusMessage(String message);
-	
-	/**
-	 * Removes the message from the status label on the bottom frame of the Match Maker
-	 * 
-	 */
-	public void removeStatusMessage();
 }
-

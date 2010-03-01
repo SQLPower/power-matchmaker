@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -39,9 +39,11 @@ import junit.framework.TestCase;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
-import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
-import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
@@ -49,10 +51,6 @@ import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * A base test that all test cases of MatchMakerObject implementations should extend.
@@ -88,7 +86,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		super.tearDown();
 	}
 
-	protected abstract C getTarget() throws SQLObjectException;
+	protected abstract C getTarget() throws ArchitectException;
 
 	public void testDuplicate() throws Exception {
 		MatchMakerObject mmo = getTarget();
@@ -109,8 +107,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("mergingEngine");
         propertiesToIgnoreForDuplication.add("matchingEngine");
         propertiesToIgnoreForDuplication.add("cleansingEngine");
-        propertiesToIgnoreForDuplication.add("addressCorrectionEngine");
-        propertiesToIgnoreForDuplication.add("addressCommittingEngine");
         propertiesToIgnoreForDuplication.add("undoing");
         propertiesToIgnoreForDuplication.add("runningEngine");
         
@@ -310,18 +306,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         	} else {
         		return null;
         	}
-        } else if (property.getPropertyType() == PoolFilterSetting.class) {
-        	if (oldVal != PoolFilterSetting.EVERYTHING) {
-        		return PoolFilterSetting.EVERYTHING;
-        	} else {
-        		return PoolFilterSetting.INVALID_ONLY;
-        	}
-        } else if (property.getPropertyType() == AutoValidateSetting.class) {
-        	if (oldVal != AutoValidateSetting.NOTHING) {
-        		return AutoValidateSetting.NOTHING;
-        	} else {
-        		return AutoValidateSetting.SERP_CORRECTABLE;
-        	}
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
@@ -332,7 +316,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException,
 	InvocationTargetException, NoSuchMethodException, IOException,
-	SQLObjectException {
+	ArchitectException {
 
 		MatchMakerObject mmo = getTarget();
 
@@ -514,18 +498,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         	} else {
         		newVal = null;
         	}
-        } else if (property.getPropertyType() == PoolFilterSetting.class) {
-        	if (oldVal != PoolFilterSetting.EVERYTHING) {
-        		newVal = PoolFilterSetting.EVERYTHING;
-        	} else {
-        		newVal = PoolFilterSetting.INVALID_ONLY;
-        	}
-        } else if (property.getPropertyType() == AutoValidateSetting.class) {
-        	if (oldVal != AutoValidateSetting.NOTHING) {
-        		newVal = AutoValidateSetting.NOTHING;
-        	} else {
-        		newVal = AutoValidateSetting.SERP_CORRECTABLE;
-        	}
 		} else {
 			throw new RuntimeException("This test case lacks a value for "
 					+ property.getName() + " (type "
@@ -614,14 +586,14 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
      * The child list should never be null for any Match Maker Object, even if
      * that object's type is childless.
      */
-    public void testChildrenNotNull() throws SQLObjectException {
+    public void testChildrenNotNull() throws ArchitectException {
         assertNotNull(getTarget().getChildren());
     }
 
     /**
      * All objects should return false for .equals(null), not true or throw an exception.
      */
-    public void testNullEquality() throws SQLObjectException {
+    public void testNullEquality() throws ArchitectException {
         assertFalse("equals(null) has to work, and return false",getTarget().equals(null));
     }
 

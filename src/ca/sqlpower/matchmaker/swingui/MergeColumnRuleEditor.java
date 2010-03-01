@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -48,6 +48,8 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -56,8 +58,6 @@ import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
@@ -138,17 +138,13 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 								boolean found = false;
 								
 								// TODO: This check needs to be redone because it doesn't account
-								// for the possibility of a table importing keys from more than one table
-								try {
-									for (SQLColumn column : parentMergeRule.getSourceTable().getColumns()) {
-										if (column.equals(cmr.getImportedKeyColumn())) {
-											count++;
-											found = true;
-											break;
-										}
+								// for the possibility of a table importing keys from more than one table 
+								for (SQLColumn column : parentMergeRule.getUniqueKeyColumns()) {
+									if (column.equals(cmr.getImportedKeyColumn())) {
+										count++;
+										found = true;
+										break;
 									}
-								} catch (SQLObjectException ex) {
-									throw new RuntimeException("An exception occured while listing table columns from the source table", ex);
 								}
 								if (!found) {
 									return ValidateResult.createValidateResult(Status.FAIL, 
@@ -251,10 +247,10 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				JComboBox importedKeyColumns = new JComboBox();
 				if (getParentTableComboBox().getSelectedItem() != null) {
 					try {
-						List<SQLColumn> tableColumns = mergeRules.get(parentMergeRule.getSelectedIndex()).getSourceTable().getColumns();//getParentTableUniqueKeyColumns();
+						List<SQLColumn> tableColumns = getParentTableUniqueKeyColumns();
 						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
 						importedKeyColumns.insertItemAt(null, 0);
-					} catch (SQLObjectException e) {
+					} catch (ArchitectException e) {
 						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 								"Failed to load list of columns from parent table.", e);
 					}
@@ -509,7 +505,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		return parentMergeRule;
 	}
 	
-	private List<SQLColumn> getParentTableUniqueKeyColumns() throws SQLObjectException{
+	private List<SQLColumn> getParentTableUniqueKeyColumns() throws ArchitectException{
 		List<SQLColumn> uniqueKeys = null;
 		if (parentMergeRule.getSelectedItem() != null) {
 			TableMergeRules tmr = mergeRules.get(parentMergeRule.getSelectedIndex());

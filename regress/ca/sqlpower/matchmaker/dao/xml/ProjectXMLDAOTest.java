@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru.
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -37,7 +37,11 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
+import ca.sqlpower.matchmaker.FakeSQLDatabase;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -54,15 +58,11 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 import ca.sqlpower.testutil.MockJDBCResultSetMetaData;
-import ca.sqlpower.util.FakeSQLDatabase;
 
 public class ProjectXMLDAOTest extends TestCase {
 
@@ -122,7 +122,7 @@ public class ProjectXMLDAOTest extends TestCase {
         plIni.addDataSource(db.getDataSource());
         context = new TestingMatchMakerContext() {
             @Override
-            public List<JDBCDataSource> getDataSources() {
+            public List<SPDataSource> getDataSources() {
                 return getPlDotIni().getConnections();
             }
             
@@ -141,7 +141,7 @@ public class ProjectXMLDAOTest extends TestCase {
                 return db;
             }
             @Override
-            public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+            public SQLDatabase getDatabase(SPDataSource dataSource) {
                 return db;
             }
         };
@@ -187,7 +187,7 @@ public class ProjectXMLDAOTest extends TestCase {
         p.setXrefTable(null);
         
         SQLTable sourceTable = p.getSourceTable();
-        sourceTable.addToPK(sourceTable.getColumn(0));
+        sourceTable.getColumn(0).setPrimaryKeySeq(0);
         p.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
         
         MungeProcess mp = new MungeProcess();
@@ -199,7 +199,9 @@ public class ProjectXMLDAOTest extends TestCase {
         inputStep.setParameter("my_boolean_value", true);
         inputStep.setParameter("my_numeric_value", 1234);
         inputStep.setParameter("my_string_value", "farnsworth");
-        inputStep.refresh(logger); // this allows the step to grab the column information from the source table
+        inputStep.open(logger); // this allows the step to grab the column information from the source table
+        inputStep.rollback();
+        inputStep.close();
         
         MungeStep step = new ConcatMungeStep();
         mp.addChild(step);
@@ -304,8 +306,6 @@ public class ProjectXMLDAOTest extends TestCase {
         ignore.add("cleansingEngine");
         ignore.add("matchingEngine");
         ignore.add("mergingEngine");
-        ignore.add("addressCorrectionEngine");
-        ignore.add("addressCommittingEngine");
         ignore.add("sourceTable");
         ignore.add("resultTable");
         ignore.add("xrefTable");
@@ -360,7 +360,7 @@ public class ProjectXMLDAOTest extends TestCase {
     }
     
     public void testReadNewerVersion() throws Exception {
-        String xml = "<?xml version=\"1.0\"?><matchmaker-projects export-format=\"1.2.0\"/>";
+        String xml = "<?xml version=\"1.0\"?><matchmaker-projects export-format=\"1.1.0\"/>";
         ByteArrayInputStream in = new ByteArrayInputStream(xml.getBytes());
         ProjectDAOXML xmldao = new ProjectDAOXML(session, in);
         try {

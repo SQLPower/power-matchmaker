@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -40,6 +40,10 @@ import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.DijkstrasAlgorithm;
@@ -51,10 +55,6 @@ import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.SQL;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.util.MonitorableImpl;
 
 /**
@@ -181,9 +181,9 @@ public class MatchPool extends MonitorableImpl {
      * primary key.
      * 
      * @throws SQLException if an unexpected error occurred running the SQL statements
-     * @throws SQLObjectException if SQLObjects fail to populate its children
+     * @throws ArchitectException if SQLObjects fail to populate its children
      */
-    public void findAll(List<SQLColumn> displayColumns) throws SQLException, SQLObjectException {
+    public void findAll(List<SQLColumn> displayColumns) throws SQLException, ArchitectException {
         SQLTable resultTable = project.getResultTable();
         Connection con = null;
         Statement stmt = null;
@@ -353,7 +353,7 @@ public class MatchPool extends MonitorableImpl {
 	 * @throws SQLException
 	 */
     public void store() throws SQLException {
-    	store(null, false, false);
+    	store(null, false);
     }
 
 	/**
@@ -364,8 +364,8 @@ public class MatchPool extends MonitorableImpl {
 	 *            database will be rolled back at the end of the method.
 	 *            Otherwise, all changes are committed at the end.
 	 */
-    public void store(boolean useBatchUpdates, boolean debug) throws SQLException {
-    	store(null, useBatchUpdates, debug);
+    public void store(boolean debug) throws SQLException {
+    	store(null, debug);
     }
 
 	/**
@@ -377,8 +377,8 @@ public class MatchPool extends MonitorableImpl {
 	 *            time.
 	 * @throws SQLException
 	 */
-    public void store(boolean useBatchUpdates, Aborter aborter) throws SQLException {
-    	store(aborter, useBatchUpdates, false);
+    public void store(Aborter aborter) throws SQLException {
+    	store(aborter, false);
     }
 
 	/**
@@ -400,7 +400,7 @@ public class MatchPool extends MonitorableImpl {
 	 *             if the aborter's checkCancelled() method does. In this case,
 	 *             the changes to the match pool will be rolled back.
 	 */
-    public void store(Aborter aborter, boolean useBatchUpdates, boolean debug) throws SQLException {
+    public void store(Aborter aborter, boolean debug) throws SQLException {
         logger.debug("Starting to store");
         setProgress(0);
         setCancelled(false);
@@ -414,7 +414,7 @@ public class MatchPool extends MonitorableImpl {
         int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[0]).getKeyValues().size();
         try {
             con = project.createResultTableConnection();
-            boolean supportsBatchUpdates = useBatchUpdates && con.getMetaData().supportsBatchUpdates();
+            boolean supportsBatchUpdates = con.getMetaData().supportsBatchUpdates();
             con.setAutoCommit(false);
             StringBuilder sql = new StringBuilder();
             sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
@@ -429,7 +429,6 @@ public class MatchPool extends MonitorableImpl {
             logger.debug("The SQL statement we are running is " + lastSQL);
             
             if (ps != null) ps.close();
-            ps = null;
             ps = con.prepareStatement(lastSQL);
             
             int batchCount = 0;
@@ -450,15 +449,12 @@ public class MatchPool extends MonitorableImpl {
             	// Since not all JDBC drivers support batch updates.
             	if (supportsBatchUpdates) {
 	        		batchCount++;
-	        		logger.debug("Adding statement to batch");
 	        		ps.addBatch();
 	        		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
-	        			logger.debug("Executing batch update");
 	        			ps.executeBatch();
 	        			batchCount = 0;
 	        		}
             	} else {
-            		logger.debug("Executing update statement");
             		ps.executeUpdate();
             	}
             	it.remove();
@@ -483,7 +479,6 @@ public class MatchPool extends MonitorableImpl {
             logger.debug("The SQL statement we are running is " + lastSQL);
             
             if (ps != null) ps.close();
-            ps = null;
             ps = con.prepareStatement(lastSQL);
             
             batchCount = 0;
@@ -511,21 +506,17 @@ public class MatchPool extends MonitorableImpl {
 
             		if (supportsBatchUpdates) {
 	            		batchCount++;
-	            		logger.debug("Adding statement to batch");
 	            		ps.addBatch();
 	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
-	            			logger.debug("Executing batch update");
 	            			ps.executeBatch();
 	            			batchCount = 0;
 	            		}
             		} else {
-            			logger.debug("Executing update statement");
             			ps.executeUpdate();
             		}
             		pmr.setStoreState(StoreState.CLEAN);
             	} else if (!it.hasNext() && supportsBatchUpdates) {
             		// execute remaining batched commands
-            		logger.debug("Executing batch update");
             		ps.executeBatch();
             	}
             	
@@ -574,7 +565,6 @@ public class MatchPool extends MonitorableImpl {
             logger.debug("The SQL statement we are running is " + lastSQL);
             
             if (ps != null) ps.close();
-            ps = null;
             ps = con.prepareStatement(lastSQL);
             
             batchCount = 0;
@@ -629,21 +619,17 @@ public class MatchPool extends MonitorableImpl {
             		
             		if (supportsBatchUpdates) {
 	            		batchCount++;
-	            		logger.debug("Adding insert statement to batch");
 	            		ps.addBatch();
 	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
-	            			logger.debug("Executing batch insert");
 	            			ps.executeBatch();
 	            			batchCount = 0;
 	            		}
             		} else {
-            			logger.debug("Executing insert statement");
             			ps.executeUpdate();
             		}
             		pmr.setStoreState(StoreState.CLEAN);
             	} else if (!it.hasNext() && supportsBatchUpdates) {
             		// execute remaining batched commands
-            		logger.debug("Executing batch insert");
             		ps.executeBatch();
             	}
             }
@@ -853,7 +839,7 @@ public class MatchPool extends MonitorableImpl {
 	 * @param duplicate The SourceTableRecord that we are defining as a duplicate of the master
 	 * @param isAutoMatch Indicate that this method is being used by the AutoMatch feature
 	 */
-    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate, boolean isAutoMatch) throws SQLObjectException {
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate, boolean isAutoMatch) throws ArchitectException {
     	if (duplicate == master) {
     		defineMasterOfAll(master);
     		return;
@@ -903,9 +889,9 @@ public class MatchPool extends MonitorableImpl {
     /**
      * Similar to {@link #defineMaster(SourceTableRecord, SourceTableRecord, boolean)} except the isAutoMatch
      * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
-     * @throws SQLObjectException
+     * @throws ArchitectException
      */
-    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) throws SQLObjectException {
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) throws ArchitectException {
     	defineMaster(master, duplicate, false);
     }
 
@@ -957,7 +943,7 @@ public class MatchPool extends MonitorableImpl {
 	 * algorithm to find the shortest path to the nodes and to make sure
 	 * that we have no cycles.
 	 */
-	public void defineMasterOfAll(SourceTableRecord master) throws SQLObjectException {
+	public void defineMasterOfAll(SourceTableRecord master) throws ArchitectException {
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
     		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
 		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
@@ -1033,7 +1019,7 @@ public class MatchPool extends MonitorableImpl {
 	 * somehow the lhs and rhs will be separated as in the
 	 * {@link #defineUnmatched(SourceTableRecord, SourceTableRecord)} method.
 	 */
-    public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) throws SQLObjectException {
+    public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) throws ArchitectException {
     	if (lhs == rhs) {
     		defineNoMatchOfAny(lhs);
     		return;
@@ -1055,7 +1041,7 @@ public class MatchPool extends MonitorableImpl {
 	 * This method sets all of the potential match records connecting the given
 	 * source table record to any other source table record to be no match.
 	 */
-	public void defineNoMatchOfAny(SourceTableRecord record1) throws SQLObjectException {
+	public void defineNoMatchOfAny(SourceTableRecord record1) throws ArchitectException {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
 			if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
 			logger.debug("Setting no match between " + pmr.getOriginalLhs() + " and " + pmr.getOriginalRhs());
@@ -1093,7 +1079,7 @@ public class MatchPool extends MonitorableImpl {
 	 * edges to be undecided.</li>
 	 * </ol>
 	 */
-	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) throws SQLObjectException {
+	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) throws ArchitectException {
 		logger.debug("Unmatching " + rhs + " from " + lhs);
 		if (lhs == rhs) {
     		defineUnmatchAll(lhs);
@@ -1171,7 +1157,7 @@ public class MatchPool extends MonitorableImpl {
 	private void defineMatchEdges(
 			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
 			Map<SourceTableRecord, SourceTableRecord> masterMapping,
-			boolean isAutoMatch) throws SQLObjectException {
+			boolean isAutoMatch) throws ArchitectException {
 		logger.debug("Removing all decided edges from the given graph");
     	for (PotentialMatchRecord pmr : graph.getEdges()) {
    			pmr.setMaster(null);
@@ -1189,11 +1175,11 @@ public class MatchPool extends MonitorableImpl {
 	/**
 	 * Similar to {@link #defineMatchEdges(GraphModel, Map, boolean)} except the isAutoMatch
 	 * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
-	 * @throws SQLObjectException
+	 * @throws ArchitectException
 	 */
 	private void defineMatchEdges(
 			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
-			Map<SourceTableRecord, SourceTableRecord> masterMapping) throws SQLObjectException {
+			Map<SourceTableRecord, SourceTableRecord> masterMapping) throws ArchitectException {
 		defineMatchEdges(graph, masterMapping, false);
 	}
 
@@ -1248,7 +1234,7 @@ public class MatchPool extends MonitorableImpl {
 	 * Sets all potential match records connected to the given source table record
 	 * to be undefined matches.
 	 */
-	public void defineUnmatchAll(SourceTableRecord record1) throws SQLObjectException {
+	public void defineUnmatchAll(SourceTableRecord record1) throws ArchitectException {
 		logger.debug("unmatching " + record1 + " from everything");
         for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
         	if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
@@ -1332,10 +1318,10 @@ public class MatchPool extends MonitorableImpl {
 	 * 
 	 * @param rule
 	 *            The name of the rule along which to make matches
-	 * @throws SQLObjectException
+	 * @throws ArchitectException
 	 * @throws SQLException
 	 */
-	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException {
+	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, ArchitectException {
 		if (mungeProcess == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
 					"invalid munge process");
@@ -1389,7 +1375,7 @@ public class MatchPool extends MonitorableImpl {
 	private void makeAutoMatches(MungeProcess mungeProcess,
 			SourceTableRecord selected,
 			Set<SourceTableRecord> neighbours,
-			Set<SourceTableRecord> visited) throws SQLException, SQLObjectException {
+			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
 		logger.debug("makeAutoMatches called, selected's key values = " + selected.getKeyValues());
 		visited.add(selected);
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =

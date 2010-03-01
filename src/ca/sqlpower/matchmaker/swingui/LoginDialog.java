@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -47,9 +47,9 @@ import javax.swing.event.ListDataListener;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
+import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -72,15 +72,23 @@ public class LoginDialog implements SwingWorkerRegistry {
 
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 
-    private class LoginAction extends SPSwingWorker implements ActionListener {
+    private class LoginAction extends MonitorableWorker implements ActionListener {
 
         private boolean loginWasSuccessful = false;
         
+        /**
+         * Indicates that the login process has begun.
+         */
+        private boolean started;
+        
+        /**
+         * Indicated that the login process has terminated (with either
+         * success or failure).
+         */
+        private boolean finished;
+
         public LoginAction(SwingWorkerRegistry registry) {
         	super(registry);
-        	setMessage("Logging in...");
-        	setJobSize(null);
-        	setProgress(0);
         }
         
         public void actionPerformed(ActionEvent e) {
@@ -130,6 +138,7 @@ public class LoginDialog implements SwingWorkerRegistry {
                 userID.setEnabled(true);
                 password.setEnabled(true);
                 dbList.setEnabled(true);
+                this.finished = true;
             }
         }
 
@@ -138,6 +147,8 @@ public class LoginDialog implements SwingWorkerRegistry {
         public void doStuff() throws Exception {
         	logger.debug("LoginAction.doStuff() was invoked!");
             loginWasSuccessful = false;
+            started = true;
+            finished = false;
             
             // Reset exception to null for each login. Without it,
             // cleanup() would think there was an error if one existed
@@ -155,6 +166,7 @@ public class LoginDialog implements SwingWorkerRegistry {
         	logger.debug("LoginAction.cleanup() starting");
             try {
                 if (getDoStuffException() != null) {
+                	finished = true;
                 	if (getDoStuffException() instanceof RepositoryVersionException) {
                 		sessionContext.handleRepositoryVersionException(dbSource,
                 				(RepositoryVersionException) getDoStuffException());
@@ -181,9 +193,29 @@ public class LoginDialog implements SwingWorkerRegistry {
                 password.setEnabled(true);
                 dbList.setEnabled(true);
                 logger.debug("Progress bar has been set to NOT visible");
+                finished = true;
             }
         }
         
+		public Integer getJobSize() {
+			return null;
+		}
+
+		public String getMessage() {
+			return "Logging in...";
+		}
+
+		public int getProgress() {
+			return 0;
+		}
+
+		public boolean hasStarted() {
+			return started;
+		}
+
+		public boolean isFinished() {
+			return finished;
+		}
     }
 
     /**
@@ -246,11 +278,11 @@ public class LoginDialog implements SwingWorkerRegistry {
     private JProgressBar progressBar = new JProgressBar();
     
     /**
-     * The {@link JDBCDataSource} object the user picked from the combo box on the login dialog.
+     * The SPDatasource object the user picked from the combo box on the login dialog.
      * Once the login process has been initiated, this is the data source of the repository
      * database.
      */
-    private JDBCDataSource dbSource;
+    private SPDataSource dbSource;
 	
     private ConnectionComboBoxModel connectionModel;
 	private JComponent panel;
@@ -276,7 +308,7 @@ public class LoginDialog implements SwingWorkerRegistry {
 
 		public void contentsChanged(ListDataEvent e) {
 		    if ( e.getType() == ListDataEvent.CONTENTS_CHANGED ) {
-		        JDBCDataSource dbSource = (JDBCDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
+		        SPDataSource dbSource = (SPDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
 		        dbSourceName.setText(dbSource.getName());
 		        userID.setText(dbSource.getUser());
 		        password.setText(dbSource.getPass());
@@ -292,8 +324,8 @@ public class LoginDialog implements SwingWorkerRegistry {
 	public LoginDialog(SwingSessionContextImpl sessionContext) {
 		super();
         this.sessionContext = sessionContext;
-        frame = new JFrame("DQguru Login");
-        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/dqguru_24.png")).getImage());
+        frame = new JFrame("Power*MatchMaker Login");
+        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
 		panel = createPanel();
         frame.getContentPane().add(panel);
         SPSUtils.makeJDialogCancellable(frame, cancelAction);

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -30,10 +30,7 @@ import java.net.URLEncoder;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 
 public class GoogleAddressLookup extends AbstractMungeStep {
 
@@ -104,14 +101,12 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         setParameter(GOOGLE_GEOCODER_URL, "http://maps.google.com/maps/geo");
         setParameter(LOOKUP_RATE_LIMIT, "2.0");
     }
-     
+    
     @Override
-    public void doOpen(EngineMode mode, Logger logger) throws Exception {
+    public void doOpen(Logger logger) throws Exception {
         String key = getParameter(GOOGLE_MAPS_API_KEY);
         if (key == null || key.length() == 0) {
-        	throw new IllegalStateException("Google Address Lookup transformer was " +
-        			"called without a Google Maps API Key. " +
-        			"Check your Google Address Lookup transformer settings.");
+            throw new IllegalStateException("Can't open step: Google Maps API Key is required.");
         }
     }
 
@@ -121,7 +116,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         for (MungeStepOutput<?> output : getChildren()) {
             output.setData(null);
         }
-        
+
         String key = getParameter(GOOGLE_MAPS_API_KEY);
         String url = getParameter(GOOGLE_GEOCODER_URL);
         String address = (String) getMSOInputs().get(0).getData();
@@ -151,22 +146,20 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         JSONObject adminArea = country.getJSONObject("AdministrativeArea");
         this.adminArea.setData(adminArea.getString("AdministrativeAreaName"));
 
-        // The topology of Canadian lookup requests changed some time in 2008:
-        // The SubAdministrativeArea section vanished, and Locality moved up
-        // to be a direct child of AdministrativeArea. The following code is
-        // designed to cope with both situations, in case lookups in other
-        // countries still return a SubAdministrativeArea.
         if (adminArea.has("SubAdministrativeArea")) {
             JSONObject subAdminArea = adminArea.getJSONObject("SubAdministrativeArea");
             this.subAdminArea.setData(subAdminArea.getString("SubAdministrativeAreaName"));
 
             if (subAdminArea.has("Locality")) {
                 JSONObject locality = subAdminArea.getJSONObject("Locality");
-                updateLocalityOutputs(locality);
+                this.locality.setData(locality.getString("LocalityName"));
+
+                JSONObject thoroughfare = locality.getJSONObject("Thoroughfare");
+                this.street.setData(thoroughfare.getString("ThoroughfareName"));
+
+                JSONObject postalCode = locality.getJSONObject("PostalCode");
+                this.postCode.setData(postalCode.getString("PostalCodeNumber"));
             }
-        } else if (adminArea.has("Locality")) {
-            JSONObject locality = adminArea.getJSONObject("Locality");
-            updateLocalityOutputs(locality);
         }
         
         this.accuracy.setData(BigDecimal.valueOf(addressDetails.getInt("Accuracy")));
@@ -177,17 +170,6 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         this.latitude.setData(BigDecimal.valueOf(coordinates.getDouble(1)));
         
         return Boolean.TRUE;
-    }
-
-    private void updateLocalityOutputs(JSONObject locality)
-            throws JSONException {
-        this.locality.setData(locality.getString("LocalityName"));
-
-        JSONObject thoroughfare = locality.getJSONObject("Thoroughfare");
-        this.street.setData(thoroughfare.getString("ThoroughfareName"));
-
-        JSONObject postalCode = locality.getJSONObject("PostalCode");
-        this.postCode.setData(postalCode.getString("PostalCodeNumber"));
     }
 
     /**

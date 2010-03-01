@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,10 +26,10 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLTable;
 
 /**
  * A combo box data model that treats the columns of a SQLTable as
@@ -51,7 +51,7 @@ public class ColumnComboBoxModel implements ComboBoxModel {
      * model will only work with this one table for its whole life.
      * 
      * @param table The table to use
-     * @throws SQLObjectRuntimeException If the table column populate fails
+     * @throws ArchitectRuntimeException If the table column populate fails
      */
 	public ColumnComboBoxModel(SQLTable table) {
 		super();
@@ -61,8 +61,8 @@ public class ColumnComboBoxModel implements ComboBoxModel {
             for (SQLColumn c : table.getColumns()) {
                 columns.add(c);
             }
-        } catch (SQLObjectException ex) {
-            throw new SQLObjectRuntimeException(ex);
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
         }
 	}
 

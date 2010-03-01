@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -40,7 +40,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -63,8 +62,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
-import ca.sqlpower.swingui.FontSelector;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -620,25 +617,25 @@ public class LabelPane extends JPanel {
 
 					font.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							final FontSelector fontSelector = new FontSelector(area.getFont());
-							Callable<Boolean> okCall = new Callable<Boolean>() {
-							    public Boolean call() {
-							        logger.debug("We have changed the font to: " + fontSelector.getSelectedFont());
-							        area.setFont(fontSelector.getSelectedFont());
-							        area.setSize(area.getPreferredSize());
-							        revalidateComp(area, false);
-							        return true;
-							    }
-							};
-							Callable<Boolean> cancelCall = new Callable<Boolean>() {
-							    public Boolean call() { return true; }
-							};
-							
-							JDialog d = DataEntryPanelBuilder.createDataEntryPanelDialog(
-							        fontSelector,
-							        (JFrame) mp.getTopLevelAncestor().getParent(),
-							        "Choose a font", "OK", okCall, cancelCall);
-							d.setVisible(true);
+							final FontSelector fontSelector = new FontSelector(
+									(JFrame) mp.getTopLevelAncestor()
+											.getParent(), area.getFont());
+							fontSelector.getApplyButton().addActionListener(
+									new ActionListener() {
+										public void actionPerformed(
+												ActionEvent e) {
+											logger
+													.debug("We have changed the font to: "
+															+ fontSelector
+																	.getFont());
+											area.setFont(fontSelector
+													.getSelectedFont());
+											area.setSize(area
+													.getPreferredSize());
+											revalidateComp(area, false);
+										}
+									});
+							fontSelector.setVisible(true);
 						}
 					});
 

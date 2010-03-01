@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,9 +20,11 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -38,17 +40,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -65,20 +71,21 @@ import ca.sqlpower.matchmaker.swingui.munge.SQLInputMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sql.Olap4jDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
+import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.db.DataSourceDialogFactory;
 import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
+import ca.sqlpower.swingui.db.DataSourceTypeEditor;
 import ca.sqlpower.swingui.db.DatabaseConnectionManager;
-import ca.sqlpower.swingui.db.DefaultDataSourceTypeDialogFactory;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.ExceptionReport;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
+
+import com.jgoodies.forms.factories.ButtonBarFactory;
 
 
 public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingSessionContext {
@@ -122,7 +129,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * dialog. It hides that dialog, then shows the login dialog, where the connection
      * that was selected in the connection manager is made into the current selection.
      */
-    private final Action loginDatabaseConnectionAction = new AbstractAction("Use as Repository") {
+    private final Action loginDatabaseConnectionAction = new AbstractAction("Login") {
 
 		public void actionPerformed(ActionEvent e) {
 			SPDataSource dbcs = dbConnectionManager.getSelectedConnection();
@@ -147,16 +154,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     private final DataSourceDialogFactory dsDialogFactory = new DataSourceDialogFactory() {
 
-		public JDialog showDialog(Window parentWindow, JDBCDataSource dataSource,	Runnable onAccept) {
+		public JDialog showDialog(Window parentWindow, SPDataSource dataSource,	Runnable onAccept) {
 			return MMSUtils.showDbcsDialog(parentWindow, dataSource, onAccept);
 		}
-
-        public JDialog showDialog(Window parentWindow,
-                Olap4jDataSource dataSource,
-                DataSourceCollection<? super JDBCDataSource> dsCollection,
-                Runnable onAccept) {
-            throw new UnsupportedOperationException("There is no editor implemented in DQ Guru for Olap4j at current.");
-        }
     	
     };
     
@@ -164,10 +164,48 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * Implementation of DataSourceTypeDialogFactory that will display a DataSourceTypeEditor dialog
      */
     private final DataSourceTypeDialogFactory dsTypeDialogFactory = new DataSourceTypeDialogFactory() {
-
+        
+    	private JDialog d; 
+    	private DataSourceTypeEditor editor;
+    	
     	public Window showDialog(Window owner) {
-    		DefaultDataSourceTypeDialogFactory d = new DefaultDataSourceTypeDialogFactory(context.getPlDotIni());
-    		return d.showDialog(owner);
+        	if (d == null) {
+	    		d = SPSUtils.makeOwnedDialog(owner, "JDBC Drivers");
+	        	editor = new DataSourceTypeEditor(context.getPlDotIni());
+	        	
+	        	JPanel cp = new JPanel(new BorderLayout(12,12));
+	            cp.add(editor.getPanel(), BorderLayout.CENTER);
+	            cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
+	        	
+	        	JDefaultButton okButton = new JDefaultButton(DataEntryPanelBuilder.OK_BUTTON_LABEL);
+	            okButton.addActionListener(new ActionListener() {
+	                    public void actionPerformed(ActionEvent evt) {
+	                        editor.applyChanges();
+	                        d.dispose();
+	                    }
+	                });
+	        
+	            Action cancelAction = new AbstractAction() {
+	                    public void actionPerformed(ActionEvent evt) {
+	                        editor.discardChanges();
+	                        d.dispose();
+	                    }
+	            };
+	            cancelAction.putValue(Action.NAME, DataEntryPanelBuilder.CANCEL_BUTTON_LABEL);
+	            JButton cancelButton = new JButton(cancelAction);
+	    
+	            JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, cancelButton);
+	    
+	            SPSUtils.makeJDialogCancellable(d, cancelAction);
+	            d.getRootPane().setDefaultButton(okButton);
+	            cp.add(buttonPanel, BorderLayout.SOUTH);
+	        	
+	        	d.setContentPane(cp);
+	        	d.pack();
+	        	d.setLocationRelativeTo(owner);
+        	}
+        	d.setVisible(true);
+            return d;
         }
     };
     
@@ -202,6 +240,12 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         this.context = delegateContext;
         ExceptionReport.init();
 
+        try {
+            UIManager.setLookAndFeel(
+                UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ex) {
+        	logger.error("Unable to set native look and feel. Continuing with default.", ex);
+        }
         // Set a login action property so that if there is no connection selected 
         // in the dbConnectionManager GUI, the corresponding button will be disabled.
         loginDatabaseConnectionAction.putValue(DatabaseConnectionManager.DISABLE_IF_NO_CONNECTION_SELECTED, Boolean.TRUE);
@@ -221,9 +265,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSwingSession createSession(JDBCDataSource ds,
+    public MatchMakerSwingSession createSession(SPDataSource ds,
 			String username, String password) throws PLSecurityException,
-			SQLException, SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException {
+			SQLException, ArchitectException, MatchMakerConfigurationException, RepositoryVersionException {
     	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     	getSessions().add(session);
         session.addSessionLifecycleListener(getSessionLifecycleListener());
@@ -245,7 +289,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getDataSources()
      */
-    public List<JDBCDataSource> getDataSources() {
+    public List<SPDataSource> getDataSources() {
         return context.getDataSources();
     }
 
@@ -318,26 +362,17 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         swingPrefs.put(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, ds.getName());
     }
 
-    public JDBCDataSource getAutoLoginDataSource() {
+    public SPDataSource getAutoLoginDataSource() {
         String lastDSName = swingPrefs.get(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, null);
         if (lastDSName == null) {
             lastDSName = DEFAULT_REPOSITORY_DATA_SOURCE_NAME;
         }
-        for (JDBCDataSource ds : getDataSources()) {
+        for (SPDataSource ds : getDataSources()) {
             if (ds.getName().equals(lastDSName)) return ds;
         }
         return null;
     }
 
-    public void setAddressCorrectionDataPath(String path) {
-    	context.setAddressCorrectionDataPath(path);
-    }
-    
-    public String getAddressCorrectionDataPath() {
-    	return context.getAddressCorrectionDataPath();
-    }
-    
-    
     ///////// Global GUI Stuff //////////
 
     /* (non-Javadoc)
@@ -374,7 +409,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             	autoLogin();
             }
         } catch (Exception ex) {
-           	MMSUtils.showExceptionDialogNoReport("DQguru Startup Failed", ex);
+           	MMSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
         }
     }
 
@@ -384,7 +419,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	 * or is out of date, then the MatchMaker will attempt to create/update it.
 	 */
 	private void autoLogin() {
-		JDBCDataSource dbSource = getAutoLoginDataSource();
+		SPDataSource dbSource = getAutoLoginDataSource();
 		final MatchMakerSession sessionDelegate;
 		try {
 			if (dbSource != null) {
@@ -422,7 +457,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @param dbSource Used for running upgrade scripts to the schema.
      * @param e Stores information of the schema problem.
      */
-	public void handleRepositoryVersionException(final JDBCDataSource dbSource,
+	public void handleRepositoryVersionException(final SPDataSource dbSource,
 			RepositoryVersionException e) {
 		Throwable t = null;
 		
@@ -432,9 +467,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) < 0) {
 			// schema is too old, prompt user to upgrade
 			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
-					"\nThe repository schema version is older than the DQguru required version." +
+					"\nThe repository schema version is older than the MatchMaker required version." +
 					"\nWould you like to upgrade the schema now?",
-					"DQguru Repository Problem", JOptionPane.YES_NO_OPTION,
+					"MatchMaker Repository Problem", JOptionPane.YES_NO_OPTION,
 					JOptionPane.WARNING_MESSAGE, null, new String[] {"Upgrade Now", "Not Now"}, "Upgrade Now");
 			
 			if (response == JOptionPane.YES_OPTION) {
@@ -451,9 +486,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) > 0) {
 			// schema too ...new? prompt user to download new mm or visit forum
 			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
-					"\nThe repository schema version is newer than the DQguru required version." +
-					"\nPlease download a newer version of the DQguru or visit our forum for help.",
-					"DQguru Repository Problem", JOptionPane.YES_NO_CANCEL_OPTION,
+					"\nThe repository schema version is newer than the MatchMaker required version." +
+					"\nPlease download a newer version of the MatchMaker or visit our forum for help.",
+					"MatchMaker Repository Problem", JOptionPane.YES_NO_CANCEL_OPTION,
 					JOptionPane.WARNING_MESSAGE, null, new String[] {"Download Now", "Visit Forum", "Not Now"}, "Download Now");
 			
 			if (response == JOptionPane.YES_OPTION) { 
@@ -503,7 +538,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @throws IOException
      */
     private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws IOException {
-        DataSourceCollection<JDBCDataSource> plDotIni = null;
+        DataSourceCollection plDotIni = null;
         String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
         while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
             logger.debug("readPlDotIni returns null, trying again...");
@@ -519,10 +554,12 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
             }
             int choice = JOptionPane.showOptionDialog(null,   // blocking wait
-                    "The DQguru keeps its list of database connections" +
+                    "The MatchMaker keeps its list of database connections" +
                     "\nin a file called PL.INI.  Your PL.INI "+message+"." +
                     "\n\nYou can browse for an existing PL.INI file on your system" +
-                    "\nor allow the DQguru to create a new one in your home directory.",
+                    "\nor allow the Architect to create a new one in your home directory." +
+                    "\n\nHint: If you are a Power*Loader Suite user, you should browse for" +
+                    "\nan existing PL.INI in your Power*Loader installation directory.",
                     "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 
             if (choice == JOptionPane.CLOSED_OPTION) {
@@ -560,7 +597,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         return new MatchMakerHibernateSessionContext(prefs, plDotIni);
     }
 
-    private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) {
+    private static DataSourceCollection readPlDotIni(String plDotIniPath) {
         if (plDotIniPath == null) {
             return null;
         }
@@ -728,13 +765,5 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
 	public void ensureDefaultRepositoryDefined() {
 		context.ensureDefaultRepositoryDefined();
-	}
-
-	public void addPreferenceChangeListener(PreferenceChangeListener l) {
-		context.addPreferenceChangeListener(l);
-	}
-
-	public void removePreferenceChangeListener(PreferenceChangeListener l) {
-		context.removePreferenceChangeListener(l);
 	}
 }

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,7 +26,7 @@ import javax.swing.AbstractAction;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
-import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.SPDataSource;
 
 /**
  * An action that "refreshes" the session by closing it and creating a new one
@@ -51,7 +51,7 @@ public class RefreshAction extends AbstractAction {
 
         // Save information we need in order to recreate the session
         SwingSessionContext context = swingSession.getContext();
-        JDBCDataSource ds = swingSession.getDatabase().getDataSource();
+        SPDataSource ds = swingSession.getDatabase().getDataSource();
         
         // this will prompt the user to save their work
         swingSession.setCurrentEditorComponent(null);

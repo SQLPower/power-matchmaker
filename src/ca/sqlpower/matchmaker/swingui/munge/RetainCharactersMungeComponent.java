@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -43,12 +43,15 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex;
+	private JCheckBox useRegex = new JCheckBox();
 	private JCheckBox caseSensitive;
-	private JTextField delimiters;
+	private JTextField delimiters = new JTextField();
 
 	public RetainCharactersMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
+
+		RegexValidator validator = new RegexValidator();
+		handler.addValidateObject(delimiters, useRegex, validator);
 	}
 
 	@Override
@@ -94,8 +97,6 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 				temp.setParameter(temp.RETAIN_CHARACTERS_PARAMETER_NAME, delimiters.getText());
             }
         });
-		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(delimiters, useRegex, validator);
 		
 		content.setLayout(new GridLayout(4,1));
 		content.add(new JLabel("Retain Characters:"));

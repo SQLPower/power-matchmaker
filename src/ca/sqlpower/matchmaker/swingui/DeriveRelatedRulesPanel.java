@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -38,6 +38,11 @@ import javax.swing.JTable;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLRelationship;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
@@ -47,15 +52,10 @@ import ca.sqlpower.matchmaker.swingui.action.DeriveRelatedRulesAction;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
 import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator.CacheType;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLRelationship;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.MonitorableDataEntryPanel;
+import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
@@ -107,18 +107,27 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
     private final FormValidationHandler validationHandler;
 	
 
-	private class DeriveAction extends SPSwingWorker {
+	private class DeriveAction extends MonitorableWorker {
 
+		/**
+         * Indicates that the derive process has begun.
+         */
+        private boolean started;
+        
+        /**
+         * Indicated that the derive process has terminated (with either
+         * success or failure).
+         */
+        private boolean finished;
+		
 		public DeriveAction(SwingWorkerRegistry registry) {
 			super(registry);
-			setMessage("Deriving related rules...");
-			setJobSize(null);
-			setProgress(0);
 		}
 
 		@Override
 		public void cleanup() throws Exception {
         	logger.debug("DeriveRelatedRulesAction.cleanup() starting");
+        	finished = true;
         	if (dialog != null) dialog.dispose();
         	swingSession.setSelectNewChild(true);
 		}
@@ -126,6 +135,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		@Override
 		/** Called (once) by run() in superclass */
 		public void doStuff() throws Exception {
+            started = true;
 			
             long start = System.currentTimeMillis();
             
@@ -176,7 +186,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				DatabaseMetaDataDecorator.putHint(DatabaseMetaDataDecorator.CACHE_TYPE, CacheType.EAGER_CACHE);
 				project.startCompoundEdit();
             	if (deriveByForeignKeyConstraints.isSelected()) {
-            		deriveMergeRulesByFKConstraints(sourceTable, sourceTableMergeRule, mergeRules);
+            		deriveMergeRulesByFKConstraints(dbMeta, sourceTable, sourceTableMergeRule, mergeRules);
             	}
             	if (deriveByColumnNames.isSelected()) {
             		deriveMergeRulesByColumnNames(con, dbMeta, primaryKeys, sourceTableMergeRule, mergeRules);
@@ -216,14 +226,14 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		 * @param mergeRules
 		 *            A List of Strings containing the names of existing
 		 *            TableMergeRules for this project.
-		 * @throws SQLObjectException
+		 * @throws ArchitectException
 		 */
-		private void deriveMergeRulesByFKConstraints(SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws SQLObjectException {
+		private void deriveMergeRulesByFKConstraints(DatabaseMetaData dbmd, SQLTable table, TableMergeRules sourceTableMergeRule, List<String> mergeRules) throws ArchitectException {
 			if (isCancelled()) {
 				throw new CancellationException("Merge rule derivation cancelled by user");
 			}
 			
-			List<SQLRelationship> exportedKeys = table.getExportedKeys();
+			List<SQLRelationship> exportedKeys = table.getExportedKeys(dbmd);
 
 			for (SQLRelationship exportedKey : exportedKeys) {
 				SQLTable fkTable = exportedKey.getFkTable();
@@ -280,7 +290,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				mergeRules.add(fkTable.getName());
 
 				// recursively derive merge rules for child tables
-				deriveMergeRulesByFKConstraints(fkTable, mergeRule, mergeRules);
+				deriveMergeRulesByFKConstraints(dbmd, fkTable, mergeRule, mergeRules);
 			}
 		}
 
@@ -311,12 +321,12 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		 *            A List of Strings containing all the names of the
 		 *            TableMergeRules in thie project
 		 * @throws SQLException
-		 * @throws SQLObjectException
+		 * @throws ArchitectException
 		 */
 		private void deriveMergeRulesByColumnNames(Connection con,
 				DatabaseMetaData dbMeta, List<String> primaryKeys,
 				TableMergeRules sourceTableMergeRule, List<String> mergeRules)
-				throws SQLException, SQLObjectException {
+				throws SQLException, ArchitectException {
 
 			ResultSet rs = null;
 			String lastTableName = "";
@@ -362,10 +372,6 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 					
 					if (catalogName == null) {
 						catalogName = "";
-					}
-					
-					if (schemaName == null) {
-						schemaName = "";
 					}
 	
 					// Set the variables accordingly if the table has changed
@@ -430,6 +436,33 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			}
 		}
 
+		public Integer getJobSize() {
+			return null;
+		}
+
+		public String getMessage() {
+			return "Deriving related rules...";
+		}
+
+		public int getProgress() {
+			return 0;
+		}
+
+		public boolean hasStarted() {
+			return started;
+		}
+
+		public boolean isFinished() {
+			return finished;
+		}
+
+		public void setStarted(boolean started) {
+			this.started = started;
+		}
+
+		public void setFinished(boolean finished) {
+			this.finished = finished;
+		}
 	}
 
 	public DeriveRelatedRulesPanel(MatchMakerSwingSession swingSession, Project project) {
@@ -469,7 +502,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			columnTable = new EditableJTable(columnTableModel);
 			columnTable.addColumnSelectionInterval(1, 1);
 			TableUtils.fitColumnWidths(columnTable, 10);
-		} catch (SQLObjectException ex) {
+		} catch (ArchitectException ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 					"Error in deriving related rules.", ex);
 		}
@@ -520,6 +553,8 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 	
 	public boolean applyChanges() {
 		swingSession.setSelectNewChild(false);
+		deriveAction.setStarted(false);
+		deriveAction.setFinished(false);
 		try {
         	progressBar.setVisible(true);
         	logger.debug("Progress Bar has been set to visible");
@@ -529,6 +564,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
         } catch (Exception ex) {
             SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
                     "Error in deriving related rules.", ex );
+            deriveAction.setFinished(true);
             return false;
         }
         return true;

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -89,9 +89,10 @@ class ShowCommandAction extends AbstractAction {
 	 * Displays the resulting command line to the user in a pop-up dialog.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		final String cmd = engine.createCommandLine();
+		editor.applyChanges();
+		final String[] cmd = engine.createCommandLine();
 		final JDialog d = new JDialog(parent,
-				"DQguru Engine Command Line");
+				"MatchMaker Engine Command Line");
 
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref:grow,4dlu", // columns
@@ -105,7 +106,17 @@ class ShowCommandAction extends AbstractAction {
 		CellConstraints cc = new CellConstraints();
 
 		final JTextArea cmdText = new JTextArea(15, 60);
-		cmdText.setText(cmd);
+		for (String arg : cmd) {
+			boolean hasSpace = arg.contains(" ");
+			if (hasSpace) {
+				cmdText.append("\"");
+			}
+			cmdText.append(arg);
+			if (hasSpace) {
+				cmdText.append("\"");
+			}
+			cmdText.append(" ");
+		}
 		cmdText.setEditable(false);
 		cmdText.setWrapStyleWord(true);
 		cmdText.setLineWrap(true);

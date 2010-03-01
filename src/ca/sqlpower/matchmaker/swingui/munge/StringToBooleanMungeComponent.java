@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -45,14 +45,18 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class StringToBooleanMungeComponent extends AbstractMungeComponent {
 
-	private JCheckBox useRegex;
+	private JCheckBox useRegex = new JCheckBox();
 	private JCheckBox caseSensitive;
-	private JTextField trueList;
-	private JTextField falseList;
+	private JTextField trueList = new JTextField();
+	private JTextField falseList = new JTextField();
 	private JComboBox defaultOption;
 
 	public StringToBooleanMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
+
+		RegexValidator validator = new RegexValidator();
+		handler.addValidateObject(trueList, useRegex, validator);
+		handler.addValidateObject(falseList, useRegex, validator);
 	}
 
 	@Override
@@ -122,10 +126,6 @@ public class StringToBooleanMungeComponent extends AbstractMungeComponent {
 			}
 			
 		});
-		
-		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(trueList, useRegex, validator);
-		getHandler().addValidateObject(falseList, useRegex, validator);
 		
 		content.setLayout(new GridLayout(8,1));
 		content.add(new JLabel("True List (regex or comma seperated values):"));

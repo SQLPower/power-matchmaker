@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -291,31 +291,22 @@ public class MungeProcess
 			if (resultStep != null) {
 				resultStep.addInputStep((SQLInputStep) child);
 			}
-			for (MungeStep step: getChildren()) {
-				if (child instanceof AddressCorrectionMungeStep) {
-					((AddressCorrectionMungeStep)step).setInputStep(child);
-				}
-			}
 		} else if (child instanceof MungeResultStep) {
 			if (resultStep != null && resultStep != child) {
-				throw new IllegalStateException("A transformation can only have one result transformer");
+				throw new IllegalStateException("A munge process can only have one munge result step");
 			} else if (resultStep == null) {
 				this.resultStep = (MungeResultStep) child;
 				for (SQLInputStep input : inputSteps) {
 					this.resultStep.addInputStep(input);
 				}
 			}
-		} else if (child instanceof AddressCorrectionMungeStep) {
-			for (SQLInputStep input : inputSteps) {
-				((AddressCorrectionMungeStep)child).setInputStep(input);
-			}
-		}
+		}	
 	}
 
 	@Override
 	public void removeChild(MungeStep child) {
 		if (child instanceof MungeResultStep) {
-			throw new IllegalStateException("Removal of result transformer is not allowed!");
+			throw new IllegalStateException("Removal of munge result step not allowed!");
 		} else {
 			super.removeChild(child);
 		}

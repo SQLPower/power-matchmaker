@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,8 +26,6 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
-import ca.sqlpower.validation.ValidateResult;
 
 /**
  * Defines a special type of MatchMakerObject which is capable of being part of a
@@ -163,11 +161,9 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	
 	/**
 	 * Disconnects the input at the given index by removing the 
-	 * MungeStepOutput from every input of this step it was connected to.
-	 * 
-	 * @return the number of inputs the given output was disconnected from.
+	 * MungeStepOutput
 	 */
-	int disconnectInput(MungeStepOutput mso);
+	void disconnectInput(MungeStepOutput mso);
 	
 	/**
 	 * Returns the list of input sources for this step. These items are actually
@@ -216,33 +212,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * Opening this step clears its previous committed and rolled back
      * state from its previous (open, call, commit|rollback, close) sequence.
      */
-	void open(Logger logger) throws Exception;
-
-	/**
-	 * Refreshes the munge step which performs different operations based on the
-	 * implementation. At the least this method will update inputs and outputs
-	 * to match changes in a table. This method may also refresh data in a step
-	 * for preview, refresh a connection to a database, or other behaviour.
-	 */
-	void refresh(Logger logger) throws Exception;
-
-	/**
-	 * In addition to performing the same function as {@link #open(Logger)},
-	 * this version allows client code to pass in flags to a step if it has
-	 * multiple modes of behaviour. The flag variable would have to of a type
-	 * that implements the StepMode. This could include using an enum that
-	 * implements StepMode to use an enum as a flag.
-	 * 
-	 * @param mode
-	 *            A flag variable that can be any type that implements
-	 *            {@link EngineMode}. How the step interprets the flag is up to
-	 *            the {@link MungeStep} implementation.
-	 * @param logger
-	 *            A {@link Logger} that is logging the log output of the entire
-	 *            MungeProcess that this particular MungeStep is part of.
-	 * @throws Exception
-	 */
-    void open(EngineMode mode, Logger logger) throws Exception;
+    void open(Logger logger) throws Exception;
     
     /**
      * Closes any resources allocated by the {@link open()} method.  For users of
@@ -314,17 +284,4 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 *         it. False if otherwise.
 	 */
     boolean hasConnectedInputs();
-
-	/**
-	 * A MungeStep may have some preconditions that need to be met before it can
-	 * run properly. This method will check these preconditons and then return a
-	 * {@link List} of {@link ValidateResult} that indicate the result of this
-	 * preconditions check. Client code can then react accordingly. If there are
-	 * no preconditions to check, then this method can simply return an empty
-	 * list.
-	 * 
-	 * @return A {@link List} of {@link ValidateResult} that indicate the result
-	 *         of the precondition check.
-	 */
-    public List<ValidateResult> checkPreconditions();
 }

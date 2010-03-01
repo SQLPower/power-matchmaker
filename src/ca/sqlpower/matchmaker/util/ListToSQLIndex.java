@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -30,11 +30,10 @@ import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 
 /**
  * This is a class that implements UserType and is used for
@@ -67,18 +66,18 @@ public class ListToSQLIndex implements UserType  {
 
 				SQLIndex.Column c;
 				if (oldIndexColumn.getColumn() != null) {
-					c = new Column(
+					c = newIndex.new Column(
 							oldIndexColumn.getColumn(),
 							oldIndexColumn.getAscendingOrDescending());
 				} else {
-					c = new Column(
+					c = newIndex.new Column(
 							oldIndexColumn.getName(),
 							oldIndexColumn.getAscendingOrDescending());
 				}
 				newIndex.addChild(c);
 			}
-		} catch (SQLObjectException e) {
-			throw new SQLObjectRuntimeException(e);
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
 		}
         return newIndex;
     }
@@ -119,8 +118,8 @@ public class ListToSQLIndex implements UserType  {
 				}
 			}
 			return true;
-		} catch (SQLObjectException e) {
-			throw new SQLObjectRuntimeException(e);
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
 		}
 
     }
@@ -149,10 +148,10 @@ public class ListToSQLIndex implements UserType  {
                     if (columnName != null) {
                     	try {
 							SQLIndex.Column c;
-							c = new Column(columnName, AscendDescend.UNSPECIFIED);
+							c = index.new Column(columnName, AscendDescend.UNSPECIFIED);
 							index.addChild(c);
-						} catch (SQLObjectException e) {
-							throw new SQLObjectRuntimeException(e);
+						} catch (ArchitectException e) {
+							throw new ArchitectRuntimeException(e);
 						}
                     }
                 }
@@ -172,19 +171,23 @@ public class ListToSQLIndex implements UserType  {
 
             logger.debug("binding '" + ind.getName() + "' to parameter: " + indexItemPos);
             st.setString(indexItemPos, ind.getName());
-            // It is required to increment the index by 1 since the inital
-            // index is for the SQLIndex name. The index needs to increase
-            // to synchronize with setting the values of the columns
-            for (SQLIndex.Column c : (List<SQLIndex.Column>) ind.getChildren()) {
-            	indexItemPos++;
-            	logger.debug("binding '" + c.getName() + "' to parameter: " + indexItemPos);
-            	st.setString(indexItemPos, c.getName());
-            }
-            // fill in the rest of the values
-            for (int i = indexItemPos + 1; i < COLUMN_COUNT + index; i++) {
-            	logger.debug("binding null to parameter: " + i);
-            	st.setNull(i, Types.VARCHAR);
-            }
+            try {
+				// It is required to increment the index by 1 since the inital
+				// index is for the SQLIndex name. The index needs to increase
+				// to synchronize with setting the values of the columns
+				for (SQLIndex.Column c : (List<SQLIndex.Column>) ind.getChildren()) {
+					indexItemPos++;
+					logger.debug("binding '" + c.getName() + "' to parameter: " + indexItemPos);
+					st.setString(indexItemPos, c.getName());
+				}
+				// fill in the rest of the values
+				for (int i = indexItemPos + 1; i < COLUMN_COUNT + index; i++) {
+					logger.debug("binding null to parameter: " + i);
+					st.setNull(i, Types.VARCHAR);
+				}
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
         } else if (value == null) {
         	for (int i = index; i < COLUMN_COUNT + index; i++) {
         		logger.debug("binding null to parameter: " + i);

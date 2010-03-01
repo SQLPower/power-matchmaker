@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -29,6 +29,13 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -45,15 +52,7 @@ import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetMasterAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetNoMatchAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetUnmatchAction;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLSchema;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.sql.SPDataSource;
 
 public class MatchResultVisualizerTest extends TestCase {
 	
@@ -69,7 +68,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		JDBCDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 		
@@ -91,7 +90,8 @@ public class MatchResultVisualizerTest extends TestCase {
 //				10, 0));
 
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
-		sourceTableIndex.addChild(new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
+		sourceTableIndex.addChild(
+		        sourceTableIndex.new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
 		sourceTable.addIndex(sourceTableIndex);
 
 		plSchema.addChild(sourceTable);
@@ -101,8 +101,8 @@ public class MatchResultVisualizerTest extends TestCase {
 			public Connection getConnection() {
 				try {
 					return db.getConnection();
-				} catch (SQLObjectException e) {
-					throw new SQLObjectRuntimeException(e);
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
 				}
 			}
 			
@@ -118,14 +118,14 @@ public class MatchResultVisualizerTest extends TestCase {
 			
 			@Override
 			public boolean tableExists(String spDataSourceName, String catalog,
-					String schema, String tableName) throws SQLObjectException {
+					String schema, String tableName) throws ArchitectException {
 				return true;
 			}
 			
 			@Override
 			public SQLTable findPhysicalTableByName(String spDataSourceName,
 					String catalog, String schema, String tableName)
-					throws SQLObjectException {
+					throws ArchitectException {
 				return sourceTable;
 			}
 		};

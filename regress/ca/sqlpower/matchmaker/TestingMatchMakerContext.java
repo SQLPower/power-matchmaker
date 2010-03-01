@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,17 +25,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
-	List<JDBCDataSource> dataSources = new ArrayList<JDBCDataSource>();
+	List<SPDataSource> dataSources = new ArrayList<SPDataSource>();
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
 	Collection<MatchMakerSession> sessions = new LinkedList<MatchMakerSession>();
@@ -54,11 +53,11 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		sessions.add(session);
 	}
 	
-	public List<JDBCDataSource> getDataSources() {
+	public List<SPDataSource> getDataSources() {
 		return dataSources;
 	}
 
-	public void setDataSou2rces(List<JDBCDataSource> dataSources) {
+	public void setDataSou2rces(List<SPDataSource> dataSources) {
 		this.dataSources = dataSources;
 	}
 
@@ -80,7 +79,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		sessions.add(session);
 	}
 
-	public MatchMakerSession createSession(JDBCDataSource ds, String username,
+	public MatchMakerSession createSession(SPDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException, RepositoryVersionException{
 		return session;
 	}
@@ -111,21 +110,5 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	
 	public void ensureDefaultRepositoryDefined() {
 		// Do nothing
-	}
-
-	public String getAddressCorrectionDataPath() {
-		return null;
-	}
-
-	public void setAddressCorrectionDataPath(String path) {
-		// Do nothing
-	}
-
-	public void addPreferenceChangeListener(PreferenceChangeListener l) {
-		prefs.addPreferenceChangeListener(l);
-	}
-
-	public void removePreferenceChangeListener(PreferenceChangeListener l) {
-		prefs.removePreferenceChangeListener(l);
 	}
 }

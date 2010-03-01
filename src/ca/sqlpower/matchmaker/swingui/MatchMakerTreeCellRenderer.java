@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,7 +20,12 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -41,14 +46,10 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionType;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
-import ca.sqlpower.swingui.ColoredIcon;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
-	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/project_matchmaker.png"));
-	final private Icon projectDedupeIcon = new ImageIcon(getClass().getResource("/icons/project_dedupe.png"));
-	final private Icon projectCleanseIcon = new ImageIcon(getClass().getResource("/icons/project_cleanse.png"));
-	final private Icon projectAddressIcon = new ImageIcon(getClass().getResource("/icons/project_address.png"));
+	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
 	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
 	final private Icon mergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double.png"));
 	final private Icon sourceMergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double_star.png"));
@@ -74,19 +75,7 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
 
 		if (value instanceof Project) {
-			switch (((Project) value).getType()) {
-				case FIND_DUPES:
-					setIcon(projectDedupeIcon);
-					break;
-				case CLEANSE:
-					setIcon(projectCleanseIcon);
-					break;
-				case ADDRESS_CORRECTION:
-					setIcon(projectAddressIcon);
-					break;
-				default:
-					setIcon(projectIcon);
-			}
+			setIcon(projectIcon);
 		} else if (value instanceof MungeProcess) {
             MungeProcess mungeProcess = (MungeProcess) value;
             if (mungeProcess.getColour() == null) {
@@ -103,15 +92,12 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			}
 		} else if (value instanceof ProjectActionNode) {
 			ProjectActionType val = ((ProjectActionNode) value).getActionType();
-			if (val.equals(ProjectActionType.VALIDATE_MATCHES) || 
-					val.equals(ProjectActionType.VALIDATE_ADDRESSES)) {
+			if (val.equals(ProjectActionType.VALIDATE_MATCHES)) {
 				setIcon(validateIcon);
 			} else if (val.equals(ProjectActionType.RUN_MATCH) ||
-					val.equals(ProjectActionType.RUN_CLEANSING) ||
-					val.equals(ProjectActionType.RUN_ADDRESS_CORRECTION)) {
+					val.equals(ProjectActionType.RUN_CLEANSING)) {
 				setIcon(matchEngineIcon);
-			} else if (val.equals(ProjectActionType.RUN_MERGE) ||
-						val.equals(ProjectActionType.COMMIT_VALIDATED_ADDRESSES)) {
+			} else if (val.equals(ProjectActionType.RUN_MERGE)) {
 				setIcon(mergeEngineIcon);
 			} else { 
 				setIcon(infoIcon);
@@ -134,4 +120,40 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		} 
 		return this;
 	}
+
+    /**
+     * Applies a colour tint over the given icon when painted.
+     */
+    private class ColoredIcon implements Icon {
+
+        private Icon sourceIcon;
+        private Color tint;
+        
+        public ColoredIcon(Icon source, Color tint) {
+            this.sourceIcon = source;
+            this.tint = tint;
+        }
+
+        public int getIconHeight() {
+            return sourceIcon.getIconHeight();
+        }
+
+        public int getIconWidth() {
+            return sourceIcon.getIconWidth();
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            BufferedImage img = new BufferedImage(getIconWidth(), getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = (Graphics2D) img.getGraphics();
+            sourceIcon.paintIcon(c, g2, 0, 0);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
+            g2.setColor(tint);
+            g2.fillRect(0, 0, getIconWidth(), getIconHeight());
+            g2.dispose();
+            
+            g.drawImage(img, x, y, null);
+        }
+     
+        
+    }
 }

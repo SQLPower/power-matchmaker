@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -29,12 +29,11 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLSchema;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.Resizable;
 import ca.sqlpower.validation.Status;
@@ -184,20 +183,12 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 			// the chosen schema and table.
 			} else if (chooser.getTableComboBox().isEnabled()){
 				List<TableMergeRules> mergeRules = project.getTableMergeRules();
-				String catalogName = null;
-				if (chooser.getCatalogComboBox().getSelectedItem() != null) {
-					catalogName = ((SQLCatalog) chooser.getCatalogComboBox().getSelectedItem()).getName();
-				}
-				String schemaName = null;
-				if (chooser.getSchemaComboBox().getSelectedItem() != null) {
-					schemaName = ((SQLSchema)chooser.getSchemaComboBox().getSelectedItem()).getName();
-				}
+				String schemaName = ((SQLSchema)chooser.getSchemaComboBox().getSelectedItem()).getName();
 				String tableName = ((SQLTable)chooser.getTableComboBox().getSelectedItem()).getName();
 				SQLTable parentTable = ((SQLTable) parentMergeRule.getSelectedItem());
 
 				for (TableMergeRules rule: mergeRules) {
-					if (((rule.getCatalogName() == null && catalogName == null) || (rule.getCatalogName() != null && rule.getCatalogName().equals(catalogName))) &&
-							((rule.getSchemaName() == null && schemaName == null) || (rule.getSchemaName() != null && rule.getSchemaName().equals(schemaName))) &&
+					if (rule.getSchemaName().equals(schemaName) &&
 							rule.getTableName().equals(tableName)) {
 						if (rule.isSourceMergeRule()) {
 							return ValidateResult.createValidateResult(Status.FAIL, 

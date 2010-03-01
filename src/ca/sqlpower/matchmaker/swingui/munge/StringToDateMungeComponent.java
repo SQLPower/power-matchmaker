@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -56,7 +56,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class StringToDateMungeComponent extends AbstractMungeComponent {
 
 	private JTextField sample;
-	private JTextField inputFormat;
+	private JTextField inputFormat = new JTextField();
 	
 	private JComboBox dateFormat;
 	private JComboBox timeFormat;
@@ -69,6 +69,7 @@ public class StringToDateMungeComponent extends AbstractMungeComponent {
 	
 	public StringToDateMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler, session);
+		handler.addValidateObject(inputFormat, new DateFormatPatternValidator());
 	}
 
 	@Override
@@ -140,7 +141,6 @@ public class StringToDateMungeComponent extends AbstractMungeComponent {
 				}
             }
         });
-		getHandler().addValidateObject(inputFormat, new DateFormatPatternValidator());
 		
 		outputFormat = new JComboBox(outputFormats);
 		outputFormat.setSelectedItem(temp.getOutputFormat());

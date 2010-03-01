@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -36,11 +36,11 @@ import javax.swing.ToolTipManager;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLObjectException;
 
 public class SourceTableRecordViewer {
 
@@ -103,7 +103,7 @@ public class SourceTableRecordViewer {
 
 	public SourceTableRecordViewer(SourceTableRecord view,
 			SourceTableRecord master, List<Action> buttonActions,
-			List<SQLColumn> shownColumns, int buffer) throws SQLObjectException,
+			List<SQLColumn> shownColumns, int buffer) throws ArchitectException,
 			SQLException {
 		panel = new RecordViewerPanel();
 		panel.setLayout(new GridLayout(0, 1));
@@ -217,7 +217,7 @@ public class SourceTableRecordViewer {
      * the given list.  If the list is null, then all the columns will
      * appear.
 	 */
-    public static JPanel headerPanel(Project project, List<SQLColumn> shownColumns) throws SQLObjectException {
+    public static JPanel headerPanel(Project project, List<SQLColumn> shownColumns) throws ArchitectException {
 		JPanel panel = new JPanel(new GridLayout(0, 1));
 		panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
 

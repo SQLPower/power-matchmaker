@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -52,32 +52,29 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 	JCheckBox useCurrent;
 	JCheckBox retNull;
 	SpinnerDateModel dc;
-	JSpinner date;
+	JSpinner date = new JSpinner();
 	JComboBox opts;
 	JSpinner.DateEditor editor;
 
 	public DateConstantMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
-		super(step, handler, session);		
+		super(step, handler, session);
+		handler.addValidateObject(date, new DateValidator());
 	}
 
 	@Override
 	protected JPanel buildUI() {
-		Date value;
+		Date value = null;
 		try {
 			value = ((DateConstantMungeStep) getStep()).getValue();
 		} catch (ParseException e) {
 			SPSUtils.showExceptionDialogNoReport(getPen(), "Error Loading munge step", e);
-			value = null;
-		}
-		if (value == null) {
-		    value = new Date();
-		    ((DateConstantMungeStep) getStep()).setValue(value);
+			value = Calendar.getInstance().getTime();
+			((DateConstantMungeStep) getStep()).setValue(value);
 		}
 		dc = new SpinnerDateModel(value, null, null, Calendar.SECOND);
 		date = new JSpinner(dc);
 		editor = new JSpinner.DateEditor(date, getFormateString());
 		date.setEditor(editor);
-		getHandler().addValidateObject(date, new DateValidator());
 
 
 		dc.addChangeListener(new ChangeListener(){

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -28,23 +28,20 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.log4j.Logger;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
+import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
-import ca.sqlpower.matchmaker.address.AddressPool;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
-import ca.sqlpower.object.ObjectDependentException;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObject;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -55,10 +52,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     static final Logger logger = Logger.getLogger(Project.class);
     
 	public enum ProjectMode {
-		FIND_DUPES("Find Duplicates"), 
-		BUILD_XREF("Build Cross-Reference"), 
-		CLEANSE("Cleanse"),
-		ADDRESS_CORRECTION("Address Correction");
+		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference"), CLEANSE("Cleanse");
 
 		String displayName;
 
@@ -100,10 +94,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	/** The type of project */
     private ProjectMode type;
 
-	/**
-	 * The settings for the munging engine. This applies to Match, Cleanse, and
-	 * Address Correction Projects
-	 */
+	/** The settings for the match engine */
     private MungeSettings mungeSettings = new MungeSettings();
 
 	/** the settings for the merge engine */
@@ -119,7 +110,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
     
     /** Folder name for munge processes. */
-    public static final String MUNGE_PROCESSES_FOLDER_NAME = "Transformations";
+    public static final String MUNGE_PROCESSES_FOLDER_NAME = "Munge Processes";
     
     /**
      * Contains the Munge Processes and the Munge Steps
@@ -169,18 +160,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
 	private MergeEngineImpl mergingEngine = null;
 
-	/**
-	 * The Address Correction Engine will be created lazily, because we only need one instance per project.
-	 */
-	private AddressCorrectionEngine addressCorrectionEngine = null; 
-	
-	/**
-	 * An {@link AddressCorrectionEngine} particularly set up to not
-	 * auto-correct addresses, but to load user-corrected addresses from a
-	 * result table and commit them into the source table.
-	 */
-	private AddressCorrectionEngine addressCommittingEngine = null;
-	
     /**
      * The process that holds the engine lock. If no process has an engine lock
      * on this project, the reference will be null. The Monitorable instance
@@ -202,12 +181,28 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
+	/**
+	 * FIXME Implement me
+	 *
+	 */
+	public void execute() {
+		throw new NotImplementedException();
+	}
+
+	/**
+	 * FIXME Implement me
+	 *
+	 */
+	public boolean checkValid() {
+		throw new NotImplementedException();
+	}
+
     /**
      * Returns true if the current resultTable of this project exists
      * in the session's database; false otherwise.
-     * @throws SQLObjectException If there are problems accessing the session's database
+     * @throws ArchitectException If there are problems accessing the session's database
      */
-	public boolean doesResultTableExist() throws SQLObjectException {
+	public boolean doesResultTableExist() throws ArchitectException {
 		MatchMakerSession session = getSession();
 		if (session == null) {
 			throw new IllegalStateException("Session has not been setup " +
@@ -222,7 +217,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * Returns true if the source table of this project exists in the session's
 	 * database; false otherwise.
 	 */
-	public boolean doesSourceTableExist() throws SQLObjectException {
+	public boolean doesSourceTableExist() throws ArchitectException {
 		MatchMakerSession session = getSession();
 		if (session == null) {
 			throw new IllegalStateException("Session has not been setup " +
@@ -251,13 +246,13 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 *             <b>or</b>
 	 *             <p>
 	 *             If the source table property of this project is not set yet.
-	 * @throws SQLObjectException
+	 * @throws ArchitectException
 	 *             If there is trouble working with the source table.
 	 */
-	public SQLTable createResultTable() throws SQLObjectException {
+	public SQLTable createResultTable() throws ArchitectException {
 		SQLIndex si = getSourceTableIndex();
 
-		if (si.isEmpty()) {
+		if (si == null) {
 			throw new IllegalStateException(
 					"You have to set up the source table of a project " +
 					"before you can create its result table!");
@@ -277,24 +272,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 				"]");
 		logger.debug("createResultTable: si="+si+" si.children.size="+si.getChildCount());
 		
-		SQLTable t;
-		
-		if (type == ProjectMode.FIND_DUPES){
-			t = buildDedupeResultTable(oldResultTable, si);
-		} else if (getType() == ProjectMode.ADDRESS_CORRECTION) {
-			t = AddressPool.buildAddressCorrectionResultTable(oldResultTable, si);
-		} else {
-			throw new IllegalStateException("Building result table on a project type that does not use result tables! " +
-					"Project Name: " + this.getName() + " Project Type: " + this.getType());
-		}
+		SQLTable t = buildResultTable(oldResultTable, si);
         
         // Now replace the in-memory cached version of the result table
         SQLObject resultTableParent = oldResultTable.getParent();
-        try {
-        	resultTableParent.removeChild(oldResultTable);
-        } catch (ObjectDependentException e) {
-        	throw new RuntimeException(e);
-        }
+        resultTableParent.removeChild(oldResultTable);
         resultTableParent.addChild(t);
         
 		setResultTable(t);
@@ -307,10 +289,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 *  
 	 * @param resultTable This contains the setup information for the result table to be generated.
 	 * @param si The unique index upon which the result table should reflect on
-	 * @throws SQLObjectException
+	 * @throws ArchitectException
 	 */
-	public SQLTable buildDedupeResultTable(SQLTable resultTable, SQLIndex si) 
-		throws SQLObjectException {
+	public SQLTable buildResultTable(SQLTable resultTable, SQLIndex si) 
+		throws ArchitectException {
 		
 		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
 
@@ -355,7 +337,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
 		for (int i = 0; i < si.getChildCount() * 2; i++) {
-			newidx.addChild(new Column(t.getColumn(i), AscendDescend.ASCENDING));
+			newidx.addChild(newidx.new Column(t.getColumn(i), AscendDescend.ASCENDING));
 		}
 		t.addIndex(newidx);
 		
@@ -371,9 +353,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * @param si The index to iterate over for type, precision, scale of the
 	 * new columns.
 	 * @param baseName The base name of the new columns.
-	 * @throws SQLObjectException
+	 * @throws ArchitectException
 	 */
-	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws SQLObjectException {
+	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws ArchitectException {
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
@@ -422,7 +404,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * <b>or</b>
 	 * <p>session and sql database have not been setup for the match
 	 */
-	public boolean verifyResultTableStructure() throws SQLObjectException {
+	public boolean verifyResultTableStructure() throws ArchitectException {
 
 		MatchMakerSession session = getSession();
 		if (session == null) {
@@ -437,7 +419,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 					"connection to check the result table");
 		}
 		SQLIndex si = getSourceTableIndex();
-		if (si.isEmpty()) {
+		if (si == null) {
 			throw new IllegalStateException("No unique index specified " +
 					"for the project, I don't know how to vertify the " +
 					"result table stucture.");
@@ -468,14 +450,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		}
 
 		List<SQLTable> inMemory = new ArrayList<SQLTable>();
-		if (type == ProjectMode.FIND_DUPES) {
-			inMemory.add(buildDedupeResultTable(resultTable, si));
-		} else if (type == ProjectMode.ADDRESS_CORRECTION){
-			inMemory.add(AddressPool.buildAddressCorrectionResultTable(resultTable, si));
-		} else {
-			throw new IllegalStateException("Checking result table on a project type that does not use result tables! " +
-					"Project Name: " + this.getName() + " Project Type: " + this.getType());
-		}
+		inMemory.add(buildResultTable(resultTable, si));
 		List<SQLTable> physical = new ArrayList<SQLTable>();
 		physical.add(table);
 		CompareSQL compare = new CompareSQL(inMemory,physical);
@@ -508,7 +483,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 *             If the source table has not been setup session and sql
 	 *             database have not been setup for the match
 	 */
-	public boolean verifySourceTableStructure() throws SQLObjectException {
+	public boolean verifySourceTableStructure() throws ArchitectException {
 		MatchMakerSession session = getSession();
 		if (session == null) {
 			throw new IllegalStateException("Session has not been setup " +
@@ -553,6 +528,15 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		
 		return diffCount == 0;
 	}
+	
+	
+	/**
+	 * FIXME Implement me
+	 *
+	 */
+	public void createViewTable() {
+		throw new NotImplementedException();
+	}
 
 	public String getFilter() {
 		return filter;
@@ -587,6 +571,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 				this.mergeSettings);
 	}
 
+
+
+
 	public ProjectMode getType() {
 		return type;
 	}
@@ -594,7 +581,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	public void setType(ProjectMode type) {
 		ProjectMode oldValue = this.type;
 		this.type = type;
-		if (type == ProjectMode.CLEANSE || type == ProjectMode.ADDRESS_CORRECTION) {
+		if (type == ProjectMode.CLEANSE) {
 			getTableMergeRulesFolder().setVisible(false);
 		}
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
@@ -897,7 +884,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * function properly if this set of columns doesn't have the uniqueness
      * property.
      */
-	public SQLIndex getSourceTableIndex() throws SQLObjectException {
+	public SQLIndex getSourceTableIndex() throws ArchitectException {
 		return sourceTableIndex.getTableIndex();
 	}
 	
@@ -960,29 +947,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Returns the contained {@link AddressCorrectionEngine}.
-	 * If there isn't one, one will get created. This helps to ensure
-	 * only one instance is created per project. 
-	 * 
-	 * @return The Address Correction Engine contained
-	 */
-	public AddressCorrectionEngine getAddressCorrectionEngine() {
-		if (addressCorrectionEngine == null) {
-			addressCorrectionEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES);
-		}
-		return addressCorrectionEngine;
-	}
-	
-	public AddressCorrectionEngine getAddressCommittingEngine() {
-		if (addressCommittingEngine == null) {
-			addressCommittingEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES);
-		}
-		return addressCommittingEngine;
-	}
-	
-	/**
-	 * Returns the connection associated with the source table. If the sourceTable
-	 * is null, then returns null;
+	 * Returns the connection associated with the source table
 	 * @throws SQLException 
 	 */
 	public Connection createSourceTableConnection() throws SQLException {
@@ -993,8 +958,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Returns the connection associated with the result table. If the result table
-	 * is null, then returns null;
+	 * Returns the connection associated with the result table
 	 * @throws SQLException 
 	 */
 	public Connection createResultTableConnection() throws SQLException {

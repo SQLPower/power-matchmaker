@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -35,16 +35,16 @@ import javax.swing.JProgressBar;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObject;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLSchema;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.SPSUtils;
 
@@ -84,9 +84,9 @@ public class SQLObjectChooser {
      * @param okButtonLabel The text that should appear on the OK button
      * @return The selected "table container" object, or <tt>null</tt> if the user cancels or
      * closes the dialog.
-     * @throws SQLObjectException If there are problems connecting to or populating the chosen databases
+     * @throws ArchitectException If there are problems connecting to or populating the chosen databases
      */
-    public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String dialogTitle, String okButtonLabel) throws SQLObjectException {
+    public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String dialogTitle, String okButtonLabel) throws ArchitectException {
         // single boolean in final array so the buttons can modify its value
         final boolean[] dialogAccepted = new boolean[1];
         final JDialog d = SPSUtils.makeOwnedDialog(owner, dialogTitle);
@@ -169,7 +169,7 @@ public class SQLObjectChooser {
 
 	private JLabel status = new JLabel();
 
-	private JDBCDataSource dataSource;
+	private SPDataSource dataSource;
 
 	private SQLCatalog catalog;
 
@@ -196,7 +196,7 @@ public class SQLObjectChooser {
 		this(session, owner, session.getDatabase().getDataSource());
 	}
 
-	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner, final JDBCDataSource defaultDS) {
+	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner, final SPDataSource defaultDS) {
 		this.session = session;
 			
 		db = session.getDatabase(defaultDS);
@@ -222,7 +222,7 @@ public class SQLObjectChooser {
         try {
             db.populate();
             if (db.isCatalogContainer()) {
-                List<SQLCatalog> catalogs = db.getChildren(SQLCatalog.class);
+                List<SQLCatalog> catalogs = db.getChildren();
                 setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
                 if ( catalogs != null && catalogs.size() > 0 ) {
                     catalogTerm.setText(catalogs.get(0).getNativeTerm());
@@ -230,7 +230,7 @@ public class SQLObjectChooser {
                 }
             } else if (db.isSchemaContainer()) {
 
-                List<SQLSchema> schemas = db.getChildren(SQLSchema.class);
+                List<SQLSchema> schemas = db.getChildren();
                 
                 setComboBoxStateAndItem(schemaComboBox, schemas, -1);
                 if ( schemas != null && schemas.size() > 0 ) {
@@ -238,11 +238,11 @@ public class SQLObjectChooser {
                     schemaTerm.setEnabled(true);
                 }
             } else {
-                List<SQLTable> tables = db.getChildren(SQLTable.class);
+                List<SQLTable> tables = db.getChildren();
                 setComboBoxStateAndItem(tableComboBox, tables, -1);
             }
-        } catch (SQLObjectException ex) {
-            throw new SQLObjectRuntimeException(ex);
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
         }
         
 		ItemListener itemListener = new ItemListener() {
@@ -266,10 +266,10 @@ public class SQLObjectChooser {
      * selection change. This method is really a subroutine of the anonymous
      * ItemListener implementation defined in the constructor.
      * 
-     * @throws SQLObjectException
+     * @throws ArchitectException
      *             When any of the database access fails.
      */
-	private void validate() throws SQLObjectException {
+	private void validate() throws ArchitectException {
 
 		if (dataSourceComboBox.getSelectedItem() == null) {
 			dataSource = null;
@@ -311,13 +311,13 @@ public class SQLObjectChooser {
 				schemaTerm.setText("Schema");
 				schemaTerm.setEnabled(false);
 
-				dataSource = (JDBCDataSource) dataSourceComboBox
+				dataSource = (SPDataSource) dataSourceComboBox
 						.getSelectedItem();
 				db = session.getDatabase(dataSource);
 				db.populate();
 
 				if (db.isCatalogContainer()) {
-					List<SQLCatalog> catalogs = db.getChildren(SQLCatalog.class);
+					List<SQLCatalog> catalogs = db.getChildren();
 					setComboBoxStateAndItem(catalogComboBox,catalogs,-1);
 					if ( catalogs != null && catalogs.size() > 0 ) {
 						catalogTerm.setText(catalogs.get(0).getNativeTerm());
@@ -325,14 +325,14 @@ public class SQLObjectChooser {
 					}
 				} else if (db.isSchemaContainer()) {
 
-					List<SQLSchema> schemas = db.getChildren(SQLSchema.class);
+					List<SQLSchema> schemas = db.getChildren();
 					setComboBoxStateAndItem(schemaComboBox,schemas,-1);
 					if ( schemas != null && schemas.size() > 0 ) {
 						schemaTerm.setText(schemas.get(0).getNativeTerm());
 						schemaTerm.setEnabled(true);
 					}
 				} else {
-					List<SQLTable> tables = db.getChildren(SQLTable.class);
+					List<SQLTable> tables = db.getChildren();
 					setComboBoxStateAndItem(tableComboBox,tables,-1);
 				}
 			} else if (catalog != catalogComboBox.getSelectedItem()) {
@@ -357,14 +357,14 @@ public class SQLObjectChooser {
 					catalogTerm.setText(catalog.getNativeTerm());
 					catalogTerm.setEnabled(true);
 					if (catalog.isSchemaContainer()) {
-						List<SQLSchema> schemas = catalog.getChildren(SQLSchema.class);
+						List<SQLSchema> schemas = catalog.getChildren();
 						setComboBoxStateAndItem(schemaComboBox,schemas,-1);
 						if ( schemas != null && schemas.size() > 0 ) {
 							schemaTerm.setText(schemas.get(0).getNativeTerm());
 							schemaTerm.setEnabled(true);
 						}
 					} else {
-						List<SQLTable> tables = catalog.getChildren(SQLTable.class);
+						List<SQLTable> tables = catalog.getChildren();
 						setComboBoxStateAndItem(tableComboBox,tables,-1);
 					}
 				}
@@ -384,7 +384,7 @@ public class SQLObjectChooser {
 				} else {
 					schemaTerm.setText(schema.getNativeTerm());
 					schemaTerm.setEnabled(true);
-					List<SQLTable> tables = schema.getChildren(SQLTable.class);
+					List<SQLTable> tables = schema.getChildren();
 					setComboBoxStateAndItem(tableComboBox,tables,-1);
 				}
 			} else if (table != tableComboBox.getSelectedItem()) {

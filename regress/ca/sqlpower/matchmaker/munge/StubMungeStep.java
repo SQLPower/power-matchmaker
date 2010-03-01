@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -27,9 +27,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.validation.ValidateResult;
 
 /**
  * A non-functional implementation of MungeStep for the benefit of test cases.
@@ -95,10 +93,6 @@ public class StubMungeStep implements MungeStep {
         return null;
     }
 
-    public void open(EngineMode mode, Logger logger) throws Exception {
-    	logger.debug("Stub call: StubMungeStep.open()");
-    }
-    
     public void open(Logger logger) throws Exception {
         logger.debug("Stub call: StubMungeStep.open()");
     }
@@ -255,9 +249,8 @@ public class StubMungeStep implements MungeStep {
 		return false;
 	}
 
-	public int disconnectInput(MungeStepOutput mso) {
+	public void disconnectInput(MungeStepOutput mso) {
 		logger.debug("Stub call: StubMungeStep.disconnectInput()");
-		return 0;
 	}
 
 	public void removeUnusedInput() {
@@ -283,14 +276,5 @@ public class StubMungeStep implements MungeStep {
 	
 	public boolean hasConnectedInputs() {
 		return false;
-	}
-	
-	public List<ValidateResult> checkPreconditions() {
-		logger.debug("Stub call: StubMungeStep.checkPreconditions()");
-		return null;
-	}
-	
-	public void refresh(Logger logger) throws Exception {
-		logger.debug("Stub call: StubMungeStep.refresh()");
 	}
 }

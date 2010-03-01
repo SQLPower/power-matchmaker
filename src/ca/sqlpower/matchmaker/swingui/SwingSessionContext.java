@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -34,22 +35,20 @@ import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 public interface SwingSessionContext extends MatchMakerSessionContext {
 
     //////// MatchMakerSessionContext implementation //////////
-    public MatchMakerSwingSession createSession(JDBCDataSource ds,
+    public MatchMakerSwingSession createSession(SPDataSource ds,
 			String username, String password) throws PLSecurityException,
-			SQLException, SQLObjectException, MatchMakerConfigurationException,
+			SQLException, ArchitectException, MatchMakerConfigurationException,
 			RepositoryVersionException;
 
-    public List<JDBCDataSource> getDataSources();
+    public List<SPDataSource> getDataSources();
 
-    public DataSourceCollection<JDBCDataSource> getPlDotIni();
+    public DataSourceCollection getPlDotIni();
 
     public String getLastImportExportAccessPath();
 
@@ -163,6 +162,5 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      * have to enable it with the flag {@link #setAutoLoginEnabled(boolean)}.
      */
     public void setAutoLoginDataSource(SPDataSource selectedItem);
-
 
 }

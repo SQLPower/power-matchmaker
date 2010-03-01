@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,10 +25,10 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 
 public class ColumnChooserTableModel extends AbstractTableModel{
 
@@ -37,11 +37,11 @@ public class ColumnChooserTableModel extends AbstractTableModel{
 	private boolean modified = false;
 	private final boolean showPosition;
 	
-	public ColumnChooserTableModel(SQLTable sqlTable, SQLIndex oldIndex, boolean showPosition) throws SQLObjectException {
+	public ColumnChooserTableModel(SQLTable sqlTable, SQLIndex oldIndex, boolean showPosition) throws ArchitectException {
 		this.showPosition = showPosition;
 		for ( SQLColumn column : sqlTable.getColumns()) {
 			int positionInIndex = -1;
-			if (!oldIndex.isEmpty()){
+			if (oldIndex != null){
 				positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
 			}
 			candidateColumns.add(new CustomTableColumn(

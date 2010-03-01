@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -63,6 +63,8 @@ import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.ConnectedComponentFinder;
 import ca.sqlpower.graph.GraphModel;
@@ -82,13 +84,11 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.DefaultGraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.matchmaker.util.SourceTableUtil;
 import ca.sqlpower.swingui.JDefaultButton;
+import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -121,7 +121,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         public void actionPerformed(ActionEvent e) {
             try {
                 File dotFile = new File(
-                        System.getProperty("user.home"), "dqguru_graph_"+project.getName()+".dot");
+                        System.getProperty("user.home"), "matchmaker_graph_"+project.getName()+".dot");
                 JFileChooser fc = new JFileChooser(dotFile);
                 int choice = fc.showSaveDialog(getPanel());
                 if (choice == JFileChooser.APPROVE_OPTION) {
@@ -158,31 +158,6 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     };
     
     /**
-	 * An action that calls
-	 * {@link MatchPoolGraphModel#resetCluster(SourceTableRecord)} on
-	 * {@link #selectedNode}, and then saves the changes into the database.
-	 */
-    private final Action resetClusterAction = new AbstractAction("Reset Cluster") {
-		public void actionPerformed(ActionEvent e) {
-			graphModel.resetCluster(selectedNode);
-			try {
-				pool.store();
-			} catch (SQLException ex) {
-	        	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
-	        			"store changes to the database.", ex);
-	        }
-			graph.repaint();
-		}
-    };
-
-    /**
-	 * A button associated with {@link #resetClusterAction}. It's made into a
-	 * field so that we can enable/disable it according to whether or not a node
-	 * has been selected.
-	 */
-    private JButton resetClusterButton;
-    
-    /**
      * Warning! Will throw a ClassCastException if the node renderer in graph
      * is not a SourceTableRecordRenderer.
      */
@@ -214,7 +189,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 					MatchResultVisualizer.this.getPool().findAll(chosenColumns);
     				MatchResultVisualizer.this.getPanel().repaint();
     				MatchResultVisualizer.this.doAutoLayout();
-    			} catch (SQLObjectException ex) {
+    			} catch (ArchitectException ex) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     			} catch (SQLException sqlEx) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), sqlEx.getMessage(), sqlEx);
@@ -268,7 +243,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
                 SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
     			dialog.setLocationRelativeTo((Component) e.getSource());
     			dialog.setVisible(true);
-    		} catch (SQLObjectException ex) {
+    		} catch (ArchitectException ex) {
     			MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     		}
     	}
@@ -362,7 +337,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
                 SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
     			dialog.setLocationRelativeTo((Component) e.getSource());
     			dialog.setVisible(true);
-    		} catch (SQLObjectException ex) {
+    		} catch (ArchitectException ex) {
     			MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
     		}
     	}
@@ -386,7 +361,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineNoMatch(record1, record2);
 				pool.store();
-            } catch (SQLObjectException ex) {
+            } catch (ArchitectException ex) {
             	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"define " + record1 + " and " + record2 + " to not be duplicates.", ex);
             } catch (SQLException ex) {
@@ -417,7 +392,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineUnmatched(record1, record2);
 				pool.store();
-			} catch (SQLObjectException ex) {
+			} catch (ArchitectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying to " +
 						"unmatch " + record1 + " and " + record2, ex);
 			} catch (SQLException ex) {
@@ -449,7 +424,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineMaster(master, duplicate);
 				pool.store();
-			} catch (SQLObjectException ex) {
+			} catch (ArchitectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + master + " to be the master of " + duplicate, ex);
 			} catch (SQLException ex) {
@@ -481,7 +456,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             try {
 				pool.defineMaster(master, duplicate);
 				pool.store();
-            } catch (SQLObjectException ex) {
+            } catch (ArchitectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + duplicate + " to be a duplicate of " + master, ex);
 			} catch (SQLException ex) {
@@ -506,13 +481,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
             recordViewerRowHeader.revalidate();
             recordViewerCornerPanel.removeAll();
             recordViewerCornerPanel.revalidate();
-            resetClusterButton.setEnabled(false);
         }
 
         public void nodeSelected(final SourceTableRecord node) {
         	selectedNode = node;
         	updateMatchTable();
-        	resetClusterButton.setEnabled(true);
         }     
     }
     
@@ -554,7 +527,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
     }
     
-    private class AutoMatchWorker extends SPSwingWorker {
+    private class AutoMatchWorker extends MonitorableWorker {
 
     	private AutoMatcher autoMatcher;
     	private MungeProcess mungeProcess;
@@ -586,18 +559,15 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			pool.store();
 		}
 
-		@Override
-		protected Integer getJobSizeImpl() {
+		public Integer getJobSize() {
 			return autoMatcher.getJobSize() + pool.getJobSize();
 		}
 
-		@Override
-		protected String getMessageImpl() {
+		public String getMessage() {
 			return autoMatcher.getMessage();
 		}
 
-		@Override
-		protected int getProgressImpl() {
+		public int getProgress() {
 			int amProgress = autoMatcher.getProgress();
             if (!autoMatcher.isFinished()) {
 				return amProgress;
@@ -606,13 +576,11 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			}
 		}
 
-		@Override
-		protected boolean hasStartedImpl() {
+		public boolean hasStarted() {
 			return autoMatcher.hasStarted();
 		}
 
-		@Override
-		protected boolean isFinishedImpl() {
+		public boolean isFinished() {
 			return (autoMatcher.isFinished() && pool.isFinished()) || isCancelled();
 		}
     	
@@ -674,7 +642,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 
     private final MatchPool pool;
 
-    private MatchPoolGraphModel graphModel;
+    private GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
     
     private JComboBox mungeProcessComboBox;
     
@@ -709,23 +677,21 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 	 */
     private final Preferences matchValidationPrefs;
     
-    public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, SQLObjectException {
+    public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, ArchitectException {
     	super();
         this.project = project;
         
 		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
-        	String errorText =
-        	    "The DQguru has detected changes in the source table structure.\n" +
-        	    "Your project will require modifications before the engines can run properly.\n" +
-        	    "The DQguru can automatically modify the project but the changes may not be reversible.\n" +
-        	    "Would you like the DQguru to modify the project now?";
+        	String errorText = "The MatchMaker has detected changes in the " +
+			"source table structure.\nYour project will require modifications before the engines can run properly.\n" +
+			"The Power*MatchMaker can automatically modify the project but the changes may not be reversible.\n" +
+			"Would you like the MatchMaker to modify the project now?";
 			int response = JOptionPane.showOptionDialog(session.getFrame(), errorText,
 					"Source Table Changed", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
-					new String[] {"Fix Now", "Not Now"}, "Fix Now");
+					new String[] {"Fix Now", "Not Now"}, "Modify Now");
 			if (response == JOptionPane.YES_OPTION) {
 				try {
-				    SQLDatabase db = project.getSourceTable().getParentDatabase();
-				    db.refresh();
+					SourceTableUtil.checkAndfixProject(session, project);
 				} catch (Exception ex1) {
 					MMSUtils.showExceptionDialog(getPanel(), "Failed to fix project!", ex1);
 				}
@@ -736,7 +702,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         JPanel topPanel = new JPanel (topLayout);
         PanelBuilder pb = new PanelBuilder(topLayout, topPanel);
         CellConstraints cc = new CellConstraints();
-        JPanel buttonPanel = new JPanel(new GridLayout(4,1));
+        JPanel buttonPanel = new JPanel(new GridLayout(3,1));
         buttonPanel.add(new JButton(chooseDisplayedValueAction));
         
         selectionButton = new MungeProcessSelectionList(project) {
@@ -759,7 +725,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				pool.clearRecords();
 		        try {
 					pool.findAll(displayColumns);
-				} catch (SQLObjectException ex) {
+				} catch (ArchitectException ex) {
     				MMSUtils.showExceptionDialog(getPanel(), ex.getMessage(), ex);
     			} catch (SQLException sqlEx) {
     				MMSUtils.showExceptionDialog(getPanel(), sqlEx.getMessage(), sqlEx);
@@ -772,9 +738,6 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         
         buttonPanel.add(selectionButton);
         buttonPanel.add(new JButton(resetPoolAction));
-        resetClusterButton = new JButton(resetClusterAction);
-        resetClusterButton.setEnabled(selectedNode != null);
-        buttonPanel.add(resetClusterButton);
         
         String prefNodePath = "ca/sqlpower/matchmaker/projectSettings/$" +
         						project.getSession().getDatabase().getDataSource().getName() +

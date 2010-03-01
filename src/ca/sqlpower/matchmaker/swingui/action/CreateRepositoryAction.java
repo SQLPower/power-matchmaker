@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -48,15 +48,15 @@ import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryUtil;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SQLObjectChooser;
-import ca.sqlpower.object.SPObjectUtils;
-import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObject;
-import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
@@ -92,9 +92,9 @@ public class CreateRepositoryAction extends AbstractAction {
                 return;
             }
             
-            SQLDatabase targetDB = SPObjectUtils.getAncestor(target, SQLDatabase.class);
-            SQLCatalog targetCatalog = SPObjectUtils.getAncestor(target, SQLCatalog.class);
-            SQLSchema targetSchema = SPObjectUtils.getAncestor(target, SQLSchema.class);
+            SQLDatabase targetDB = ArchitectUtils.getAncestor(target, SQLDatabase.class);
+            SQLCatalog targetCatalog = ArchitectUtils.getAncestor(target, SQLCatalog.class);
+            SQLSchema targetSchema = ArchitectUtils.getAncestor(target, SQLSchema.class);
             
             // set the repository owner in the data source
             StringBuilder targetOwner = new StringBuilder();

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -56,14 +56,14 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectVersion;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
@@ -98,7 +98,7 @@ public class MMSUtils {
      */
     public static JDialog showDbcsDialog(
             final Window parentWindow,
-            final JDBCDataSource dataSource,
+            final SPDataSource dataSource,
             final Runnable onAccept) {
         
         final DataEntryPanel dbcsPanel = new MMDataSourcePanel(dataSource);
@@ -145,7 +145,7 @@ public class MMSUtils {
      * in the MatchMaker.
      */
     public static ImageIcon getFrameImageIcon() {
-        return SPSUtils.createIcon("dqguru_24", "DQguru Logo");
+        return SPSUtils.createIcon("matchmaker_24", "MatchMaker Logo");
     }
 
     /**
@@ -183,7 +183,7 @@ public class MMSUtils {
 	 */
     public static JDialog showExceptionDialog(Component parent, String message, Throwable t) {
     	try {
-    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION.toString(), "DQguru");
+    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION.toString(), "MatchMaker");
     		logger.debug(report.toString());
     		report.send();
     	} catch (Throwable seriousProblem) {
@@ -219,9 +219,9 @@ public class MMSUtils {
 	 * that can save, execute, or copy the SQL to the clipboard.
 	 */
 	public static void createResultTable(final Frame frame,
-			JDBCDataSource dataSource, final Project project) throws InstantiationException,
+			SPDataSource dataSource, final Project project) throws InstantiationException,
 			IllegalAccessException, HeadlessException, SQLException,
-			SQLObjectException, ClassNotFoundException {
+			ArchitectException, ClassNotFoundException {
 
 		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(dataSource);
 
@@ -234,7 +234,7 @@ public class MMSUtils {
 		ddlg.setTargetSchema(project.getResultTableSchema());
 		if (project.doesResultTableExist()) {
 			int answer = JOptionPane.showConfirmDialog(frame,
-					"The result table exists. Do you want to drop and recreate it?",
+					"Result table exists, do you want to drop and recreate it?",
 					"Table exists",
 					JOptionPane.YES_NO_OPTION);
 			if ( answer != JOptionPane.YES_OPTION ) {
@@ -243,10 +243,7 @@ public class MMSUtils {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		for (SQLIndex idx : project.getResultTable().getChildren(SQLIndex.class)) {
-			if (idx.isPrimaryKeyIndex()) continue;
-			ddlg.addIndex(idx);
-		}
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 
 		final JDialog editor = new JDialog(frame,
 				"Create Result Table", true);

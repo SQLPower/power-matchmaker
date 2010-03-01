@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,9 +25,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
+import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sqlobject.SQLDatabase;
 
 public class MatchMakerEngineImplTest extends TestCase {
 

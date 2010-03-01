@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -28,8 +28,6 @@ import org.apache.log4j.Logger;
  */
 public class TestingResultMungeStep extends TestingMungeStep implements MungeResultStep {
 
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "MF_CLASS_MASKS_FIELD" }, 
-			justification = "We will always want to use this logger, not the superclass logger")
 	Logger logger = Logger.getLogger(TestingResultMungeStep.class);
 	
 	public TestingResultMungeStep(String name, int inputs) {

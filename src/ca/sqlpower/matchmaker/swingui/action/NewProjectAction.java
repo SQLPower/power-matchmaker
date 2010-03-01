@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -84,12 +84,7 @@ public final class NewProjectAction extends AbstractAction {
 		project.setResultTableSPDatasource(dsName);
 		
 		try {
-			AbstractAction cancelAction = new AbstractAction("Cancel") {
-				public void actionPerformed(final ActionEvent e) {
-					swingSession.setCurrentEditorComponent(null);
-				}
-			};
-			ProjectEditor me = new ProjectEditor(swingSession, project, folder, cancelAction);
+			ProjectEditor me = new ProjectEditor(swingSession, project, folder);
 			swingSession.setCurrentEditorComponent(me);
 		} catch (Exception ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create match", ex);

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -51,7 +51,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class DateToStringMungeComponent extends AbstractMungeComponent {
 
 	private JTextField sample;
-	private JTextField format;
+	private JTextField format = new JTextField();
 	private JComboBox dateFormat;
 	private JComboBox timeFormat;
 	
@@ -59,6 +59,7 @@ public class DateToStringMungeComponent extends AbstractMungeComponent {
 	
 	public DateToStringMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler, session);
+		handler.addValidateObject(format, new DateFormatPatternValidator());
 	}
 
 	@Override
@@ -110,7 +111,6 @@ public class DateToStringMungeComponent extends AbstractMungeComponent {
 		SimpleDateFormat sdf = new SimpleDateFormat(temp.getFormat());
 		sample = new JTextField(sdf.format(DateToStringMungeComponent.SAMPLE_DATE));
 		sample.setEditable(false);
-		getHandler().addValidateObject(format, new DateFormatPatternValidator());
 		
 		CellConstraints cc = new CellConstraints();
 		int row = 2;

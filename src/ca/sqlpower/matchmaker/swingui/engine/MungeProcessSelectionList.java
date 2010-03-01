@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -100,11 +100,11 @@ public abstract class MungeProcessSelectionList extends JButton {
 		int count = processesList.getSelectedIndices().length;
 		
 		if (count == 0) {
-			setText("Choose Transformations (None Selected)...");
+			setText("Choose Munge Processes (None Selected)...");
 		} else if (count == mps.size()) {
-			setText("Choose Transformations (All Selected)...");
+			setText("Choose Munge Processes (All Selected)...");
 		} else {
-			setText("Choose Transformations (" + count + " Selected)...");
+			setText("Choose Munge Processes (" + count + " Selected)...");
 		}
 	}
 

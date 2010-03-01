@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -23,12 +23,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLObjectUtils;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sql.SPDataSource;
 
 /**
  * Provides the ability to maintain the SQLTable properties of the Project via
@@ -153,7 +153,7 @@ public class CachableTable {
     /**
      * Returns the SPDataSource for the current table
      */
-    public JDBCDataSource getJDBCDataSource() {
+    public SPDataSource getSPDataSource() {
     	if (cachedTable != null) {
     		return cachedTable.getParentDatabase().getDataSource();
     	}
@@ -165,8 +165,8 @@ public class CachableTable {
     	
     	MatchMakerSession session = mmo.getSession();
         MatchMakerSessionContext context = session.getContext();
-        List<JDBCDataSource> dataSources = context.getDataSources();
-        for (JDBCDataSource spd : dataSources) {
+        List<SPDataSource> dataSources = context.getDataSources();
+        for (SPDataSource spd : dataSources) {
 			if (spd != null && dsName.equals(spd.getName())) {
 				return spd;
 			}
@@ -209,17 +209,17 @@ public class CachableTable {
 			logger.debug("mmo.parent="+mmo.getParent());
 			
 			SQLDatabase db = null;
-			if (getJDBCDataSource() == null) {
+			if (getSPDataSource() == null) {
 				db = mmo.getSession().getDatabase();
 			} else {
-				db = mmo.getSession().getDatabase(getJDBCDataSource());
+				db = mmo.getSession().getDatabase(getSPDataSource());
 			}
 			
-			if (SQLObjectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
+			if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
 				SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
 				if (table == null) {
 					logger.debug("     Not found.  Adding simulated...");
-					table = SQLObjectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
+					table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
 				} else {
 					logger.debug("     Found!");
 				}
@@ -231,8 +231,8 @@ public class CachableTable {
 				"The table selection has been reset to nothing");
 				return null;
 			}
-		} catch (SQLObjectException e) {
-			throw new SQLObjectRuntimeException(e);
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
 		}
     }
 

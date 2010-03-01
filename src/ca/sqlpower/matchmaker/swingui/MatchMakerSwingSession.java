@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -29,7 +29,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -52,7 +51,6 @@ import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
@@ -60,11 +58,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.undo.CannotRedoException;
@@ -73,7 +70,10 @@ import javax.swing.undo.UndoManager;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
@@ -83,7 +83,6 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
-import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -91,7 +90,6 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
@@ -110,17 +108,13 @@ import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
-import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.swingui.AboutPanel;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
@@ -131,7 +125,6 @@ import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
-import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.Version;
 
 /**
@@ -192,11 +185,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * The component in the warningDialog which actually contains the messages.
      */
     private JTextArea warningTextArea;
-    
-    /**
-     * The status message which will contain what the swingSession is doing.
-     */
-    private JLabel statusLabel;
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
@@ -242,20 +230,17 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
     };
 
-	private Action aboutAction = new AbstractAction("About SQL Power DQguru...") {
+	private Action aboutAction = new AbstractAction("About Power*MatchMaker...") {
 
 		public void actionPerformed(ActionEvent evt) {
 			// This is one of the few JDIalogs that can not get replaced
 			// with a call to ArchitectPanelBuilder, because an About
 			// box must have only ONE button...
 			final JDialog d = new JDialog(getFrame(),
-										  "About SQL Power DQguru");
+										  "About Power*MatchMaker");
 			JPanel cp = new JPanel(new BorderLayout(12,12));
 			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
-			
-			ImageIcon icon = SPSUtils.createIcon("dqguru_128", "DQguru Logo");
-			
-			final AboutPanel aboutPanel = new AboutPanel(icon, "SQL Power DQguru", "ca/sqlpower/matchmaker/matchmaker.version.properties", MatchMakerVersion.APP_VERSION);
+			final AboutPanel aboutPanel = new AboutPanel();
 			cp.add(aboutPanel, BorderLayout.CENTER);
 
 			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -297,23 +282,64 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     private CreateRepositoryAction createRepositoryAction = new CreateRepositoryAction(this);
     
 	private Action newDeDupeAction = null;
-//	TODO: Implement Cross-referencing projects first before re-enabling this action
-//	private Action newXrefAction = null;
+	private Action newXrefAction = null;
 	private Action newCleanseAction = null;
-	private Action newAddressAction = null;
 	
+	private Action editProjectAction = new EditProjectAction("Edit Project");
 	private Action deleteProjectAction = new DeleteProjectAction(this);
+
+	private Action runMatchAction = new AbstractAction("Run Match") {
+
+		public void actionPerformed(ActionEvent e) {
+			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (project != null && project.getType() == ProjectMode.FIND_DUPES) {
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+			    TreePath treePath = 
+			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,2));
+			    getTree().setSelectionPath(treePath);
+			}
+		}
+	};
+
+	private Action runMergeAction = new AbstractAction("Run Merge") {
+
+		public void actionPerformed(ActionEvent e) {
+			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (project != null && project.getType() == ProjectMode.FIND_DUPES) {
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+				TreePath treePath = 
+					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,5));
+				getTree().setSelectionPath(treePath);
+			}
+		}
+	};
+	
+	private Action runCleanseAction = new AbstractAction("Run Cleanse") {
+
+		public void actionPerformed(ActionEvent e) {
+			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (project != null && project.getType() == ProjectMode.CLEANSE) {
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+				TreePath treePath = 
+					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(project,1));
+				getTree().setSelectionPath(treePath);
+			}
+		}
+	};
 
 	private Action helpAction;
 	private Action buildExampleTableAction;
 	private Action supportOnTheWebAction;
 	
-	private Action sqlQueryAction = new AbstractAction("Universal SQL Access...") {
+	private Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
-			QueryDialog d = new QueryDialog(MatchMakerSwingSession.this, frame, "Universal SQL Access");
-			d.setVisible(true);
+			TableQueryFrame f = new TableQueryFrame(MatchMakerSwingSession.this);
+			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
+			f.pack();
+			f.setVisible(true);
 		}
 	};
+
 
 	private Action databaseConnectionAction = new AbstractAction("Manage Database Connections...") {
 
@@ -385,7 +411,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<MergeEngineImpl, EngineSettingsPanel> mergeEnginePanels;
+	private Map<MergeEngineImpl, EngineSettingsPanel> mergeEnginPanels;
 	
 	 /**
      * A map that links an engine to a panel. This is used so that only
@@ -397,28 +423,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<CleanseEngineImpl, EngineSettingsPanel> cleanseEnginePanels;
+	private Map<CleanseEngineImpl, EngineSettingsPanel> cleanseEnginPanels;
 
-	/**
-     * A map that links an engine to a panel. This is used so that only
-     * one of each engine and panel ever exist per project.
-     */
-	private Map<AddressCorrectionEngine, EngineSettingsPanel> addressCorrectionEnginePanels;
-	
-	private final String DQGURU_SUPPORT_URL = "http://www.sqlpower.ca/page/dqguru_support";
-	
-	private final Action getPremiumSupportAction = new AbstractAction("Get Premium Support") {
-		public void actionPerformed(ActionEvent e) {
-			try {
-				BrowserUtil.launch(DQGURU_SUPPORT_URL);
-			} catch (IOException ex) {
-				MMSUtils.showExceptionDialog(frame, "Could not open URL '"
-						+ DQGURU_SUPPORT_URL + "' in your web browser", ex);
-			}
-		}
-		
-	};
-	
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
      * would use a LoginDialog instead of calling this constructor directly.
@@ -436,9 +442,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
         
         matchEnginePanels = new HashMap<MatchEngineImpl, EngineSettingsPanel>();
-        mergeEnginePanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
-        cleanseEnginePanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
-        addressCorrectionEnginePanels = new HashMap<AddressCorrectionEngine, EngineSettingsPanel>();
+        mergeEnginPanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
+        cleanseEnginPanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
         
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         
@@ -449,9 +454,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		});
 
-        frame = new JFrame("SQL Power DQguru: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
-        statusLabel = new JLabel();
-        warningDialog = new JDialog(frame, "DQguru Warnings");
+        frame = new JFrame("Power*MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
+
+        warningDialog = new JDialog(frame, "Power*MatchMaker Warnings");
         warningTextArea = new JTextArea(6, 40);
         JComponent cp = (JComponent) warningDialog.getContentPane();
         cp.setLayout(new BorderLayout(0, 10));
@@ -486,10 +491,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
 		newDeDupeAction = new NewProjectAction(this, "New De-duping Project", Project.ProjectMode.FIND_DUPES);
-//		TODO: Implement Cross-referencing projects first before re-enabling this action
-//		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
+		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
 		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
-		newAddressAction = new NewProjectAction(this, "New Address Correction Project", Project.ProjectMode.ADDRESS_CORRECTION);
 		
         JMenuBar menuBar = new JMenuBar();
 
@@ -514,11 +517,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		menuBar.add(editMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
-		JMenu databaseMenu = new JMenu("Connections");
+		JMenu databaseMenu = new JMenu("Database");
 		databaseMenu.setMnemonic('d');
 		databaseMenu.add(remoteLoginAction);
         databaseMenu.add(createRepositoryAction);
-        databaseMenu.addSeparator();
 		databaseMenu.add(databaseConnectionAction);
 		menuBar.add(databaseMenu);
 		
@@ -526,11 +528,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.setMnemonic('m');
 		projectMenu.add(newDeDupeAction);
 		projectMenu.add(newCleanseAction);
-		projectMenu.add(newAddressAction);
-//		TODO: Implement Cross-referencing projects first before re-enabling this action
-//		projectMenu.add(newXrefAction);
+		projectMenu.add(newXrefAction);
 		projectMenu.addSeparator();
+		projectMenu.add(editProjectAction);
 		projectMenu.add(deleteProjectAction);
+		projectMenu.addSeparator();
+		projectMenu.add(runMatchAction);
+		projectMenu.add(runMergeAction);
+		projectMenu.add(runCleanseAction);
 		
 		// TODO: Match statistics has been disabled until re-implementation
 //		projectMenu.addSeparator();
@@ -543,8 +548,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
-		toolsMenu.add(sqlQueryAction);
+		toolsMenu.add(tableQueryAction);
 		toolsMenu.add(new EditTranslateAction(this));
+		// We will add this back in if we need the SQLRunner later
+        //toolsMenu.add(new SQLRunnerAction(frame));
 		menuBar.add(toolsMenu);
 
 		// Commented the 'Window' menu until we actually have something to put in it
@@ -552,8 +559,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 //        windowMenu.setMnemonic('w');
 //        menuBar.add(windowMenu);
         
-		ImageIcon helpIcon = SPSUtils.createIcon("help", "Help");
-        helpAction = new HelpAction(frame, helpIcon);
+        helpAction = new HelpAction(frame);
 
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.setMnemonic('h');
@@ -566,19 +572,32 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         buildExampleTableAction = new BuildExampleTableAction(this);
         helpMenu.add(buildExampleTableAction);
 
-        helpMenu.addSeparator();
-        helpMenu.add(getPremiumSupportAction);
-        
         supportOnTheWebAction = SPSUtils.forumAction;
-        supportOnTheWebAction.putValue(Action.NAME, "Community Support Forum");
         helpMenu.add(supportOnTheWebAction);
         
         menuBar.add(helpMenu);
 		
 		frame.setJMenuBar(menuBar);
 
+		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
+
+		toolBar.add(newDeDupeAction);
+		toolBar.add(newCleanseAction);
+		toolBar.add(newXrefAction);
+        toolBar.addSeparator();
+        toolBar.add(runMatchAction);
+        toolBar.add(runMergeAction);
+        toolBar.add(runCleanseAction);
+        toolBar.addSeparator();
+        toolBar.addSeparator();
+        toolBar.add(helpAction);
+        toolBar.add(exitAction);
+		toolBar.setToolTipText("MatchMaker Toolbar");
+		toolBar.setName("MatchMaker Toolbar");
+
 		Container projectBarPane = frame.getContentPane();
 		projectBarPane.setLayout(new BorderLayout());
+		projectBarPane.add(toolBar, BorderLayout.NORTH);
 
 		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),getTranslateGroupParent(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -589,7 +608,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
 
-        JScrollPane treePane = new JScrollPane(SPSUtils.getBrandedTreePanel(tree));
+        JScrollPane treePane = new JScrollPane(tree);
         treePane.setMinimumSize(new Dimension(5,5));
         treePane.setPreferredSize(new Dimension(1,1));
 		splitPane.setLeftComponent(treePane);
@@ -599,13 +618,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		cp.add(splitPane, BorderLayout.CENTER);
 		MemoryMonitor memoryMonitor = new MemoryMonitor();
 		memoryMonitor.start();
-		
-		JPanel statusBarPanel = new JPanel(new BorderLayout());
-		JLabel memoryLabel = memoryMonitor.getLabel();
-		memoryLabel.setBorder(new EmptyBorder(0, 20, 0, 20));
-		statusBarPanel.add(statusLabel, BorderLayout.CENTER);
-		statusBarPanel.add(memoryLabel, BorderLayout.EAST);
-        cp.add(statusBarPanel, BorderLayout.SOUTH);
+        cp.add(memoryMonitor.getLabel(), BorderLayout.SOUTH);
+
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		
 		frame.setBounds(sessionContext.getFrameBounds());
@@ -798,13 +812,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         ArchitectUtils.startup();
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 		ArchitectUtils.configureLog4j();
-		
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception e) {
-			logger.error("Unable to set native look and feel. Continuing with default.", e);
-		}
-		
+
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
@@ -814,13 +822,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    	} catch (Exception ex) {
 		    		JDialog d = MMSUtils.showExceptionDialogNoReport("Couldn't start application!", ex);
 		    		d.addWindowListener(new WindowAdapter() {
-		    			@Override
 		    			public void windowDeactivated(WindowEvent e) {
-		    				System.exit(0);
-		    			}
-		    			
-		    			@Override
-		    			public void windowClosed(WindowEvent e) {
 		    				System.exit(0);
 		    			}
 		    		});
@@ -1060,41 +1062,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
 		    MatchMakerDAO dao = getDAO(mmo.getClass());
-		    logger.debug("dao is:"+ dao+ "mmo is"+ mmo);
 		    dao.delete(mmo);
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
-		
-		// If mmo is a project, clean up and remove its engine panels
-		if (mmo instanceof Project) {
-			EngineSettingsPanel panel;
-			
-			panel = matchEnginePanels.remove(((Project) mmo).getMatchingEngine());
-			if (panel != null) {
-				panel.cleanup();
-			}
-			logger.debug("matchEnginePanels.size() returns: " + matchEnginePanels.size());
-
-			panel = mergeEnginePanels.remove(((Project) mmo).getMergingEngine());
-			if (panel != null) {
-				panel.cleanup();
-			}
-			logger.debug("mergeEnginePanels.size() returns: " + mergeEnginePanels.size());
-			
-			panel = cleanseEnginePanels.remove(((Project) mmo).getCleansingEngine());
-			if (panel != null) {
-				panel.cleanup();
-			};
-			logger.debug("cleanseEnginePanels.size() returns: " + cleanseEnginePanels.size());
-			
-			panel = addressCorrectionEnginePanels.remove(((Project) mmo).getAddressCorrectionEngine());
-			if (panel != null) {
-				panel.cleanup();
-			};
-		}
 	}
-	
 	/**
 	 * Move a match maker object from one parent ( can be null) to a new match maker object.
 	 * The destination object must support children.  This function persists the
@@ -1164,25 +1136,25 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         }
     }
     
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
     	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
 
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
     	return sessionImpl.findPhysicalTableByName(spDataSourceName, catalog, schema, tableName);
 	}
     
     public boolean tableExists(String catalog, String schema,
-    		String tableName) throws SQLObjectException {
+    		String tableName) throws ArchitectException {
     	return sessionImpl.tableExists(catalog, schema, tableName);
 	}
     
     public boolean tableExists(String spDataSourceName, String catalog, String schema,
-    		String tableName) throws SQLObjectException {
+    		String tableName) throws ArchitectException {
     	return sessionImpl.tableExists(spDataSourceName, catalog, schema, tableName);
 	}
 
-     public boolean tableExists(SQLTable table) throws SQLObjectException {
+     public boolean tableExists(SQLTable table) throws ArchitectException {
          return sessionImpl.tableExists(table);
 	}
 
@@ -1271,7 +1243,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		
 				Object[] options = {"Wait", "Force Quit"};
 				int n = JOptionPane.showOptionDialog(frame, 
-						"There are still unfinished tasks running in the DQguru.\n" +
+						"There are still unfinished tasks running in the MatchMaker.\n" +
 						"You can either wait for them to finish and try closing again later" +
 						", or force the application to close. Quitting will leave these tasks unfinished.", 
 						"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
@@ -1318,10 +1290,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param project The current project
 	 */
 	public EngineSettingsPanel getMergeEnginePanel(MergeEngineImpl mei, Project project) {
-		EngineSettingsPanel ep = mergeEnginePanels.get(mei);
-		if (mergeEnginePanels.get(mei) == null) {
+		EngineSettingsPanel ep = mergeEnginPanels.get(mei);
+		if (mergeEnginPanels.get(mei) == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.MERGE_ENGINE);
-			mergeEnginePanels.put(mei,ep); 
+			mergeEnginPanels.put(mei,ep); 
 		}
 		return ep;
 	}
@@ -1348,38 +1320,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param project The current project
 	 */
 	public EngineSettingsPanel getCleanseEnginePanel(CleanseEngineImpl mei, Project project) {
-		EngineSettingsPanel ep = cleanseEnginePanels.get(mei);
+		EngineSettingsPanel ep = cleanseEnginPanels.get(mei);
 		if (ep == null) {
 			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.CLEANSE_ENGINE);
-			cleanseEnginePanels.put(mei,ep);
+			cleanseEnginPanels.put(mei,ep);
 		}
 		return ep;
 	}
 
-	/**
-	 * Returns or creates the editor panel linked to the given Address Correction Engine engine
-	 * 
-	 * @param engine The current engine
-	 * @param project The current project
-	 */
-	public EngineSettingsPanel getAddressCorrectionEnginePanel(AddressCorrectionEngine engine, Project project) {
-		EngineSettingsPanel ep = addressCorrectionEnginePanels.get(engine);
-		if (ep == null) {
-			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.ADDRESS_CORRECTION_ENGINE);
-			addressCorrectionEnginePanels.put(engine,ep);
-		}
-		return ep;
-	}
-	
-	public EngineSettingsPanel getValidatedAddressCommittingEnginePanel(AddressCorrectionEngine engine, Project project) {
-		EngineSettingsPanel ep = addressCorrectionEnginePanels.get(engine);
-		if (ep == null) {
-			ep = new EngineSettingsPanel(this, project, getFrame(), EngineType.VALIDATED_ADDRESS_COMMITING_ENGINE);
-			addressCorrectionEnginePanels.put(engine,ep);
-		}
-		return ep;
-	}
-	
 	//undo stuff
 	
 	protected UndoAction undoAction = new UndoAction();
@@ -1470,7 +1418,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		return enginesEnabled;
 	}
 
-	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
 		return sessionImpl.getDatabase(dataSource);
 	}
 	
@@ -1552,17 +1500,5 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
 			listener.sessionClosing(evt);
 		}
-	}
-
-	public void addStatusMessage(String message) {
-		statusLabel.setText(message);
-		logger.debug("Stub call: MatchMakerSwingSession.addStatusMessage()");
-		
-	}
-
-	public void removeStatusMessage() {
-		statusLabel.setText("");
-		logger.debug("Stub call: MatchMakerSwingSession.removeStatusMessage()");
-		
 	}
 }

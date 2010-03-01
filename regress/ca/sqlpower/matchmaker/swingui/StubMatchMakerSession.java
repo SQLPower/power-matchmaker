@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,19 +26,19 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
@@ -171,19 +171,19 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	}
 
 	public boolean tableExists(String spDataSourceName, String catalog,
-			String schema, String tableName) throws SQLObjectException {
+			String schema, String tableName) throws ArchitectException {
 		logger.debug("Stub call: StubMatchMakerSession.tableExists()");
 		return false;
 	}
 
 	public SQLTable findPhysicalTableByName(String spDataSourceName,
 			String catalog, String schema, String tableName)
-			throws SQLObjectException {
+			throws ArchitectException {
 		logger.debug("Stub call: StubMatchMakerSession.findPhysicalTableByName()");
 		return null;
 	}
 
-	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
 		logger.debug("Stub call: StubMatchMakerSession.getDatabase()");
 		return null;
 	}
@@ -202,15 +202,5 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	public void removeSessionLifecycleListener(
 			SessionLifecycleListener<MatchMakerSession> listener) {
 		logger.debug("Stub call: StubMatchMakerSession.removeSessionLifecycleListener()");
-	}
-
-	public void addStatusMessage(String message) {
-		logger.debug("Stub call: StubMatchMakerSession.addStatusMessage()");
-		
-	}
-
-	public void removeStatusMessage() {
-		logger.debug("Stub call: StubMatchMakerSession.removeStatusMessage()");
-		
 	}
 }

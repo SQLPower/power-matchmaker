@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,22 +26,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sql.JDBCDataSourceType;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SpecificDataSourceCollection;
-import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.UnknownFreqCodeException;
@@ -64,7 +61,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * The list of database connections that this session context knows about.  This
      * implementation uses the <blink><marquee>AWESOME</marquee></blink> pl.ini file
      */
-    private final DataSourceCollection<JDBCDataSource> plDotIni;
+    private final DataSourceCollection plDotIni;
     
     /**
      * The prefs node that we use for persisting all the basic user settings that are
@@ -84,10 +81,10 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * 
      * @param plIni The data source collection that this context will use.
      */
-    public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection<JDBCDataSource> plIni) {
+    public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection plIni) {
         logger.debug("Creating new session context");
         this.sessions = new LinkedList<MatchMakerSession>();
-        this.plDotIni = new SpecificDataSourceCollection<JDBCDataSource>(plIni, JDBCDataSource.class);
+        this.plDotIni = plIni;
         this.prefs = prefs;
     }
 
@@ -96,9 +93,9 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * given data source collection.
      */
     private void ensureHSQLDBIsSetup() {
-        List<JDBCDataSourceType> types = plDotIni.getDataSourceTypes();
-        JDBCDataSourceType hsql = null;
-        for (JDBCDataSourceType dst : types) {
+        List<SPDataSourceType> types = plDotIni.getDataSourceTypes();
+        SPDataSourceType hsql = null;
+        for (SPDataSourceType dst : types) {
             if ("HSQLDB".equals(dst.getName())) {
                 hsql = dst;
                 break;
@@ -123,23 +120,23 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#getDataSources()
      */
-    public List<JDBCDataSource> getDataSources() {
+    public List<SPDataSource> getDataSources() {
         return plDotIni.getConnections();
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSession createSession(JDBCDataSource ds, String username,
+    public MatchMakerSession createSession(SPDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
-			SQLObjectException, MatchMakerConfigurationException,
+			ArchitectException, MatchMakerConfigurationException,
 			RepositoryVersionException {
 
         // We create a copy of the data source and change the userID and
 		// password
         //and use that for the login attempt.  We do not want to change the
         //default userID and password for the connection in here.
-        JDBCDataSource tempDbSource = new JDBCDataSource(ds);
+        SPDataSource tempDbSource = new SPDataSource(ds);
         tempDbSource.setUser(username);
         tempDbSource.setPass(password);
 
@@ -155,7 +152,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     
     public MatchMakerSession createDefaultSession() throws RepositoryException {
         ensureHSQLDBIsSetup();
-        JDBCDataSource ds = makeDefaultDataSource();
+        SPDataSource ds = makeDefaultDataSource();
         
         // this throws an exception if there is a non-recoverable schema problem
         RepositoryUtil.createOrUpdateRepositorySchema(ds);
@@ -188,10 +185,10 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * collection, or if it's not found, creates a new repository data source
      * and adds it to the collection.
      */
-    private JDBCDataSource makeDefaultDataSource() {
-        JDBCDataSource ds = getPlDotIni().getDataSource(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
+    private SPDataSource makeDefaultDataSource() {
+        SPDataSource ds = getPlDotIni().getDataSource(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
         if (ds == null) {
-            ds = new JDBCDataSource(getPlDotIni());
+            ds = new SPDataSource(getPlDotIni());
             ds.setName(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
             ds.setPlSchema("public");
             ds.setUser("sa");
@@ -199,8 +196,8 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
             ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository;shutdown=true");
 
             // find HSQLDB parent type
-            JDBCDataSourceType hsqldbType = null;
-            for (JDBCDataSourceType type : getPlDotIni().getDataSourceTypes()) {
+            SPDataSourceType hsqldbType = null;
+            for (SPDataSourceType type : getPlDotIni().getDataSourceTypes()) {
                 if ("HSQLDB".equals(type.getName())) {
                     hsqldbType = type;
                     break;
@@ -222,7 +219,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         return ds;
     }
 
-    public DataSourceCollection<JDBCDataSource> getPlDotIni() {
+    public DataSourceCollection getPlDotIni() {
         return plDotIni;
     }
 
@@ -272,22 +269,5 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 	    	defaultRepository = makeDefaultDataSource();
 	    }
 	}
-	
-    public void setAddressCorrectionDataPath(String path) {
-    	prefs.put(ADDRESS_CORRECTION_DATA_PATH, path);
-    }
-    
-    public String getAddressCorrectionDataPath() {
-    	return prefs.get(ADDRESS_CORRECTION_DATA_PATH, "");
-    }
-    
-    public void addPreferenceChangeListener(PreferenceChangeListener l) {
-    	prefs.addPreferenceChangeListener(l);
-    }
-    
-    public void removePreferenceChangeListener(PreferenceChangeListener l) {
-    	prefs.removePreferenceChangeListener(l);
-    }
-
 }
 

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,13 +25,13 @@ import java.util.List;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  *
@@ -228,8 +228,8 @@ public class TableMergeRules
 			} else {
 				newMergeStrategy.setTableIndex(getTableIndex());
 			}
-		} catch (SQLObjectException e) {
-			throw new SQLObjectRuntimeException(e);
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
 		}
 
 		for (ColumnMergeRules c : getChildren()) {
@@ -292,7 +292,7 @@ public class TableMergeRules
 	public SQLIndex getTableIndex() {
 		try {
 			return tableIndex.getTableIndex();
-		} catch (SQLObjectException e) {
+		} catch (ArchitectException e) {
 			throw new RuntimeException("Error getting index from table.", e);
 		}
 	}
@@ -326,7 +326,7 @@ public class TableMergeRules
 				newRules.setActionType(MergeActionType.AUGMENT);
 				addChild(newRules);
 			}
-		} catch (SQLObjectException e) {
+		} catch (ArchitectException e) {
 			throw new RuntimeException("Error deriving column merge rules.", e);
 		}
     }
@@ -433,20 +433,18 @@ public class TableMergeRules
 			if (index == null) {
 				return null;
 			}
-			for (SQLIndex.Column column : index.getChildren(SQLIndex.Column.class)) {
-			    if (logger.isDebugEnabled()) {
-					try {
-						logger.debug(BeanUtils.describe(column));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				if (column.getColumn() == null) {
+			for (SQLIndex.Column column : index.getChildren()) {
+			    try {
+			        logger.debug(BeanUtils.describe(column));
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			    }
+			    if (column.getColumn() == null) {
 			        throw new IllegalStateException("Found an index column with a null column name!");
 			    }
 				columns.add(column.getColumn()); 
 			}
-		} catch (SQLObjectException e) {
+		} catch (ArchitectException e) {
 			throw new RuntimeException("Error getting primary key from index.", e);
 		}
 		return columns;
@@ -489,7 +487,7 @@ public class TableMergeRules
 	/**
 	 * Finds the imported key for the current table merge rule.
 	 */
-	public List<ColumnMergeRules> getImportedKey() throws SQLObjectException {
+	public List<ColumnMergeRules> getImportedKey() throws ArchitectException {
 		List<ColumnMergeRules> columns = new ArrayList<ColumnMergeRules>();
 		
 		if (isSourceMergeRule()) {

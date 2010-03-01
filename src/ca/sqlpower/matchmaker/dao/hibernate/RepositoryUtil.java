@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,7 +29,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -41,24 +39,23 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectSessionContext;
 import ca.sqlpower.architect.ArchitectSessionContextImpl;
+import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.object.SPObjectUtils;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sql.JDBCDataSourceType;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.sql.SQL;
-import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObject;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.util.Version;
-import ca.sqlpower.util.VersionParseException;
+import ca.sqlpower.util.VersionFormatException;
 
 /**
  * A collection of utilities for dealing with (creating, verifying, upgrading,
@@ -72,7 +69,7 @@ public class RepositoryUtil {
      * The minimum PL Schema version according to that we can work with.
      * Should be checked every time a session is created.
      */
-    public static final Version MIN_PL_SCHEMA_VERSION = new Version("6.0.3");
+    public static final Version MIN_PL_SCHEMA_VERSION = new Version(6, 0, 1);
 
     /**
      * Class can not be instantiated.
@@ -89,7 +86,7 @@ public class RepositoryUtil {
      * holding tables as children.
      * @return The list of SQL Statements that must be executed in the target database
      * to make it into a new MatchMaker repository
-     * @throws SQLObjectException If there are problems connecting to or populating the
+     * @throws ArchitectException If there are problems connecting to or populating the
      * target database, or if there are problems with the built-in Architect project that
      * describes the MatchMaker repository
      * @throws SQLException If there are errors in SQL queries used during this operation
@@ -99,29 +96,17 @@ public class RepositoryUtil {
      * @throws InstantiationException If the DDL Generator for the target database cannot be created
      */
     public static List<String> makeRepositoryCreationScript(SQLObject target) 
-    throws SQLException, SQLObjectException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
-        SQLDatabase database = SPObjectUtils.getAncestor(target, SQLDatabase.class);
-        SQLCatalog catalog = SPObjectUtils.getAncestor(target, SQLCatalog.class);
-        SQLSchema schema = SPObjectUtils.getAncestor(target, SQLSchema.class);
-        JDBCDataSource targetDS = database.getDataSource();
+    throws SQLException, ArchitectException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+        SQLDatabase database = ArchitectUtils.getAncestor(target, SQLDatabase.class);
+        SQLCatalog catalog = ArchitectUtils.getAncestor(target, SQLCatalog.class);
+        SQLSchema schema = ArchitectUtils.getAncestor(target, SQLSchema.class);
+        SPDataSource targetDS = database.getDataSource();
 
         logger.debug("Generating DDL for new repository in data source: " + targetDS.getName());
         logger.debug("Target Catalog: " + catalog + "; Schema: " + schema);
         
-        // Try to find the MatchMaker's PL.INI (don't use the architect's)
-        Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
-        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
-        // If none, then try looking for the default path
-        if (plDotIniPath == null) {
-	        String userHome = System.getProperty("user.home");
-	        if (userHome == null) {
-	        	throw new IllegalStateException("user.home property is null!");
-	        }
-	        plDotIniPath = userHome + File.separator + "pl.ini";
-        }
-        
         // Load the architect file containing the default repository schema
-        ArchitectSessionContext mmRepositoryContext = new ArchitectSessionContextImpl(plDotIniPath);
+        ArchitectSessionContext mmRepositoryContext = new ArchitectSessionContextImpl();
         InputStream reposProjectInStream = ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/dao/hibernate/mm_repository.architect");
         ArchitectSession mmRepositorySession = mmRepositoryContext.createSession(reposProjectInStream);
         reposProjectInStream.close();
@@ -162,13 +147,6 @@ public class RepositoryUtil {
                     // But we control the contents of this script, so we can ensure that won't happen.
                     line = line.replace("{USER}", SQL.quote(targetDS.getUser()));
                     
-                    // These statements will insert the repository catalog and schema names in case the 
-                    // repository is not being created in the default catalog and schema.  
-                    line = line.replace("{CATALOG}", 
-                    		catalog == null || catalog.getName().length() == 0 ? "" : catalog.getName() + "." );
-                    line = line.replace("{SCHEMA}", 
-                    		schema == null || schema.getName().length() == 0 ? "" : schema.getName() + "." );
-                    
                     statement.append(line + "\n");
                 }
                 line = br.readLine();
@@ -199,9 +177,9 @@ public class RepositoryUtil {
      * but was unfit for use for some reason (the exception message will explain the
      * reason).
      */
-    public static void createOrUpdateRepositorySchema(JDBCDataSource ds) throws RepositoryException {
+    public static void createOrUpdateRepositorySchema(SPDataSource ds) throws RepositoryException {
         logger.debug(
-                "Attempting to check DQguru repository at " + ds.getName() +
+                "Attempting to check MatchMaker repository at " + ds.getName() +
                 " with owner " + ds.getPlSchema());
         if (ds.getPlSchema() == null || ds.getPlSchema().length() == 0) {
             throw new RepositoryException(
@@ -234,7 +212,7 @@ public class RepositoryUtil {
             Version reposVersion;
             try {
                 reposVersion = new Version(rs.getString(1));
-            } catch (VersionParseException e) {
+            } catch (VersionFormatException e) {
                 throw new RepositoryVersionException(
                         "Invalid repository schema version!", e);
             }
@@ -283,7 +261,7 @@ public class RepositoryUtil {
      * @param ds
      * @throws RepositoryException If anything goes wrong while trying to create the schema
      */
-    private static void createRepositorySchema(JDBCDataSource ds) throws RepositoryException {
+    private static void createRepositorySchema(SPDataSource ds) throws RepositoryException {
         SQLDatabase db = null;
         Connection con = null;
         Statement stmt = null;
@@ -352,7 +330,7 @@ public class RepositoryUtil {
 	 * @throws ClassNotFoundException, IllegalAccessException, InstantiationException 
 	 *             When creating  ddlg from the datasource fails.
 	 */
-    public static void upgradeSchema(JDBCDataSource dbSource, Version curVer, Version reqVer) 
+    public static void upgradeSchema(SPDataSource dbSource, Version curVer, Version reqVer) 
     		throws SQLException, ParserConfigurationException, SAXException, IOException,
     		InstantiationException, IllegalAccessException, ClassNotFoundException {
     	logger.debug("Creating DDLG from datasource.");
@@ -439,7 +417,7 @@ public class RepositoryUtil {
 	 * 
 	 * @throws SQLException
 	 */
-    private static void invalidateSchemaVersion(JDBCDataSource dbSource) throws SQLException {
+    private static void invalidateSchemaVersion(SPDataSource dbSource) throws SQLException {
     	String schemaQualifier = dbSource.getPlSchema() + ".";
 
     	Connection con = null;
@@ -493,7 +471,7 @@ public class RepositoryUtil {
      * @throws SAXException
      * @throws IOException
      */
-    private static List<String> readUpgradeScripts(final String repositorySchemaQualifier, JDBCDataSourceType dbSourceType,
+    private static List<String> readUpgradeScripts(final String repositorySchemaQualifier, SPDataSourceType dbSourceType,
 			Version curVer, Version reqVer) throws ParserConfigurationException, SAXException, IOException {
 		
     	String scriptResourcePath = "ca/sqlpower/matchmaker/dao/hibernate/upgrade_"+curVer+"_"+reqVer+".xml";

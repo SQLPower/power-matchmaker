@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -22,27 +22,23 @@ package ca.sqlpower.matchmaker;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.security.EmailNotification;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.EmailNotification.EmailRecipient;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Email;
 import ca.sqlpower.util.UnknownFreqCodeException;
 /**
- * Common ground for all engines.  This class handles events
- * output capture, monitoring and starting and stopping the engine. 
+ * Common ground for all C engines.  This class handles events
+ * output capture, monitoring and starting and stoping the engine. 
  *
  */
 public abstract class AbstractEngine implements MatchMakerEngine {
@@ -99,11 +95,6 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	 */
 	private Level messageLevel = Level.INFO;
 	
-	/**
-	 * A list of {@link EngineListener}s that are listening to this Engine.
-	 */
-	private List<EngineListener> engineListeners = new ArrayList<EngineListener>();
-	
 	protected Project getProject() {
 		return project;
 	}
@@ -124,7 +115,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		try {
 			try {
 				checkPreconditions();
-			} catch (SQLObjectException e) {
+			} catch (ArchitectException e) {
 				throw new RuntimeException(e);
 			}
 			
@@ -150,7 +141,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 
 	public String getMessage() {
 		if(started && !finished){
-			return "Running DQguru Engine";
+			return "Running MatchMaker Engine";
 		} else {
 			return "";
 		}
@@ -196,7 +187,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	 * that's required by the matchmaker odbc engine, since we will not
 	 * use this odbc engine forever, check for not null is acceptable for now.
 	 */
-	protected static boolean hasODBCDSN(JDBCDataSource dataSource) {
+	protected static boolean hasODBCDSN(SPDataSource dataSource) {
 		final String odbcDsn = dataSource.getOdbcDsn();
 		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
 			return false;
@@ -243,38 +234,14 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	    }
 	}
     
-    public String createCommandLine() {
+    public String[] createCommandLine() {
         String javaHome = System.getProperty("java.home");
         String sep = System.getProperty("file.separator");
-        String userDir = System.getProperty("user.dir") + sep + "dqguru-engine-runner.jar";
         String javaPath = javaHome + sep + "bin" + sep + "java";
-        String dbName = session.getDatabase().getName();
-        String username = session.getDBUser();
-        String password = session.getDatabase().getDataSource().getPass();
-        String projectName = project.getName();
+        String className = getClass().getName();
+        Long projectOid = project.getOid();
         
-        String[] cmd = { javaPath, "-jar", userDir, 
-        		"--repository", dbName,
-        		"--username", username,
-        		"--password", password,
-        		"--project", projectName };
-        
-        StringBuilder cmdText = new StringBuilder();
-        
-        for (String arg : cmd) {
-			boolean hasSpace = arg.contains(" ");
-			boolean isEmpty = arg.length() == 0;
-			if (hasSpace || isEmpty) {
-				cmdText.append("\"");
-			}
-			cmdText.append(arg);
-			if (hasSpace || isEmpty) {
-				cmdText.append("\"");
-			}
-			cmdText.append(" ");
-		}
-        
-        return cmdText.toString() ;
+        return new String[] { javaPath, className, "match_oid=" + projectOid };
     }
 
 	public boolean isStarted() {
@@ -283,12 +250,10 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 
 	public void setStarted(boolean started) {
 		this.started = started;
-		fireEngineStarted();
 	}
 
 	public void setFinished(boolean finished) {
 		this.finished = finished;
-		fireEngineStopped();
 	}
 		
     public void setMessageLevel(Level lev) {
@@ -341,60 +306,5 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 
 	public String getObjectName() {
 		return getProject().getOid().toString();
-	}
-
-	/**
-	 * Returns the number of rows in the source table of the project that this
-	 * engine is working on.
-	 * 
-	 * @return
-	 * @throws SQLException
-	 */
-	protected int getNumRowsToProcess() throws SQLException {
-		Integer processCount;
-		processCount = getProject().getMungeSettings().getProcessCount();
-		int rowCount;
-		Connection con = null;
-		Statement stmt = null;
-		try {
-			con = getProject().createSourceTableConnection();
-			
-			stmt = con.createStatement();
-			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
-			ResultSet result = stmt.executeQuery(rowCountSQL);
-			logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
-			if (result.next()) {
-				rowCount = result.getInt("ROW_COUNT");
-			} else {
-				throw new AssertionError("No rows came back from source table row count query!");
-			}
-		} finally {
-			if (stmt != null) stmt.close();
-			if (con != null) con.close();
-		}
-		if (processCount != null && processCount.intValue() > 0 && processCount.intValue() < rowCount) {
-			rowCount = processCount.intValue();
-		}
-		return rowCount;
-	}
-	
-	public void addEngineListener(EngineListener listener) {
-		engineListeners.add(listener);
-	}
-	
-	public void removeEngineListener(EngineListener listener) {
-		engineListeners.remove(listener);
-	}
-	
-	public void fireEngineStarted() {
-		for (EngineListener l: engineListeners) {
-			l.engineStarted(new EngineEvent(this));
-		}
-	}
-	
-	public void fireEngineStopped() {
-		for (EngineListener l: engineListeners) {
-			l.engineStopped(new EngineEvent(this));
-		}
 	}
 }

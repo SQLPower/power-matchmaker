@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -21,10 +21,10 @@ package ca.sqlpower.matchmaker;
 
 import java.util.List;
 
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 
 public class TableIndex {
 	
@@ -44,9 +44,9 @@ public class TableIndex {
      * column names to actual SQLColumn references on the source table,
      * and then returns it!
      */
-    public SQLIndex getTableIndex() throws SQLObjectException {
+    public SQLIndex getTableIndex() throws ArchitectException {
     	if (table.getSourceTable() != null && sourceTableIndex != null) {
-    		sourceTableIndex.setParent(table.getSourceTable());
+    		sourceTableIndex.setParent(table.getSourceTable().getIndicesFolder());
     		resolveTableIndexColumns(sourceTableIndex);
     	}
     	return sourceTableIndex;
@@ -57,7 +57,7 @@ public class TableIndex {
      * sourceTableColumns.  The UserType for SQLIndex can't do this because
      * the source table isn't populated yet when it's invoked.
      */
-    private void resolveTableIndexColumns(SQLIndex si) throws SQLObjectException {
+    private void resolveTableIndexColumns(SQLIndex si) throws ArchitectException {
     	SQLTable st = table.getSourceTable();
     	for (SQLIndex.Column col : (List<SQLIndex.Column>) si.getChildren()) {
     		SQLColumn actualColumn = st.getColumnByName(col.getName());
@@ -77,7 +77,7 @@ public class TableIndex {
 	 * we check if the index is user created by if the parent
 	 * is null or dosn't contain the sql index.
 	 */
-	public boolean isUserCreated() throws SQLObjectException {
+	public boolean isUserCreated() throws ArchitectException {
 		if (getTableIndex() == null) return false;
 		if (getTableIndex().getParent() == null ){ 
 			return true;

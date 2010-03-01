@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -60,18 +60,18 @@ import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObject;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectUtils;
-import ca.sqlpower.sqlobject.SQLSchema;
-import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -166,7 +166,7 @@ public class BuildExampleTableDialog extends JDialog{
 		this.swingSession = swingSession;
 		sourceChooser = new SQLObjectChooser(swingSession, this);
 		tableName = new JTextField(30);
-		tableName.setText("DQguruExampleTable");
+		tableName.setText("MMExampleTable");
 		spinnerNumberModel = new SpinnerNumberModel(2000, 1, Integer.MAX_VALUE, 100);
 		rowCounter = new JSpinner(spinnerNumberModel);
 		buildGUI();
@@ -262,6 +262,7 @@ public class BuildExampleTableDialog extends JDialog{
 		
 		panel.add(progress, cc.xyw(2, row, 3));
 		
+		setLocationRelativeTo(swingSession.getFrame());
 		setContentPane(panel);
 		pack();
 	}
@@ -273,7 +274,7 @@ public class BuildExampleTableDialog extends JDialog{
 	 */
 	public void generateTableSQL()
 		throws InstantiationException, IllegalAccessException,
-		HeadlessException, SQLException, SQLObjectException, ClassNotFoundException {
+		HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
 
 		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(getDataSource());
 		if (ddlg == null) {
@@ -302,13 +303,13 @@ public class BuildExampleTableDialog extends JDialog{
 				table.removeColumn(0);
 			}
 		} else {
-			table = SQLObjectUtils.addSimulatedTable(swingSession.getDatabase(getDataSource()), getTableCatalog(), getTableSchema(), tableName.getText());
+			table = ArchitectUtils.addSimulatedTable(swingSession.getDatabase(getDataSource()), getTableCatalog(), getTableSchema(), tableName.getText());
 		}
 		
 		SQLColumn id = new SQLColumn(table,"ID",Types.INTEGER,10,0);
+		id.setPrimaryKeySeq(0);
 		
 		table.addColumn(id);
-		table.addToPK(id);
 		table.addColumn(new SQLColumn(table,"FirstName",Types.VARCHAR,100,0));
 		table.addColumn(new SQLColumn(table,"LastName",Types.VARCHAR,100,0));
 		table.addColumn(new SQLColumn(table, "Email", Types.VARCHAR,100,0));
@@ -435,7 +436,7 @@ public class BuildExampleTableDialog extends JDialog{
 				} catch (SQLException ex) {
 					SPSUtils.showExceptionDialogNoReport(editor,
 							"Create Script Failure", ex);
-				} catch (SQLObjectException ex) {
+				} catch (ArchitectException ex) {
 					SPSUtils.showExceptionDialogNoReport(editor, 
 							"Error Generating Example table", ex);
 				} finally {
@@ -504,8 +505,8 @@ public class BuildExampleTableDialog extends JDialog{
 	/**
 	 * Gets the selected datasource
 	 */
-	private JDBCDataSource getDataSource() {
-		return (JDBCDataSource)sourceChooser.getDataSourceComboBox().getSelectedItem();
+	private SPDataSource getDataSource() {
+		return (SPDataSource)sourceChooser.getDataSourceComboBox().getSelectedItem();
 	}
 	
 	/**
@@ -781,6 +782,7 @@ public class BuildExampleTableDialog extends JDialog{
 			"Keldorn",
 			"Kenesaw Mountain Landis",
 			"MegaZone",
+			"Oleúde José Ribeiro",
 			"Optimus Prime",
 			"Sony PlayStation",
 			"Matrix",
@@ -814,6 +816,8 @@ public class BuildExampleTableDialog extends JDialog{
 			"Coco Crisp",
 			"Wrigley Fields",
 			"Amor De Cosmos",
+			"Constant-Désiré Despradelle",
+			"Espen Thoresen Hværsaagod",
 			"Legal Tender Coxey",
 			"Mahershalalhashbaz Ali",
 			"Mister Thorne",

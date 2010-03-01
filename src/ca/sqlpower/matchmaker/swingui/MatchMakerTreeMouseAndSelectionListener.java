@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -29,13 +29,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
-import javax.swing.ProgressMonitor;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
@@ -47,7 +47,6 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -71,10 +70,7 @@ import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.RefreshAction;
 import ca.sqlpower.matchmaker.swingui.action.ScriptAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.matchmaker.swingui.address.AddressPoolLoadingWorker;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.swingui.ProgressWatcher;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component
@@ -260,9 +256,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 	private void addProjectMenuItems(JPopupMenu m, final Project project) {
 
+		m.addSeparator();
 		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
 
-		if (project.getType() == ProjectMode.FIND_DUPES) {
+		if (project.getType() != ProjectMode.CLEANSE) {
 			m.add(new JMenuItem(new NewMergeRuleAction(swingSession, project)));
 		}
 		
@@ -284,13 +281,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 			m.add(new JMenuItem(new AbstractAction("Run Cleanse") {
 				public void actionPerformed(ActionEvent e) {
 					EngineSettingsPanel f = swingSession.getCleanseEnginePanel(project.getCleansingEngine(), project);
-					swingSession.setCurrentEditorComponent(f);
-				}
-			}));
-		} else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
-			m.add(new JMenuItem(new AbstractAction("Run Address Correction") {
-				public void actionPerformed(ActionEvent e) {
-					EngineSettingsPanel f = swingSession.getAddressCorrectionEnginePanel(project.getAddressCorrectionEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
@@ -358,10 +348,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		JMenu mm = new JMenu("New Project");
 		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New De-duping Project", Project.ProjectMode.FIND_DUPES)));
 		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New Cleansing Project",Project.ProjectMode.CLEANSE)));
-// 		TODO: Implement Cross-referencing projects first before re-enabling this menu item
-//		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New X-ref Project", Project.ProjectMode.BUILD_XREF)));
-		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New Address Correction Project", Project.ProjectMode.ADDRESS_CORRECTION)));
+		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New X-ref Project", Project.ProjectMode.BUILD_XREF)));
 		m.add(mm);
+		
+		// TODO: Implement the import and export functions and
+		// replace this dummy action.
+//		m.add(new JMenuItem(new ProjectImportAction(swingSession, owningFrame)));
 		
 		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
 				"Delete Folder", folder)));
@@ -425,16 +417,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 							(PlFolder) o);
 					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof Project) {
-					AbstractAction cancelAction = new AbstractAction("Cancel") {
-						public void actionPerformed(final ActionEvent e) {
-							swingSession.setCurrentEditorComponent(null);
-						}
-					};
-					
+
 					ProjectEditor me;
 					me = new ProjectEditor(swingSession, (Project) o,
-							(PlFolder<Project>) ((Project) o).getParent(),
-							cancelAction);
+							(PlFolder<Project>) ((Project) o).getParent());
 
 					swingSession.setCurrentEditorComponent(me);
 
@@ -549,17 +535,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 								node.getProject().getMergingEngine(), node.getProject()));
 					} else if (node.getActionType() == ProjectActionType.RUN_CLEANSING) {
 						swingSession.setCurrentEditorComponent(swingSession.getCleanseEnginePanel(node.getProject().getCleansingEngine(), node.getProject()));
-					} else if (node.getActionType() == ProjectActionType.RUN_ADDRESS_CORRECTION) {
-						swingSession.setCurrentEditorComponent(swingSession.getAddressCorrectionEnginePanel(node.getProject().getAddressCorrectionEngine(), node.getProject()));
-					} else if (node.getActionType() == ProjectActionType.VALIDATE_ADDRESSES) {
-						AddressPool pool = new AddressPool(node.getProject());
-						ProgressMonitor monitor = new ProgressMonitor(owningFrame, "", "", 0, 100);
-						AddressPoolLoadingWorker addressPoolLoadingWorker = new AddressPoolLoadingWorker(pool, swingSession);
-						ProgressWatcher.watchProgress(monitor, addressPoolLoadingWorker);
-						Thread workerThread = new Thread(addressPoolLoadingWorker);
-						workerThread.start();
-					} else if (node.getActionType() == ProjectActionType.COMMIT_VALIDATED_ADDRESSES) {
-						swingSession.setCurrentEditorComponent(swingSession.getValidatedAddressCommittingEnginePanel(node.getProject().getAddressCommittingEngine(), node.getProject()));
 					}
 				} else if (o instanceof TranslateGroupParent) {
 					swingSession
@@ -604,5 +579,4 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		}
 	}
 
-	
 }

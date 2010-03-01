@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -19,12 +19,9 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.math.BigDecimal;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,9 +34,6 @@ import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
-import ca.sqlpower.sqlobject.SQLType;
-import ca.sqlpower.validation.ValidateResult;
 
 /**
  * An abstract implementation of the MungeStep interface. The only
@@ -108,36 +102,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	private Class defaultInputClass = Object.class;
 	
-	protected EngineMode mode;
 	
 	public AbstractMungeStep(String name, boolean canAddInputs) {
 		setName(name);
 		this.canAddInputs = canAddInputs;
 	}
 	
-	@Override
-	public MungeProcess getParent() {
-	    return (MungeProcess) super.getParent();
-	}
-	
 	//The set of methods that can be to be overwritten by the subclasses. 
 	/**
-	 * A method that is called when a step is opened. Default is No-op.
-	 * Subclasses that override this method should keep in mind that this method
-	 * could be called before the step has its parameters properly configured.
+	 * A method that is called when a step is opened. Default is No-op. 
 	 */
-	public void doOpen(EngineMode mode, Logger log) throws Exception {}
-
-	/**
-	 * Refreshes the munge step. This will do different operations depending on
-	 * the munge step including refreshing the outputs and inputs on the step.
-	 * Default is a no-op. Subclasses that override this method should keep in
-	 * mind that this method could be called before the step has its parameters
-	 * properly configured.
-	 */
-    public void refresh(Logger logger) throws Exception {
-    	//do nothing on default cases.
-    }
+	public void doOpen(Logger log) throws Exception {}
 	
 	/**
 	 * A method that is called when an step is "run/called". Default is No-op. 
@@ -202,18 +177,15 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * MungeStepOutput, note that this may remove more than
 	 * one input
 	 */
-	public int disconnectInput(MungeStepOutput mso) {
-	    int disconnectCount = 0;
+	public void disconnectInput(MungeStepOutput mso) {
 		for (int i = 0; i < inputs.size(); i++) {
 			Input in = inputs.get(i);
 			if (in.current == mso) {
 				getEventSupport().firePropertyChange("inputs", i,
 					in.current, null);
 				in.current = null;
-				disconnectCount++;
 			}
 		}
-		return disconnectCount;
 	}
 	
 	public int addInput(InputDescriptor desc) {
@@ -489,16 +461,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		return canAddInputs;
 	}
 
-	public final void open(Logger logger) throws Exception {
-		open(null, logger);
-	}
-	
-	/**
+    /**
      * Only sets the logger, because most steps do not need to allocate any resources.
      * If your step needs to allocate resources (perform a database query, open
      * a file, connect to a server, and so on), you should override this method.
      */
-    public final void open(EngineMode mode, Logger logger) throws Exception {
+    public final void open(Logger logger) throws Exception {
     	this.logger = logger;
         if (logger == null) {
             throw new NullPointerException("Step " + getClass().getName() + " was given a null logger");
@@ -512,7 +480,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
             throw new IllegalStateException("Step is already opened");
         }
         
-        doOpen(mode, logger);
+        doOpen(logger);
 
         opened = true;
         committed = false;
@@ -763,61 +731,4 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		}
 		return result;
 	}
-	
-	/**
-     * Returns the Java class associated with the given SQL type code.
-     * 
-     * @param type
-     *            The type ID number. See {@link SQLType} for the official list.
-     * @return The class for the given type. Defaults to java.lang.String if the
-     *         type code is unknown, since almost every SQL type can be
-     *         represented as a string if necessary.
-     */
-    protected Class<?> typeClass(int type) {
-        switch (type) {
-        case Types.VARCHAR:
-        case Types.VARBINARY:
-        case Types.STRUCT:
-        case Types.REF:
-        case Types.OTHER:
-        case Types.NULL:
-        case Types.LONGVARCHAR:
-        case Types.LONGVARBINARY:
-        case Types.JAVA_OBJECT:
-        case Types.DISTINCT:
-        case Types.DATALINK:
-        case Types.CLOB:
-        case Types.CHAR:
-        case Types.BLOB:
-        case Types.BINARY:
-        case Types.ARRAY:
-        default:
-            return String.class;
-
-        case Types.TINYINT:
-        case Types.SMALLINT:
-        case Types.REAL:
-        case Types.NUMERIC:
-        case Types.INTEGER:
-        case Types.FLOAT:
-        case Types.DOUBLE:
-        case Types.DECIMAL:
-        case Types.BIGINT:
-            return BigDecimal.class;
-
-        case Types.BIT:
-        case Types.BOOLEAN:
-            return Boolean.class;
-        
-        case Types.TIMESTAMP:
-        case Types.TIME:
-        case Types.DATE:
-            return Date.class;
-        }
-    }
-    
-    public List<ValidateResult> checkPreconditions() {
-    	return Collections.emptyList();
-    }
-
 }

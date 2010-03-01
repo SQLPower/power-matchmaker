@@ -34,7 +34,7 @@ Class-Path: lib/commons-beanutils-bean-collections.jar
   lib/jta.jar
   lib/junit.jar
   lib/log4j.jar
-  lib/dqguruhelp.jar
+  lib/matchmakerhelp.jar
   lib/msbase.jar
   lib/mssqlserver.jar
   lib/msutil.jar

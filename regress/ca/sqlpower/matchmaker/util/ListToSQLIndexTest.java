@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -21,9 +21,9 @@
 package ca.sqlpower.matchmaker.util;
 
 import junit.framework.TestCase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
+import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.testutil.MockJDBCPreparedStatement;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 
@@ -64,16 +64,16 @@ public class ListToSQLIndexTest extends TestCase {
 		index2 = new SQLIndex();
 		index2.setName("TestIndex");
 		
-		c0 = new Column("Test0", AscendDescend.UNSPECIFIED);
-		c1 = new Column("Test1", AscendDescend.UNSPECIFIED);
-		c2 = new Column("Test2", AscendDescend.UNSPECIFIED);
-		c3 = new Column("Test3", AscendDescend.UNSPECIFIED);
-		c4 = new Column("Test4", AscendDescend.UNSPECIFIED);
-		c5 = new Column("Test5", AscendDescend.UNSPECIFIED);
-		c6 = new Column("Test6", AscendDescend.UNSPECIFIED);
-		c7 = new Column("Test7", AscendDescend.UNSPECIFIED);
-		c8 = new Column("Test8", AscendDescend.UNSPECIFIED);
-		c9 = new Column("Test9", AscendDescend.UNSPECIFIED);		
+		c0 = index.new Column("Test0", AscendDescend.UNSPECIFIED);
+		c1 = index.new Column("Test1", AscendDescend.UNSPECIFIED);
+		c2 = index.new Column("Test2", AscendDescend.UNSPECIFIED);
+		c3 = index.new Column("Test3", AscendDescend.UNSPECIFIED);
+		c4 = index.new Column("Test4", AscendDescend.UNSPECIFIED);
+		c5 = index.new Column("Test5", AscendDescend.UNSPECIFIED);
+		c6 = index.new Column("Test6", AscendDescend.UNSPECIFIED);
+		c7 = index.new Column("Test7", AscendDescend.UNSPECIFIED);
+		c8 = index.new Column("Test8", AscendDescend.UNSPECIFIED);
+		c9 = index.new Column("Test9", AscendDescend.UNSPECIFIED);		
 		index.addChild(c0);
 		index.addChild(c1);
 		index.addChild(c2);
@@ -85,16 +85,16 @@ public class ListToSQLIndexTest extends TestCase {
 		index.addChild(c8);
 		index.addChild(c9);	
 		
-		c20 = new Column("Test0", AscendDescend.UNSPECIFIED);
-		c21 = new Column("Test1", AscendDescend.UNSPECIFIED);
-		c22 = new Column("Test2", AscendDescend.UNSPECIFIED);
-		c23 = new Column("Test3", AscendDescend.UNSPECIFIED);
-		c24 = new Column("Test4", AscendDescend.UNSPECIFIED);
-		c25 = new Column("Test5", AscendDescend.UNSPECIFIED);
-		c26 = new Column("Test6", AscendDescend.UNSPECIFIED);
-		c27 = new Column("Test7", AscendDescend.UNSPECIFIED);
-		c28 = new Column("Test8", AscendDescend.UNSPECIFIED);
-		c29 = new Column("Test9", AscendDescend.UNSPECIFIED);
+		c20 = index2.new Column("Test0", AscendDescend.UNSPECIFIED);
+		c21 = index2.new Column("Test1", AscendDescend.UNSPECIFIED);
+		c22 = index2.new Column("Test2", AscendDescend.UNSPECIFIED);
+		c23 = index2.new Column("Test3", AscendDescend.UNSPECIFIED);
+		c24 = index2.new Column("Test4", AscendDescend.UNSPECIFIED);
+		c25 = index2.new Column("Test5", AscendDescend.UNSPECIFIED);
+		c26 = index2.new Column("Test6", AscendDescend.UNSPECIFIED);
+		c27 = index2.new Column("Test7", AscendDescend.UNSPECIFIED);
+		c28 = index2.new Column("Test8", AscendDescend.UNSPECIFIED);
+		c29 = index2.new Column("Test9", AscendDescend.UNSPECIFIED);
 		index2.addChild(c20);
 		index2.addChild(c21);
 		index2.addChild(c22);
@@ -211,7 +211,7 @@ public class ListToSQLIndexTest extends TestCase {
 		index2.setName("some other name");
 		assertFalse("The two indices are equal, but should not be",userType.equals(index,index2));
 		index2.setName(oldName);
-		index2.addChild(new Column("Test10", AscendDescend.UNSPECIFIED));
+		index2.addChild(index2.new Column("Test10", AscendDescend.UNSPECIFIED));
 		assertFalse("The two indices are equal, but should not be",userType.equals(index,index2));
 	}
 }

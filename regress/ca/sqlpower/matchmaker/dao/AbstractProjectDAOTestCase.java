@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -29,6 +29,12 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Set;
 
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
+import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -38,14 +44,7 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Project,ProjectDAO>  {
 
@@ -83,8 +82,6 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         nonPersistingProperties.add("cleansingEngine");
         nonPersistingProperties.add("matchingEngine");
         nonPersistingProperties.add("mergingEngine");
-        nonPersistingProperties.add("addressCorrectionEngine");
-        nonPersistingProperties.add("addressCommittingEngine");
         
         // tested explicitly elsewhere
         nonPersistingProperties.add("sourceTable");
@@ -121,8 +118,6 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		}
 	}
 
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
-			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
 	public void testIndexSave() throws Exception {
 		Project m = createNewObjectUnderTest();
 		
@@ -133,9 +128,9 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		table.addColumn(new SQLColumn(table, "test3", 4, 10, 0));
 		
 		SQLIndex idx = new SQLIndex("test_index", true, null, null, null);
-		idx.addChild(new Column("test1", AscendDescend.UNSPECIFIED));
-		idx.addChild(new Column("test2", AscendDescend.UNSPECIFIED));
-		idx.addChild(new Column("test3", AscendDescend.UNSPECIFIED));
+		idx.addChild(idx.new Column("test1", AscendDescend.UNSPECIFIED));
+		idx.addChild(idx.new Column("test2", AscendDescend.UNSPECIFIED));
+		idx.addChild(idx.new Column("test3", AscendDescend.UNSPECIFIED));
 		m.setSourceTableIndex(idx);
 		
 		table.addIndex(idx);
@@ -235,7 +230,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     	SQLColumn sqlCol = new SQLColumn(sourceTable, "testSQLCol",
     			Types.INTEGER, 10, 10);
     	sourceTable.addColumn(sqlCol);
-    	Column col = new Column(sqlCol, AscendDescend.UNSPECIFIED);
+    	Column col = sourceTableIndex.new Column(sqlCol, AscendDescend.UNSPECIFIED);
     	sourceTableIndex.addChild(col);
     	
     	Project project = createNewObjectUnderTest();
@@ -244,7 +239,6 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     	
     	project.setResultTableName("my_COOL_result_table");
     	project.setResultTableSPDatasource(getDS().getName());
-    	project.setType(ProjectMode.FIND_DUPES);
     	SQLTable resultTable = project.createResultTable();
     	
     	// Sets up the sql statements needed for the result table
@@ -291,8 +285,6 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     			15, project.getResultTable().getColumns().size());
     }
     
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
-			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     public void testMungeProcessMove() throws Exception {
         MungeProcess process = new MungeProcess();
         process.setName("munge process");
@@ -467,6 +459,6 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     protected abstract long insertSampleMungeStepData(
             long parentGroupOid, String lastUpdateUser) throws Exception;
     
-	protected abstract JDBCDataSource getDS();
+	protected abstract SPDataSource getDS();
 	protected abstract SPDataSource getAlternateDS();
 }

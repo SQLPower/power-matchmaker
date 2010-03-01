@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -27,20 +27,19 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
-import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLSchema;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class MatchEngineImplTest extends TestCase {
 
@@ -54,7 +53,7 @@ public class MatchEngineImplTest extends TestCase {
     final private Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-	    JDBCDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 		MMTestUtils.createResultTable(con);
@@ -64,7 +63,7 @@ public class MatchEngineImplTest extends TestCase {
 
 		sourceTable = db.getTableByName(null, "pl", "source_table");
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
-		sourceTableIndex.addChild(new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
+		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
 		sourceTable.addIndex(sourceTableIndex);
 		plSchema.addChild(sourceTable);
 
@@ -112,7 +111,9 @@ public class MatchEngineImplTest extends TestCase {
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessOne.addChild(outputStep);
 
-		inputStep.refresh(logger);
+		inputStep.open(logger);
+        inputStep.rollback();
+		inputStep.close();
 
 		outputStep.addInput(new InputDescriptor("result2", Object.class));
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
@@ -159,7 +160,9 @@ public class MatchEngineImplTest extends TestCase {
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessTwo.addChild(outputStep);
 
-		inputStep.refresh(logger);
+		inputStep.open(logger);
+		inputStep.rollback();
+		inputStep.close();
 
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		

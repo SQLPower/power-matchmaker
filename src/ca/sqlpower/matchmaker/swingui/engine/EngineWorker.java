@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -24,19 +24,17 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.swing.Action;
-import javax.swing.JTextArea;
 import javax.swing.text.Document;
 
 import org.apache.log4j.Appender;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableException;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.swingui.DocumentAppender;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSwingWorker;
 
@@ -44,15 +42,6 @@ import ca.sqlpower.swingui.SPSwingWorker;
  * A SPSwingWorker implementation that runs a MatchMakerEngine.
  */
 class EngineWorker extends SPSwingWorker {
-
-	/**
-	 * The maximum number of characters that will be displayed in the engine
-	 * output {@link JTextArea}. This is to keep the buffer from getting too
-	 * large and consuming too much memory during an engine run. If the user
-	 * wants to view the whole log output, they can just open up the text file
-	 * or use the 'Show Log' button.
-	 */
-	private static final int LOG_OUTPUT_CHAR_LIMIT = 50000;
 
 	/**
 	 * The MatchMakerEngine that the worker will run
@@ -93,11 +82,11 @@ class EngineWorker extends SPSwingWorker {
 	 * including the log output and progress bar
 	 * @param registry The SwingWorkerRegistry that this worker will register itself with
 	 * @throws EngineSettingException
-	 * @throws SQLObjectException
+	 * @throws ArchitectException
 	 * @throws SourceTableException 
 	 */
 	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel,
-			MatchMakerSwingSession session, Project project, Action action) throws EngineSettingException, SQLObjectException, SourceTableException {
+			MatchMakerSwingSession session, Project project, Action action) throws EngineSettingException, ArchitectException, SourceTableException {
 		super(session);
 		this.session = session;
 		this.project = project;
@@ -105,6 +94,7 @@ class EngineWorker extends SPSwingWorker {
 		this.engineOutputDoc = outputPanel.getOutputDocument();
 		this.parentComponent = outputPanel.getOutputComponent().getTopLevelAncestor();
 		this.action = action;
+		engine.checkPreconditions();
 		ProgressWatcher.watchProgress(outputPanel.getProgressBar(), engine);
 	}
 	
@@ -112,7 +102,7 @@ class EngineWorker extends SPSwingWorker {
 	public void doStuff() throws EngineSettingException, IOException, SQLException, SourceTableException, InterruptedException {
 	    project.acquireEngineLock(engine);
 	    try {
-	        appender = new DocumentAppender(engineOutputDoc, true, LOG_OUTPUT_CHAR_LIMIT);
+	        appender = new DocumentAppender(engineOutputDoc);
 	        engine.getLogger().addAppender(appender);
 	        engine.call();
 	    } finally {

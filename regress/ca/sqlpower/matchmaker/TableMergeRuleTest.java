@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,8 +20,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
-import ca.sqlpower.sqlobject.SQLTable;
 
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 
@@ -58,6 +58,9 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 	public void testEquals() {
 		TableMergeRules m1 = getTarget();
 		TableMergeRules m2 = getTarget();
+		
+		SQLTable t1 = new SQLTable();
+		SQLTable t2 = new SQLTable();
 		
 		Project parent1 = new Project();
 		parent1.setSession(new TestingMatchMakerSession());

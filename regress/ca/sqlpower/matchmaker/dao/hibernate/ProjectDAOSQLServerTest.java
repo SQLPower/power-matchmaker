@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -31,7 +31,6 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 
 
@@ -63,7 +62,7 @@ private Project project;
     	project = createNewObjectUnderTest();
     }
 	
-	protected JDBCDataSource getDS() {
+	protected SPDataSource getDS() {
 		return DBTestUtil.getSqlServerDS();
 	}
 	
@@ -83,8 +82,6 @@ private Project project;
 		((TestingMatchMakerHibernateSession) getSession()).resetSession();
 	}
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
-			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     @Override
     protected long insertSampleMungeStepData(long parentProcessOid, String lastUpdateUser) throws Exception {
         Connection con = null;
@@ -126,8 +123,6 @@ private Project project;
         }
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
-			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     @Override
     protected long insertSampleMungeProcessData(long parentProjectOid, String processName) throws Exception {
         Connection con = null;
@@ -167,8 +162,6 @@ private Project project;
         }
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
-			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
     @Override
     protected long insertSampleProjectData(String projectName, Long folderOid) throws Exception {
         Connection con = null;

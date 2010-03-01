@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 
 
@@ -146,23 +145,12 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 * the parameter.
 	 */
 	@Override
-	public void doOpen(EngineMode mode, Logger logger) throws Exception {
-		refresh(logger);
-		if (translateGroup == null) {
-			throw new NullPointerException("Translate Word transformer was called " +
-					"without a translate group selected. Check your Translate Word " +
-					"transformer settings");
-		}
-	}
-	
-	@Override
-	public void refresh(Logger logger) throws Exception {
+	public void doOpen(Logger logger) throws Exception {
 		String oid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
 		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (getSession().getDAO(MatchMakerTranslateGroup.class));
-		if (oid != null) {
-			translateGroup = groupDAO.findByOID(Long.valueOf(oid));
-		} else {
-			logger.debug("Opening Translate Words transformer with an null translate group oid");
+		translateGroup = groupDAO.findByOID(Long.valueOf(oid));
+		if(translateGroup == null) {
+			throw new NullPointerException("Translate group with " + oid + " not found");
 		}
 	}
 }

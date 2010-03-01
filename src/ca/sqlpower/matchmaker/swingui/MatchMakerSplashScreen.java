@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -25,9 +25,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LayoutManager;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -41,7 +38,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.util.BrowserUtil;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -94,19 +90,9 @@ public class MatchMakerSplashScreen {
         JPanel spgLogo = new JPanel(new LogoLayout());
         spgLogo.add(new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca/</div></html>", JLabel.CENTER));
         spgLogo.add(new JLabel(new ImageIcon(getClass().getResource("/icons/sqlpower_alpha_gradient.png"))));
-        spgLogo.addMouseListener(new MouseAdapter() {
-    		@Override
-    		public void mouseReleased(MouseEvent e) {
-    			try {
-    				BrowserUtil.launch(SPSUtils.SQLP_URL);
-    			} catch (IOException e1) {
-    				throw new RuntimeException("Could not launch web browser with URL " + SPSUtils.SQLP_URL, e1);
-    			}
-    		}
-		});
         
-		JLabel mmLogo = new JLabel(SPSUtils.createIcon("dqguru_huge", "DQguru Huge Icon"), JLabel.CENTER);
-		JLabel title  = new JLabel("<html>" + "SQL Power DQguru " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
+		JLabel mmLogo = new JLabel(SPSUtils.createIcon("matchmaker_huge", "MatchMaker Huge Icon"), JLabel.CENTER);
+		JLabel title  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
 		Font f = title.getFont();
 		Font newf = new Font(f.getName(), f.getStyle(), (int) (f.getSize() * 1.5));
 		title.setFont(newf);
@@ -146,7 +132,7 @@ public class MatchMakerSplashScreen {
         }
         
         summary.append("</tr><tr>");
-        summary.append("<td>DQguru Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
+        summary.append("<td>Power*Loader Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
         summary.append("</tr></table></html>");
         JLabel summaryLabel = new JLabel(summary.toString(), JLabel.CENTER);
         

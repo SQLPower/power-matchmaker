@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -28,14 +28,14 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
 
 public class MatchMakerSwingSessionTest extends TestCase {
     
@@ -44,7 +44,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
     private MatchMakerSwingSession session;
     PlFolder folder1;
     PlFolder folder2;
-    JDBCDataSource ds;
+    SPDataSource ds;
     
     @Override
     protected void setUp() throws Exception {
@@ -54,8 +54,8 @@ public class MatchMakerSwingSessionTest extends TestCase {
         
         SwingSessionContext stubContext = new StubSwingSessionContext() {
             @Override
-            public List<JDBCDataSource> getDataSources() {
-                List<JDBCDataSource> dsList = new ArrayList<JDBCDataSource>();
+            public List<SPDataSource> getDataSources() {
+                List<SPDataSource> dsList = new ArrayList<SPDataSource>();
                 dsList.add(ds);
                 return dsList;
             }
@@ -99,7 +99,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
             public Connection getConnection() {
             	try {
             	return getDatabase().getConnection();
-            	} catch (SQLObjectException e) {
+            	} catch (ArchitectException e) {
             		throw new RuntimeException("Error getting Connection!", e);
             	}
             }

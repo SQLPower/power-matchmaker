@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -22,13 +22,12 @@ package ca.sqlpower.matchmaker;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.prefs.PreferenceChangeListener;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 /**
@@ -53,7 +52,7 @@ public interface MatchMakerSessionContext {
      * this shared piece of information, and those implementations definitely
      * shouldn't know about each other.
      */
-    public static final String DEFAULT_REPOSITORY_DATA_SOURCE_NAME = "DQguru Default Repository";
+    public static final String DEFAULT_REPOSITORY_DATA_SOURCE_NAME = "MatchMaker Default Repository";
 
     /**
      * Name of the preferences parameter for email host address
@@ -65,14 +64,7 @@ public interface MatchMakerSessionContext {
      */
     public static final String PREFS_PL_INI_PATH = "PL.INI.PATH";
     
-    /**
-	 * The preference key that specifies the path to the directory containing
-	 * Address Correction Data provided by SQL Power Group Inc.
-	 */
-	public static final String ADDRESS_CORRECTION_DATA_PATH = "MatchMakerSessionContext.ADDRESS_CORRECTION_DATA_PATH";
-
-    
-    public List<JDBCDataSource> getDataSources();
+    public List<SPDataSource> getDataSources();
 
     /**
      * Creates a MatchMaker session object, which entails logging into a database
@@ -89,12 +81,12 @@ public interface MatchMakerSessionContext {
      * @throws SQLException If there are general database errors (can't connect, database
      * permission denied, the PL Schema is missing, etc).
      * @throws RepositoryVersionException If the repository version is incorrect, invalid, or missing.
-     * @throws SQLObjectException If some SQLObject operations fail
+     * @throws ArchitectException If some SQLObject operations fail
      * @throws MatchMakerConfigurationException  If there is a user-fixable configuration problem.
      */
-    public MatchMakerSession createSession(JDBCDataSource ds, String username,
+    public MatchMakerSession createSession(SPDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
-			SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException;
+			ArchitectException, MatchMakerConfigurationException, RepositoryVersionException;
 
     /**
      * Creates a session using some default repository data source. If the
@@ -111,7 +103,7 @@ public interface MatchMakerSessionContext {
      * Such implementations could delegate to PlDotIni and the databases.xml stuff,
      * as well as a JNDI implementation.
      */
-    public DataSourceCollection<JDBCDataSource> getPlDotIni();
+    public DataSourceCollection getPlDotIni();
     
     /**
      * Returns the email smtp host address set in the preferences
@@ -144,25 +136,4 @@ public interface MatchMakerSessionContext {
 	 * data sources, and if it's not, then add an entry for it.
 	 */
     public void ensureDefaultRepositoryDefined();
-    
-    /**
-     * Sets the path of the directory containing the Address Correction Data.
-     */
-    public void setAddressCorrectionDataPath(String path);
-    
-    /**
-     * Returns the path of the directory containing the Address Correction Data.
-     */
-    public String getAddressCorrectionDataPath();
-    
-    /**
-     * Adds a listener to the preferences so different parts of the app
-     * can update when a preference changes.
-     */
-    public void addPreferenceChangeListener(PreferenceChangeListener l);
-    
-    /**
-     * Removes a listener to the preferences.
-     */
-    public void removePreferenceChangeListener(PreferenceChangeListener l);
 }

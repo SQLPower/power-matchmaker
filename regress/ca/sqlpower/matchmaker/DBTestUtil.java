@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -32,13 +32,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ddl.HSQLDBDDLGenerator;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SpecificDataSourceCollection;
 
 /**
  * A collection of useful static methods that you will probably need when
@@ -67,7 +63,7 @@ public class DBTestUtil {
      * @throws ClassNotFoundException If the JDBC driver can't be found
      * @throws SQLException If there is a JDBC error (invalid username, password, or database url)
      */
-    public static TestingConnection connectToDatabase(JDBCDataSource dataSource)
+    public static TestingConnection connectToDatabase(SPDataSource dataSource)
     throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
         
         if (connections.get(dataSource) == null) {
@@ -86,7 +82,7 @@ public class DBTestUtil {
      * Returns a new SPDataSource which is configured to connect to
      * our SQL Server 2000 test database.  The pl schema is in plautotest.
      */
-    public static JDBCDataSource getSqlServerDS() { 
+    public static SPDataSource getSqlServerDS() { 
     	/*
     	 * Setup information for SQL Server
     	 */
@@ -98,18 +94,18 @@ public class DBTestUtil {
     									"Did you remember to set the pl.regression.ini in the testbed folder?", e);
     	}
     	
-    	return pl.getDataSource("Test Sql Server", JDBCDataSource.class);
+    	return pl.getDataSource("Test Sql Server");
     }
 
     /**
      * Returns a new SPDataSource which is configured to connect to
      * our Oracle 8i test database.  The PL schema is in mm_test.
      */
-    public static JDBCDataSource getOracleDS() { 
+    public static SPDataSource getOracleDS() { 
         /*
          * Setup information for Oracle
          */
-    	DataSourceCollection<JDBCDataSource> pl = new SpecificDataSourceCollection<JDBCDataSource>(new PlDotIni(), JDBCDataSource.class);
+    	PlDotIni pl = new PlDotIni();
     	try {
     		pl.read(new File("testbed/pl.regression.ini"));
     	} catch (IOException e) {
@@ -125,14 +121,13 @@ public class DBTestUtil {
      * Returns a new SPDataSource which is configured to create
      * an in-memory (non persistent) HSQLDB instance.  The PL schema is in pl.
      */
-    public static JDBCDataSource getHSQLDBInMemoryDS() {
+    public static SPDataSource getHSQLDBInMemoryDS() {
         final String hsqlUserName = "sa";
         final String hsqlPassword = "";
         final String hsqlUrl = "jdbc:hsqldb:mem:aname";
         
-        JDBCDataSource hsqlDataSource = new JDBCDataSource(new PlDotIni());
+        SPDataSource hsqlDataSource = new SPDataSource(new PlDotIni());
         hsqlDataSource.getParentType().setJdbcDriver("org.hsqldb.jdbcDriver");
-        hsqlDataSource.getParentType().setDDLGeneratorClass(HSQLDBDDLGenerator.class.getName());
         hsqlDataSource.setName("In-memory HSQLDB");
     
         hsqlDataSource.setUser(hsqlUserName);

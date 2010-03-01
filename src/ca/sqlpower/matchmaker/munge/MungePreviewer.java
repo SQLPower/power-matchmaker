@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -26,8 +26,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -70,12 +68,12 @@ public class MungePreviewer extends MungeProcessor {
 		 * in the process.
 		 */
 		public void previewRefreshed(PreviewEvent evt);
-
+		
 		/**
-		 * Fired if the preview becomes disabled because it cannot refresh. This
-		 * normally happens when the check on the preconditions fails.
+		 * Fired if the preview becomes disabled. This normally happens
+		 * when the check on the preconditions fails.
 		 */
-		public void previewDisabled(String reason);
+		public void previewDisabled();
 	}
 	
 	/**
@@ -149,6 +147,7 @@ public class MungePreviewer extends MungeProcessor {
 		}
 		listeners = new ArrayList<PreviewListener>();
 		refreshEnabled = true;
+		refreshPreview();
 	}
 	
 	/**
@@ -187,8 +186,8 @@ public class MungePreviewer extends MungeProcessor {
 				}
 				step.open(logger);
 
-				previewStepOutputData.put(step, new ArrayList<ArrayList>());
-				previewStepInputData.put(step, new ArrayList<ArrayList>());
+				previewStepOutputData.put(step, new ArrayList());
+				previewStepInputData.put(step, new ArrayList());
 			}
 			
 			for (int i = 0; i < MAX_ROWS_PREVIEWED; i++) {
@@ -216,9 +215,8 @@ public class MungePreviewer extends MungeProcessor {
 			
 		} catch (Exception e) {
 			refreshEnabled = false;
-			logger.error("Could not refresh preview:", e);
 			for (PreviewListener l : listeners) {
-				l.previewDisabled("Could not refresh preview : " + e.getMessage());
+				l.previewDisabled();
 			}
 		} finally {
 			
@@ -252,8 +250,6 @@ public class MungePreviewer extends MungeProcessor {
 	 * never reached in the munge process.
 	 */
 	public ArrayList<ArrayList> getPreviewOutputForStep(MungeStep ms) {
-		if (previewStepOutputData == null) return null;
-		
 		return previewStepOutputData.get(ms);
 	}
 	
@@ -264,8 +260,6 @@ public class MungePreviewer extends MungeProcessor {
 	 * empty list will be returned.
 	 */
 	public ArrayList<ArrayList> getPreviewInputForStep(MungeStep ms) {
-		if (previewStepInputData == null) return null;
-		
 		return previewStepInputData.get(ms);
 	}
 	
@@ -286,27 +280,15 @@ public class MungePreviewer extends MungeProcessor {
 		
 		if (refreshEnabled) {
 			try {
-				Project project = process.getParentProject();
-				
-				// XXX: A quick fix, but ideally, each project type would be a
-				// subclass of Project and have a 'getEngine' method that would
-				// return the appropriate engine.
-				if (project.getType() == ProjectMode.FIND_DUPES) {
-					project.getMatchingEngine().checkPreconditions();
-				} else if (project.getType() == ProjectMode.CLEANSE) {
-					project.getCleansingEngine().checkPreconditions();
-				} else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
-					project.getAddressCorrectionEngine().checkPreconditions();
-				}
+				process.getParentProject().getMatchingEngine().checkPreconditions();
 			} catch (Exception e1) {
 				logger.debug("Preview disabled");
-				this.refreshEnabled = false;
+				refreshEnabled = false;
 				for (PreviewListener l : listeners) {
-					l.previewDisabled("Engine precondition failed : " + e1.getMessage());
+					l.previewDisabled();
 				}
 				return;
 			}
-			refreshPreview();
 		}
 	}
 

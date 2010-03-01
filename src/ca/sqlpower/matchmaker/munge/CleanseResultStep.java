@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -28,21 +28,18 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLType;
+import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TypeMap;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 /**
  * The Cleanse Result Step is the ultimate destination for munge data in a data
@@ -65,47 +62,17 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	private boolean usePS = false; 
 	
 	
-	public CleanseResultStep() throws SQLObjectException {
+	public CleanseResultStep() throws ArchitectException {
 		super("Table!", false);
 	}
-	
-	private void refreshInputs() throws SQLObjectException {
-        Set<Input> orphanInputs = new HashSet<Input>(getInputs());
-        for (SQLColumn c : table.getColumns()) {
-            String colName = c.getName();
-            int inputIdx = -1;
-            Input input = null;
-            for (int i = 0; i < getInputCount(); i++) {
-                Input in = getInputs().get(i);
-                if (c.getName().equals(in.getName())) {
-                    inputIdx = i;
-                    input = in;
-                    break;
-                }
-            }
-            
-            if (input == null) {
-                // new column -- create an input and we're done
-                InputDescriptor newInput = new InputDescriptor(c.getName(), typeClass(c.getType()));
-                addInput(newInput);
-            } else if (input.getType() != TypeMap.typeClass(c.getType())) {
-                // existing column changed type -- recreate input with same name and new type
-                InputDescriptor newInput = new InputDescriptor(c.getName(), typeClass(c.getType()));
-                removeInput(inputIdx);
-                addInput(newInput, inputIdx);
-                orphanInputs.remove(input);
-            } else {
-                // existing column with existing input -- nothing to do
-                orphanInputs.remove(input);
-            }
-        }
-        
-        // clean up inputs whose columns no longer exist in the table
-        for (Input orphanInput : orphanInputs) {
-            int index = getInputs().indexOf(orphanInput);
-            removeInput(index);
-        }
 
+	private void addInitialInputs() throws ArchitectException {
+		if (getMSOInputs().size() == 0) {
+			for (SQLColumn c : table.getColumns()) {
+				InputDescriptor id = new InputDescriptor(c.getName(), typeClass(c.getType()));
+				addInput(id);
+			}
+		}
 	}
 	
 	public void addInputStep(SQLInputStep inputStep) {
@@ -147,7 +114,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		if (ps != null) {
 			ResultSet rs = inputStep.getResultSet();
 			SQLIndex pk = getProject().getSourceTable().getPrimaryKeyIndex();
-			for (Column col : pk.getChildren(Column.class)) {
+			for (Column col : pk.getChildren()) {
 				count++;
 				int pos = getProject().getSourceTable().getColumns().indexOf(col.getColumn());
 				//pos is shifted by 1 to account for the result set data starting at 1
@@ -223,55 +190,98 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		}
 	}
 
+	/**
+     * Returns the Java class associated with the given SQL type code.
+     * 
+     * @param type
+     *            The type ID number. See {@link SQLType} for the official list.
+     * @return The class for the given type. Defaults to java.lang.String if the
+     *         type code is unknown, since almost every SQL type can be
+     *         represented as a string if necessary.
+     */
+    private Class<?> typeClass(int type) {
+        switch (type) {
+        case Types.VARCHAR:
+        case Types.VARBINARY:
+        case Types.STRUCT:
+        case Types.REF:
+        case Types.OTHER:
+        case Types.NULL:
+        case Types.LONGVARCHAR:
+        case Types.LONGVARBINARY:
+        case Types.JAVA_OBJECT:
+        case Types.DISTINCT:
+        case Types.DATALINK:
+        case Types.CLOB:
+        case Types.CHAR:
+        case Types.BLOB:
+        case Types.BINARY:
+        case Types.ARRAY:
+        default:
+            return String.class;
+
+        case Types.TINYINT:
+        case Types.SMALLINT:
+        case Types.REAL:
+        case Types.NUMERIC:
+        case Types.INTEGER:
+        case Types.FLOAT:
+        case Types.DOUBLE:
+        case Types.DECIMAL:
+        case Types.BIGINT:
+            return BigDecimal.class;
+
+        case Types.BIT:
+        case Types.BOOLEAN:
+            return Boolean.class;
+        
+        case Types.TIMESTAMP:
+        case Types.TIME:
+        case Types.DATE:
+            return Date.class;
+        }
+    }
+
 	private void update(int type, int columnIndex, Object data) throws Exception {
 		ResultSet rs = inputStep.getResultSet();
-		logger.debug("attempting update : " + data + ", " + columnIndex);
-		if (data == null) {
-			rs.updateNull(columnIndex);
-		} else {
-			switch (type) {
-			case Types.INTEGER:
-			case Types.BIGINT:
-			case Types.SMALLINT:
-			case Types.TINYINT:
-				rs.updateInt(columnIndex, ((BigDecimal) data).intValue());
-				break;
-			case Types.BOOLEAN:
-				rs.updateBoolean(columnIndex, ((Boolean) data).booleanValue());
-				break;
-			case Types.LONGVARCHAR:
-			case Types.CHAR:
-			case Types.VARCHAR:
-				rs.updateString(columnIndex, ((String) data));
-				break;
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.NUMERIC:
-			case Types.DECIMAL:
-				rs.updateBigDecimal(columnIndex, ((BigDecimal) data));
-				break;
-			case Types.DATE:
-				Date d = (Date) data;
-				rs.updateDate(columnIndex, new java.sql.Date(d.getTime()));
-				break;
-			case Types.TIME:
-				rs.updateTime(columnIndex, new Time(((Date)data).getTime()));
-				break;
-			case Types.TIMESTAMP:
-				rs.updateTimestamp(columnIndex, new Timestamp(((Date)data).getTime()));
-				break;
-			default:
-				logger.error("Unsupported sql type! " + type);
+		switch (type) {
+		case Types.INTEGER:
+		case Types.BIGINT:
+		case Types.SMALLINT:
+		case Types.TINYINT:
+			rs.updateInt(columnIndex, ((BigDecimal) data).intValue());
 			break;
-			}
+		case Types.BOOLEAN:
+			rs.updateBoolean(columnIndex, ((Boolean) data).booleanValue());
+			break;
+		case Types.LONGVARCHAR:
+		case Types.CHAR:
+		case Types.VARCHAR:
+			logger.debug("attempting update : " + data + ", " + columnIndex);
+			rs.updateString(columnIndex, ((String) data));
+			break;
+		case Types.DOUBLE:
+		case Types.FLOAT:
+		case Types.NUMERIC:
+		case Types.DECIMAL:
+			rs.updateBigDecimal(columnIndex, ((BigDecimal) data));
+			break;
+		case Types.DATE:
+			Date d = (Date) data;
+			rs.updateDate(columnIndex, new java.sql.Date(d.getTime()));
+			break;
+		case Types.TIME:
+			rs.updateTime(columnIndex, new Time(((Date)data).getTime()));
+			break;
+		case Types.TIMESTAMP:
+			rs.updateTimestamp(columnIndex, new Timestamp(((Date)data).getTime()));
+			break;
+		default:
+			logger.error("Unsupported sql type! " + type);
+		break;
 		}
 		logger.debug("attempting updaterow");
-		try {
-			rs.updateRow();
-		} catch (SQLException ex) {
-			logger.error("Update failed on column :" + rs.getMetaData().getColumnName(columnIndex) + " with data \"" + data + "\"");
-			throw ex;
-		}
+		rs.updateRow();
 	}
 	
 	public List<MungeResult> getResults() {
@@ -279,19 +289,14 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	}
 	
 	@Override
-	public void doOpen(EngineMode mode, Logger logger) throws Exception {		
-		refresh(logger);
-	}
-	
-	@Override
-	public void refresh(Logger logger) throws Exception {
+	public void doOpen(Logger logger) throws Exception {		
 		table = getProject().getSourceTable();
 		
-		//checks if the database supports updatable result sets.
+		//checks if the database support updatable result sets.
 		usePS = !table.getParentDatabase().getDataSource().getParentType().getSupportsUpdateableResultSets();
 		
 		setName(table.getName());
-		refreshInputs();
+		addInitialInputs();
 	}
 	
 	
@@ -326,27 +331,27 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
     public void doCommit() throws Exception {
     }
     
-    private PreparedStatement getUpdateStatment(List<MungeStepOutput> inputs) throws SQLObjectException, SQLException{
+    private PreparedStatement getUpdateStatment(List<MungeStepOutput> inputs) throws ArchitectException, SQLException{
 		boolean first = true;
-		StringBuilder sql = new StringBuilder("UPDATE " + DDLUtils.toQualifiedName(getProject().getSourceTable()) + " SET ");
+		String sql = "UPDATE " + DDLUtils.toQualifiedName(getProject().getSourceTable()) + " SET ";
 		for (int x = 0; x<inputs.size(); x++) {
 			if (inputs.get(x) != null) {
 				if (!first) {
-					sql.append(", ");
+					sql += ", ";
 				}
-				sql.append(getProject().getSourceTable().getColumn(x).getName() + "=?");
+				sql += getProject().getSourceTable().getColumn(x).getName() + "=?";
 				first = false;
 			}
 		}
-		sql.append(" WHERE ");
+		sql += " WHERE ";
 		SQLIndex pk = getProject().getSourceTable().getPrimaryKeyIndex();
 		first = true;
-		for (Column col : pk.getChildren(Column.class)) {
+		for (Column col : pk.getChildren()) {
 			if (!first) {
-				sql.append(" AND ");
+				sql += " AND ";
 			}
-			sql.append(col.getName() + "=?");
+			sql += col.getName() + "=?";
 		}
-		return getProject().createSourceTableConnection().prepareStatement(sql.toString());
+		return getProject().createSourceTableConnection().prepareStatement(sql);
     }
 }

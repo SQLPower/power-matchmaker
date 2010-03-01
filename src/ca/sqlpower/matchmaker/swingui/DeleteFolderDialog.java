@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -35,8 +35,8 @@ import javax.swing.JFrame;
 import javax.swing.JRadioButton;
 import javax.swing.border.EmptyBorder;
 
-import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.PlFolder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -61,6 +61,7 @@ public class DeleteFolderDialog {
         this.folder = folder;
         this.parent = parent;
         this.session = session;
+        buildUI();
     }
     
     public void buildUI() {
@@ -100,17 +101,9 @@ public class DeleteFolderDialog {
         dialog = new JDialog(parent,"Delete " + folder.getName() + " folder");
         pb.setBorder(new EmptyBorder(10,10,10,10));
         dialog.setContentPane(pb.getPanel());
-        
-    }
-    
-    public void setVisible(boolean isVisible) {
-    	if (isVisible){
-    		dialog.pack();
-    		dialog.setLocationRelativeTo(parent);
-    		dialog.setVisible(true);
-    	} else {
-    		dialog.setVisible(false);
-    	}
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
     }
     
     private Action okAction = new AbstractAction("Ok"){

@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -24,21 +24,19 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.munge.MungePreviewer;
 import ca.sqlpower.sql.CachedRowSet;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 
 /**
  * The SQLInputStep class implements a munge step which provides data
@@ -69,7 +67,7 @@ public class SQLInputStep extends AbstractMungeStep {
     
     /**
      * The table this step selects from.  This value is initialized based on the
-     * containing project's source table when {@link #doOpen(Logger)} is called.
+     * containing project's source table when setParent() is called.
      */
     private SQLTable table;
     
@@ -130,27 +128,8 @@ public class SQLInputStep extends AbstractMungeStep {
     }
     
     @Override
-    public void doOpen(EngineMode mode, Logger logger) throws Exception {
-    	if ((!isPreviewMode() || previewRS == null) && rs != null) {
-    		throw new IllegalStateException("The input step is already open");
-    	}
+    public void doOpen(Logger logger) throws Exception {
     	
-    	refreshAndSetup(logger, false);
-    }
-    
-    @Override
-    public void refresh(Logger logger) throws Exception {
-    	refreshAndSetup(logger, true);
-    }
-
-	/**
-	 * Helper refresh method. For a normal refresh the result set should be
-	 * nulled out if preview is not enabled. If this method is used to
-	 * initialize the step instead by the {@link #doOpen(EngineMode, Logger)}
-	 * method the result set should not be nulled out. The behaviour chosen is
-	 * selected by the boolean nullOutRS.
-	 */
-    private void refreshAndSetup(Logger logger, boolean nullOutRS) throws Exception {
     	if (isPreviewMode() && previewRS != null) {
     		previewRS.beforeFirst();
     		rs = previewRS;
@@ -159,12 +138,22 @@ public class SQLInputStep extends AbstractMungeStep {
     			previewRS = new CachedRowSet();
     		}
     	
+    		if (rs != null) {
+    			throw new IllegalStateException("The input step is already open");
+    		}
+
     		this.table = getProject().getSourceTable();
     		if (!getName().equals(table.getName())) {
     			setName(table.getName());
     		}
 
-    		setupOutputs();
+    		// TODO: Verify that outputs are the same with the table's columns.
+    		if (getChildCount() == 0) {
+    			for (SQLColumn c : table.getColumns()) {
+    				MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), TypeMap.typeClass(c.getType()));
+    				addChild(newOutput);
+    			}
+    		}
 
     		SQLDatabase db = table.getParentDatabase();
     		if (db == null) {
@@ -199,81 +188,22 @@ public class SQLInputStep extends AbstractMungeStep {
     		    stmt.setMaxRows(MungePreviewer.MAX_ROWS_PREVIEWED);
     		}
     		logger.debug("Attempting to execute input query: " + sql);
-    		ResultSet tempRs = stmt.executeQuery(sql.toString());
+    		rs = stmt.executeQuery(sql.toString());
 
-    		logger.debug("ResultSet fetch size is: " + tempRs.getFetchSize());
-    		if (tempRs.getFetchSize() < DEFAULT_FETCH_SIZE) {
-    			tempRs.setFetchSize(DEFAULT_FETCH_SIZE);
+    		logger.debug("ResultSet fetch size is: " + rs.getFetchSize());
+    		if (rs.getFetchSize() < DEFAULT_FETCH_SIZE) {
+    			rs.setFetchSize(DEFAULT_FETCH_SIZE);
     		}
     		
     		if (isPreviewMode()) {
-    			previewRS.populate(tempRs);
+    			previewRS.populate(rs);
     			previewRS.beforeFirst();
-    			rs = previewRS;
-    			tempRs.close();
+    			rs.close();
     			stmt.close();
-    		} else if (!nullOutRS) {
-    			rs = tempRs;
-    		}
-    		if (isPreviewMode() || nullOutRS) {
     			con.close();
+    			rs = previewRS;
     		}
     	}
-    }
-
-    /**
-     * Populates or refreshes the outputs of this step based on the current
-     * columns of {@link #table}.  This method will both add missing outputs
-     * and remove outputs that correspond to columns the table currently
-     * does not have. It will also adjust the data type of outputs whose
-     * columns' types have changed.
-     */
-    private void setupOutputs() throws SQLObjectException {
-        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren());
-        for (SQLColumn c : table.getColumns()) {
-            String colName = c.getName();
-            MungeStepOutput<?> output = getOutputByName(colName);
-            if (output == null) {
-                // new column -- create an output and we're done
-                MungeStepOutput<?> newOutput = new MungeStepOutput(colName, TypeMap.typeClass(c.getType()));
-                addChild(newOutput);
-            } else if (output.getType() != TypeMap.typeClass(c.getType())) {
-                // existing column changed type -- recreate output with same name and new type
-                int idx = getChildren().indexOf(output);
-                MungeStepOutput<?> newOutput = new MungeStepOutput(colName, TypeMap.typeClass(c.getType()));
-                addChild(idx, newOutput);
-                MungeProcess mp = getParent();
-                for (MungeStep step : mp.getChildren()) {
-                    for (int i = 0; i < step.getInputCount(); i++) {
-                        InputDescriptor id = step.getInputDescriptor(i);
-                        MungeStepOutput input = step.getMSOInputs().get(i);
-                        if (input == output) {
-                            step.disconnectInput(i);
-                            
-                            // reconnect the new output if its type is compatible
-                            if (id.getType().isAssignableFrom(TypeMap.typeClass(c.getType()))) {
-                                step.connectInput(i, newOutput);
-                            }
-                        }
-                    }
-                    
-                }
-                removeChild(output);
-                orphanOutputs.remove(output);
-            } else {
-                // existing column with existing output -- nothing to do
-                orphanOutputs.remove(output);
-            }
-        }
-        
-        // clean up outputs whose columns no longer exist in the table
-        for (MungeStepOutput mso : orphanOutputs) {
-            MungeProcess mp = getParent();
-            for (MungeStep step : mp.getChildren()) {
-                step.disconnectInput(mso);
-            }
-            removeChild(mso);
-        }
     }
     
     @Override
@@ -305,14 +235,14 @@ public class SQLInputStep extends AbstractMungeStep {
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
-    public MungeResultStep getOutputStep() throws SQLObjectException {
+    public MungeResultStep getOutputStep() throws ArchitectException {
         return getOutputStep(getProject());
     }
     
-    public MungeResultStep getOutputStep(Project project) throws SQLObjectException {
+    public MungeResultStep getOutputStep(Project project) throws ArchitectException {
         if (outputStep != null) {
             return outputStep;
-        } else if (project.getType() == ProjectMode.CLEANSE || project.getType() == ProjectMode.ADDRESS_CORRECTION) {
+        } else if (project.getType() == ProjectMode.CLEANSE) {
     		outputStep = new CleanseResultStep();
     	} else {
     		outputStep = new DeDupeResultStep();

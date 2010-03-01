@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -30,6 +30,10 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
@@ -37,19 +41,15 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
-import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
-import ca.sqlpower.sqlobject.SQLTable;
 
 public abstract class AbstractCleanseEngineImplTest extends TestCase{
     Project project;
     TestingMatchMakerSession session;
     Connection con;
     SQLDatabase db;
-    JDBCDataSource ds;
+    SPDataSource ds;
     SQLTable sourceTable;
     SQLInputStep step;
     CleanseEngineImpl engine;
@@ -66,8 +66,8 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 			public Connection getConnection() {
 				try {
 					return db.getConnection();
-				} catch (SQLObjectException e) {
-					throw new SQLObjectRuntimeException(e);
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
 				}
 			}
 
@@ -130,7 +130,9 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		MungeStep mrs = step.getOutputStep();
 		mungep.addChild(mrs);
 		
-		step.refresh(logger);
+		step.open(logger);
+        step.rollback();
+		step.close();
 		mrs.open(logger);
         mrs.rollback();
 		mrs.close();
@@ -181,6 +183,6 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 	
 	
 	protected abstract void createTables() throws Exception;
-	protected abstract JDBCDataSource getDS();
+	protected abstract SPDataSource getDS();
 	protected abstract String getFullTableName();
 }

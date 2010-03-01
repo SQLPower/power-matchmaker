@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -28,23 +28,22 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
-import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectUtils;
-import ca.sqlpower.sqlobject.SQLSchema;
-import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCDriver;
 
 public class ProjectTest extends MatchMakerTestCase<Project> {
@@ -130,7 +129,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }
     
-    public void testCreateResultTable() throws SQLObjectException {
+    public void testCreateResultTable() throws ArchitectException {
     	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -146,8 +145,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	project.setSourceTable(sourceTable);
@@ -209,7 +208,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	assertEquals(i, idx.getChildCount()*8 + 7); // sanity check for the test
     }
     
-    public void testCreateResultTableIndex() throws SQLObjectException {
+    public void testCreateResultTableIndex() throws ArchitectException {
     	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -225,8 +224,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	project.setSourceTable(sourceTable);
@@ -235,10 +234,10 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
     	SQLTable resultTable = project.createResultTable();
     	
-    	List<SQLIndex> indices = resultTable.getChildren(SQLIndex.class);
-    	assertEquals(2, indices.size());
+    	List<SQLIndex> indices = resultTable.getIndicesFolder().getChildren();
+    	assertEquals(1, indices.size());
 
-    	SQLIndex rtidx = indices.get(1);
+    	SQLIndex rtidx = indices.get(0);
     	assertEquals(true, rtidx.isUnique());
     	final int idxColCount = rtidx.getChildCount();
     	assertEquals(idx.getChildCount() * 2, idxColCount);
@@ -277,7 +276,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     }
     
 	public void testResultTableExistsWhenTrue() throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -297,7 +296,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 * to the Project object.
 	 */
 	public void testResultTableExistsWhenFalse() throws Exception {
-		JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -320,7 +319,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 */
 	public void testResultTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -328,14 +327,14 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		ds.setPass("n/a");
 		final SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
-		SQLTable resultTable = SQLObjectUtils.addSimulatedTable(db, "cat",
+		SQLTable resultTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		project.setResultTable(resultTable);
 		assertFalse(project.doesResultTableExist());
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -354,7 +353,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 * to the Project object.
 	 */
 	public void testSourceTableExistsWhenFalse() throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -377,7 +376,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	 */
 	public void testSourceTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-	    JDBCDataSource ds = new JDBCDataSource(new PlDotIni());
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Sc" +
 				"hema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -385,16 +384,16 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		ds.setPass("n/a");
 		final SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
-		SQLTable sourceTable = SQLObjectUtils.addSimulatedTable(db, "cat",
+		SQLTable sourceTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		project.setSourceTable(sourceTable);
 		assertFalse(project.doesSourceTableExist());
 	}
 	
 	public void testVerifyResultTableSS() throws SQLException, InstantiationException,
-											IllegalAccessException, SQLObjectException {
+											IllegalAccessException, ArchitectException {
 		
-	    JDBCDataSource ds = DBTestUtil.getSqlServerDS();
+		SPDataSource ds = DBTestUtil.getSqlServerDS();
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());
@@ -420,8 +419,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	try {
@@ -479,7 +478,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 		
 		
 		int successCount = 0;
@@ -503,9 +502,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     }
 	
 	public void testVerifyResultTableORA() throws SQLException, InstantiationException,
-											IllegalAccessException, SQLObjectException {
+											IllegalAccessException, ArchitectException {
 		
-	    JDBCDataSource ds = DBTestUtil.getOracleDS();
+		SPDataSource ds = DBTestUtil.getOracleDS();
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());
@@ -531,8 +530,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addColumn(col);
     	
     	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
-    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
-    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	try {
@@ -586,7 +585,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 		
 		
 		int successCount = 0;
@@ -631,7 +630,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         SQLTable sourceTable = new SQLTable(session.getDatabase(), true);
         session.getDatabase().addChild(sourceTable);
         sourceTable.addColumn(new SQLColumn(sourceTable, "pk1", Types.INTEGER, 10, 0));
-        sourceTable.addToPK(sourceTable.getColumn(0));
+        sourceTable.getColumn(0).setPrimaryKeySeq(0);
         
         project.setSourceTable(sourceTable);
         project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());

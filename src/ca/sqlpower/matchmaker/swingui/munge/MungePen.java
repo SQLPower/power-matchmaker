@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2008, SQL Power Group Inc.
  *
- * This file is part of DQguru
+ * This file is part of Power*MatchMaker.
  *
- * DQguru is free software; you can redistribute it and/or modify
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DQguru is distributed in the hope that it will be useful,
+ * Power*MatchMaker is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -61,7 +61,6 @@ import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
@@ -74,6 +73,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -83,7 +83,6 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.LabelPane;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.matchmaker.swingui.action.AddLabelAction;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
@@ -222,7 +221,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws SQLObjectException {
+	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws ArchitectException {
 		this.handler = handler;
 		this.process = process;
 		
@@ -355,7 +354,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private JPopupMenu buildPopup(Map<Class, StepDescription> stepMap) {
 		JPopupMenu pop = new JPopupMenu();
 		
-		JMenu add = new JMenu("Add Transformer");
+		JMenu add = new JMenu("Add Munge Step");
 		JMenuItem labelMenuItem = new JMenuItem("Add Label");
 		//figure out where the user clicked
 		
@@ -1217,10 +1216,10 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 	/**
-	 * Returns the check box that allows users to enable and disable the preview feature.
-	 * @return
+	 * Turns the preview mode on the munge pen on and off. True
+	 * will enable the preview panel.
 	 */
-	public JCheckBox getEnablePreviewCheckBox() {
-		return preview.getEnablePreviewCheckBox();
+	public boolean enablePreview(boolean enable) {
+		return preview.enablePreview(enable);
 	}
 }
