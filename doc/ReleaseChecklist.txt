@@ -36,7 +36,6 @@ Good luck with the release!
  *Ensure the online help is present
  *Scan through the PDF documentation. Ensure the pictures are included properly
   (not stretched, properly cropped)
- *Update the online wiki documentation for DQguru
  *Try going through a complete match and merge procedure. If you need details on how
   to do this, and/or you need an example table to test on, consult the user guide.
  *Make sure the app quits once all windows have been closed

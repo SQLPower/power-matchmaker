@@ -153,6 +153,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
+        	viewBuilderAction.setEnabled(false);
         }
     }
 
@@ -265,7 +266,32 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         if (owner instanceof JFrame) return (JFrame) owner;
         else return null;
     }
-			
+
+	private Action viewBuilderAction = new AbstractAction("View Builder") {
+		public void actionPerformed(ActionEvent e) {
+            SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
+            JDialog d;
+			if (t == null) {
+				JOptionPane.showMessageDialog(swingSession.getFrame(),
+						"No Table selected, can't create view builder",
+						"Error",
+						JOptionPane.ERROR_MESSAGE);
+			} else {
+				try {
+					d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
+					d.pack();
+					d.setSize(800, d.getPreferredSize().height);
+					d.setVisible(true);
+				} catch (SQLObjectException ex) {
+                    SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+                    		"Couldn't create view builder", ex);
+                }
+            }
+		}
+	};
+
+	
+		
 	private Action createIndexAction = new AbstractAction("Pick Columns..."){
 		public void actionPerformed(ActionEvent e) {
 			SQLTable sourceTable = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
@@ -312,6 +338,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
         filterPanel = new FilterComponents(swingSession.getFrame());
 
+    	JButton viewBuilder = new JButton(viewBuilderAction);
     	JButton saveProject = new JButton(saveAction);
     	JButton cancelProject = new JButton(cancelAction);
         JButton createIndexButton = new JButton(createIndexAction );
@@ -349,6 +376,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		row+=2;
 		pb.addTitle("Source Table", cc.xy(2, row));
 		row+=2;
+		pb.add(viewBuilder, cc.xy(6,row,"f,f"));
 		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
 		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,row));
 		row+=2;
@@ -485,7 +513,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				List<SQLIndex> uniqueIndices = newTable.getUniqueIndices();
 				SQLIndex sourceTableIndex = project.getSourceTableIndex();
 				
-				if (sourceTableIndex != null && !sourceTableIndex.isEmpty()) {
+				if (sourceTableIndex != null) {
 					boolean contains = false;
 					for (SQLIndex index : uniqueIndices) {
 						if (index.getName().equals(sourceTableIndex.getName())) {
@@ -621,6 +649,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
+        	viewBuilderAction.setEnabled(false);
         	
         	if (project.getType() == ProjectMode.FIND_DUPES) {
 	        	// defaults the merge rules
