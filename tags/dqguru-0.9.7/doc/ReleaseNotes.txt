@@ -1,0 +1,109 @@
+0.9.7
+* Updated the bundled SQL Server driver so that it supports SQL Server 2008 out of the box
+* Fixed an issue on OS X where the log file chooser on the Engine Settings screen didn't allow you to choose a new file
+
+0.9.6
+* The official name of the product is now SQL Power DQguru
+* Added a new command-line engine runner tool that allows the running of project engines without running the full GUI program. This is particularly useful for adding DQguru projects as part of an automatic batch process
+* Bugs Fixed
+  * Run Engine Button didn't disable itself when the engine was running
+  * Code that generates the repository was using the Architect's preferred pl.ini location
+  * IllegalArgumentException when creating a new de-duping project on an Oracle database
+  * Adding a Google Address Lookup transformer caused an exception
+  * Address Correction Engine 'debug mode' did not rollback changes if 'immediately commit auto-corrected addresses' was checked
+  * Updating the address pool on a SQL Server (2008) instance didn't work because it does explicitly support booleans
+  
+
+0.9.5
+* The Power*MatchMaker is now the DQguru
+* The Table Explorer has been replaced with a more powerful SQL Query tool
+* Match Validation graph now has a 'reset cluster' function that allows the user to reset
+  only a connected cluster of matches, instead of reseting the entire set of matches
+* Support for deduping matches from a view
+* Munge processes have been renamed to transformations, and munge steps are renamed to transformers
+* Sort Words and Address Correction transformers
+* Support for Address Correction on Canadian mailing addresses, including a new Address Correction
+  transformer, Address Correction Project and Engine, and a new Validation screen.
+
+0.9.4
+* The Match Engine log reports how many matches each munge process found, and the total number of matches found by the engine
+* Added Munge Step icons in the Munge Pen
+* Improved Match Pool storing, updating, and clearing performance with batch updates
+* The Example Table builder can now specify the number of rows to populate the table with
+* Improved match validation screen layout to more efficiently utilize space
+* Added merge rule derivation by foreign key constraints, and improved merge rule derivation performance
+* The Power*MatchMaker will attempt to rebuild the HSQLDB repository if it was deleted
+* Project Exporting and Importing using an XML file format
+* Ability to copy projects with the new project duplication feature
+* Ability to change merge actions in the merge rule list editor
+* Munge process priority is now specified by their order in the munge process list editor
+* Munge step previewer allows you to preview how each munge step is munging your data
+* Powerful Beanshell scripting environment allows you to modify your project at the lowest level
+* Match validation 'Display Values' and 'Display Columns' preferences are now saved as a user preference
+* Several bug fixes.
+* Now with 0% transfat!
+
+0.9.3
+* GUI Enhancements:
+  - 'Choose Displayed Column' dialog now resizes properly
+  - Munge process connectors are positioned better, especially if an output is positioned below its corresponding input.
+  - Added a 'Clear' button on the 'Run Match' and 'Run Merge' Engine screens that clears the output log
+  - Fixed some munge steps that were not properly saving their parameters
+  - New Munge Processes should default to a new colour
+  - 'Users Preferences' and 'Exit' options added back to the File Menu
+  - Added ability to choose which Munge Processes get shown in the Match Validation graph
+  - Null values are printed in grey in the Match Validation graph and table,
+  - You can  now choose which column values to display in the Match Validation table
+  - Improved readability of the Merge Engine logs
+* Added PDF Export of the Munge Pen
+* Auto-login can be used on other repositories other than the default HSQLDB one.
+* If you have multiple Power*MatchMaker application windows open, closing one no longer closes the whole application
+* Prompts for saving unsaved changes in the current editor when closing a main application window
+* You can now select which Munge Processes in a Project to run in the Match Engine
+* Improved User Guide. Main changes include rewordings, minor markup adjustments, better image sizing, and the addition of two images that were missing in the previous draft.
+* Power*MatchMaker can now update your repository schema if it is out of date
+* Improved support for MySQL
+* Improved match engine performance on Oracle 10g
+* Automated project adaption to source table changes
+* Many bug fixes.
+
+
+0.9.2
+
+* Added a user preference for auto-login into a repository. The user can choose to log in automatically into a repository of their
+choice, or have the application prompt the user for a repository each time they start the application.
+* Added some new munge steps, including data type conversion steps (ex. Date-to-String), and a CSV writer step
+* It is now possible to specify a set of columns to use as the unqiue index, even if the table doesn't have a primary key or unique index.
+* The example table can now be created properly in HSQLDB
+* Matching, merging, and cleansing projects now fully work in HSQLDB
+
+
+0.9.1
+
+* Changed the default login process to log into (and first create if necessary) a local HSQLDB repository database.  This greatly simplifies the process of getting started for new users.
+* Fixed a serious bug that prevented creating a new repository schema.
+* When all the input connections for a Munge Step are used up, an empty one is automatically generated if the step supports
+  adding new inputs. Unconnected inputs for these steps are now treated as if they didn't exist, so that the use isn't
+  forced to clean up these inputs before running the engines.
+* Fixed a bug that could result in the MatchMaker using up all available database connections.
+* Temporarily removed the X-Ref project option until it is fully implemented.
+* In the Match Validation screen, the source table record for the node you have selected in the graph will not scroll 
+  off the screen when you scroll through the source table records. This makes it easier to compare the record you have
+  selected with the other potential duplicate records.
+
+
+0.9.0
+
+* Initial open-source release
+
+
+Wish List of Future Features (see also our Bugzilla bug tracker at http://trillian.sqlpower.ca/bugzilla/)
+
+* Don't require updatable result sets when they're unavailable (HSQLDB doesn't support them)
+* Create a "tips" facility which will pop up a new helpful tip every time the app is started.
+  Tips should be presented in increasing level of sophistication.  For example:
+   -The best way to get started is to watch the walkthrough movie on the SQL Power web site. (live link to wink demo)
+   -Learn more about the MatchMaker by working through the example in the "A Simple Example" chapter of the user guide.
+   -Define connections to your databases using the Databases->Manage Database Conncetions... menu item.
+   -If you are working together with others, you can create a shared repository in any database.  Use the Databases->Create Repository... menu item to create one.
+   
