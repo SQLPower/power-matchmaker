@@ -265,7 +265,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         if (owner instanceof JFrame) return (JFrame) owner;
         else return null;
     }
-			
+
 	private Action createIndexAction = new AbstractAction("Pick Columns..."){
 		public void actionPerformed(ActionEvent e) {
 			SQLTable sourceTable = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
@@ -485,7 +485,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				List<SQLIndex> uniqueIndices = newTable.getUniqueIndices();
 				SQLIndex sourceTableIndex = project.getSourceTableIndex();
 				
-				if (sourceTableIndex != null && !sourceTableIndex.isEmpty()) {
+				if (sourceTableIndex != null) {
 					boolean contains = false;
 					for (SQLIndex index : uniqueIndices) {
 						if (index.getName().equals(sourceTableIndex.getName())) {
