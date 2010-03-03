@@ -1,3 +1,7 @@
+0.9.7
+* Updated the bundled SQL Server driver so that it supports SQL Server 2008 out of the box
+* Fixed an issue on OS X where the log file chooser on the Engine Settings screen didn't allow you to choose a new file
+
 0.9.6
 * The official name of the product is now SQL Power DQguru
 * Added a new command-line engine runner tool that allows the running of project engines without running the full GUI program. This is particularly useful for adding DQguru projects as part of an automatic batch process
