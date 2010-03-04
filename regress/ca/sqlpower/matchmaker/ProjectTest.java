@@ -305,8 +305,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		ds.setPass("n/a");
 		final SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
-		SQLCatalog farmCat = (SQLCatalog) db.getChildByName("farm");
-		SQLSchema cowSchem = (SQLSchema) farmCat.getChildByName("cow");
+		SQLCatalog farmCat = db.getChildByName("farm", SQLCatalog.class);
+		SQLSchema cowSchem = farmCat.getChildByName("cow", SQLSchema.class);
 		SQLTable resultTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
 		project.setResultTable(resultTable);
@@ -362,8 +362,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		ds.setPass("n/a");
 		final SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
-		SQLCatalog farmCat = (SQLCatalog) db.getChildByName("farm");
-		SQLSchema cowSchem = (SQLSchema) farmCat.getChildByName("cow");
+		SQLCatalog farmCat = db.getChildByName("farm", SQLCatalog.class);
+		SQLSchema cowSchem = farmCat.getChildByName("cow", SQLSchema.class);
 		SQLTable sourceTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
 		project.setSourceTable(sourceTable);
@@ -645,7 +645,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         SQLTable newTable = project.getResultTable();
         assertTrue(newTable.getColumns().size() > 0);
         
-        SQLTable newTableInDatabase = (SQLTable) session.getDatabase().getChildByName("new_table_that_doesnt_exist");
+        SQLTable newTableInDatabase = session.getDatabase().getChildByName("new_table_that_doesnt_exist", SQLTable.class);
         assertNotNull(newTableInDatabase);
         assertTrue(newTableInDatabase.getColumns().size() > 0);
         assertSame(newTable, newTableInDatabase);

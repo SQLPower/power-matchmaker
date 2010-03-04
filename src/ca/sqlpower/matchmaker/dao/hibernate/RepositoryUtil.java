@@ -289,11 +289,16 @@ public class RepositoryUtil {
         Statement stmt = null;
         try {
             db = new SQLDatabase(ds);
-            SQLObject target = db.getChildByNameIgnoreCase(ds.getPlSchema());
+            SQLObject target = db.getChildByNameIgnoreCase(ds.getPlSchema(), SQLObject.class);
             if (target == null) {
                 throw new RepositoryException(
                         "Requested repository owner \"" + ds.getPlSchema() + "\" not found. " +
                         "Please create it and try again.");
+            }
+            if (!(target instanceof SQLDatabase) && !(target instanceof SQLCatalog) && 
+                    !(target instanceof SQLSchema)) {
+                throw new RepositoryException("Location to create repository is invalid. Cannot" +
+                		" create a repository in " + target + " of type " + target.getClass());
             }
             con = db.getConnection();
             stmt = con.createStatement();
