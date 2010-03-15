@@ -51,7 +51,7 @@ import ca.sqlpower.validation.ValidateResult;
  */
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
-	private static Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
+	private Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
 	
 	public static final String ADDRESS_CORRECTION_DATA_PATH = "AddressCorrectionDataPath";
 	
@@ -122,7 +122,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public void doOpen(EngineMode mode, Logger logger) throws Exception {
-		AddressCorrectionMungeStep.logger = logger;
+		this.logger = logger;
 		
 		if (mode instanceof AddressCorrectionEngineMode) {
 			this.mode = (AddressCorrectionEngineMode) mode;
