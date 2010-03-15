@@ -45,6 +45,8 @@ public class TableIndex {
      * and then returns it!
      */
     public SQLIndex getTableIndex() throws SQLObjectException {
+    	if (sourceTableIndex != null && !sourceTableIndex.isPopulated()) sourceTableIndex.populate();
+    	
     	if (table.getSourceTable() != null && sourceTableIndex != null) {
     		sourceTableIndex.setParent(table.getSourceTable());
     		resolveTableIndexColumns(sourceTableIndex);
@@ -59,6 +61,7 @@ public class TableIndex {
      */
     private void resolveTableIndexColumns(SQLIndex si) throws SQLObjectException {
     	SQLTable st = table.getSourceTable();
+    	if (!st.isPopulated()) st.populate();
     	for (SQLIndex.Column col : (List<SQLIndex.Column>) si.getChildren()) {
     		SQLColumn actualColumn = st.getColumnByName(col.getName());
     		col.setColumn(actualColumn);
