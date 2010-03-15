@@ -48,6 +48,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/je-3.3.75.jar" sourcepath="libsrc/je-3.3.75_src.zip"/>
 	<classpathentry kind="lib" path="lib/antlr-3.1.1-runtime.jar" sourcepath="libsrc/antlr-3.1.1-runtime_src.zip"/>
 	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
+	<classpathentry kind="lib" path="lib/google-collect-1.0.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="lib" path="buildlib/junit.jar"/>
 	<classpathentry kind="output" path="bin"/>
