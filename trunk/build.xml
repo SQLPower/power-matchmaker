@@ -131,7 +131,6 @@
 	
 	<path id="test.classpath">
 		<pathelement location="${build}"/>
-		<pathelement location="${sqlpower.library.home}/build/tests"/>
 		<fileset dir="lib">
 			<include name="*.jar"/>
 		</fileset>
@@ -245,10 +244,6 @@
 
 	<!-- Compiles the regression test suite -->
 	<target name="compile-tests" depends="compile">
-		<ant dir="${sqlpower.library.home}" target="compile-tests">
-			<property name="build" value="${sqlpower.library.home}/build"/>
-			<property name="build.tests" value="${sqlpower.library.home}/build/tests"/>
-		</ant>
 		<mkdir dir="${build.tests}"/>
 		<javac srcdir="regress" destdir="${build.tests}"
 			classpathref="test.classpath"
@@ -946,17 +941,13 @@
 	
 	<target name="build.sqlpower.library" depends="check.sqlpower.library.dir" if="buildSQLPowerLibrary">
 		<echo message="Attempting to build sqlpower-library project..."/>
-		<ant dir="${sqlpower.library.home}" target="clean">
-			<property name="build" value="${sqlpower.library.home}/build"/>
-		</ant>
-		<ant dir="${sqlpower.library.home}" target="jar">
-			<property name="build" value="${sqlpower.library.home}/build"/>
-			<property name="dist.dir" value="${sqlpower.library.home}/dist"/>
-		</ant>
+		<ant dir="${sqlpower.library.home}" target="clean" inheritall="false" />
+		<ant dir="${sqlpower.library.home}" target="jar" inheritall="false" />
 	</target>
 	
 	<target name="copy.sqlpower.library" depends="check.sqlpower.library.dir">
 		<copy file="${sqlpower.library.home}/dist/sqlpower_library.jar" todir="${lib}"/>
+		<copy file="${sqlpower.library.home}/dist/sqlpower_library-tests.jar" todir="${buildlib}"/>
 	</target>
 	
 	
