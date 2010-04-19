@@ -49,6 +49,7 @@ import ca.sqlpower.sql.DatabaseListChangeListener;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.JDBCDataSourceType;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class SwingSessionContextTest extends TestCase {
@@ -166,6 +167,18 @@ public class SwingSessionContextTest extends TestCase {
                 logger.debug("Stub call: DataSourceCollection<JDBCDataSource>.getDataSource()");
                 return null;
             }
+
+			public UserDefinedSQLType getSQLType(String name) {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: DataSourceCollection<JDBCDataSource>.getSQLType()");
+				return null;
+			}
+
+			public List<UserDefinedSQLType> getSQLTypes() {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: DataSourceCollection<JDBCDataSource>.getSQLTypes()");
+				return null;
+			}
 
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
