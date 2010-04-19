@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -78,28 +79,41 @@ public class RepositoryUtil {
      * Class can not be instantiated.
      */
     private RepositoryUtil() {}
-    
-    /**
-     * Loads the built-in Power*Architect project that defines the MatchMaker
-     * repository, then uses a DDL Generator to forward engineer that database
-     * structure into the given target database.
-     * 
-     * @param target The existing database, catalog, or schema in which to create
-     * the new repository structures.  The given SQLObject must be capable of
-     * holding tables as children.
-     * @return The list of SQL Statements that must be executed in the target database
-     * to make it into a new MatchMaker repository
-     * @throws SQLObjectException If there are problems connecting to or populating the
-     * target database, or if there are problems with the built-in Architect project that
-     * describes the MatchMaker repository
-     * @throws SQLException If there are errors in SQL queries used during this operation
-     * @throws IOException If there is a problem reading the built-in Architect project
-     * @throws ClassNotFoundException If the DDL Generator for the target database cannot be created
-     * @throws IllegalAccessException If the DDL Generator for the target database cannot be created
-     * @throws InstantiationException If the DDL Generator for the target database cannot be created
-     */
+
+	/**
+	 * Loads the built-in Power*Architect project that defines the MatchMaker
+	 * repository, then uses a DDL Generator to forward engineer that database
+	 * structure into the given target database.
+	 * 
+	 * @param target
+	 *            The existing database, catalog, or schema in which to create
+	 *            the new repository structures. The given SQLObject must be
+	 *            capable of holding tables as children.
+	 * @return The list of SQL Statements that must be executed in the target
+	 *         database to make it into a new MatchMaker repository
+	 * @throws SQLObjectException
+	 *             If there are problems connecting to or populating the target
+	 *             database, or if there are problems with the built-in
+	 *             Architect project that describes the MatchMaker repository
+	 * @throws SQLException
+	 *             If there are errors in SQL queries used during this operation
+	 * @throws IOException
+	 *             If there is a problem reading the built-in Architect project
+	 * @throws ClassNotFoundException
+	 *             If the DDL Generator for the target database cannot be
+	 *             created
+	 * @throws IllegalAccessException
+	 *             If the DDL Generator for the target database cannot be
+	 *             created
+	 * @throws InstantiationException
+	 *             If the DDL Generator for the target database cannot be
+	 *             created
+	 * @throws BackingStoreException
+	 *             If the Architect session has a {@link BackingStoreException}
+	 *             while reading its preferences
+	 */
     public static List<String> makeRepositoryCreationScript(SQLObject target) 
-    throws SQLException, SQLObjectException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    throws SQLException, SQLObjectException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException, BackingStoreException {
         SQLDatabase database = SPObjectUtils.getAncestor(target, SQLDatabase.class);
         SQLCatalog catalog = SPObjectUtils.getAncestor(target, SQLCatalog.class);
         SQLSchema schema = SPObjectUtils.getAncestor(target, SQLSchema.class);

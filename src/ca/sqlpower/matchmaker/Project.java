@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.diff.CompareSQL;
-import ca.sqlpower.architect.diff.DiffChunk;
-import ca.sqlpower.architect.diff.DiffType;
+import ca.sqlpower.diff.DiffChunk;
+import ca.sqlpower.diff.DiffType;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
@@ -478,7 +478,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		}
 		List<SQLTable> physical = new ArrayList<SQLTable>();
 		physical.add(table);
-		CompareSQL compare = new CompareSQL(inMemory,physical);
+		CompareSQL compare = new CompareSQL(inMemory,physical,true);
 		List<DiffChunk<SQLObject>> tableDiffs = compare.generateTableDiffs();
 		logger.debug("Table differences are:");
 		int diffCount = 0;
@@ -540,7 +540,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		inMemory.add(sourceTable);
 		List<SQLTable> physical = new ArrayList<SQLTable>();
 		physical.add(table);
-		CompareSQL compare = new CompareSQL(inMemory,physical);
+		CompareSQL compare = new CompareSQL(inMemory,physical,true);
 		List<DiffChunk<SQLObject>> tableDiffs = compare.generateTableDiffs();
 		logger.debug("Table differences are:");
 		int diffCount = 0;
