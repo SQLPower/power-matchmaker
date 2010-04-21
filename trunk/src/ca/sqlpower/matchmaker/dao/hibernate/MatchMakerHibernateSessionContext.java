@@ -181,6 +181,9 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
                 System.exit(0);
             }
         }
+
+		public void sessionOpening(SessionLifecycleEvent<MatchMakerSession> e) {
+		}
     };
 
     /**
