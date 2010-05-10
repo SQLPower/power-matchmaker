@@ -180,6 +180,12 @@ public class SwingSessionContextTest extends TestCase {
 				return null;
 			}
 
+			public UserDefinedSQLType getNewSQLType(String name, int jdbcCode) {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: DataSourceCollection<JDBCDataSource>.getNewSQLType()");
+				return null;
+			}
+
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
