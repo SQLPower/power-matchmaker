@@ -251,7 +251,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_launch4j,generic_install,source_only_tgz, downloadpage">
+	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_launch4j,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.base}/doc"/>
 		<copy todir="${dist.base}/doc" overwrite="true">
@@ -266,21 +266,6 @@
 		</copy>
 		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
 	</target>
-	
-	<!-- ================================= 
-          target: downloadpage              
-         ================================= -->
-    <target name="downloadpage" depends="getAppVersion">
-    	<mkdir dir="${dist.base}"/>
-	    <get dest="${dist.base}/index.html" src="http://www.sqlpower.ca/page/dqguru_download_template"/>
-		<replace file="${dist.base}/index.html">
-			<replacefilter token="&lt;head&gt;" value="&lt;head&gt;&lt;base href=&quot;http://www.sqlpower.ca/page/&quot;&gt;"/>
-			<replacefilter token="@@app_version" value="${app.version}"/>
-			<replacefilter token="@@downloadLinkBase" value="${downloadLinkBase}"/>
-			<replacefilter token="@@docLinkBase" value="${docLinkBase}"/>
-		</replace>
-    </target>
-
 	
 	<!-- DOCUMENTATION
 		There are THREE main documentation targets, all built from the
