@@ -20,15 +20,25 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.sql.Array;
+import java.sql.Blob;
 import java.sql.CallableStatement;
+import java.sql.ClientInfoStatus;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.NClob;
 import java.sql.PreparedStatement;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
+import java.sql.Struct;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -266,4 +276,87 @@ public class TestingConnection implements Connection {
         if (disabled) throw new SQLException("This connection is disabled");
         con.setTypeMap(arg0);
     }
+
+	@Override
+	public <T> T unwrap(Class<T> iface) throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.unwrap(iface);
+	}
+
+	@Override
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.isWrapperFor(iface);
+	}
+
+	@Override
+	public Clob createClob() throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.createClob();
+	}
+
+	@Override
+	public Blob createBlob() throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.createBlob();
+	}
+
+	@Override
+	public NClob createNClob() throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.createNClob();
+	}
+
+	@Override
+	public SQLXML createSQLXML() throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.createSQLXML();
+	}
+
+	@Override
+	public boolean isValid(int timeout) throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.isValid(timeout);
+	}
+
+	@Override
+	public void setClientInfo(String name, String value)
+			throws SQLClientInfoException {
+		if (disabled) throw new SQLClientInfoException("This connection is disabled", new HashMap<String, ClientInfoStatus>());
+        con.setClientInfo(name, value);
+	}
+
+	@Override
+	public void setClientInfo(Properties properties)
+			throws SQLClientInfoException {
+		if (disabled) throw new SQLClientInfoException("This connection is disabled", new HashMap<String, ClientInfoStatus>());
+        con.setClientInfo(properties);
+		
+	}
+
+	@Override
+	public String getClientInfo(String name) throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.getClientInfo(name);
+	}
+
+	@Override
+	public Properties getClientInfo() throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.getClientInfo();
+	}
+
+	@Override
+	public Array createArrayOf(String typeName, Object[] elements)
+			throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.createArrayOf(typeName, elements);
+	}
+
+	@Override
+	public Struct createStruct(String typeName, Object[] attributes)
+			throws SQLException {
+		if (disabled) throw new SQLException("This connection is disabled");
+        return con.createStruct(typeName, attributes);
+	}
 }
