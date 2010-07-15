@@ -145,7 +145,7 @@
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
 				classpathref="compile.classpath"
-			    source="1.5"
+			    source="1.6"
 				debug="true"
 		/>
 	</target>
@@ -498,7 +498,7 @@
 					customprocname="false"
 					stayalive="false"
 					icon="src/icons/dqguru.ico">
-				<jre minVersion="1.5.0"
+				<jre minVersion="1.6.0"
 					 maxHeapSize="600"
 				/>
 			</config>
@@ -520,7 +520,7 @@
 					mutexName="SQL Power DQguru Uninstaller"
 					windowTitle="SQL Power DQguru Uninstaller"
 				/>
-				<jre minVersion="1.5.0"/>
+				<jre minVersion="1.6.0"/>
 			</config>
 		</launch4j>
 		
@@ -603,7 +603,7 @@
 						<appname>SQL Power DQguru</appname>
 						<appversion>@{app.version}</appversion>
 						<url>http://www.sqlpower.ca/</url>
-						<javaversion>1.5</javaversion>
+						<javaversion>1.6</javaversion>
 					</info>
 					<guiprefs height="600" resizable="yes" width="800">
 						<laf name="metouia">
@@ -701,7 +701,7 @@
 					mutexName="DQguru Installer"
 					windowTitle="DQguru Installer"
 				/>
-				<jre minVersion="1.5.0"/>
+				<jre minVersion="1.6.0"/>
 			</config>
 		</launch4j>
 	</target>
@@ -737,7 +737,7 @@
            version="${app.version}"
            mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
            icon="src/icons/dqguru.icns"
-           jvmversion="1.5+"
+           jvmversion="1.6+"
            shortname="SQL Power DQguru"
            stubfile="osx_packaging_utils/DQguruStub"
            vmoptions="-Xmx600m">
@@ -956,7 +956,7 @@
 		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"
 			classpath="${pmd.jar}"/>
 		<property name="pmd-results" value="${reports}/pmd-ant-results.${pmd.report.format}"/>
-		<pmd shortFilenames="true" targetjdk="1.5">
+		<pmd shortFilenames="true" targetjdk="1.6">
 			<ruleset>basic,imports</ruleset>
 			<formatter type="${pmd.report.format}" toFile="${pmd-results}"/>
 			<fileset dir="${src}">
