@@ -427,27 +427,23 @@ public class TableMergeRules
 		}
 		
 		List<SQLColumn> columns = new ArrayList<SQLColumn>();
-		try {
-			SQLIndex index = getTableIndex();
-			if (index == null) index = getSourceTable().getPrimaryKeyIndex();
-			if (index == null) {
-				return null;
-			}
-			for (SQLIndex.Column column : index.getChildren(SQLIndex.Column.class)) {
-			    if (logger.isDebugEnabled()) {
-					try {
-						logger.debug(BeanUtils.describe(column));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+		SQLIndex index = getTableIndex();
+		if (index == null) index = getSourceTable().getPrimaryKeyIndex();
+		if (index == null) {
+			return null;
+		}
+		for (SQLIndex.Column column : index.getChildren(SQLIndex.Column.class)) {
+		    if (logger.isDebugEnabled()) {
+				try {
+					logger.debug(BeanUtils.describe(column));
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				if (column.getColumn() == null) {
-			        throw new IllegalStateException("Found an index column with a null column name!");
-			    }
-				columns.add(column.getColumn()); 
 			}
-		} catch (SQLObjectException e) {
-			throw new RuntimeException("Error getting primary key from index.", e);
+			if (column.getColumn() == null) {
+		        throw new IllegalStateException("Found an index column with a null column name!");
+		    }
+			columns.add(column.getColumn()); 
 		}
 		return columns;
 	}
