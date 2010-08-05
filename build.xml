@@ -735,6 +735,7 @@
 		<jarbundler dir="${staging.dir}"
            name="SQL Power DQguru"
            version="${app.version}"
+		   bundleid="ca.sqlpower.matchmaker"
            mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
            icon="src/icons/dqguru.icns"
            jvmversion="1.6+"
