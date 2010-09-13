@@ -58,17 +58,19 @@ public class GoogleAddressLookupTest extends TestCase {
         assertEquals("Toronto", step.getOutputByName("Locality").getData());
         assertEquals("4950 Yonge St", step.getOutputByName("Street Address").getData());
         assertEquals("M2N", step.getOutputByName("Postal Code").getData());
-        assertEquals(BigDecimal.valueOf(43.764783), step.getOutputByName("Latitude").getData());
-        assertEquals(BigDecimal.valueOf(-79.412229), step.getOutputByName("Longitude").getData());
+        assertTrue(43.76477 < ((BigDecimal)(step.getOutputByName("Latitude").getData())).doubleValue());
+        assertTrue(43.7648 > ((BigDecimal)(step.getOutputByName("Latitude").getData())).doubleValue());
+        assertTrue(-79.412235 < ((BigDecimal)(step.getOutputByName("Longitude").getData())).doubleValue());
+        assertTrue(-79.412225 > ((BigDecimal)(step.getOutputByName("Longitude").getData())).doubleValue());
         assertEquals(BigDecimal.valueOf(8), step.getOutputByName("Accuracy Code").getData());
-
+        
         step.commit();
         step.close();
     }
 
     public void testInvalidLookupCanada() throws Exception {
         step.open(logger);
-        testInput.setData("1234 StreetDoesn't Exist");
+        testInput.setData("1234 StreetDoesn't Exist at all, definitely, I'm sure about it");
         
         class ErrorCounter extends AppenderSkeleton {
 
