@@ -50,7 +50,7 @@ import ca.sqlpower.util.Monitorable;
 /**
  * folder is the parent of project. should be not null.
  */
-public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder> {
+public class Project extends AbstractMatchMakerObject {
 
     static final Logger logger = Logger.getLogger(Project.class);
     
@@ -124,15 +124,15 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     /**
      * Contains the Munge Processes and the Munge Steps
      */
-    private MatchMakerFolder<MungeProcess> mungeProcessesFolder =
-    	new MatchMakerFolder<MungeProcess>(MungeProcess.class);
+    private MatchMakerFolder mungeProcessesFolder =
+    	new MatchMakerFolder(MungeProcess.class);
     
     /** 
      * Container for the TableMergeRules 
      * We have these folders so that we don't have to deal with multiple child types
      */ 
-    private MatchMakerFolder<TableMergeRules> tableMergeRulesFolder =
-    	new MatchMakerFolder<TableMergeRules>(TableMergeRules.class);
+    private MatchMakerFolder tableMergeRulesFolder =
+    	new MatchMakerFolder(TableMergeRules.class);
     
     /**
      * Cached source table 
@@ -746,7 +746,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         mungeProcessesFolder.setChildren(processes);
     }
 
-    public MatchMakerFolder<MungeProcess> getMungeProcessesFolder() {
+    public MatchMakerFolder getMungeProcessesFolder() {
         return mungeProcessesFolder;
     }
 

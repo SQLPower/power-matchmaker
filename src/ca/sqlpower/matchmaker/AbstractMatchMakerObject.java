@@ -37,18 +37,18 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @param <T> The type of this matchmaker object implementation
  * @param <C> The child type of this matchmaker object implementation
  */
-public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C extends MatchMakerObject>
-	implements MatchMakerObject<T, C> {
+public abstract class AbstractMatchMakerObject implements MatchMakerObject
+	 {
 
     private static final Logger logger = Logger.getLogger(AbstractMatchMakerObject.class);
 
 	private MatchMakerObject parent;
 
 	@SuppressWarnings("unchecked")
-	private MatchMakerEventSupport<T,C> eventSupport =
-		new MatchMakerEventSupport<T,C>((T) this);
+	private MatchMakerEventSupport eventSupport =
+		new MatchMakerEventSupport(this);
 
-	private List<C> children = new ArrayList<C>();
+	private List<MatchMakerObject> children = new ArrayList<MatchMakerObject>();
 	private String lastUpdateAppUser;
 	private String lastUpdateOsUser;
 	private Date lastUpdateDate;
@@ -73,7 +73,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @param child
      *            The child object to add. Must not be null.
      */
-	public final void addChild(C child) {
+	public final void addChild(MatchMakerObject child) {
         addImpl(children.size(), child);
 	}
 
@@ -92,16 +92,16 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @param child
      *            The child object to add. Must not be null.
      */
-	public final void addChild(int index, C child) {
+	public final void addChild(int index, MatchMakerObject child) {
         addImpl(index, child);
 	}
 	
-	protected void addImpl(int index, C child) {
+	protected void addImpl(int index, MatchMakerObject child) {
 		logger.debug("addChild: children collection is a "+children.getClass().getName());
         if(child== null) throw new NullPointerException("Cannot add a null child");
 		children.add(index, child);
 		child.setParent(this);
-		List<C> insertedChildren = new ArrayList<C>();
+		List<MatchMakerObject> insertedChildren = new ArrayList<MatchMakerObject>();
 		insertedChildren.add(child);
 		eventSupport.fireChildrenInserted("children",new int[] {index},insertedChildren);
 	}
@@ -126,7 +126,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * MatchMakerObjects that do not support children always return an empty
      * list (never null).
      */
-	public List<C> getChildren() {
+	public List<MatchMakerObject> getChildren() {
 		return children;
 	}
 
@@ -139,7 +139,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * 
      * @param children
      */
-    public void setChildren(List<C> children){
+    public void setChildren(List<MatchMakerObject> children){
         this.children = children;
         eventSupport.fireStructureChanged();
     }
@@ -155,11 +155,11 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	 * @param child The child object to remove.  If it is not present in this
      * object's child list, this method call has no effect.
 	 */
-	public void removeChild(C child) {
+	public void removeChild(MatchMakerObject child) {
 		int childIndex = children.indexOf(child);
         if (childIndex == -1) return;
         int [] removedIndices = {childIndex};
-		List<C> removedChildren = new ArrayList<C>();
+		List<MatchMakerObject> removedChildren = new ArrayList<MatchMakerObject>();
 		removedChildren.add(child);
 		children.remove(child);
 		eventSupport.fireChildrenRemoved("children",removedIndices,removedChildren);
@@ -174,7 +174,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @param j the index of the other element to be swapped.
      */
 	public void swapChildren(int i, int j) {
-		final List<C> l = getChildren();
+		final List<MatchMakerObject> l = getChildren();
 		try {
 			startCompoundEdit();
 			int less;
@@ -186,8 +186,8 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 				less = j;
 				more = i;
 			}
-			C child1 = l.get(less);
-			C child2 = l.get(more);
+			MatchMakerObject child1 = l.get(less);
+			MatchMakerObject child2 = l.get(more);
 
 			removeChild(child1);
 			removeChild(child2);
@@ -201,8 +201,8 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	
 	public void moveChild(int from, int to) {
 		if (to == from) return;
-		final List<C> l = getChildren();
-		C child = l.get(from);
+		final List<MatchMakerObject> l = getChildren();
+		MatchMakerObject child = l.get(from);
 		try {
 			startCompoundEdit();
 			removeChild(l.get(from));
@@ -311,15 +311,17 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 
 	/////// Event stuff ///////
 
-	public void addMatchMakerListener(MatchMakerListener<T, C> l) {
+	@Override
+	public void addMatchMakerListener(MatchMakerListener l) {
 		eventSupport.addMatchMakerListener(l);
 	}
 
-	public void removeMatchMakerListener(MatchMakerListener<T, C> l) {
+	@Override
+	public void removeMatchMakerListener(MatchMakerListener l) {
 		eventSupport.removeMatchMakerListener(l);
 	}
 
-	protected MatchMakerEventSupport<T, C> getEventSupport() {
+	protected MatchMakerEventSupport getEventSupport() {
 		return eventSupport;
 	}
 	
@@ -354,7 +356,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 			if (getChildren().contains(mmo)) {
 				return true;
 			}
-			for (C child : getChildren()) {
+			for (MatchMakerObject child : getChildren()) {
 				if (child.hierarchyContains(mmo)) {
 					return true;
 				}

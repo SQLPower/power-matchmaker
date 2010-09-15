@@ -31,8 +31,8 @@ import org.apache.log4j.Logger;
  * child for each type of child it needs, and each folder will hold the
  * children of that type.
  */
-public class MatchMakerFolder<C extends MatchMakerObject>
-	extends AbstractMatchMakerObject<MatchMakerFolder, C> {
+public class MatchMakerFolder
+	extends AbstractMatchMakerObject {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerFolder.class);
 	
@@ -41,9 +41,9 @@ public class MatchMakerFolder<C extends MatchMakerObject>
     /**
      * The class of child objects held by this folder.
      */
-    private final Class<C> childClass;
+    private final Class<?> childClass;
     
-	public MatchMakerFolder(Class<C> childClass) {
+	public MatchMakerFolder(Class<?> childClass) {
 		this.childClass = childClass;
 	}
 
@@ -108,11 +108,11 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 	 *            True if this addChild call is part of a compound event. False
 	 *            if it is not.
 	 */
-	public final void addChild(int index, C child, boolean isCompound) {
+	public final void addChild(int index, MatchMakerObject child, boolean isCompound) {
         addImpl(index, child, isCompound);
 	}
 	
-	protected void addImpl(int index, C child, boolean isCompound) {
+	protected void addImpl(int index, MatchMakerObject child, boolean isCompound) {
 		logger.debug("addChild: children collection is a "+getChildren().getClass().getName());
         if(child== null) throw new NullPointerException("Cannot add a null child");
 		getChildren().add(index, child);

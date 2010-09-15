@@ -29,7 +29,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
  * @param T The type of this implementation of MatchMakerObject
  * @param C The type of children this implementation of MatchMakerObject contains
  */
-public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMakerObject> extends Auditable {
+public interface MatchMakerObject extends Auditable {
 
 	/**
 	 * Registers the given listener as a recipient of future MatchMakerEvents
@@ -37,14 +37,14 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
      * events that this object's ancestors or descendants generate.  For that,
      * see {@link MatchMakerUtils#listenToHierarchy(MatchMakerListener, MatchMakerObject)}.
 	 */
-	void addMatchMakerListener(MatchMakerListener<T, C> l);
+	void addMatchMakerListener(MatchMakerListener l);
 
 	/**
 	 * De-registers the given listener as a recipient of future MatchMakerEvents
      * that this object generates.  If the given listener was not in this object's
      * listener list, calling this method has non effect.
 	 */
-	void removeMatchMakerListener(MatchMakerListener<T, C> l);
+	void removeMatchMakerListener(MatchMakerListener l);
 
 	/**
 	 * Returns the parent of this object.
@@ -76,7 +76,7 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	/**
 	 * Returns the object's primary children
 	 */
-	List<C> getChildren();
+	List<MatchMakerObject> getChildren();
 
 	/**
 	 * Returns the number of children on this MatchMaker Object.
@@ -86,19 +86,19 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	/**
 	 * Add a new child to this object
 	 */
-	void addChild(C child);
+	void addChild(MatchMakerObject child);
 
     /**
      * Removes the given child and fires a childrenRemoved event.  If the
      * given child is not present in this object, calling this method has
      * no effect (no children are removed and no events are fired).
 	 */
-	void removeChild(C child);
+	void removeChild(MatchMakerObject child);
 
 	/**
 	 * copy the match maker object 
 	 */
-	T duplicate(MatchMakerObject parent, MatchMakerSession session);
+	MatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession session);
 	
     /**
      * Returns the current session that this object is associated with.
