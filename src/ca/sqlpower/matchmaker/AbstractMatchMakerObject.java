@@ -37,7 +37,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @param <T> The type of this matchmaker object implementation
  * @param <C> The child type of this matchmaker object implementation
  */
-public abstract class AbstractMatchMakerObject implements MatchMakerObject
+public abstract class AbstractMatchMakerObject extends AbstractSPObject implements MatchMakerObject 
 	 {
 
     private static final Logger logger = Logger.getLogger(AbstractMatchMakerObject.class);
