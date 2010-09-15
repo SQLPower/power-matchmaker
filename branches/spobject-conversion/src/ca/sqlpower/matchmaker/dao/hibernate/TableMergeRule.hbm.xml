@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+	<class name="ca.sqlpower.matchmaker.TableMergeRules"
+		table="mm_table_merge_rule">
+
+		<id name="oid" type="long">
+			<column name="table_merge_rule_oid" />
+			<generator class="native">
+				<param name="sequence">mm_table_merge_rule_oid_seq</param>
+			</generator>
+		</id>
+
+		<property name="catalogName" type="string">
+			<column name="table_catalog" length="30" />
+		</property>
+		<property name="schemaName" type="string">
+			<column name="table_schema" length="30" />
+		</property>
+		<property name="tableName" type="string">
+			<column name="table_name" length="30" />
+		</property>
+		
+		<property name="spDataSource" type="string">
+			<column name="table_spdatasource" length="60" />
+		</property>
+			<property name="tableIndex" type="ca.sqlpower.matchmaker.util.ListToSQLIndex">
+			<column name="primary_key_index" length="60" />
+		    <column name="index_column_name_0" length="60" />
+		    <column name="index_column_name_1" length="60" />
+		    <column name="index_column_name_2" length="60" />
+		    <column name="index_column_name_3" length="60" />
+		    <column name="index_column_name_4" length="60" />
+		    <column name="index_column_name_5" length="60" />
+		    <column name="index_column_name_6" length="60" />
+		    <column name="index_column_name_7" length="60" />
+		    <column name="index_column_name_8" length="60" />
+		    <column name="index_column_name_9" length="60" />
+		</property>
+		
+		<property name="childMergeAction">
+			<column name="CHILD_MERGE_ACTION" length="50" />
+		    <type name="ca.sqlpower.matchmaker.dao.hibernate.EnumUserType">
+		      <param name="enumClassName">ca.sqlpower.matchmaker.TableMergeRules$ChildMergeActionType</param>
+		    </type>
+		</property>
+		
+		<many-to-one name="parentMergeRule"
+			class="ca.sqlpower.matchmaker.TableMergeRules" fetch="select" >
+			<column name="PARENT_MERGE_RULE_OID" />
+		</many-to-one>
+		
+		<property name="visible"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="visible_ind" length="1" />
+		</property>
+
+		<property name="lastUpdateDate" type="timestamp" access="field">
+			<column name="LAST_update_DATE" length="23" />
+		</property>
+		<property name="lastUpdateAppUser" type="string" access="field">
+			<column name="LAST_update_USER" length="30" />
+		</property>
+
+		<property name="lastUpdateOsUser" type="string" access="field">
+			<column name="LAST_update_OS_USER" length="30" />
+		</property>
+		
+		<many-to-one name="parentProject"
+			class="ca.sqlpower.matchmaker.Project" fetch="select" >
+			<column name="project_oid" not-null="true" />
+		</many-to-one>
+		
+		<bag name="children" cascade="all-delete-orphan"
+			inverse="true" lazy="false" fetch="subselect">
+			<key>
+				<column name="table_merge_rule_oid" not-null="true" />
+			</key>
+			<one-to-many
+				class="ca.sqlpower.matchmaker.ColumnMergeRules" />
+		</bag>
+	</class>
+</hibernate-mapping>
