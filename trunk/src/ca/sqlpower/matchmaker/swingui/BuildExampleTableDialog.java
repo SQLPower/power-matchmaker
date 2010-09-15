@@ -72,6 +72,7 @@ import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -305,16 +306,32 @@ public class BuildExampleTableDialog extends JDialog{
 			table = SQLObjectUtils.addSimulatedTable(swingSession.getDatabase(getDataSource()), getTableCatalog(), getTableSchema(), tableName.getText());
 		}
 		
-		SQLColumn id = new SQLColumn(table,"ID",Types.INTEGER,10,0);
+		List<UserDefinedSQLType> sqlTypes = swingSession.getSQLTypes();
+		UserDefinedSQLType integerType = new UserDefinedSQLType();
+		UserDefinedSQLType varcharType = new UserDefinedSQLType();
+		for(UserDefinedSQLType type : sqlTypes) {
+			if(type.getType() == Types.VARCHAR) {
+				varcharType = type;
+				break;
+			}
+		}
+		for(UserDefinedSQLType type : sqlTypes) {
+			if(type.getType() == Types.INTEGER) {
+				integerType = type;
+				break;
+			}
+		}
+		
+		SQLColumn id = new SQLColumn(table,"ID",integerType,0,0, false);
 		
 		table.addColumn(id);
 		table.addToPK(id);
-		table.addColumn(new SQLColumn(table,"FirstName",Types.VARCHAR,100,0));
-		table.addColumn(new SQLColumn(table,"LastName",Types.VARCHAR,100,0));
-		table.addColumn(new SQLColumn(table, "Email", Types.VARCHAR,100,0));
-		table.addColumn(new SQLColumn(table, "Address", Types.VARCHAR,100,0));
-		table.addColumn(new SQLColumn(table, "HomePhone", Types.VARCHAR,100,0));
-		table.addColumn(new SQLColumn(table, "CellPhone", Types.VARCHAR,100,0));
+		table.addColumn(new SQLColumn(table,"FirstName", varcharType, 100,0,false));
+		table.addColumn(new SQLColumn(table,"LastName",varcharType,100,0,false));
+		table.addColumn(new SQLColumn(table, "Email", varcharType,100,0,false));
+		table.addColumn(new SQLColumn(table, "Address", varcharType,100,0,false));
+		table.addColumn(new SQLColumn(table, "HomePhone", varcharType,100,0,false));
+		table.addColumn(new SQLColumn(table, "CellPhone", varcharType,100,0,false));
 		
 		ddlg.addTable(table);
 		

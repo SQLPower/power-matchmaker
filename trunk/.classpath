@@ -50,6 +50,6 @@
 	<classpathentry kind="lib" path="lib/google-collect-1.0.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="lib" path="buildlib/junit.jar"/>
-	<classpathentry kind="lib" path="lib/architect-core-1.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/architect-core-1.0.3.jar" sourcepath="/architect/src/main/java/ca/sqlpower/architect/ddl"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
