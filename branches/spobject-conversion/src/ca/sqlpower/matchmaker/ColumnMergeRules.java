@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLTable;
 
-public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,MatchMakerObject> {
+public class ColumnMergeRules extends AbstractMatchMakerObject {
 
 	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
 

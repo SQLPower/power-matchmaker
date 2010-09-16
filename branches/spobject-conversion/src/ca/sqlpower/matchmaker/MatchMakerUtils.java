@@ -49,11 +49,11 @@ public class MatchMakerUtils {
 	 * nodes; they simply won't be listened to)
 	 */
 	public static <T extends MatchMakerObject, C extends MatchMakerObject>
-		void listenToHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root) {
+		void listenToHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject root) {
 		root.addMatchMakerListener(listener);
 		logger.debug("listenToHierarchy: \"" + root.getName() + "\" (" +
 				root.getClass().getName() + ") children: " + root.getChildren());
-		for (MatchMakerObject<T,C> obj : root.getChildren()) {
+		for (MatchMakerObject obj : root.getChildren()) {
 			listenToHierarchy(listener, obj);
 		}
 	}
@@ -65,11 +65,11 @@ public class MatchMakerUtils {
 	 * {@link #lisenToHierachy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root)}
 	 */
 	public static <T extends MatchMakerObject, C extends MatchMakerObject>
-		void listenToShallowHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root) {
+		void listenToShallowHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject root) {
 		root.addMatchMakerListener(listener);
 		logger.debug("listenToShallowHierarchy: \"" + root.getName() + "\" (" +
 				root.getClass().getName() + ") children: " + root.getChildren());
-		for (MatchMakerObject<T,C> obj : root.getChildren()) {
+		for (MatchMakerObject obj : root.getChildren()) {
 			obj.addMatchMakerListener(listener);
 		}
 	}
@@ -86,9 +86,9 @@ public class MatchMakerUtils {
 	 * nodes; they simply won't be unlistened to)
 	 */
 	public static <T extends MatchMakerObject, C extends MatchMakerObject>
-		void unlistenToHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root) {
+		void unlistenToHierarchy(MatchMakerListener listener, MatchMakerObject root) {
 		root.removeMatchMakerListener(listener);
-		for (MatchMakerObject<T,C> obj : root.getChildren()) {
+		for (MatchMakerObject obj : root.getChildren()) {
 			unlistenToHierarchy(listener, obj);
 		}
 	}

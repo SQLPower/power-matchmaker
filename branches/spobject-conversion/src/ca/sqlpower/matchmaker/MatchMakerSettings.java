@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  *
  */
 public abstract class MatchMakerSettings extends
-		AbstractMatchMakerObject<MatchMakerSettings, MatchMakerObject> {
+		AbstractMatchMakerObject {
 
     private static final Logger logger = Logger.getLogger(MatchMakerSettings.class);
 
