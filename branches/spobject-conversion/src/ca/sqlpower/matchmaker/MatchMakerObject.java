@@ -19,8 +19,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.List;
-
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 /**
@@ -45,55 +43,6 @@ public interface MatchMakerObject extends Auditable {
      * listener list, calling this method has non effect.
 	 */
 	void removeMatchMakerListener(MatchMakerListener l);
-
-	/**
-	 * Returns the parent of this object.
-	 */
-	MatchMakerObject getParent();
-
-    /**
-     * Returns the user-visible name of this object.
-     */
-    String getName();
-
-    /**
-     * Set the user visible name of this object
-     */
-    void setName(String string);
-    
-	/**
-	 * Sets the parent (ie. the object that holds this one as a child)
-	 */
-	 void setParent(MatchMakerObject parent);
-
-	 /**
-      * Tells whether or not this MatchMaker object can have children.
-      * 
-	  * @return true if this MatchMakerObject allows children, false otherwise.
-	  */
-	 public boolean allowsChildren();
-
-	/**
-	 * Returns the object's primary children
-	 */
-	List<MatchMakerObject> getChildren();
-
-	/**
-	 * Returns the number of children on this MatchMaker Object.
-	 */
-	int getChildCount();
-
-	/**
-	 * Add a new child to this object
-	 */
-	void addChild(MatchMakerObject child);
-
-    /**
-     * Removes the given child and fires a childrenRemoved event.  If the
-     * given child is not present in this object, calling this method has
-     * no effect (no children are removed and no events are fired).
-	 */
-	void removeChild(MatchMakerObject child);
 
 	/**
 	 * copy the match maker object 
@@ -131,12 +80,6 @@ public interface MatchMakerObject extends Auditable {
 	 * Sets if the object is undoing.
 	 */
 	void setUndoing(boolean isUndoing);
-	
-	/**
-	 * Returns true if the sub-hierarchy of this matchmaker object
-	 * contains the passed in mmo.
-	 */
-	boolean hierarchyContains(MatchMakerObject mmo);
 	
 	/**
 	 * Starts a compound edit so that the whole compound edit can
