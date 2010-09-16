@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.SPObject;
+
 /**
  * A container class designed to hold match maker objects when a parent
  * has to have children of multiple types.  Since this isn't allowed by
@@ -117,7 +119,7 @@ public class MatchMakerFolder
         if(child== null) throw new NullPointerException("Cannot add a null child");
 		getChildren().add(index, child);
 		child.setParent(this);
-		List<C> insertedChildren = new ArrayList<C>();
+		List<MatchMakerObject> insertedChildren = new ArrayList<MatchMakerObject>();
 		insertedChildren.add(child);
 		getEventSupport().fireChildrenInserted("children", new int[] {index}, insertedChildren, isCompound);
 	}
@@ -125,8 +127,8 @@ public class MatchMakerFolder
 	@Override
 	public void moveChild(int from, int to) {
 		if (to == from) return;
-		final List<C> l = getChildren();
-		C child = l.get(from);
+		List<? extends MatchMakerObject> l = getChildren();
+		MatchMakerObject child = l.get(from);
 		try {
 			startCompoundEdit();
 			removeChild(l.get(from));

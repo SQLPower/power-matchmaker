@@ -26,7 +26,7 @@ package ca.sqlpower.matchmaker;
  * A class that fires events and keeps the database in 
  * sync with the folder parent. 
  */
-public class FolderParent extends AbstractMatchMakerObject<FolderParent, PlFolder> {
+public class FolderParent extends AbstractMatchMakerObject {
     /**
      * 
      */
