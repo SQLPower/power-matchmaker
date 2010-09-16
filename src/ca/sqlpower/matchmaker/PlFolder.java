@@ -29,8 +29,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *
  * <p>All setter methods in this class fire the appropriate events.
  */
-public class PlFolder<C extends MatchMakerObject>
-	extends AbstractMatchMakerObject<PlFolder, C> {
+public class PlFolder
+	extends AbstractMatchMakerObject {
 
 	/**
 	 * The object id

@@ -39,7 +39,7 @@ import ca.sqlpower.sqlobject.SQLTable;
  * The best way to think of this is a per row merge rules.
  */
 public class TableMergeRules
-	extends AbstractMatchMakerObject<TableMergeRules, ColumnMergeRules> {
+	extends AbstractMatchMakerObject {
 
 	private static final Logger logger = Logger.getLogger(TableMergeRules.class);
 	/**

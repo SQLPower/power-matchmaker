@@ -717,7 +717,7 @@ public class Project extends AbstractMatchMakerObject {
     	tableMergeRulesFolder.setChildren(rules);
     }
 
-    public MatchMakerFolder<TableMergeRules> getTableMergeRulesFolder() {
+    public MatchMakerFolder getTableMergeRulesFolder() {
         return tableMergeRulesFolder;
     }
     

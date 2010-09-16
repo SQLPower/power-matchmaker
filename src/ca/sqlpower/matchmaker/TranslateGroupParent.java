@@ -26,7 +26,7 @@ import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 /** 
  * A holder for translate groups
  */
-public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGroupParent, MatchMakerTranslateGroup> {
+public class TranslateGroupParent extends AbstractMatchMakerObject {
     /**
      * 
      */
