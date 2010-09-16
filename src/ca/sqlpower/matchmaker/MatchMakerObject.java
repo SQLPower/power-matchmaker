@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.object.SPObject;
 
 /**
  * The interface for all of the match maker specific business objects
@@ -27,7 +28,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
  * @param T The type of this implementation of MatchMakerObject
  * @param C The type of children this implementation of MatchMakerObject contains
  */
-public interface MatchMakerObject extends Auditable {
+public interface MatchMakerObject extends Auditable, SPObject {
 
 	/**
 	 * Registers the given listener as a recipient of future MatchMakerEvents
