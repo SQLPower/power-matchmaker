@@ -132,6 +132,7 @@ import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
+import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.Version;
 
 /**
@@ -1512,7 +1513,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			if (oldPane instanceof MatchMakerEditorPane) {
 				for (MatchMakerObject removedChild : (List<MatchMakerObject>)evt.getChildren()) {
 					MatchMakerObject editorMMO = ((MatchMakerEditorPane)oldPane).getCurrentEditingMMO();
-					if (removedChild.equals(editorMMO) || removedChild.hierarchyContains(editorMMO)) {
+					if (removedChild.equals(editorMMO) || SQLPowerUtils.hierarchyContains(removedChild, editorMMO)) {
 						MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 						TreePath treePath = treeModel.getPathForNode(evt.getSource());
 						getTree().setSelectionPath(treePath);
