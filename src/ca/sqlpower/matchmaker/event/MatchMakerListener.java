@@ -20,13 +20,11 @@
 
 package ca.sqlpower.matchmaker.event;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
-
-public interface MatchMakerListener<T extends MatchMakerObject,C extends MatchMakerObject> {
+public interface MatchMakerListener {
 	
-	void mmPropertyChanged(MatchMakerEvent<T,C> evt);
-	void mmChildrenInserted(MatchMakerEvent<T,C> evt);
-	void mmChildrenRemoved(MatchMakerEvent<T,C> evt);
-	void mmStructureChanged(MatchMakerEvent<T,C> evt);
+	void mmPropertyChanged(MatchMakerEvent evt);
+	void mmChildrenInserted(MatchMakerEvent evt);
+	void mmChildrenRemoved(MatchMakerEvent evt);
+	void mmStructureChanged(MatchMakerEvent evt);
 
 }

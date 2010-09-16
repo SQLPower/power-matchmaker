@@ -43,6 +43,9 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.AbstractSPListener;
 
 /**
  * A tree model implementation that adapts a hierarchy of MatchMakerObjects
@@ -60,8 +63,8 @@ public class MatchMakerTreeModel implements TreeModel {
      * and "Backup Project" folders, which are in turn parents to the PLFolders
      * (hence, FolderParent).
      */
-    private static class MMRootNode <C extends MatchMakerObject> 
-    	extends AbstractMatchMakerObject<MMRootNode, C> {
+    private static class MMRootNode  
+    	extends AbstractMatchMakerObject {
 
         public MMRootNode() {
             setName("Root Node");
@@ -155,7 +158,7 @@ public class MatchMakerTreeModel implements TreeModel {
      * project workflow is represented in one place, with pretty pictures and
      * everything.
      */
-    public class ProjectActionNode extends AbstractMatchMakerObject<Project, ProjectActionNode> {
+    public class ProjectActionNode extends AbstractMatchMakerObject {
 
         private final ProjectActionType projectActionType;
         private final Project project;
@@ -299,8 +302,8 @@ public class MatchMakerTreeModel implements TreeModel {
     }
     
 	public Object getChild(Object parent, int index) {
-        final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
-        final MatchMakerObject<?, ?> mmoChild;
+        final MatchMakerObject mmoParent = (MatchMakerObject) parent;
+        final MatchMakerObject mmoChild;
     
         if (mmoParent instanceof Project) {
             Project project = (Project) mmoParent;
@@ -335,7 +338,7 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public int getChildCount(Object parent) {
-		final MatchMakerObject<?, ?> mmo = (MatchMakerObject<?, ?>) parent;
+		final MatchMakerObject mmo = (MatchMakerObject) parent;
         int count;
         if (mmo instanceof Project) {
             Project project = (Project) mmo;
@@ -359,8 +362,8 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public int getIndexOfChild(Object parent, Object child) {
-        final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
-        final MatchMakerObject<?, ?> mmoChild = (MatchMakerObject<?, ?>) child;
+        final MatchMakerObject mmoParent = (MatchMakerObject) parent;
+        final MatchMakerObject mmoChild = (MatchMakerObject) child;
         final int index = mmoParent.getChildren().indexOf(mmoChild);
 
         if (logger.isDebugEnabled()) {
@@ -375,7 +378,7 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public boolean isLeaf(Object node) {
-        final MatchMakerObject<?, ?> mmoNode = (MatchMakerObject<?, ?>) node;
+        final MatchMakerObject mmoNode = (MatchMakerObject) node;
         final boolean isLeaf = !mmoNode.allowsChildren();
 
         if (logger.isDebugEnabled()) {
@@ -451,18 +454,18 @@ public class MatchMakerTreeModel implements TreeModel {
 		fireTreeNodesChanged(new TreeModelEvent(root, new TreePath(root)));
 	}
 
-	private class TreeModelEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
-			implements MatchMakerListener<T, C> {
+	private class TreeModelEventAdapter
+			implements AbstractSPListener {
         
-		public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
-            logger.debug("Got mmPropertyChanged event. property="+
+		public void PropertyChanged(MatchMakerEvent evt) {
+            logger.debug("Got PropertyChanged event. property="+
                     evt.getPropertyName()+"; source="+evt.getSource());
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
 			fireTreeNodesChanged(e);
 		}
 
-		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
+		public void ChildrenInserted(MatchMakerEvent evt) {
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
 					.getChangeIndices(), evt.getChildren().toArray());
@@ -493,7 +496,7 @@ public class MatchMakerTreeModel implements TreeModel {
 			}
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
+		public void ChildrenRemoved(MatchMakerEvent evt) {
 			TreePath path = getPathForNode(evt.getSource());
             if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children removed event!");
@@ -525,7 +528,7 @@ public class MatchMakerTreeModel implements TreeModel {
 			}
 		}
 
-		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
+		public void StructureChanged(MatchMakerEvent evt) {
             logger.debug("Got mmObjectChanged event for " + evt.getSource());
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
@@ -533,7 +536,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 	}
 
-	public TreePath getPathForNode(MatchMakerObject<?, ?> source) {
+	public TreePath getPathForNode(MatchMakerObject source) {
 		List<MatchMakerObject> path = new LinkedList<MatchMakerObject>();
 		while (source != null) {
 			path.add(0, source);
@@ -546,18 +549,18 @@ public class MatchMakerTreeModel implements TreeModel {
 		current.addChild(folder);
 	}
 	
-	private class ActionCacheEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
-		implements MatchMakerListener<T, C>{
+	private class ActionCacheEventAdapter
+		implements AbstractSPListener{
 
-		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
+		public void childAdded(SPChildEvent evt) {
 			if (evt.getSource() instanceof FolderParent) {
-				for (C folder : evt.getChildren()) {
+				for (C folder : evt.getChild()) {
 					folder.addMatchMakerListener(this);
 				}
 			}
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
+		public void childRemoved(SPChildEvent evt) {
 			if (evt.getSource() instanceof FolderParent) {
 				for (C folder : evt.getChildren()) {
 					for (Object project : folder.getChildren()) {

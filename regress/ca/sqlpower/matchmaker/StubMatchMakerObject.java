@@ -27,8 +27,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.object.AbstractSPObject;
+import ca.sqlpower.object.SPObject;
 
-public class StubMatchMakerObject implements MatchMakerObject {
+public class StubMatchMakerObject extends AbstractSPObject implements MatchMakerObject {
     private static final Logger logger = Logger.getLogger(StubMatchMakerObject.class);
     List<MatchMakerObject> children = new ArrayList<MatchMakerObject>();
     String name;

@@ -22,20 +22,20 @@ package ca.sqlpower.matchmaker.event;
 
 import java.util.List;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.object.SPObject;
 /**
  * An event that is designed to work with match maker objects.
  * @param S source of event
  * @param C child type of S
  */
-public class MatchMakerEvent<S extends MatchMakerObject,C extends MatchMakerObject> {
+public class MatchMakerEvent {
 	
 	private int[] changeIndices;
-	private List<C> children;
+	private List<SPObject> children;
 	private String propertyName;
 	private Object oldValue;
 	private Object newValue;
-	private S source;
+	private SPObject source;
 	private boolean isUndoEvent;
 	private boolean isCompoundEvent;
 	
@@ -55,11 +55,11 @@ public class MatchMakerEvent<S extends MatchMakerObject,C extends MatchMakerObje
 		this.isCompoundEvent = isCompoundEvent;
 	}
 	
-	public S getSource() {
+	public SPObject getSource() {
 		return source;
 	}
 	
-	public void setSource(S source) {
+	public void setSource(SPObject source) {
 	    this.source = source;
 	}
 	
@@ -71,11 +71,11 @@ public class MatchMakerEvent<S extends MatchMakerObject,C extends MatchMakerObje
 	    this.changeIndices = changeIndeces;
 	}
 	
-	public List<C> getChildren() {
+	public List<SPObject> getChildren() {
 		return children;
 	}
 	
-	public void setChildren(List<C> children) {
+	public void setChildren(List<SPObject> children) {
 	    this.children = children;
 	}
 	

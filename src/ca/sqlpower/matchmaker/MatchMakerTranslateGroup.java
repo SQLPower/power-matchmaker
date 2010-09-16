@@ -24,7 +24,7 @@ package ca.sqlpower.matchmaker;
 
 
 public class MatchMakerTranslateGroup
-	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, MatchMakerTranslateWord> 
+	extends AbstractMatchMakerObject 
 	implements Comparable <MatchMakerTranslateGroup> {
 
     /**

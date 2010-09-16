@@ -22,7 +22,7 @@ package ca.sqlpower.matchmaker;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public class MatchMakerTranslateWord
-	extends AbstractMatchMakerObject<MatchMakerTranslateWord,MatchMakerObject> {
+	extends AbstractMatchMakerObject {
 
 	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
 	private Long oid;
