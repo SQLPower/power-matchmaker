@@ -27,10 +27,7 @@ import java.util.List;
 import ca.sqlpower.object.SPObject;
 
 /**
- * A very simple MatchMakerObject implementation for the tree's root node object.
- * Its children will be FolderParent objects, which are the "Current Project"
- * and "Backup Project" folders, which are in turn parents to the PLFolders
- * (hence, FolderParent).
+ * A root node to be at the top of the tree of all abstractmatchmaker objects
  */
 public class MMRootNode extends AbstractMatchMakerObject {
 	/**
