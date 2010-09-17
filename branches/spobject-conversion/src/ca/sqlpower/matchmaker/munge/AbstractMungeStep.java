@@ -47,7 +47,7 @@ import ca.sqlpower.validation.ValidateResult;
  * the {@link #call()} method, which would implement the functionality
  * of a particular MungeStep.
  */
-public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeStep, MungeStepOutput> implements MungeStep {
+public abstract class AbstractMungeStep extends AbstractMatchMakerObject implements MungeStep {
 	
     /**
      * The object identifier for this munge step instance.  Required by

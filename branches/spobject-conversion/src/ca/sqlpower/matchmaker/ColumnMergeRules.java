@@ -19,14 +19,27 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLTable;
+
 
 public class ColumnMergeRules extends AbstractMatchMakerObject {
 
 	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
+	
+	/**
+	 * Defines an absolute ordering of the child types of this class.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
 
     /**
      * An enumeration of all possible types of actions that can be
@@ -245,12 +258,27 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	public void setActionType(MergeActionType actionType) {
 		MergeActionType oldValue = this.actionType;
 		this.actionType = actionType;
-		getEventSupport().firePropertyChange("actionType", oldValue, this.actionType);
+		firePropertyChange("actionType", oldValue, this.actionType);
 	}
 
 	@Override
 	public String getName() {
 		return getColumnName();
+	}
+	
+	@Override
+	public List<SQLObject> getChildren() {
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+
+	@Override
+	protected boolean removeChildImpl(SPObject child) {
+		return false;
 	}
 
 	public SQLColumn getColumn() {
@@ -293,20 +321,22 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	public void setInPrimaryKey(boolean inPrimaryKey) {
 		boolean oldValue = this.inPrimaryKey;
 		this.inPrimaryKey = inPrimaryKey;
-		getEventSupport().firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
+		firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
 	}
 	
 	public void setInPrimaryKeyAndAction(boolean inPrimaryKey) {
 		try {
-			startCompoundEdit();
+			begin("Setting in Primary Key");
 			setInPrimaryKey(inPrimaryKey);
 			if (inPrimaryKey) {
 				setActionType(MergeActionType.NA);
 			} else if (getImportedKeyColumn() == null){
 				setActionType(MergeActionType.USE_MASTER_VALUE);
 			}
-		} finally {
-			endCompoundEdit();
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
 		}
 	}
 
@@ -329,15 +359,17 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	public void setImportedKeyColumnAndAction(SQLColumn importedKeyColumn) {
 		if (getImportedKeyColumn() == importedKeyColumn) return;
 		try {
-			startCompoundEdit();
+			begin("Setting imported key column");
 			setImportedKeyColumn(importedKeyColumn);
 			if (importedKeyColumn != null) {
 				setActionType(MergeActionType.NA);
 			} else if (!isInPrimaryKey()) {
 				setActionType(MergeActionType.USE_MASTER_VALUE);
 			}
-		} finally {
-			endCompoundEdit();
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
 		}
 	}
 
@@ -349,6 +381,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	public void setUpdateStatement(String updateStatement) {
 		String oldValue = this.getUpdateStatement();
 		this.updateStatement = updateStatement;
-		getEventSupport().firePropertyChange("updateStatement", oldValue, this.updateStatement);
+		firePropertyChange("updateStatement", oldValue, this.updateStatement);
 	}
 }
