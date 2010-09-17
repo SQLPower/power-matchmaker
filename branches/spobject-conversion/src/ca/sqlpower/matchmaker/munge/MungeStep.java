@@ -249,7 +249,7 @@ public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
      * this step, it is mandatory to call this method after the {@link #open()}
      * method has been called.
      */
-    void close() throws Exception;
+    void mungeClose() throws Exception;
     
     /**
      * Returns the first MungeStepOutput it finds with the given name. 
@@ -265,7 +265,8 @@ public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
     /**
      * Causes this step to undo any changes it has effected since it was opened.
      * For a step that modifies a database resource, this will be a database
-     * rollback operation. Many steps do not have permanent side-effects, and in
+     * rollback operation. This does not rollback a larger server-side commit.
+     * Many steps do not have permanent side-effects, and in
      * that case this method is a no-op.
      * <p>
      * Lifecycle note: The processor will call this method if there was a fatal
@@ -273,19 +274,20 @@ public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
      * to be aborted. Even if this method is called, the processor will still
      * call {@link close()} at a later time.
      */
-    void rollback() throws Exception;
+    void mungeRollback() throws Exception;
 
     /**
      * Causes this step to commit (make permanent) any changes it has effected
      * since it was opened. For a step that modifies a database resource, this
      * will be a database commit operation. Many steps do not have permanent
-     * side-effects, and in that case this method is a no-op.
+     * side-effects, and in that case this method is a no-op. This commit is
+     * unrelated to committing projects.
      * <p>
      * Lifecycle note: The processor will call this method after all steps have
      * completed normally. After this method is called, the processor will still
      * call {@link close()} at a later time.
      */
-    void commit() throws Exception;
+    void mungeCommit() throws Exception;
 
     /**
      * Returns true if rollback() has been called on this step since it was last

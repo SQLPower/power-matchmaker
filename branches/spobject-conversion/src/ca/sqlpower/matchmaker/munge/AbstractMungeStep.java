@@ -496,7 +496,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	/**
      * Only sets the logger, because most steps do not need to allocate any resources.
      * If your step needs to allocate resources (perform a database query, open
-     * a file, connect to a server, and so on), you should override this method.
+     * a file, connect to a server, and so on), you should override this method. This does
+     * not relate to the main persistence engine, and is only used in writing files
+     * as part of a mungestep.
      */
     public final void open(EngineMode mode, Logger logger) throws Exception {
     	this.logger = logger;
@@ -520,10 +522,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     }
     
     /**
-     * Called when the step tries to commit. This called doCommit(). doCommit should
+     * Called when the step tries to commit, in cases where the MungeStep writes to
+     * a file. This is unrelated to the larger commit. This calls doCommit(), which should
      * be overridden if the step is to do anything when commit is called.
      */
-    public final void commit() throws Exception {
+    public final void mungeCommit() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't commit because step is not opened");
         }
@@ -540,7 +543,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      * Called when the step tries to rollback. This called doRollback(). doRollback() should
      * be overridden if the step is to do anything when commit is called.
      */
-    public final void rollback() throws Exception {
+    public final void mungeRollback() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't roll back because step is not opened");
         }
@@ -554,10 +557,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     }
 
     /**
-     * Called when this step is closed. This calls doClose(). doClose should be overridden if 
-     * the step needs to do anything on close.
+     * Called when this step is closed. This calls doClose(). 
+     * doClose should be overridden if the step needs to do anything on close.
      */
-    public final void close() throws Exception {
+    public final void mungeClose() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Step not opened");
         }
@@ -666,7 +669,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      * Returns null if there is no such ancestor.
      */
     public Project getProject() {
-        for (MatchMakerObject<?, ?> mmo = getParent(); mmo != null; mmo = mmo.getParent()) {
+        for (MatchMakerObject mmo = getParent(); mmo != null; mmo = mmo.getParent()) {
             if (mmo instanceof Project) {
                 return (Project) mmo;
             }

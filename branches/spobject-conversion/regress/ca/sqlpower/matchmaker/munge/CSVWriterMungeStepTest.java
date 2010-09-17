@@ -59,7 +59,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.open(logger);
 		step.call();
 		step.commit();
-		step.close();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());
@@ -79,7 +79,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.open(logger);
 		step.call();
 		step.commit();
-		step.close();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());
@@ -100,7 +100,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.open(logger);
 		step.call();
 		step.commit();
-		step.close();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());
@@ -132,8 +132,8 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.rollback();
-		step.close();
+		step.mungeRollback();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertFalse(f.exists());
@@ -154,7 +154,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.open(logger);
 		step.call();
 		step.commit();
-		step.close();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());

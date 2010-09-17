@@ -65,7 +65,7 @@ public class GoogleAddressLookupTest extends TestCase {
         assertEquals(BigDecimal.valueOf(8), step.getOutputByName("Accuracy Code").getData());
         
         step.commit();
-        step.close();
+        step.mungeClose();
     }
 
     public void testInvalidLookupCanada() throws Exception {
@@ -105,7 +105,7 @@ public class GoogleAddressLookupTest extends TestCase {
             assertEquals(1, ec.errorCount);
         } finally {
             step.commit();
-            step.close();
+            step.mungeClose();
             logger.removeAppender(ec);
         }
     }

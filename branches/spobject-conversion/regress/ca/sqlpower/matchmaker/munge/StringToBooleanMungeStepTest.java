@@ -67,8 +67,8 @@ public class StringToBooleanMungeStepTest extends TestCase {
 			
 			assertEquals("Error in item " + x + ": " + in.get(x) + ", ", out.get(x), step.getOut().getData());
 		}
-		step.rollback();
-		step.close();
+		step.mungeRollback();
+		step.mungeClose();
 	}
 
 	public void testOneTrue() throws Exception {
