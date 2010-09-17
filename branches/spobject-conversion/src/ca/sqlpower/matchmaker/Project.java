@@ -125,14 +125,14 @@ public class Project extends AbstractMatchMakerObject {
      * Contains the Munge Processes and the Munge Steps
      */
     private MatchMakerFolder mungeProcessesFolder =
-    	new MatchMakerFolder(MungeProcess.class);
+    	new MatchMakerFolder();
     
     /** 
      * Container for the TableMergeRules 
      * We have these folders so that we don't have to deal with multiple child types
      */ 
     private MatchMakerFolder tableMergeRulesFolder =
-    	new MatchMakerFolder(TableMergeRules.class);
+    	new MatchMakerFolder();
     
     /**
      * Cached source table 
@@ -572,7 +572,7 @@ public class Project extends AbstractMatchMakerObject {
 		if (mungeSettings==null) throw new NullPointerException("You should not try to set the settings to null");
 		MungeSettings oldValue = this.mungeSettings;
 		this.mungeSettings = mungeSettings;
-		getEventSupport().firePropertyChange("mungeSettings", oldValue,
+		firePropertyChange("mungeSettings", oldValue,
 				this.mungeSettings);
 	}
 
@@ -583,8 +583,7 @@ public class Project extends AbstractMatchMakerObject {
 	public void setMergeSettings(MergeSettings mergeSettings) {
 		MergeSettings oldValue = this.mergeSettings;
 		this.mergeSettings = mergeSettings;
-		getEventSupport().firePropertyChange("mergeSettings", oldValue,
-				this.mergeSettings);
+		firePropertyChange("mergeSettings", oldValue, this.mergeSettings);
 	}
 
 	public ProjectMode getType() {
@@ -597,7 +596,7 @@ public class Project extends AbstractMatchMakerObject {
 		if (type == ProjectMode.CLEANSE || type == ProjectMode.ADDRESS_CORRECTION) {
 			getTableMergeRulesFolder().setVisible(false);
 		}
-		getEventSupport().firePropertyChange("type", oldValue, this.type);
+		firePropertyChange("type", oldValue, this.type);
 	}
 
 	public ViewSpec getView() {
@@ -607,7 +606,7 @@ public class Project extends AbstractMatchMakerObject {
 	public void setView(ViewSpec view) {
 		ViewSpec oldValue = this.view;
 		this.view = view;
-		getEventSupport().firePropertyChange("view", oldValue, this.view);
+		firePropertyChange("view", oldValue, this.view);
 	}
 
 

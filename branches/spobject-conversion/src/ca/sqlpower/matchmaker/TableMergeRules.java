@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -27,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -40,7 +42,12 @@ import ca.sqlpower.sqlobject.SQLTable;
  */
 public class TableMergeRules
 	extends AbstractMatchMakerObject {
-
+	
+    public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.<Class<? extends SPObject>>singletonList(ColumnMergeRules.class);
+    
+    private List<ColumnMergeRules> children = new ArrayList<ColumnMergeRules>();
+	
 	private static final Logger logger = Logger.getLogger(TableMergeRules.class);
 	/**
      * An enumeration of all possible types of actions that can be
@@ -232,7 +239,7 @@ public class TableMergeRules
 			throw new SQLObjectRuntimeException(e);
 		}
 
-		for (ColumnMergeRules c : getChildren()) {
+		for (ColumnMergeRules c : (List<ColumnMergeRules>)getChildren()) {
 			ColumnMergeRules newColumnMergeRules = c.duplicate(newMergeStrategy,session);
 			newMergeStrategy.addChild(newColumnMergeRules);
 		}
@@ -360,7 +367,7 @@ public class TableMergeRules
 		if (this.parentMergeRule == parentTable) return;
 		TableMergeRules oldValue = this.parentMergeRule;
 		this.parentMergeRule = parentTable;
-		getEventSupport().firePropertyChange("parentMergeRule", oldValue, this.parentMergeRule);
+		firePropertyChange("parentMergeRule", oldValue, this.parentMergeRule);
 	}
 	
 	public void setParentMergeRuleAndImportedKeys(TableMergeRules parentTable) {
@@ -400,11 +407,36 @@ public class TableMergeRules
 	public ChildMergeActionType getChildMergeAction() {
 		return childMergeAction;
 	}
+	
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+	
+	public List<ColumnMergeRules> getChildren() {
+		return children;
+	}
+	
+	public void addChild(ColumnMergeRules cmr) {
+		addChildImpl(cmr, children.size());
+	}
+	
+	protected void addChildImpl(SPObject cmr, int index) {
+		children.add(index, (ColumnMergeRules)cmr);
+		fireChildAdded(ColumnMergeRules.class, cmr, index);
+	}
+	
+	protected boolean removeChildImpl(SPObject spo) {
+		int index = children.indexOf(spo);
+		boolean removed = children.remove(spo);
+		spo.setParent(null);
+		fireChildRemoved(ColumnMergeRules.class, spo, index);
+		return removed;
+	}
 
 	public void setChildMergeAction(ChildMergeActionType childMergeAction) {
 		ChildMergeActionType oldValue = this.childMergeAction;
 		this.childMergeAction = childMergeAction;
-		getEventSupport().firePropertyChange("childMergeAction", oldValue, this.childMergeAction);
+		firePropertyChange("childMergeAction", oldValue, this.childMergeAction);
 	}
 
 	/**

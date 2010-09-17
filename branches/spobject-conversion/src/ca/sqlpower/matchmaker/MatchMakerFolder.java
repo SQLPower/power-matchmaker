@@ -20,10 +20,14 @@
 package ca.sqlpower.matchmaker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
 
 /**
@@ -33,30 +37,48 @@ import ca.sqlpower.object.SPObject;
  * child for each type of child it needs, and each folder will hold the
  * children of that type.
  */
-public class MatchMakerFolder
-	extends AbstractMatchMakerObject {
+public class MatchMakerFolder extends AbstractMatchMakerObject {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerFolder.class);
 	
+	/* TODO: check out what children type this is allowed to have.
+	 * Defines an absolute ordering of the child types of this class.
+	 *
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList()));
+	 *
+	 * Attempt to compile a list:
+	 *
+	 * MungeProcess.class
+	 * TableMergeRules.class
+	 *
+	 */
+	
     private String folderDesc;
+    
+    private List<? extends MatchMakerObject> children;
     
     /**
      * The class of child objects held by this folder.
      */
-    private final Class<?> childClass;
     
-	public MatchMakerFolder(Class<?> childClass) {
-		this.childClass = childClass;
+	public MatchMakerFolder() {
 	}
 
 	public String getFolderDesc() {
 		return folderDesc;
 	}
 	
+	public List<? extends MatchMakerObject> getChildren() {
+		return children;
+	}
+	
 	public void setFolderDesc(String folderDesc) {
 		String oldValue = this.folderDesc;
 		this.folderDesc = folderDesc;
-		getEventSupport().firePropertyChange("folderDesc", oldValue, folderDesc);
+		firePropertyChange("folderDesc", oldValue, folderDesc);
 	}
 
 	@Override
@@ -110,31 +132,37 @@ public class MatchMakerFolder
 	 *            True if this addChild call is part of a compound event. False
 	 *            if it is not.
 	 */
-	public final void addChild(int index, MatchMakerObject child, boolean isCompound) {
-        addImpl(index, child, isCompound);
+	public final void addChild(int index, MatchMakerObject child) {
+        addImpl(index, child);
 	}
 	
-	protected void addImpl(int index, MatchMakerObject child, boolean isCompound) {
+	protected void addImpl(int index, MatchMakerObject child) {
 		logger.debug("addChild: children collection is a "+getChildren().getClass().getName());
-        if(child== null) throw new NullPointerException("Cannot add a null child");
-		getChildren().add(index, child);
+        if(child == null) {
+        	throw new NullPointerException("Cannot add a null child");
+        }
+		children.add(index, child);
 		child.setParent(this);
-		List<MatchMakerObject> insertedChildren = new ArrayList<MatchMakerObject>();
-		insertedChildren.add(child);
-		getEventSupport().fireChildrenInserted("children", new int[] {index}, insertedChildren, isCompound);
+		fireChildrenInserted(child.class, child, index);
 	}
 	
 	@Override
 	public void moveChild(int from, int to) {
 		if (to == from) return;
 		List<? extends MatchMakerObject> l = getChildren();
-		MatchMakerObject child = l.get(from);
+		MatchMakerObject child = (MatchMakerObject)l.get(from);
 		try {
-			startCompoundEdit();
-			removeChild(l.get(from));
-			addChild(to, child, true);
-		} finally {
-			endCompoundEdit();
+			begin("Moving Child");
+			try {
+				removeChild(l.get(from));
+			} catch(ObjectDependentException e) {
+				throw new RuntimeException();
+			}
+			addChild(child, to);
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
 		}
 	}
 }
