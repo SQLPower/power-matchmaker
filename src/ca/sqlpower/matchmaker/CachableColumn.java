@@ -110,6 +110,6 @@ public abstract class CachableColumn {
         SQLColumn oldVal = this.cachedColumn;
         this.cachedColumn = column;
         this.columnName = (column == null ? null : column.getName());
-        eventSource.getEventSupport().firePropertyChange(property, oldVal, column);
+        eventSource.firePropertyChange(property, oldVal, column);
     }
 }

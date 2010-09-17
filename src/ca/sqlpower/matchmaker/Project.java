@@ -194,10 +194,6 @@ public class Project extends AbstractMatchMakerObject {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
 	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
-		mungeProcessesFolder.setName(MUNGE_PROCESSES_FOLDER_NAME);
-        this.addChild(mungeProcessesFolder);
-		tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
-        this.addChild(tableMergeRulesFolder);
         
         setType(ProjectMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");

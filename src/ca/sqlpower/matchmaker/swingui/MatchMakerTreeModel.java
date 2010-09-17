@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,18 +35,18 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.AbstractSPListener;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPObject;
 
 /**
  * A tree model implementation that adapts a hierarchy of MatchMakerObjects
@@ -56,38 +57,6 @@ import ca.sqlpower.object.AbstractSPListener;
 public class MatchMakerTreeModel implements TreeModel {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerTreeModel.class);
-
-    /**
-     * A very simple MatchMakerObject implementation for the tree's root node object.
-     * Its children will be FolderParent objects, which are the "Current Project"
-     * and "Backup Project" folders, which are in turn parents to the PLFolders
-     * (hence, FolderParent).
-     */
-    private static class MMRootNode  
-    	extends AbstractMatchMakerObject {
-
-        public MMRootNode() {
-            setName("Root Node");
-        }
-
-        public boolean isRoot() {
-            return true;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return this == obj;
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(this);
-        }
-
-        public MMRootNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
-            throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
-        }
-    }
 
     /**
      * All the types of actions associated with each project in the tree.
@@ -149,59 +118,6 @@ public class MatchMakerTreeModel implements TreeModel {
         @Override
         public String toString() {
             return name;
-        }
-    }
-    
-    /**
-     * A simple MatchMakerObject that holds a single Swing Action.  We create
-     * these as extra children for the Project objects in the tree so the entire
-     * project workflow is represented in one place, with pretty pictures and
-     * everything.
-     */
-    public class ProjectActionNode extends AbstractMatchMakerObject {
-
-        private final ProjectActionType projectActionType;
-        private final Project project;
-        
-        public ProjectActionNode(ProjectActionType projectActionType, Project project) {
-            this.projectActionType = projectActionType;
-            this.project = project;
-            setName(projectActionType.toString());
-        }
-
-        public boolean isRoot() {
-            return false;
-        }
-        
-        @Override
-        public boolean allowsChildren() {
-            return false;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return this == obj;
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(this);
-        }
-
-        public Project duplicate(MatchMakerObject parent, MatchMakerSession session) {
-            throw new UnsupportedOperationException("A ProjectActionNode cannot be duplicated");
-        }
-        
-        public ProjectActionType getActionType() {
-            return projectActionType;
-        }
-        
-        public Project getProject() {
-        	return project;
-        }
-        
-        public Project getParent() {
-        	return project;
         }
     }
     
