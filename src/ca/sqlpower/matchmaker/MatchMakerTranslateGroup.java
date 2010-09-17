@@ -35,8 +35,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
     /**
      * Object identifier. Required for the persistence layer.
      */
-    @SuppressWarnings("unused")
-	private Long oid;
+    private Long oid;
     
     /**
      * Returns this translate group's peristent Object Identifier.  This get method

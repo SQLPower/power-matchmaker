@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
 import ca.sqlpower.object.AbstractSPObject;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
@@ -42,10 +41,6 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	 {
 
     private static final Logger logger = Logger.getLogger(AbstractMatchMakerObject.class);
-
-    @SuppressWarnings("unchecked")
-	private MatchMakerEventSupport eventSupport =
-		new MatchMakerEventSupport(this);
     
     private String lastUpdateAppUser;
 	private String lastUpdateOsUser;

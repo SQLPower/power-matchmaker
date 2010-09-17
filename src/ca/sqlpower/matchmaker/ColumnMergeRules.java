@@ -37,7 +37,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	/**
 	 * Defines an absolute ordering of the child types of this class.
 	 */
-	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.emptyList();
 
