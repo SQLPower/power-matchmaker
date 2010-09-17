@@ -36,7 +36,6 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	/**
 	 * Defines an absolute ordering of the child types of this class.
 	 */
-	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.emptyList();
 	
@@ -74,7 +73,8 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
      * @return true if <tt>tg</tt> exists in the folder hierarchy; false if it doesn't.
      */
     public boolean isInUseInBusinessModel(MatchMakerTranslateGroup tg) {
-        for (MatchMakerObject mmo : (List<? extends MatchMakerObject>)session.getCurrentFolderParent().getChildren()){
+        for (SPObject spo : session.getCurrentFolderParent().getChildren()) {
+        	MatchMakerObject mmo = (MatchMakerObject)spo;
             if (checkMMOContainsTranslateGroup(mmo,tg)) {
             	return true;
             }
@@ -106,7 +106,8 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
                 if (checkMMOContainsTranslateGroup((MatchMakerObject)critGroup, tg)) return true;
             }
         } else {
-            for (MatchMakerObject child : (List<? extends MatchMakerObject>)mmo.getChildren()){
+            for (SPObject spo : mmo.getChildren()) {
+            	MatchMakerObject child = (MatchMakerObject) spo;
                 if (checkMMOContainsTranslateGroup(child, tg)) return true;
             }
         }
