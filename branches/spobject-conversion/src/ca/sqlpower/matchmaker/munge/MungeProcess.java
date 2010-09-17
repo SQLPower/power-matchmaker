@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -264,7 +265,8 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());
 		
-		for (MungeStep step : (List<MungeStep>)getChildren()) {
+		for (SPObject spo : getChildren()) {
+			MungeStep step = (MungeStep) spo;
             MungeStep newStep = (MungeStep) step.duplicate(mungeProcess,s);
 			mungeProcess.addChild(newStep);
 		}
@@ -291,19 +293,15 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	}
 
 	public void addChild(SPObject spo) {
-		if (!allowsChildType(spo.getClass())) {
-			throw new IllegalArgumentException(spo.getClass() + " is not a valid child type of " + this.getClass());
-		}
-		
-		spo.setParent(this);
-		
+		int size = -1;
 		if(spo instanceof AddressCorrectionMungeStep) {
-			addChildImpl((AddressCorrectionMungeStep)spo, addressCorrectionMungeSteps.size());
+			size = addressCorrectionMungeSteps.size();
 		} else if (spo instanceof MungeResultStep) {
-			addMungeResultStep((MungeResultStep)spo, mungeResultSteps.size());
+			size = mungeResultSteps.size();
 		} else {
-			addSQLInputStep((SQLInputStep)spo, sqlInputSteps.size());
+			size = sqlInputSteps.size();
 		}
+		addChild(spo, size);
 	}
 	
 	@Override
@@ -334,8 +332,36 @@ public class MungeProcess extends AbstractMatchMakerObject {
 
 	@Override
 	protected boolean removeChildImpl(SPObject spo) {
-		//TODO: stuff
-		return false;
+		boolean removed;
+		if(spo instanceof AddressCorrectionMungeStep) {
+			removed = removeAddressCorrectionMungeStep((AddressCorrectionMungeStep)spo);
+		} else if (spo instanceof MungeResultStep) {
+			removed = removeMungeResultStep((MungeResultStep)spo);
+		} else {
+			removed = removeSQLInputStep((SQLInputStep)spo);
+		}
+		return removed;
+	}
+
+	private boolean removeSQLInputStep(SQLInputStep spo) {
+		int index = sqlInputSteps.indexOf(spo);
+		boolean removed = sqlInputSteps.remove(spo);
+		fireChildRemoved(SQLInputStep.class, spo, index);
+		return removed;
+	}
+
+	private boolean removeMungeResultStep(MungeResultStep spo) {
+		int index = mungeResultSteps.indexOf(spo);
+		boolean removed = mungeResultSteps.remove(spo);
+		fireChildRemoved(MungeResultStep.class, spo, index);
+		return removed;
+	}
+
+	public boolean removeAddressCorrectionMungeStep(AddressCorrectionMungeStep spo) {
+		int index = addressCorrectionMungeSteps.indexOf(spo);
+		boolean removed = addressCorrectionMungeSteps.remove(spo);
+		fireChildRemoved(AddressCorrectionMungeStep.class, spo, index);
+		return removed;
 	}
 	
 	/**
@@ -349,7 +375,8 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			if (resultStep != null) {
 				resultStep.addInputStep((SQLInputStep) child);
 			}
-			for (MungeStep step : (List<MungeStep>)getChildren()) {
+			for (SPObject spo : getChildren()) {
+				MungeStep step = (MungeStep) spo;
 				if (child instanceof AddressCorrectionMungeStep) {
 					((AddressCorrectionMungeStep)step).setInputStep(child);
 				}
@@ -383,8 +410,10 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			}
 			
 			//disconnect outputs
-			for (MungeStepOutput mso : (List<MungeStepOutput>)ms.getChildren()) {
-				for (MungeStep child : (List<MungeStep>)getChildren()) {
+			for (SPObject spo : ms.getChildren()) {
+				MungeStepOutput mso = (MungeStepOutput) spo;
+				for (SPObject spo2 : getChildren()) {
+					MungeStep child = (MungeStep) spo2;
 					child.disconnectInput(mso);
 				}
 			}
