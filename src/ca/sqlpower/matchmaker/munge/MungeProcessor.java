@@ -108,13 +108,13 @@ public class MungeProcessor extends AbstractProcessor {
             
             // Normal termination! Ask all steps to commit.
             for (MungeStep step : processOrder) {
-                step.commit();
+                step.mungeCommit();
             }
             
         } catch (Throwable t) {
             for (MungeStep step : processOrder) {
                 try {
-                    step.rollback();
+                    step.mungeRollback();
                 } catch (Throwable tt) {
                     engineLogger.warn(
                             "Failed to rollback a step. Proceeding with rollback," +
@@ -130,7 +130,7 @@ public class MungeProcessor extends AbstractProcessor {
 			// close everything
 			for (MungeStep step: processOrder) {
 				try {
-					step.close();
+					step.mungeClose();
 				} catch (Exception ex) {
 					engineLogger.error("Close failed; squishing exception in order" +
 							" not to obscure any earlier exceptions.", ex);

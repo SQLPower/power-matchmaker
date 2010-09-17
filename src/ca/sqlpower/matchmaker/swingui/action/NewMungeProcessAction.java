@@ -122,8 +122,8 @@ public class NewMungeProcessAction extends AbstractAction {
 			try {
 				mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
 				mungeResultStep.open(logger);
-                mungeResultStep.rollback();
-				mungeResultStep.close();
+                mungeResultStep.mungeRollback();
+				mungeResultStep.mungeClose();
 			} catch (Exception ex) {
 				throw new RuntimeException("Could not set up the cleanse result munge step!", ex);
 			}

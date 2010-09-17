@@ -39,8 +39,8 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
  *
  * @param <T> The type of data this output holds.
  */
-public class MungeStepOutput extends AbstractMatchMakerObject
-								implements Comparable {
+public class MungeStepOutput extends AbstractMatchMakerObject 
+								implements Comparable<MungeStepOutput> {
 
 	private static final Logger logger = Logger.getLogger(MungeStepOutput.class);
 	
@@ -57,13 +57,13 @@ public class MungeStepOutput extends AbstractMatchMakerObject
 	 * This is a bound property. This object will fire a MatchMakerObject property
 	 * change event when this property is updated.
 	 */
-	private Class<T> type;
+	private Class<? extends MatchMakerObject> type;
 	
 	/**
 	 * The current data value of this step.  This will change with every call to the
 	 * parent step at run time.
 	 */
-	private T data;
+	private MatchMakerObject data;
 	
 	/**
 	 * Default Constructor used by hibernate
@@ -75,7 +75,7 @@ public class MungeStepOutput extends AbstractMatchMakerObject
 	 * Creates a new MungeStepOutput with the given initial name (can be changed
 	 * later) and type (permanently fixed at the given value).
 	 */
-	public MungeStepOutput(String name, Class<T> type) {
+	public MungeStepOutput(String name, Class<? extends MatchMakerObject> type) {
 		setName(name);
 		this.type = type;
 	}
@@ -83,14 +83,14 @@ public class MungeStepOutput extends AbstractMatchMakerObject
 	/**
 	 * Returns the data type that this output holds.
 	 */
-	public Class<T> getType() {
+	public Class<? extends MatchMakerObject> getType() {
 		return type;
 	}
 
 	/**
 	 * Returns the current data in this output.
 	 */
-	public T getData() {
+	public MatchMakerObject getData() {
 		return data;
 	}
 
@@ -98,7 +98,7 @@ public class MungeStepOutput extends AbstractMatchMakerObject
 	 * Sets the 
 	 * @param data
 	 */
-	public void setData(T data) {
+	public void setData(MatchMakerObject data) {
 		this.data = data;
 	}
 
@@ -129,7 +129,7 @@ public class MungeStepOutput extends AbstractMatchMakerObject
 	/**
 	 * Not implemented because we're pretty sure we don't want a duplicate system like this.
 	 */
-	public MungeStepOutput<T> duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public MungeStepOutput duplicate(MatchMakerObject parent, MatchMakerSession session) {
 		throw new UnsupportedOperationException("Duplicate is not supported");
 	}
 	
@@ -138,7 +138,7 @@ public class MungeStepOutput extends AbstractMatchMakerObject
 		return false;
 	}
 
-	public int compareTo(MungeStepOutput<T> o) {
+	public int compareTo(MungeStepOutput o) {
 		if (!type.equals(o.getType())) {
 			throw new IllegalStateException("Cannot compare two MungeStepOutputs " +
 					"that have different data types: " + type + " and " + o.getType());
@@ -181,7 +181,7 @@ public class MungeStepOutput extends AbstractMatchMakerObject
 		return "<" + getName() + ": " + getData() + ">";
 	}
 
-	public void setType(Class<T> type) {
+	public void setType(Class<? extends MatchMakerObject> type) {
 		this.type = type;
 	}
 }

@@ -109,7 +109,7 @@ public class AbstractMungeStepTest extends TestCase {
     
     public void testRollbackBeforeOpen() throws Exception {
         try {
-            mungeStep.rollback();
+            mungeStep.mungeRollback();
             fail("Rollback should fail when step not open");
         } catch (IllegalStateException ex) {
             // expected
@@ -127,7 +127,7 @@ public class AbstractMungeStepTest extends TestCase {
     
     public void testRollback() throws Exception {
         mungeStep.open(Logger.getLogger(getClass()));
-        mungeStep.rollback();
+        mungeStep.mungeRollback();
         assertTrue(mungeStep.isRolledBack());
     }
     
@@ -149,7 +149,7 @@ public class AbstractMungeStepTest extends TestCase {
     public void testReopenAfterCommit() throws Exception {
         mungeStep.open(Logger.getLogger(getClass()));
         mungeStep.commit();
-        mungeStep.close();
+        mungeStep.mungeClose();
         assertTrue(mungeStep.isCommitted());
         assertFalse(mungeStep.isRolledBack());
         mungeStep.open(Logger.getLogger(getClass()));
@@ -170,7 +170,7 @@ public class AbstractMungeStepTest extends TestCase {
     public void testCloseBeforeCommitOrRollback() throws Exception {
         mungeStep.open(Logger.getLogger(getClass()));
         try {
-            mungeStep.close();
+            mungeStep.mungeClose();
             fail("Step should not close without commit or rollback");
         } catch (IllegalStateException ex) {
             // expected
@@ -179,7 +179,7 @@ public class AbstractMungeStepTest extends TestCase {
 
     public void testCloseBeforeOpen() throws Exception {
         try {
-            mungeStep.close();
+            mungeStep.mungeClose();
             fail("Step should not close before opening");
         } catch (IllegalStateException ex) {
             // expected
@@ -189,7 +189,7 @@ public class AbstractMungeStepTest extends TestCase {
     public void testCallAfterRollback() throws Exception {
         mungeStep.open(Logger.getLogger(getClass()));
         mungeStep.call();
-        mungeStep.rollback();
+        mungeStep.mungeRollback();
         assertTrue(mungeStep.isRolledBack());
         try {
             mungeStep.call();

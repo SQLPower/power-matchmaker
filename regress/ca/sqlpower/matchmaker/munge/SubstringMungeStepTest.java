@@ -66,7 +66,7 @@ public class SubstringMungeStepTest extends TestCase {
 		String result = (String)output.getData();
 		assertEquals("ABCabc", result);
         step.commit();
-        step.close();
+        step.mungeClose();
 		
 		step.setParameter(step.BEGIN_PARAMETER_NAME, 90);
 		step.setParameter(step.END_PARAMETER_NAME, 100);

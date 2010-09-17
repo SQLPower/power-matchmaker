@@ -224,13 +224,13 @@ public class MungePreviewer extends MungeProcessor {
 			
 			for (MungeStep step : processOrder) {
 				try {
-					step.rollback();
+					step.mungeRollback();
 				} catch (Exception e) {
 					logger.error("Exception while rolling back step " + step.getName() + ". " +
 							"Exception was " + e.getMessage());
 				}
 				try {
-					step.close();
+					step.mungeClose();
 				} catch (Exception e) {
 					logger.error("Closing step " + step.getName() + " caused an exception in a finally clause!" +
 							" Exception was: " + e.getMessage());

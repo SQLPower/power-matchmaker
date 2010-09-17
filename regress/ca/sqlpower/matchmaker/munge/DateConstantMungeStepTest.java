@@ -53,8 +53,8 @@ public class DateConstantMungeStepTest extends AbstractMungeStepTest {
     	step.open(logger);
     	step.call();
     	Date out = (Date) step.getOut().getData();
-    	step.rollback();
-    	step.close();
+    	step.mungeRollback();
+    	step.mungeClose();
     	return out;
     }
     

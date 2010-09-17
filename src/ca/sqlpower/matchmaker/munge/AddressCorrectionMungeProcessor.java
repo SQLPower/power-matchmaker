@@ -127,11 +127,11 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 			
 			if (settings.getDebug()) {
 				for (MungeStep step: processOrder) {
-					step.rollback();
+					step.mungeRollback();
 				}
 			} else {
 				for (MungeStep step: processOrder) {
-					step.commit();
+					step.mungeCommit();
 				}
 			}
 		} catch (Throwable t) {
@@ -150,7 +150,7 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 		} finally {
 			for (MungeStep step: processOrder) {
 				try {
-					step.close();
+					step.mungeClose();
 				} catch (Exception e) {
 					getLogger().error("Exception thrown while attempting to close step " + step.getName(), e);
 				}

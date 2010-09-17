@@ -92,8 +92,8 @@ public class SQLInputStepTest extends TestCase {
         } catch (IllegalStateException ex) {
             // good
         }
-        step.rollback();
-        step.close();
+        step.mungeRollback();
+        step.mungeClose();
     }
     
     public void testNoCallWhenNotYetOpen() throws Exception {
@@ -108,7 +108,7 @@ public class SQLInputStepTest extends TestCase {
     public void testNoCallAfterClose() throws Exception {
         try {
             step.open(logger);
-            step.close();
+            step.mungeClose();
             step.call();
             fail("call() succeeded after the step was closed");
         } catch (IllegalStateException ex) {
@@ -123,7 +123,7 @@ public class SQLInputStepTest extends TestCase {
         assertTrue(step.call());
         assertFalse(step.call());
         step.commit();
-        step.close();
+        step.mungeClose();
     }
     
     public void testOutputsNullAtFirst() throws Exception {
@@ -132,7 +132,7 @@ public class SQLInputStepTest extends TestCase {
         assertNull(step.getChildren().get(1).getData());
         assertNull(step.getChildren().get(2).getData());
         step.commit();
-        step.close();
+        step.mungeClose();
     }
 
     public void testOutputsNullAfterEnd() throws Exception {
@@ -142,7 +142,7 @@ public class SQLInputStepTest extends TestCase {
         assertNull(step.getChildren().get(1).getData());
         assertNull(step.getChildren().get(2).getData());
         step.commit();
-        step.close();
+        step.mungeClose();
     }
 
     public void testOutputsTrackResults() throws Exception {
@@ -163,6 +163,6 @@ public class SQLInputStepTest extends TestCase {
         assertEquals(new Date(5678),       step.getChildren().get(2).getData());
         
         step.commit();
-        step.close();
+        step.mungeClose();
     }
 }
