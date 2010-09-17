@@ -57,7 +57,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.EngineEvent;
 import ca.sqlpower.matchmaker.EngineListener;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
@@ -93,7 +92,7 @@ import com.sleepycat.je.DatabaseException;
  * A panel that provides a GUI for setting the parameters for running the MatchMakerEngine,
  * as well as running the MatchMakerEngine itself and displaying its output on the GUI.
  */
-public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<Project, MatchMakerFolder> {
+public class EngineSettingsPanel implements DataEntryPanel {
 
 	private static final String ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS = 
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
@@ -781,24 +780,6 @@ public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<P
 
 	public void discardChanges() {
 		logger.error("Cannot discard changes");
-	}
-
-	public void mmPropertyChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
-		if (evt.getPropertyName().equals("engineRunning")) {
-			refreshRunActionStatus();
-		}
-	}
-
-	public void mmChildrenInserted(MatchMakerEvent<Project, MatchMakerFolder> evt) {
-		// do nothing
-	}
-
-	public void mmChildrenRemoved(MatchMakerEvent<Project, MatchMakerFolder> evt) {
-		// do nothing
-	}
-
-	public void mmStructureChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
-		// do nothing		
 	}
 
 	/**

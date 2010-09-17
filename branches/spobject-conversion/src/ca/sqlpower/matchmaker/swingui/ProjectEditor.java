@@ -83,7 +83,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * The MatchEditor is the GUI for editing all aspects of a {@link Project} instance.
  */
-public class ProjectEditor implements MatchMakerEditorPane<Project> {
+public class ProjectEditor implements MatchMakerEditorPane {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 
@@ -119,7 +119,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
      * create a new ProjectEditor.
      */
 	private final Project project;
-	private final PlFolder<Project> folder;
+	private final PlFolder folder;
 	private FormValidationHandler handler;
 
 	
@@ -131,7 +131,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * @param project the project Object to be edited
 	 * @param folder the project's parent folder
 	 */
-    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder, Action cancelAction) throws SQLObjectException {
+    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder folder, Action cancelAction) throws SQLObjectException {
         if (project == null) throw new IllegalArgumentException("You can't edit a null project");
         if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
         
@@ -380,7 +380,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			row+=2;
 		}
 		
-        final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
+        final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren(PlFolder.class);
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
         folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
 
@@ -633,7 +633,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 						cmr.setActionType(MergeActionType.NA);
 					}
 				}
-				project.getTableMergeRulesFolder().addChild(mergeRule);
+				project.addChild(mergeRule);
         	}
         } else {
         	if (project.getType() == ProjectMode.FIND_DUPES) {

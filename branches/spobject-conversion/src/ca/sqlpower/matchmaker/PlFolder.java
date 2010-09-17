@@ -19,7 +19,12 @@
 
 package ca.sqlpower.matchmaker;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
 
 /**
  * A container class desigend to hold match maker objects (for now),
@@ -32,9 +37,18 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 public class PlFolder extends AbstractMatchMakerObject {
 
 	/**
+	 * This the list that tells us the allowable child types and their order in getting children.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(Project.class)));
+	
+	private final List<Project> projects = new ArrayList<Project>();
+	
+	/**
 	 * The object id
 	 */
-	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
 	private Long oid;
 	
 	/**
@@ -136,13 +150,42 @@ public class PlFolder extends AbstractMatchMakerObject {
 		f.setParent(parent);
 		f.setVisible(isVisible());
 		f.setSession(session);
-		for (MatchMakerObject o: getChildren()){
-			f.addChild(o.duplicate(parent, session));
+		for (SPObject spo: getChildren()) {
+			Project pr = (Project)spo;
+			f.addChild(pr.duplicate(parent, session));
 		}
 		return f;
 	}
 
 	public Long getOid() {
 		return oid;
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.unmodifiableList(projects);
+	}
+	
+	public void addChild(SPObject spo) {
+		addChild(spo, projects.size());
+	}
+	
+	@Override
+	protected void addChildImpl(SPObject spo, int index) {
+		projects.add(index,(Project)spo);
+		fireChildAdded(Project.class, spo, index);
+	}
+	
+	@Override
+	protected boolean removeChildImpl(SPObject spo) {
+		int index = projects.indexOf(spo);
+		boolean removed = projects.remove(spo);
+		fireChildRemoved(Project.class, spo, index);
+		return removed;
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

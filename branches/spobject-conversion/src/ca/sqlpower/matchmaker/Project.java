@@ -136,19 +136,6 @@ public class Project extends AbstractMatchMakerObject {
     public static final String MUNGE_PROCESSES_FOLDER_NAME = "Transformations";
     
     /**
-     * Contains the Munge Processes and the Munge Steps
-     */
-    private MatchMakerFolder mungeProcessesFolder =
-    	new MatchMakerFolder();
-    
-    /** 
-     * Container for the TableMergeRules 
-     * We have these folders so that we don't have to deal with multiple child types
-     */ 
-    private MatchMakerFolder tableMergeRulesFolder =
-    	new MatchMakerFolder();
-    
-    /**
      * Cached source table 
      */
     private final CachableTable sourceTablePropertiesDelegate;

@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.event.TableModelEvent;
 
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -41,7 +40,7 @@ import ca.sqlpower.sqlobject.SQLTable;
  * 		<dt>merge action  <dd> table merge rule merge action in a combo box
  * </dl>
  */
-public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<MatchMakerFolder<TableMergeRules>, TableMergeRules> {
+public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel, TableMergeRules> {
 
 	public MergeTableRuleTableModel(Project project) {
 		super(project.getTableMergeRulesFolder());

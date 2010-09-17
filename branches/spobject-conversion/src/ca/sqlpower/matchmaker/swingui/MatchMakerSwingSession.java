@@ -77,7 +77,6 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -1023,10 +1022,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public void save(MatchMakerObject mmo) {
 		if (mmo instanceof Project){
 			Project project = (Project)mmo;
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
-			dao.save(project);
-		} else if (mmo instanceof MatchMakerFolder){
-			Project project = (Project)mmo.getParent();
 			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof TableMergeRules) {
