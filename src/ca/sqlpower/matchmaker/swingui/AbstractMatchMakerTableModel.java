@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -36,11 +37,11 @@ public abstract class AbstractMatchMakerTableModel<T extends MatchMakerObject, C
 	
 	private static final Logger logger = Logger.getLogger(AbstractMatchMakerTableModel.class);
 
-	protected T mmo;
+	protected Project mmo;
 	private TableModelEventAdapter mmoListener = new TableModelEventAdapter();
 	
 	@SuppressWarnings("unchecked")
-	protected AbstractMatchMakerTableModel (T mmo) {
+	protected AbstractMatchMakerTableModel (Project mmo) {
 		this.mmo = mmo;
 		MatchMakerUtils.listenToShallowHierarchy(mmoListener, mmo);
 		logger.debug("Table Model initialized.");

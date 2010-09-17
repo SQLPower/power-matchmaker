@@ -19,6 +19,14 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
+
 
 /** 
  * A holder for folders.
@@ -27,13 +35,39 @@ package ca.sqlpower.matchmaker;
  * sync with the folder parent. 
  */
 public class FolderParent extends AbstractMatchMakerObject {
-    /**
-     * 
-     */
+	
+	/**
+	 * This the list that tells us the allowable child types and their order in getting children.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(PlFolder.class)));
+    
+    List<PlFolder> plFolders = new ArrayList<PlFolder>();
+    
     private final MatchMakerSession session;
 
     public FolderParent(MatchMakerSession session) {
         this.session = session;
+    }
+    
+    public void addChild(SPObject spo) {
+    	addChild(spo, plFolders.size());
+    }
+    
+    @Override
+    protected void addChildImpl(SPObject spo, int index) {
+    	plFolders.add(index, (PlFolder)spo);
+    	fireChildAdded(PlFolder.class, spo, index);
+    }
+    
+    @Override
+    protected boolean removeChildImpl(SPObject spo) {
+    	int index = plFolders.indexOf(spo);
+    	boolean removed = plFolders.remove(spo);
+    	fireChildRemoved(PlFolder.class, spo, index);
+    	return removed;
     }
     
     /**
@@ -42,7 +76,7 @@ public class FolderParent extends AbstractMatchMakerObject {
      */
     public void addNewChild(PlFolder child) {
         this.session.getDAO(PlFolder.class).save(child);
-        super.addChild(child);
+        addChild(child);
     }
 
     /**
@@ -50,12 +84,13 @@ public class FolderParent extends AbstractMatchMakerObject {
      */
     public void deleteAndRemoveChild(PlFolder child) {
     	this.session.getDAO(PlFolder.class).delete(child);
-		super.removeChild(child);
+		try {
+			removeChild(child);
+		} catch (ObjectDependentException e) {
+			throw new RuntimeException();
+		}
 	}
     
-    
-    
-
     @Override
     public boolean equals(Object obj) {
         return this==obj;
@@ -68,5 +103,15 @@ public class FolderParent extends AbstractMatchMakerObject {
 
 	public FolderParent duplicate(MatchMakerObject parent, MatchMakerSession session) {
 		throw new IllegalAccessError("Folder parent not duplicatable");
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.unmodifiableList(plFolders);
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }
