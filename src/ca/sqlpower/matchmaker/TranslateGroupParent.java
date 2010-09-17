@@ -19,17 +19,27 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+import java.util.List;
+
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
 
 
 /** 
  * A holder for translate groups
  */
 public class TranslateGroupParent extends AbstractMatchMakerObject {
-    /**
-     * 
-     */
+    
+	/**
+	 * Defines an absolute ordering of the child types of this class.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
+	
     private final MatchMakerSession session;
 
     public TranslateGroupParent(MatchMakerSession session) {
@@ -50,7 +60,11 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
         	throw new IllegalStateException("The translate group \""+child.getName()+"\" is in use and can't be deleted");
         }
         this.session.getDAO(MatchMakerTranslateGroup.class).delete(child);
-        super.removeChild(child);
+        try {
+        	super.removeChild(child);
+        } catch (ObjectDependentException e) {
+        	throw new RuntimeException("Object Dependency Exception");
+        }
     }
 
     /**
@@ -60,7 +74,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
      * @return true if <tt>tg</tt> exists in the folder hierarchy; false if it doesn't.
      */
     public boolean isInUseInBusinessModel(MatchMakerTranslateGroup tg) {
-        for (MatchMakerObject mmo : session.getCurrentFolderParent().getChildren()){
+        for (MatchMakerObject mmo : (List<? extends MatchMakerObject>)session.getCurrentFolderParent().getChildren()){
             if (checkMMOContainsTranslateGroup(mmo,tg)) {
             	return true;
             }
@@ -89,11 +103,10 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
         if (mmo instanceof Project) {
             Project projectChild = (Project) mmo;
             for (MungeProcess critGroup : projectChild.getMungeProcesses()) {
-                if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
+                if (checkMMOContainsTranslateGroup((MatchMakerObject)critGroup, tg)) return true;
             }
         } else {
-            for (int i = 0; i< mmo.getChildCount(); i++){
-                MatchMakerObject child = (MatchMakerObject) mmo.getChildren().get(i);
+            for (MatchMakerObject child : (List<? extends MatchMakerObject>)mmo.getChildren()){
                 if (checkMMOContainsTranslateGroup(child, tg)) return true;
             }
         }
@@ -113,5 +126,15 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 
 	public TranslateGroupParent duplicate(MatchMakerObject parent, MatchMakerSession session) {
 		throw new IllegalAccessError("Translate group not duplicatable");
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

@@ -29,8 +29,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *
  * <p>All setter methods in this class fire the appropriate events.
  */
-public class PlFolder
-	extends AbstractMatchMakerObject {
+public class PlFolder extends AbstractMatchMakerObject {
 
 	/**
 	 * The object id
@@ -79,7 +78,7 @@ public class PlFolder
 	public void setFolderDesc(String folderDesc) {
 		String oldValue = this.folderDesc;
 		this.folderDesc = folderDesc;
-		getEventSupport().firePropertyChange("folderDesc", oldValue, folderDesc);
+		firePropertyChange("folderDesc", oldValue, folderDesc);
 	}
 
 	public String getFolderStatus() {
@@ -89,7 +88,7 @@ public class PlFolder
 	public void setFolderStatus(String folderStatus) {
 		String oldValue = this.folderStatus;
 		this.folderStatus = folderStatus;
-		getEventSupport().firePropertyChange("folderStatus", oldValue, folderStatus);
+		firePropertyChange("folderStatus", oldValue, folderStatus);
 	}
 
 	public Long getLastBackupNo() {
@@ -99,7 +98,7 @@ public class PlFolder
 	public void setLastBackupNo(Long lastBackupNo) {
 		long oldValue = this.lastBackupNo;
 		this.lastBackupNo = lastBackupNo;
-		getEventSupport().firePropertyChange("lastBackupNo", oldValue, lastBackupNo);
+		firePropertyChange("lastBackupNo", oldValue, lastBackupNo);
 	}
 
 
