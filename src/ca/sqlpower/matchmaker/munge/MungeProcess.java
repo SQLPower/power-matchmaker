@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
@@ -29,14 +31,28 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.
  * {@link #matchPriority} can be NULL, and the constructor
  * sets it to NULL by default.
  */
-public class MungeProcess
-	extends AbstractMatchMakerObject<MungeProcess, MungeStep> {
+public class MungeProcess extends AbstractMatchMakerObject {
+	
+	/**
+	 * This the list that tells us the allowable child types and their order in getting children.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(AddressCorrectionMungeStep.class, MungeResultStep.class,
+						SQLInputStep.class)));
+	
+	protected List<AddressCorrectionMungeStep> addressCorrectionMungeSteps = new ArrayList<AddressCorrectionMungeStep>();
+	protected List<MungeResultStep> mungeResultSteps = new ArrayList<MungeResultStep>();
+	protected List<SQLInputStep> sqlInputSteps = new ArrayList<SQLInputStep>();
 	
 	/**
 	 * This is the name given to a rule set made by the Match Maker
@@ -149,7 +165,7 @@ public class MungeProcess
 	public void setDesc(String desc) {
 		String oldDesc = this.desc;
 		this.desc = desc;
-		getEventSupport().firePropertyChange("desc", oldDesc, desc);
+		firePropertyChange("desc", oldDesc, desc);
 	}
 
 	public Integer getMatchPriority() {
@@ -159,7 +175,7 @@ public class MungeProcess
 	public void setMatchPriority(Integer matchPriority) {
         Integer oldValue = this.matchPriority;
 		this.matchPriority = matchPriority;
-		getEventSupport().firePropertyChange("matchPriority", oldValue, matchPriority);
+		firePropertyChange("matchPriority", oldValue, matchPriority);
 	}
 
 	public boolean getActive() {
@@ -169,7 +185,7 @@ public class MungeProcess
 	public void setActive(boolean active) {
 		boolean oldValue = this.active;
 		this.active = active;
-		getEventSupport().firePropertyChange("active", oldValue, active);
+		firePropertyChange("active", oldValue, active);
 	}
 
 	public String getFilter() {
@@ -179,7 +195,7 @@ public class MungeProcess
 	public void setFilter(String filter) {
 		String oldValue = this.filter;
 		this.filter = filter;
-		getEventSupport().firePropertyChange("filter", oldValue, filter);
+		firePropertyChange("filter", oldValue, filter);
 	}
 	
 	/**
@@ -195,7 +211,7 @@ public class MungeProcess
 	public void setValidate(boolean validate) {
 		boolean oldValue = this.validate;
 		this.validate = validate;
-		getEventSupport().firePropertyChange("validate", oldValue, validate);
+		firePropertyChange("validate", oldValue, validate);
 	}
 
     public Color getColour() {
@@ -205,7 +221,7 @@ public class MungeProcess
     public void setColour(Color mungeProcessColor) {
         Color oldValue = this.colour;
         this.colour = mungeProcessColor;
-        getEventSupport().firePropertyChange("colour", oldValue, mungeProcessColor);
+        firePropertyChange("colour", oldValue, mungeProcessColor);
     }
     
 	@Override
@@ -248,8 +264,8 @@ public class MungeProcess
 		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());
 		
-		for (MungeStep step : getChildren()) {
-            MungeStep newStep = step.duplicate(mungeProcess,s);
+		for (MungeStep step : (List<MungeStep>)getChildren()) {
+            MungeStep newStep = (MungeStep) step.duplicate(mungeProcess,s);
 			mungeProcess.addChild(newStep);
 		}
 		
@@ -273,11 +289,53 @@ public class MungeProcess
 	public String toString() {
 		return getName();
 	}
+
+	public void addChild(SPObject spo) {
+		if (!allowsChildType(spo.getClass())) {
+			throw new IllegalArgumentException(spo.getClass() + " is not a valid child type of " + this.getClass());
+		}
+		
+		spo.setParent(this);
+		
+		if(spo instanceof AddressCorrectionMungeStep) {
+			addChildImpl((AddressCorrectionMungeStep)spo, addressCorrectionMungeSteps.size());
+		} else if (spo instanceof MungeResultStep) {
+			addMungeResultStep((MungeResultStep)spo, mungeResultSteps.size());
+		} else {
+			addSQLInputStep((SQLInputStep)spo, sqlInputSteps.size());
+		}
+	}
 	
 	@Override
-	protected void addImpl(int index, MungeStep child) {
-		includeMungeStep(child);
-		super.addImpl(index, child);
+	protected void addChildImpl(SPObject spo, int index) {
+		if(spo instanceof AddressCorrectionMungeStep) {
+			addAddressCorrectionMungeStep((AddressCorrectionMungeStep)spo, index);
+		} else if (spo instanceof MungeResultStep) {
+			addMungeResultStep((MungeResultStep)spo, index);
+		} else {
+			addSQLInputStep((SQLInputStep)spo, index);
+		}
+	}
+	
+	private void addSQLInputStep(SQLInputStep spo, int index) {
+		sqlInputSteps.add(index, spo);
+		fireChildAdded(SQLInputStep.class, spo, index);
+	}
+
+	private void addMungeResultStep(MungeResultStep spo, int index) {
+		mungeResultSteps.add(index, spo);
+		fireChildAdded(MungeResultStep.class, spo, index);
+	}
+
+	private void addAddressCorrectionMungeStep(AddressCorrectionMungeStep spo, int index) {
+		addressCorrectionMungeSteps.add(index, spo);
+		fireChildAdded(AddressCorrectionMungeStep.class, spo, index);
+	}
+
+	@Override
+	protected boolean removeChildImpl(SPObject spo) {
+		//TODO: stuff
+		return false;
 	}
 	
 	/**
@@ -291,7 +349,7 @@ public class MungeProcess
 			if (resultStep != null) {
 				resultStep.addInputStep((SQLInputStep) child);
 			}
-			for (MungeStep step: getChildren()) {
+			for (MungeStep step : (List<MungeStep>)getChildren()) {
 				if (child instanceof AddressCorrectionMungeStep) {
 					((AddressCorrectionMungeStep)step).setInputStep(child);
 				}
@@ -311,44 +369,39 @@ public class MungeProcess
 			}
 		}
 	}
-
-	@Override
-	public void removeChild(MungeStep child) {
-		if (child instanceof MungeResultStep) {
-			throw new IllegalStateException("Removal of result transformer is not allowed!");
-		} else {
-			super.removeChild(child);
-		}
-	}
 	
 	public void removeChildAndInputs(MungeStep ms) {
 		try {
-			startCompoundEdit();
+			begin("removing child and inputs");
 			
 			//disconnect inputs
 			for (int x = 0; x < ms.getMSOInputs().size(); x++) {
-				MungeStepOutput link = ms.getMSOInputs().get(x);
+				MungeStepOutput link = (MungeStepOutput) ms.getMSOInputs().get(x);
 				if (link != null) {
 					ms.disconnectInput(x);
 				}
 			}
 			
 			//disconnect outputs
-			for (MungeStepOutput mso : ms.getChildren()) {
-				for (MungeStep child : getChildren()) {
+			for (MungeStepOutput mso : (List<MungeStepOutput>)ms.getChildren()) {
+				for (MungeStep child : (List<MungeStep>)getChildren()) {
 					child.disconnectInput(mso);
 				}
 			}
 			
-			removeChild(ms);
-		} finally {
-			endCompoundEdit();
+			try{
+				removeChild(ms);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException();
+			}
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
 		}
 	}
 	
-	@Override
 	public void setChildren(List<MungeStep> children) {
-		super.setChildren(children);
 		for (MungeStep ms : children) {
 			includeMungeStep(ms);
 		}
@@ -356,5 +409,19 @@ public class MungeProcess
 	
 	MungeResultStep getResultStep() {
 		return resultStep;
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.addAll(addressCorrectionMungeSteps);
+		children.addAll(mungeResultSteps);
+		children.addAll(sqlInputSteps);
+		return Collections.unmodifiableList(children);
+	}
+	
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

@@ -141,8 +141,7 @@ public abstract class MatchMakerSettings extends
 	public void setAppendToLog(boolean appendToLog) {
 		boolean oldValue = this.appendToLog;
 		this.appendToLog = appendToLog;
-		getEventSupport().firePropertyChange("appendToLog", oldValue,
-				appendToLog);
+		firePropertyChange("appendToLog", oldValue, appendToLog);
 	}
 
 	public boolean getDebug() {
@@ -152,7 +151,7 @@ public abstract class MatchMakerSettings extends
 	public void setDebug(boolean debug) {
 		boolean oldValue = this.debug;
 		this.debug = debug;
-		getEventSupport().firePropertyChange("debug", oldValue, debug);
+		firePropertyChange("debug", oldValue, debug);
 	}
 
     /**
@@ -166,8 +165,7 @@ public abstract class MatchMakerSettings extends
 	public void setProcessCount(Integer processCount) {
 		Integer oldValue = this.processCount;
 		this.processCount = processCount;
-		getEventSupport().firePropertyChange("processCount", oldValue,
-				processCount);
+		firePropertyChange("processCount", oldValue, processCount);
 	}
 
 	public boolean getSendEmail() {
@@ -177,7 +175,7 @@ public abstract class MatchMakerSettings extends
 	public void setSendEmail(boolean sendEMail) {
 		boolean oldValue = this.sendEmail;
 		this.sendEmail = sendEMail;
-		getEventSupport().firePropertyChange("sendEmail", oldValue, sendEMail);
+		firePropertyChange("sendEmail", oldValue, sendEMail);
 	}
 
 	public File getLog() {
@@ -187,7 +185,7 @@ public abstract class MatchMakerSettings extends
 	public void setLog(File log) {
 		File oldValue = this.log;
 		this.log = log;
-		getEventSupport().firePropertyChange("log", oldValue, this.log);
+		firePropertyChange("log", oldValue, this.log);
 	}
 
 	public String getDescription() {
@@ -197,7 +195,7 @@ public abstract class MatchMakerSettings extends
 	public void setDescription(String description) {
 		String oldValue = this.description;
 		this.description = description;
-		getEventSupport().firePropertyChange("description", oldValue, this.description);
+		firePropertyChange("description", oldValue, this.description);
 	}
 
 	public Date getLastRunDate() {
@@ -212,7 +210,7 @@ public abstract class MatchMakerSettings extends
 	public void setLastRunDate(Date lastRunDate) {
 		Date oldValue = this.lastRunDate;
 		this.lastRunDate = lastRunDate == null ? null : new Date(lastRunDate.getTime());
-		getEventSupport().firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
+		firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
 	}
 
     @Override

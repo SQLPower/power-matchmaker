@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.object.SPObject;
 
 /**
@@ -29,22 +28,7 @@ import ca.sqlpower.object.SPObject;
  * @param C The type of children this implementation of MatchMakerObject contains
  */
 public interface MatchMakerObject extends Auditable, SPObject {
-
-	/**
-	 * Registers the given listener as a recipient of future MatchMakerEvents
-     * that this object generates.  Does not register the listener for any such
-     * events that this object's ancestors or descendants generate.  For that,
-     * see {@link MatchMakerUtils#listenToHierarchy(MatchMakerListener, MatchMakerObject)}.
-	 */
-	void addMatchMakerListener(MatchMakerListener l);
-
-	/**
-	 * De-registers the given listener as a recipient of future MatchMakerEvents
-     * that this object generates.  If the given listener was not in this object's
-     * listener list, calling this method has non effect.
-	 */
-	void removeMatchMakerListener(MatchMakerListener l);
-
+	
 	/**
 	 * copy the match maker object 
 	 */
@@ -95,4 +79,6 @@ public interface MatchMakerObject extends Auditable, SPObject {
 	 * see {@link AbstractMatchMakerObject#startCompoundEdit()} 
 	 */
 	void endCompoundEdit();
+
+	void moveChild(int from, int to);
 }

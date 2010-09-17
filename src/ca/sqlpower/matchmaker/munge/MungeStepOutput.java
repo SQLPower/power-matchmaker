@@ -39,8 +39,8 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
  *
  * @param <T> The type of data this output holds.
  */
-public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput, MatchMakerObject> 
-								implements Comparable<MungeStepOutput<T>> {
+public class MungeStepOutput extends AbstractMatchMakerObject
+								implements Comparable {
 
 	private static final Logger logger = Logger.getLogger(MungeStepOutput.class);
 	

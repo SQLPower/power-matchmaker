@@ -19,11 +19,17 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
-public class MatchMakerTranslateWord
-	extends AbstractMatchMakerObject {
+public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.emptyList();
+	
 	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
 	private Long oid;
 	private String from = "";
@@ -49,7 +55,7 @@ public class MatchMakerTranslateWord
 	public void setFrom(String from) {
 		String oldValue = this.from;
 		this.from = from;
-		getEventSupport().firePropertyChange("from", oldValue, this.from);
+		firePropertyChange("from", oldValue, this.from);
 	}
 
 	/**
@@ -69,17 +75,12 @@ public class MatchMakerTranslateWord
 	public void setTo(String to) {
 		String oldValue = this.to;
 		this.to = to;
-		getEventSupport().firePropertyChange("to", oldValue, this.to);
+		firePropertyChange("to", oldValue, this.to);
 	}
 
 	@Override
 	public String getName() {
 		return from + " \u2192 " + to;
-	}
-	
-	@Override
-	protected void addImpl(int index, MatchMakerObject child) {
-		throw new IllegalStateException("MatchMakerTranslateWord does not allow child!");
 	}
 	
     @Override
@@ -142,4 +143,14 @@ public class MatchMakerTranslateWord
     	w.setVisible(isVisible());
     	return w;
     }
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
 }

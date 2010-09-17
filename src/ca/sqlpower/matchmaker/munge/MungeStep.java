@@ -43,7 +43,7 @@ import ca.sqlpower.validation.ValidateResult;
  * as equivalent.  In terms of conforming data, a munge step might format a North
  * American telephone number or Canadian postal code.
  */
-public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<Boolean> {
+public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
 
 	public static final String MUNGECOMPONENT_X = "x";
 	public static final String MUNGECOMPONENT_Y = "y";

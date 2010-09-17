@@ -20,12 +20,13 @@
 package ca.sqlpower.matchmaker;
 
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.object.AbstractSPObject;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -124,28 +125,18 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	public Date getCreateDate() {
 		return createDate;
 	}
+	
+	public MatchMakerObject getParent() {
+		return (MatchMakerObject) super.getParent();
+	}
 
 
 	/////// Event stuff ///////
 
-	@Override
-	public void addMatchMakerListener(MatchMakerListener l) {
-		eventSupport.addMatchMakerListener(l);
-	}
-
-	@Override
-	public void removeMatchMakerListener(MatchMakerListener l) {
-		eventSupport.removeMatchMakerListener(l);
-	}
-
-	protected MatchMakerEventSupport getEventSupport() {
-		return eventSupport;
-	}
-	
 	public void setVisible(boolean visible) {
 		boolean old = this.visible;
 		this.visible = visible;
-		getEventSupport().firePropertyChange("visible", old, visible);
+		firePropertyChange("visible", old, visible);
 	}
 	
 	public boolean isVisible() {
@@ -168,6 +159,22 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
     public String toString() {
     	return super.toString() + ", " + getName() + ":" + getUUID();
     }
+
+	@Override
+	public void removeDependency(SPObject spo) {
+		//TODO: Might add this in at somepoint. Not sure, this just removes a necessary override.
+	}
+
+	@Override
+	protected boolean removeChildImpl(SPObject child) {
+		return false;
+	}
+
+	@Override
+	public  List<? extends SPObject> getDependencies() {
+		//TODO: Might add this in at somepoint. Not sure, this just removes a necessary override.
+		return null;
+	}
     
     /**
 	 * Starts a compound edit so that the whole compound edit can
@@ -184,7 +191,7 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
      * @see AbstractMatchMakerObject#endCompoundEdit()
 	 */
 	public void startCompoundEdit() {
-		getEventSupport().firePropertyChange("UNDOSTATE", false, true);
+		firePropertyChange("UNDOSTATE", false, true);
 	}
 	
 	/**
@@ -192,7 +199,65 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	 * @see AbstractMatchMakerObject#startCompoundEdit()
 	 */
 	public void endCompoundEdit() {
-		getEventSupport().firePropertyChange("UNDOSTATE", true, false);
+		firePropertyChange("UNDOSTATE", true, false);
 	}
 	
+	/**
+     * Swaps the elements at the specified positions.
+     * (If the specified positions are equal, invoking this method leaves
+     * the list unchanged.)
+     *
+     * @param i the index of one element to be swapped.
+     * @param j the index of the other element to be swapped.
+     */
+	public void swapChildren(int i, int j) {
+		final List<MatchMakerObject> l = (List<MatchMakerObject>)getChildren();
+		try {
+			begin("Swapping Children");
+			int less;
+			int more;
+			if (i < j) {
+				less = i;
+				more = j;
+			} else {
+				less = j;
+				more = i;
+			}
+			MatchMakerObject child1 = l.get(less);
+			MatchMakerObject child2 = l.get(more);
+
+			try {
+				removeChild(child1);
+				removeChild(child2);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException();
+			}
+
+			addChild(child2, less);
+			addChild(child1, more);
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
+		}
+	}
+	
+	public void moveChild(int from, int to) {
+		if (to == from) return;
+		final List<MatchMakerObject> l = (List<MatchMakerObject>)getChildren();
+		MatchMakerObject child = l.get(from);
+		try {
+			begin("Moving Child");
+			try {
+				removeChild(l.get(from));
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException();
+			}
+			addChild(child, to);
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
+		}
+	}
 }

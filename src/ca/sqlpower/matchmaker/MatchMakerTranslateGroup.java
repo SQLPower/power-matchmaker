@@ -19,14 +19,19 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import ca.sqlpower.object.SPObject;
 
+public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implements Comparable <MatchMakerTranslateGroup> {
 
-
-public class MatchMakerTranslateGroup
-	extends AbstractMatchMakerObject 
-	implements Comparable <MatchMakerTranslateGroup> {
-
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.<Class<? extends SPObject>>singletonList(MatchMakerTranslateWord.class);
+	
+	List<MatchMakerTranslateWord> children = new ArrayList<MatchMakerTranslateWord>();
+	
     /**
      * Object identifier. Required for the persistence layer.
      */
@@ -90,14 +95,40 @@ public class MatchMakerTranslateGroup
 		g.setParent(parent);
 		g.setName(this.getName());
 		g.setVisible(isVisible());
-		for (MatchMakerTranslateWord w: getChildren()){
-			g.addChild(w.duplicate(g,s));
+		int i = 0;
+		for (MatchMakerTranslateWord w: (List<MatchMakerTranslateWord>)getChildren()){
+			MatchMakerTranslateWord duplicate = w.duplicate(g,s);
+			g.addChild(duplicate, i);
+			i++;
 		}
 		return g;
 	}
 
 	public int compareTo(MatchMakerTranslateGroup o) {
 		return getName().compareTo(((MatchMakerTranslateGroup) o).getName());
+	}
+
+	@Override
+	public List<MatchMakerTranslateWord> getChildren() {
+		return children;
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+	
+	protected void addChildImpl(SPObject spo, int index) {
+		children.add(index, (MatchMakerTranslateWord) spo);
+		fireChildAdded(MatchMakerTranslateWord.class, spo, index);
+	}
+	
+	protected boolean removeChildImpl(SPObject spo) {
+		int index = children.indexOf(spo);
+		boolean removed = children.remove(spo);
+		spo.setParent(null);
+		fireChildRemoved(MatchMakerTranslateWord.class, spo, index);
+		return removed;
 	}
 
 }

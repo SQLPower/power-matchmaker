@@ -20,14 +20,23 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
-import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
 
 public class TestingAbstractMatchMakerObject
-				extends AbstractMatchMakerObject<TestingAbstractMatchMakerObject, MatchMakerObject> {
-
+				extends AbstractMatchMakerObject{
+	
+	/**
+	 * Defines an absolute ordering of the child types of this class.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
+	
 	int i;
 
 	public TestingAbstractMatchMakerObject( ) {
@@ -47,21 +56,25 @@ public class TestingAbstractMatchMakerObject
 	public int hashCode() {
 		return i;
 	}
-
-	/**
-	 * Made public so test cases can fire specific events on demand.
-	 */
-	@Override
-	public MatchMakerEventSupport
-		<TestingAbstractMatchMakerObject, MatchMakerObject> getEventSupport() {
-		return super.getEventSupport();
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
 	}
 
-	public boolean hasListener(MatchMakerListener<?,?> listener) {
-		return getEventSupport().getListeners().contains(listener);
+	public boolean hasListener(SPListener listener) {
+		return listeners.contains(listener);
 	}
 
 	public TestingAbstractMatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession session) {
 		return null;
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+
+	@Override
+	protected boolean removeChildImpl(SPObject child) {
+		return false;
 	}
 }
