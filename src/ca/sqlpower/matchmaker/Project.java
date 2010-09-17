@@ -23,6 +23,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,19 +34,20 @@ import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.diff.DiffChunk;
 import ca.sqlpower.diff.DiffType;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
-import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
+import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -54,7 +57,18 @@ public class Project extends AbstractMatchMakerObject {
 
     static final Logger logger = Logger.getLogger(Project.class);
     
-	public enum ProjectMode {
+    /**
+     * List of allowable child types
+     */
+    @SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeProcess.class, TableMergeRules.class)));
+    
+    List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
+    List<TableMergeRules> tableMergeRules = new ArrayList<TableMergeRules>();
+    
+    public enum ProjectMode {
 		FIND_DUPES("Find Duplicates"), 
 		BUILD_XREF("Build Cross-Reference"), 
 		CLEANSE("Cleanse"),
@@ -200,6 +214,38 @@ public class Project extends AbstractMatchMakerObject {
         
         setType(ProjectMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
+	}
+	
+	public void addChild(SPObject spo) {
+		int size = 0;
+		if(spo instanceof TableMergeRules) {
+			size = tableMergeRules.size();
+		} else if (spo instanceof MungeProcess) {
+			size = mungeProcesses.size();
+		}
+		addChild(spo, size);
+	}
+	
+	protected void addChildImpl(SPObject spo, int index) {
+		if(spo instanceof MungeProcess) {
+			addMungeProcess((MungeProcess)spo, index);
+		} else {
+			addTableMergeRules((TableMergeRules)spo, index);
+		}
+	}
+	public void addMungeProcess(MungeProcess spo, int index) {
+		mungeProcesses.add(index, spo);
+		fireChildAdded(MungeProcess.class, spo, index);
+	}
+	
+	public void addTableMergeRules(TableMergeRules spo, int index) {
+		tableMergeRules.add(index, spo);
+		fireChildAdded(TableMergeRules.class, spo, index);
+	}
+	
+	protected boolean removeChildImpl(SPObject spo, int index) {
+		//TODO: stuff
+		return false;
 	}
 	
     /**
@@ -561,7 +607,7 @@ public class Project extends AbstractMatchMakerObject {
 	public void setFilter(String filter) {
 		String oldValue = this.filter;
 		this.filter = filter;
-		getEventSupport().firePropertyChange("filter", oldValue, this.filter);
+		firePropertyChange("filter", oldValue, this.filter);
 	}
 
 	public MungeSettings getMungeSettings() {
@@ -594,7 +640,9 @@ public class Project extends AbstractMatchMakerObject {
 		ProjectMode oldValue = this.type;
 		this.type = type;
 		if (type == ProjectMode.CLEANSE || type == ProjectMode.ADDRESS_CORRECTION) {
-			getTableMergeRulesFolder().setVisible(false);
+			for (TableMergeRules r : getTableMergeRules()) {
+				r.setVisible(false);
+			}
 		}
 		firePropertyChange("type", oldValue, this.type);
 	}
@@ -609,9 +657,12 @@ public class Project extends AbstractMatchMakerObject {
 		firePropertyChange("view", oldValue, this.view);
 	}
 
-
 	public List<MungeProcess> getMungeProcesses() {
-		return getMungeProcessesFolder().getChildren();
+		return getChildren(MungeProcess.class);
+	}
+
+	public List<TableMergeRules> getTableMergeRules() {
+		return getChildren(TableMergeRules.class);
 	}
 	
 	/**
@@ -688,68 +739,6 @@ public class Project extends AbstractMatchMakerObject {
     }
 
     /**
-     * Add a TableMergeRule rule to the TableMergeRules folder of this Project
-     */
-    public void addTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child inserted event
-        tableMergeRulesFolder.addChild(rule);
-    }
-
-    /**
-     * Removes the TableMergeRule rule from the TableMergeRules folder of this project
-     */
-    public void removeTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child removed event
-    	tableMergeRulesFolder.removeChild(rule);
-    }
-
-    public List<TableMergeRules> getTableMergeRules(){
-        return tableMergeRulesFolder.getChildren();
-    }
-
-    /**
-     *  Allow bulk replacement of all table merge rules for this project
-     *  This should only be used by the DAOs. Assumes that you never
-     *  pass in a null list 
-     */
-    public void setTableMergeRules(List<TableMergeRules> rules){
-    	tableMergeRulesFolder.setChildren(rules);
-    }
-
-    public MatchMakerFolder getTableMergeRulesFolder() {
-        return tableMergeRulesFolder;
-    }
-    
-    /**
-     * Adds a munge process to the munge process folder of this project
-     *
-     * @param mungeProcess
-     */
-    public void addMungeProcess(MungeProcess mungeProcess) {
-        // The folder will fire the child inserted event
-        mungeProcessesFolder.addChild(mungeProcess);
-        mungeProcess.setMatchPriority(mungeProcessesFolder.getChildren().indexOf(mungeProcess));
-    }
-
-    /**
-     * Removes the munge process from the rule set folder of this process
-     *
-     * @param process
-     */
-    public void removeMungeProcess(MungeProcess process) {
-        // The folder will fire the child removed event
-        mungeProcessesFolder.removeChild(process);
-    }
-
-    public void setMungeProcesses(List<MungeProcess> processes){
-        mungeProcessesFolder.setChildren(processes);
-    }
-
-    public MatchMakerFolder getMungeProcessesFolder() {
-        return mungeProcessesFolder;
-    }
-
-    /**
      * duplicate the project object. by inserting a new set of record 
      * to the matchmaker tables.
      * objects under different id and oid 
@@ -773,13 +762,13 @@ public class Project extends AbstractMatchMakerObject {
 		newProject.setVisible(isVisible());
 		
 		for (MungeProcess g : getMungeProcesses()) {
-			MungeProcess newGroup = g.duplicate(newProject.getMungeProcessesFolder(),s);
-			newProject.addMungeProcess(newGroup);
+			MungeProcess newGroup = g.duplicate(this,s);
+			newProject.addChild(newGroup);
 		}
 
 		for (TableMergeRules g : getTableMergeRules()) {
-			TableMergeRules newMergeRule = g.duplicate(newProject.getTableMergeRulesFolder(),s);
-			newProject.addTableMergeRule(newMergeRule);
+			TableMergeRules newMergeRule = g.duplicate(this,s);
+			newProject.addChild(newMergeRule);
 		}
 		
 		return newProject;
@@ -1074,5 +1063,18 @@ public class Project extends AbstractMatchMakerObject {
      */
 	public Monitorable getRunningEngine() {
 	    return runningEngine.get();
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.addAll(mungeProcesses);
+		children.addAll(tableMergeRules);
+		return Collections.unmodifiableList(children);
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

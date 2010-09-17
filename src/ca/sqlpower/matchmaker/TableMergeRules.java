@@ -343,11 +343,11 @@ public class TableMergeRules
      *
      * this will fire a <b>parent</b> changed event not a parent match event
      */
-    public void setParentProject(Project grandparent) {
-        if (grandparent == null) {
+    public void setParentProject(Project parent) {
+        if (parent == null) {
             setParent(null);
         } else {
-            setParent(grandparent.getTableMergeRulesFolder());
+            setParent(parent);
         }
     }
 
