@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -151,11 +150,11 @@ public class MungeProcess extends AbstractMatchMakerObject {
      *
      * this will fire a <b>parent</b> changed event not a parent match event
      */
-    public void setParentProject(Project grandparent) {
-        if (grandparent == null) {
+    public void setParentProject(Project parent) {
+        if (parent == null) {
             setParent(null);
         } else {
-            setParent(grandparent.getMungeProcessesFolder());
+            setParent(parent);
         }
     }
 
