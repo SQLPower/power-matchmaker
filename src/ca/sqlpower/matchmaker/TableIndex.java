@@ -55,6 +55,14 @@ public class TableIndex extends AbstractMatchMakerObject{
 		this.property = property;
 	}
 	
+	public CachableTable getCachableTable() {
+		return table;
+	}
+	
+	public String getPropertyName() {
+		return property;
+	}
+	
     /**
      * Hooks the index up to the source table, attempts to resolve the
      * column names to actual SQLColumn references on the source table,
@@ -119,7 +127,9 @@ public class TableIndex extends AbstractMatchMakerObject{
 	@Override
 	public MatchMakerObject duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
-		throw new RuntimeException("Don't bother because this is a mess.");
+		TableIndex t = new TableIndex(getCachableTable(), getPropertyName());
+		t.setTableIndex(sourceTableIndex);
+		return t;
 	}
 
 	@Override

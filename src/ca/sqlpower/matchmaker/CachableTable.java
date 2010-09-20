@@ -259,6 +259,10 @@ public class CachableTable extends AbstractMatchMakerObject{
         //TODO: Choose the right property name
         firePropertyChange(propertyName, oldValue, newValue);
     }
+    
+    public String getPropertyName() {
+    	return propertyName;
+    }
 
     @Override
     public String toString() {
@@ -275,7 +279,14 @@ public class CachableTable extends AbstractMatchMakerObject{
 	@Override
 	public MatchMakerObject duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
-		throw new RuntimeException("Don't bother because this is a mess.");
+		CachableTable t = new CachableTable(getPropertyName());
+		t.setParent(parent);
+		t.setSession(session);
+		t.setSchemaName(getSchemaName());
+		t.setTableName(getTableName());
+		t.setSPDataSource(getSPDataSourceName());
+		t.setCatalogName(getCatalogName());
+		return t;
 	}
 
 	@Override
