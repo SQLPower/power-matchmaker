@@ -25,7 +25,6 @@ import java.util.List;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 
@@ -79,8 +78,7 @@ public class TableIndex extends AbstractMatchMakerObject{
     private void resolveTableIndexColumns(SQLIndex si) throws SQLObjectException {
     	SQLTable st = table.getSourceTable();
     	if (!st.isPopulated()) st.populate();
-    	for (SQLObject sqo : si.getChildren()) {
-    		SQLIndex.Column col = (SQLIndex.Column) sqo;
+    	for (SQLIndex.Column col : si.getChildren(SQLIndex.Column.class)) {
     		SQLColumn actualColumn = st.getColumnByName(col.getName());
     		col.setColumn(actualColumn);
     	}
