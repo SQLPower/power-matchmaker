@@ -20,6 +20,11 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+
 
 public class MatchMakerSettingsTest extends MatchMakerTestCase {
 
@@ -32,6 +37,16 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 
 			public MatchMakerSettings duplicate(MatchMakerObject parent, MatchMakerSession s) {
 				return null;
+			}
+
+			@Override
+			public List<? extends SPObject> getChildren() {
+				return Collections.emptyList();
+			}
+
+			@Override
+			public List<Class<? extends SPObject>> getAllowedChildTypes() {
+				return Collections.emptyList();
 			}};
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
@@ -41,7 +56,7 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 	}
 
 	@Override
-	protected MatchMakerObject<MatchMakerSettings, MatchMakerObject> getTarget() {
+	protected MatchMakerObject getTarget() {
 		return mms;
 	}
 

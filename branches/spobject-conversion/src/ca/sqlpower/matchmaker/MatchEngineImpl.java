@@ -192,7 +192,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			rowCount = getNumRowsToProcess();
 			
 			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
-			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
+			for (MungeProcess mp: getProject().getChildren(MungeProcess.class)) {
 				if (mp.getActive()) {
 					mungeProcesses.add(mp);
 				}

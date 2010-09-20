@@ -20,9 +20,12 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import ca.sqlpower.matchmaker.address.AddressValidator;
+import ca.sqlpower.object.SPObject;
 
 /**
  * Settings that are specific to the Match engine
@@ -218,7 +221,7 @@ public class MungeSettings extends MatchMakerSettings {
 	public void setUseBatchExecution(boolean useBatchExecute) {
 		boolean oldValue = this.useBatchExecution;
 		this.useBatchExecution = useBatchExecute;
-		getEventSupport().firePropertyChange("useBatchExecution", oldValue,
+		firePropertyChange("useBatchExecution", oldValue,
 				this.useBatchExecution);
 	}
 	
@@ -229,14 +232,14 @@ public class MungeSettings extends MatchMakerSettings {
 	public void setAutoWriteAutoValidatedAddresses(boolean autoWriteAutoValidatedAddresses) {
 		boolean oldValue = this.autoWriteAutoValidatedAddresses;
 		this.autoWriteAutoValidatedAddresses = autoWriteAutoValidatedAddresses;
-		getEventSupport().firePropertyChange("autoWriteAutoValidatedAddresses", oldValue,
+		firePropertyChange("autoWriteAutoValidatedAddresses", oldValue,
 				this.autoWriteAutoValidatedAddresses);
 	}
 	
 	public void setClearMatchPool(boolean clearMatchPool) {
 		boolean oldValue = this.clearMatchPool;
 		this.clearMatchPool = clearMatchPool;
-		getEventSupport().firePropertyChange("clearMatchPool", oldValue,
+		firePropertyChange("clearMatchPool", oldValue,
 				this.clearMatchPool);
 	}
 
@@ -247,7 +250,7 @@ public class MungeSettings extends MatchMakerSettings {
 	public void setAutoMatchThreshold(Short autoMatchThreshold) {
 		Short oldValue = this.autoMatchThreshold;
 		this.autoMatchThreshold = autoMatchThreshold;
-		getEventSupport().firePropertyChange("autoMatchThreshold", oldValue,
+		firePropertyChange("autoMatchThreshold", oldValue,
 				this.autoMatchThreshold);
 	}
 
@@ -258,7 +261,7 @@ public class MungeSettings extends MatchMakerSettings {
 	public void setLastBackupNo(Long lastBackupNo) {
 		Long oldValue = this.lastBackupNo;
 		this.lastBackupNo = lastBackupNo;
-		getEventSupport().firePropertyChange("lastBackupNo", oldValue,
+		firePropertyChange("lastBackupNo", oldValue,
 				this.lastBackupNo);
 	}
 	
@@ -269,7 +272,7 @@ public class MungeSettings extends MatchMakerSettings {
 	public void setPoolFilterSetting(PoolFilterSetting poolFilterSetting) {
 		PoolFilterSetting oldValue = this.poolFilterSetting;
 		this.poolFilterSetting = poolFilterSetting;
-		getEventSupport().firePropertyChange("poolFilterSetting", oldValue, poolFilterSetting);
+		firePropertyChange("poolFilterSetting", oldValue, poolFilterSetting);
 	}
 
 	public AutoValidateSetting getAutoValidateSetting() {
@@ -279,7 +282,7 @@ public class MungeSettings extends MatchMakerSettings {
 	public void setAutoValidateSetting(AutoValidateSetting autoValidateSetting) {
 		AutoValidateSetting oldValue = this.autoValidateSetting;
 		this.autoValidateSetting = autoValidateSetting;
-		getEventSupport().firePropertyChange("autoValidateSetting", oldValue, autoValidateSetting);
+		firePropertyChange("autoValidateSetting", oldValue, autoValidateSetting);
 	}
 
 	@Override
@@ -323,5 +326,15 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setPoolFilterSetting(getPoolFilterSetting());
 		settings.setAutoValidateSetting(getAutoValidateSetting());
 		return settings;
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return Collections.emptyList();
 	}
 }

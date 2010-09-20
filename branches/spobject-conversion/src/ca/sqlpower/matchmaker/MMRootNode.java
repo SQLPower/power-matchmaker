@@ -27,7 +27,7 @@ import java.util.List;
 import ca.sqlpower.object.SPObject;
 
 /**
- * A root node to be at the top of the tree of all abstractmatchmaker objects
+ * A root node to be at the top of the tree of all AbstractMatchMaker objects.
  */
 public class MMRootNode extends AbstractMatchMakerObject {
 	/**
@@ -36,13 +36,22 @@ public class MMRootNode extends AbstractMatchMakerObject {
     @SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(FolderParent.class,  MatchMakerTranslateGroup.class)));
+				Arrays.asList(FolderParent.class,  TranslateGroupParent.class)));
     
-    public MMRootNode() {
+    private final FolderParent currentFolderParent;
+    private final FolderParent backupFolderParent;
+    private final TranslateGroupParent tgp;
+    
+    
+    public MMRootNode(MatchMakerSession session) {
         setName("Root Node");
+        currentFolderParent = new FolderParent(session);
+        backupFolderParent = new FolderParent(session);
+        tgp = new TranslateGroupParent(session);
+        tgp.setName("Translation Groups");
     }
 
-    public boolean isRoot() {
+	public boolean isRoot() {
         return true;
     }
 
@@ -62,12 +71,23 @@ public class MMRootNode extends AbstractMatchMakerObject {
 
 	@Override
 	public List<? extends SPObject> getChildren() {
-		//TODO: get the damn children
-		return null;
+		return Collections.unmodifiableList(Arrays.asList(currentFolderParent, backupFolderParent, tgp));
 	}
 
 	@Override
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
+	}
+	
+	public TranslateGroupParent getTranslateGroupParent() {
+		return tgp;
+	}
+	
+	public FolderParent getCurrentFolderParent() {
+		return currentFolderParent;
+	}
+	
+	public FolderParent getBackupFolderParent() {
+		return backupFolderParent;
 	}
 }

@@ -40,6 +40,7 @@ import org.hibernate.cfg.Environment;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -61,6 +62,7 @@ import ca.sqlpower.matchmaker.dao.TableMergeRulesDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
@@ -126,9 +128,12 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	private String dbUser;
 	private Date sessionStartTime;
 	
-    private FolderParent currentProjectFolderParent;
-    private FolderParent backupProjectFolderParent;
-
+    /**
+     * This node is the root node of all MatchMakerObjects and everything stems from this.
+     * Its children are the FolderParents and the TranslateGroupParents
+     */
+    private MMRootNode rootNode;
+    
     private PlFolderDAO folderDAO;
     private ProjectDAO projectDAO;
     private MungeProcessDAO mungeProcessDAO;
@@ -138,8 +143,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private ColumnMergeRulesDAO columnMergeRulesDAO;
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
-
-    private TranslateGroupParent tgp;
 
 	private Session hSession;
 
@@ -243,6 +246,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
         tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
         columnMergeRulesDAO = new ColumnMergeRulesDAOHibernate(this);
+        rootNode = new MMRootNode(this);
         con.close();
 	}
 
@@ -300,7 +304,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
 
     public PlFolder findFolder(String foldername) {
-        for (PlFolder folder : getCurrentFolderParent().getChildren()) {
+        for (SPObject spo : getCurrentFolderParent().getChildren()) {
+        	PlFolder folder = (PlFolder) spo;
             if (folder.getName().equals(foldername)) return folder;
         }
         return null;
@@ -428,16 +433,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	}
 
     public TranslateGroupParent getTranslations() {
-        if (tgp == null) {
+        if (rootNode.getChildren(TranslateGroupParent.class).isEmpty()) {
             MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
             List<MatchMakerTranslateGroup> groups = matchMakerTranslateGroupDAO.findAll();
-            tgp = new TranslateGroupParent(this);
-            tgp.setName("Translation Groups");
             for (MatchMakerTranslateGroup g: groups) {
-                tgp.addChild(g);
+            	rootNode.getTranslateGroupParent().addChild(g);
             }
         }
-        return tgp;
+        return rootNode.getTranslateGroupParent();
     }
 
     /**
@@ -445,15 +448,13 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * list that was previously retrieved by a call to this method.
      */
 	public FolderParent getCurrentFolderParent() {
-		if (currentProjectFolderParent == null) {
-			currentProjectFolderParent = new FolderParent(this);
-            currentProjectFolderParent.setName("Current Projects");
+		if (rootNode.getCurrentFolderParent().getChildren().isEmpty()) {
 			PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
 			for(PlFolder f :folderDAO.findAll()) {
-				currentProjectFolderParent.addChild(f);
+				rootNode.getCurrentFolderParent().addChild(f);
 			}
 		}
-		return currentProjectFolderParent;
+		return rootNode.getCurrentFolderParent();
 	}
 
 	/**
@@ -464,11 +465,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * TODO implement backups
      */
 	public FolderParent getBackupFolderParent() {
-        if (backupProjectFolderParent == null) {
-            backupProjectFolderParent = new FolderParent(this);
-            backupProjectFolderParent.setName("Backup Projects");
-        }
-		return backupProjectFolderParent;
+		return rootNode.getBackupFolderParent();
 	}
 
     public Version getPLSchemaVersion() {
