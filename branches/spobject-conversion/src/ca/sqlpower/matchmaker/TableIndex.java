@@ -19,15 +19,20 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
 import java.util.List;
 
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 
-public class TableIndex {
+public class TableIndex extends AbstractMatchMakerObject{
+	
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
 	
 	AbstractMatchMakerObject mmo;
  	/**
@@ -39,7 +44,18 @@ public class TableIndex {
     
     private CachableTable table;
 	private String property;
-    
+
+	/**
+	 * Manages a sqlindex on cachableTable table for mmo. 
+	 * 
+	 * The property argument is the property type the index should use for an event.
+	 * We assume all arguments are non-null
+	 */
+	public TableIndex(CachableTable table, String property) {
+		this.table = table;
+		this.property = property;
+	}
+	
     /**
      * Hooks the index up to the source table, attempts to resolve the
      * column names to actual SQLColumn references on the source table,
@@ -73,7 +89,8 @@ public class TableIndex {
 	public void setTableIndex(SQLIndex index) {
     	final SQLIndex oldIndex = sourceTableIndex;
     	sourceTableIndex = index;
-    	mmo.firePropertyChange(property, oldIndex, index);
+    	//TODO: Find the right propertyName
+    	firePropertyChange(property, oldIndex, index);
     }
 
 	/**
@@ -93,24 +110,27 @@ public class TableIndex {
 		}
 	}
 	
-	/**
-	 * Manages a sqlindex on cachableTable table for mmo. 
-	 * 
-	 * The property argument is the property type the index should use for an event.
-	 * We assume all arguments are non-null
-	 */
-	public TableIndex(AbstractMatchMakerObject mmo, CachableTable table, String property) {
-		super();
-		this.mmo = mmo;
-		this.table = table;
-		this.property = property;
-	}
-	
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Table Index @").append(System.identityHashCode(this));
 		buf.append(", index: "+sourceTableIndex);
 		return buf.toString();
+	}
+
+	@Override
+	public MatchMakerObject duplicate(MatchMakerObject parent,
+			MatchMakerSession session) {
+		throw new RuntimeException("Don't bother because this is a mess.");
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

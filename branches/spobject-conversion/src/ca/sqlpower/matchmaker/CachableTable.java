@@ -19,10 +19,12 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -40,8 +42,11 @@ import ca.sqlpower.sqlobject.SQLTable;
  * Hibernate mappings are the only part of the application that use this
  * functionality.
  */
-public class CachableTable {
-
+public class CachableTable extends AbstractMatchMakerObject{
+	
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
+	
 	private static final Logger logger = Logger.getLogger(CachableTable.class); 
 	/**
      * The name of the Project property we're maintaining (for example,
@@ -69,11 +74,10 @@ public class CachableTable {
      * @param propertyName the property name that all property change events fired
      * on behalf of mmo will report.
      */
-    CachableTable(AbstractMatchMakerObject mmo,String propertyName) {
+    public CachableTable(String propertyName) {
     	if (mmo == null) throw new NullPointerException("Can't make a cachable table for a null owner");
     	if (propertyName == null) throw new NullPointerException("Can't make a cachable table for a null property name");
 		this.propertyName = propertyName;
-		this.mmo = mmo;		
     }
 
     public String getCatalogName() {
@@ -194,7 +198,7 @@ public class CachableTable {
      *         up in the session's SQLDatabase, or created in the session's
      *         SQLDatabase if the lookup failed.
      */
-    public SQLTable getSourceTable() {  // XXX rename to getTable
+    public SQLTable getSourceTable() {
     	logger.debug("GetSourceTable(): "+this);
     	
         if (cachedTable != null) {
@@ -252,9 +256,8 @@ public class CachableTable {
         cachedTable = table;
         dsName = null;
 
-        // XXX create an InternalMatchMakerObject package-private interface that lets us do this,
-        //     and don't declare mmo as AbstractMatchMakerObject anymore
-        mmo.getEventSupport().firePropertyChange(propertyName, oldValue, newValue);
+        //TODO: Choose the right property name
+        firePropertyChange(propertyName, oldValue, newValue);
     }
 
     @Override
@@ -268,4 +271,20 @@ public class CachableTable {
     			" cachedTable="+(cachedTable == null ? "null" : cachedTable.getName()) +
     			" propertyName="+propertyName;
     }
+
+	@Override
+	public MatchMakerObject duplicate(MatchMakerObject parent,
+			MatchMakerSession session) {
+		throw new RuntimeException("Don't bother because this is a mess.");
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
 }

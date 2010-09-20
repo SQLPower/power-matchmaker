@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,7 +28,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLTable;
 
 
@@ -37,8 +38,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	/**
 	 * Defines an absolute ordering of the child types of this class.
 	 */
+	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.emptyList();
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(ColumnMergeRulesCachableColumn.class,
+				ColumnMergeRulesImportedCachableColumn.class)));
 
     /**
      * An enumeration of all possible types of actions that can be
@@ -132,7 +136,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 
 	public class ColumnMergeRulesCachableColumn extends CachableColumn {
 		public ColumnMergeRulesCachableColumn() {
-			super(ColumnMergeRules.this, "column");
+			super("column");
 		}
 		
 		public SQLTable getTable() {
@@ -146,7 +150,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	
 	public class ColumnMergeRulesImportedCachableColumn extends CachableColumn {
 		public ColumnMergeRulesImportedCachableColumn() {
-			super(ColumnMergeRules.this, "importedKeyColumn");
+			super("importedKeyColumn");
 		}
 		
 		public SQLTable getTable() {
@@ -159,7 +163,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	        	return st;
 	        }
 		}
-
 	}
 	
 	/**
@@ -174,9 +177,9 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	
 	private String updateStatement;
 	
-	private ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
+	private final ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
 	
-	private ColumnMergeRulesImportedCachableColumn importedCachedColumn = new ColumnMergeRulesImportedCachableColumn();
+	private final ColumnMergeRulesImportedCachableColumn importedCachedColumn = new ColumnMergeRulesImportedCachableColumn();
 	
 	@Override
 	public int hashCode() {
@@ -266,8 +269,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	}
 	
 	@Override
-	public List<SQLObject> getChildren() {
-		return Collections.emptyList();
+	public List<SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.add(cachedColumn);
+		children.add(importedCachedColumn);
+		return children;
 	}
 	
 	@Override
@@ -276,8 +282,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	protected void addChildImpl(SPObject child, int index) {
+		throw new RuntimeException("Cannot add this child to the class.");
+	}
+
+	@Override
 	protected boolean removeChildImpl(SPObject child) {
-		return false;
+		throw new RuntimeException("Cannot remove this child to the class.");
 	}
 
 	public SQLColumn getColumn() {
@@ -305,11 +316,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		buf.append(", Parent: ").append(getParent());
 		buf.append(", ActionType: ").append(getActionType());
 		return buf.toString();
-	}
-	
-	@Override
-	public boolean allowsChildren() {
-		return false;
 	}
 
 	public boolean isInPrimaryKey() {

@@ -63,7 +63,8 @@ public class Project extends AbstractMatchMakerObject {
     @SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeProcess.class, TableMergeRules.class)));
+				Arrays.asList(MungeProcess.class, TableMergeRules.class,
+						CachableTable.class, TableIndex.class)));
     
     List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
     List<TableMergeRules> tableMergeRules = new ArrayList<TableMergeRules>();
@@ -191,12 +192,12 @@ public class Project extends AbstractMatchMakerObject {
     private final AtomicReference<Monitorable> runningEngine = new AtomicReference<Monitorable>();
     
 	public Project() {
-	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
-	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
-	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
+	    sourceTablePropertiesDelegate = new CachableTable("sourceTable");
+	    resultTablePropertiesDelegate = new CachableTable("resultTable");
+	    xrefTablePropertiesDelegate = new CachableTable("xrefTable");
         
         setType(ProjectMode.FIND_DUPES);
-        sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
+        sourceTableIndex = new TableIndex(sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
 	public void addChild(SPObject spo) {
@@ -212,8 +213,10 @@ public class Project extends AbstractMatchMakerObject {
 	protected void addChildImpl(SPObject spo, int index) {
 		if(spo instanceof MungeProcess) {
 			addMungeProcess((MungeProcess)spo, index);
-		} else {
+		} else if(spo instanceof TableMergeRules) {
 			addTableMergeRules((TableMergeRules)spo, index);
+		} else {
+			throw new RuntimeException("Cannot add a child of this type to proejct.");
 		}
 	}
 	public void addMungeProcess(MungeProcess spo, int index) {
@@ -227,8 +230,26 @@ public class Project extends AbstractMatchMakerObject {
 	}
 	
 	protected boolean removeChildImpl(SPObject spo, int index) {
-		//TODO: stuff
-		return false;
+		if(spo instanceof MungeProcess) {
+			return removeMungeProcess((MungeProcess)spo);
+		} else if(spo instanceof TableMergeRules) {
+			return removeTableMergeRules((TableMergeRules)spo);
+		} else {
+			throw new RuntimeException("Cannot remove a child of this type to proejct.");
+		}
+	}
+	public boolean removeMungeProcess(MungeProcess spo) {
+		int index = mungeProcesses.indexOf(spo);
+		boolean removed = mungeProcesses.remove(spo);
+		fireChildRemoved(MungeProcess.class, spo, index);
+		return removed;
+	}
+	
+	public boolean removeTableMergeRules(TableMergeRules spo) {
+		int index = tableMergeRules.indexOf(spo);
+		boolean removed = tableMergeRules.remove(spo);
+		fireChildRemoved(TableMergeRules.class, spo, index);
+		return removed;
 	}
 	
     /**
@@ -1053,6 +1074,10 @@ public class Project extends AbstractMatchMakerObject {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(mungeProcesses);
 		children.addAll(tableMergeRules);
+		children.add(sourceTablePropertiesDelegate);
+		children.add(resultTablePropertiesDelegate);
+		children.add(xrefTablePropertiesDelegate);
+		children.add(sourceTableIndex);
 		return Collections.unmodifiableList(children);
 	}
 
