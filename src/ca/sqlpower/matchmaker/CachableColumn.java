@@ -19,20 +19,26 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLTable;
 
-public abstract class CachableColumn {
+public abstract class CachableColumn extends AbstractMatchMakerObject {
+	
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+    	Collections.emptyList();
+	
 	private SQLColumn cachedColumn;
 	private String columnName;
 	AbstractMatchMakerObject eventSource;
 	private String property;
 	
-    public CachableColumn(AbstractMatchMakerObject eventSource, String property) {
-		super();
-		this.eventSource = eventSource;
+    public CachableColumn(String property) {
 		this.property = property;
 	}
 
@@ -110,6 +116,21 @@ public abstract class CachableColumn {
         SQLColumn oldVal = this.cachedColumn;
         this.cachedColumn = column;
         this.columnName = (column == null ? null : column.getName());
-        eventSource.firePropertyChange(property, oldVal, column);
+        //TODO: find the right property name
+        firePropertyChange(property, oldVal, column);
     }
+    
+	public List<SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+	
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+
+
+	public MatchMakerObject duplicate(MatchMakerObject parent,
+			MatchMakerSession session) {
+		throw new RuntimeException("Don't do this duplication because it sucks.");
+	}
 }
