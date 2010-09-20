@@ -140,10 +140,20 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		}
 		
 		public SQLTable getTable() {
-			TableMergeRules tableMergeRules = (TableMergeRules) eventSource.getParent();
+			TableMergeRules tableMergeRules = (TableMergeRules) getParent().getParent();
 	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
 	        SQLTable st = tableMergeRules.getSourceTable();
 			return st;
+		}
+
+		public MatchMakerObject duplicate(MatchMakerObject parent,
+				MatchMakerSession session) {
+			ColumnMergeRulesImportedCachableColumn c = new ColumnMergeRulesImportedCachableColumn();
+			c.setSession(session);
+			c.setName(getName());
+			c.setParent(parent);
+			c.setColumnName(getColumnName());
+			return c;
 		}
 
 	}
@@ -154,7 +164,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		}
 		
 		public SQLTable getTable() {
-			TableMergeRules tableMergeRules = (TableMergeRules) eventSource.getParent();
+			TableMergeRules tableMergeRules = (TableMergeRules) getParent().getParent();
 	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
 	        if (tableMergeRules.getParentMergeRule() == null) {
 	        	return null;
@@ -162,6 +172,16 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	        	SQLTable st = tableMergeRules.getParentMergeRule().getSourceTable();
 	        	return st;
 	        }
+		}
+
+		public MatchMakerObject duplicate(MatchMakerObject parent,
+				MatchMakerSession session) {
+			ColumnMergeRulesImportedCachableColumn c = new ColumnMergeRulesImportedCachableColumn();
+			c.setSession(session);
+			c.setName(getName());
+			c.setParent(parent);
+			c.setColumnName(getColumnName());
+			return c;
 		}
 	}
 	

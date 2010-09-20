@@ -35,7 +35,6 @@ public abstract class CachableColumn extends AbstractMatchMakerObject {
 	
 	private SQLColumn cachedColumn;
 	private String columnName;
-	AbstractMatchMakerObject eventSource;
 	private String property;
 	
     public CachableColumn(String property) {
@@ -126,11 +125,5 @@ public abstract class CachableColumn extends AbstractMatchMakerObject {
 	
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
-	}
-
-
-	public MatchMakerObject duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
-		throw new RuntimeException("Don't do this duplication because it sucks.");
 	}
 }
