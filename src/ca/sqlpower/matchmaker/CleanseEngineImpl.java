@@ -197,7 +197,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 			}
 			
 			List<MungeProcess> processes = new ArrayList<MungeProcess>();
-			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
+			for (MungeProcess mp: getProject().getChildren(MungeProcess.class)) {
 				if (mp.getActive()) {
 					processes.add(mp);
 				}

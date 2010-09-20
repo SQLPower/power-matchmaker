@@ -23,6 +23,7 @@ import java.util.List;
 
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 
@@ -62,7 +63,8 @@ public class TableIndex {
     private void resolveTableIndexColumns(SQLIndex si) throws SQLObjectException {
     	SQLTable st = table.getSourceTable();
     	if (!st.isPopulated()) st.populate();
-    	for (SQLIndex.Column col : (List<SQLIndex.Column>) si.getChildren()) {
+    	for (SQLObject sqo : si.getChildren()) {
+    		SQLIndex.Column col = (SQLIndex.Column) sqo;
     		SQLColumn actualColumn = st.getColumnByName(col.getName());
     		col.setColumn(actualColumn);
     	}
@@ -71,7 +73,7 @@ public class TableIndex {
 	public void setTableIndex(SQLIndex index) {
     	final SQLIndex oldIndex = sourceTableIndex;
     	sourceTableIndex = index;
-    	mmo.getEventSupport().firePropertyChange(property, oldIndex, index);
+    	mmo.firePropertyChange(property, oldIndex, index);
     }
 
 	/**
