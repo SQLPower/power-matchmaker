@@ -38,8 +38,20 @@ public class MMRootNode extends AbstractMatchMakerObject {
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
 				Arrays.asList(FolderParent.class,  TranslateGroupParent.class)));
     
+    /**
+     * This is the folder that holds all the current projects in the tree.
+     */
     private final FolderParent currentFolderParent;
+    
+    /**
+     * This is the folder that holds all of the backup projects in the tree.
+     */
     private final FolderParent backupFolderParent;
+
+    /**
+     * This is the folder that holds all the translate groups in the tree.
+     * The translate groups each hold a bunch of translations.
+     */
     private final TranslateGroupParent tgp;
     
     
