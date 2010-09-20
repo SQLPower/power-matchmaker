@@ -1292,7 +1292,7 @@ public class MergeProcessor extends AbstractProcessor {
 		public ResultRow(TableMergeRules tmr, ResultSet rs) throws SQLException {
 			tableMergeRule = tmr;
 			values = new ArrayList<Object>();
-			for (int i = 0; i < tableMergeRule.getChildCount(); i++) {
+			for (int i = 0; i < tableMergeRule.getChildren().size(); i++) {
 				values.add(rs.getObject(i+1));
 			}		
 		}
@@ -1312,7 +1312,7 @@ public class MergeProcessor extends AbstractProcessor {
 		public ResultRow(TableMergeRules tmr) throws SQLException {
 			tableMergeRule = tmr;
 			values = new ArrayList<Object>();
-			for (int i = 0; i < tableMergeRule.getChildCount(); i++) {
+			for (int i = 0; i < tableMergeRule.getChildren().size(); i++) {
 				values.add(null);
 			}
 		}

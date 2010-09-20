@@ -21,8 +21,8 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
 
 /**
  * A collection of static methods that help with common operations
@@ -65,13 +65,13 @@ public class MatchMakerUtils {
 	 * grand children of the root. See 
 	 * {@link #lisenToHierachy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root)}
 	 */
-	public static <T extends MatchMakerObject, C extends MatchMakerObject>
-		void listenToShallowHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject root) {
-		root.addMatchMakerListener(listener);
+	public static void listenToShallowHierarchy(SPListener listener, MatchMakerObject root) {
+		root.addSPListener(listener);
 		logger.debug("listenToShallowHierarchy: \"" + root.getName() + "\" (" +
 				root.getClass().getName() + ") children: " + root.getChildren());
-		for (MatchMakerObject obj : root.getChildren()) {
-			obj.addMatchMakerListener(listener);
+		for (SPObject spo : ((SPObject)root).getChildren()) {
+			MatchMakerObject obj = (MatchMakerObject)spo;
+			obj.addSPListener(listener);
 		}
 	}
 
@@ -86,10 +86,10 @@ public class MatchMakerUtils {
 	 * have to be the real ultimate root of the hierarchy (it can have ancestor
 	 * nodes; they simply won't be unlistened to)
 	 */
-	public static <T extends MatchMakerObject, C extends MatchMakerObject>
-		void unlistenToHierarchy(MatchMakerListener listener, MatchMakerObject root) {
-		root.removeMatchMakerListener(listener);
-		for (MatchMakerObject obj : root.getChildren()) {
+	public static void unlistenToHierarchy(SPListener listener, MatchMakerObject root) {
+		root.removeSPListener(listener);
+		for (SPObject spo : ((SPObject)root).getChildren()) {
+			MatchMakerObject obj = (MatchMakerObject)spo;
 			unlistenToHierarchy(listener, obj);
 		}
 	}

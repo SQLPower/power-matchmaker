@@ -53,6 +53,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.util.MonitorableImpl;
@@ -204,7 +205,8 @@ public class MatchPool extends MonitorableImpl {
             SQLIndex sourceTableIndex = project.getSourceTableIndex();
 			if (displayColumns == null || displayColumns.size() == 0) {
             	displayColumns = new ArrayList<SQLColumn>();
-            	for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
+            	for (SQLObject sqo : sourceTableIndex.getChildren()) {
+            		SQLIndex.Column col = (SQLIndex.Column) sqo;
             		displayColumns.add(col.getColumn());
             	}
             }
@@ -229,8 +231,9 @@ public class MatchPool extends MonitorableImpl {
             sql.append(DDLUtils.toQualifiedName(sourceTable));
             sql.append(" source2");
             int index = 0;
-            for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
-            	if (index == 0) { 
+            for (SQLObject sqo : sourceTableIndex.getChildren()) {
+        		SQLIndex.Column col = (SQLIndex.Column) sqo;
+        		if (index == 0) { 
             		sql.append("\n WHERE");
             	} else {
             		sql.append(" AND");
@@ -940,7 +943,7 @@ public class MatchPool extends MonitorableImpl {
 		if (syntheticMungeProcess == null) {
 			syntheticMungeProcess = new MungeProcess();
 			syntheticMungeProcess.setName(MungeProcess.SYNTHETIC_MATCHES);
-			project.getMungeProcessesFolder().addChild(syntheticMungeProcess);
+			project.addChild(syntheticMungeProcess);
 			MatchMakerDAO<Project> dao = session.getDAO(Project.class);
 			dao.save(project);
 		}
