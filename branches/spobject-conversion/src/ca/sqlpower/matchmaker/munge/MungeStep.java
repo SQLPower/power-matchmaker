@@ -140,7 +140,7 @@ public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
 	 * @return true if the given IOConnector was removed from the step; false if it
 	 *         wasn't.
 	 */
-	void removeInput(int index);
+	boolean removeInput(int index);
 	
 	/**
 	 * Removes the inputs that are not used.
