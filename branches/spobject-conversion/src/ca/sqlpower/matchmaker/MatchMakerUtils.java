@@ -41,8 +41,6 @@ public class MatchMakerUtils {
 	/**
 	 * Adds the given listener to the given root MatchMakerObject and each
 	 * MatchMakerObject descendant reachable from it.
-	 * @param <T> The type of the root object
-	 * @param <C> The type of children the root contains
 	 * @param listener The listener that should receive MatchMakerEvents from
 	 * <tt>root</tt> and its descendants.
 	 * @param root The root object to add listener to.  Doesn't necessarily
@@ -53,9 +51,8 @@ public class MatchMakerUtils {
 		root.addSPListener(listener);
 		logger.debug("listenToHierarchy: \"" + root.getName() + "\" (" +
 				root.getClass().getName() + ") children: " + root.getChildren());
-		for (SPObject spo : ((SPObject)root).getChildren()) {
-			MatchMakerObject obj = (MatchMakerObject)spo;
-			listenToHierarchy(listener, obj);
+		for (MatchMakerObject obj : root.getChildren(MatchMakerObject.class)) {
+			obj.addSPListener(listener);
 		}
 	}
 	
@@ -63,7 +60,7 @@ public class MatchMakerUtils {
 	 * This method is similar to listenToHierarchy but only listens to the 
 	 * first two levels in the tree, i.e. the listener is not added to the 
 	 * grand children of the root. See 
-	 * {@link #lisenToHierachy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root)}
+	 * {@link #lisenToHierachy(MatchMakerListener listener, MatchMakerObject root)}
 	 */
 	public static void listenToShallowHierarchy(SPListener listener, MatchMakerObject root) {
 		root.addSPListener(listener);
@@ -74,24 +71,4 @@ public class MatchMakerUtils {
 			obj.addSPListener(listener);
 		}
 	}
-
-	/**
-	 * Removes the given listener from the given root MatchMakerObject and each
-	 * MatchMakerObject descendant reachable from it.
-	 * @param <T> The type of the root object
-	 * @param <C> The type of children the root contains
-	 * @param listener The listener that should no longer receive MatchMakerEvents from
-	 * <tt>root</tt> and its descendants.
-	 * @param root The root object to remove listener from.  Doesn't necessarily
-	 * have to be the real ultimate root of the hierarchy (it can have ancestor
-	 * nodes; they simply won't be unlistened to)
-	 */
-	public static void unlistenToHierarchy(SPListener listener, MatchMakerObject root) {
-		root.removeSPListener(listener);
-		for (SPObject spo : ((SPObject)root).getChildren()) {
-			MatchMakerObject obj = (MatchMakerObject)spo;
-			unlistenToHierarchy(listener, obj);
-		}
-	}
-
 }

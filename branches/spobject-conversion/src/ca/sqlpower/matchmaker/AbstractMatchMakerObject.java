@@ -206,7 +206,7 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
      * @param j the index of the other element to be swapped.
      */
 	public void swapChildren(int i, int j) {
-		final List<MatchMakerObject> l = (List<MatchMakerObject>)getChildren();
+		final List<MatchMakerObject> l = getChildren(MatchMakerObject.class);
 		try {
 			begin("Swapping Children");
 			int less;
@@ -239,7 +239,7 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	
 	public void moveChild(int from, int to) {
 		if (to == from) return;
-		final List<MatchMakerObject> l = (List<MatchMakerObject>)getChildren();
+		final List<MatchMakerObject> l = getChildren(MatchMakerObject.class);
 		MatchMakerObject child = l.get(from);
 		try {
 			begin("Moving Child");

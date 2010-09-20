@@ -53,7 +53,6 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.util.MonitorableImpl;
@@ -205,8 +204,7 @@ public class MatchPool extends MonitorableImpl {
             SQLIndex sourceTableIndex = project.getSourceTableIndex();
 			if (displayColumns == null || displayColumns.size() == 0) {
             	displayColumns = new ArrayList<SQLColumn>();
-            	for (SQLObject sqo : sourceTableIndex.getChildren()) {
-            		SQLIndex.Column col = (SQLIndex.Column) sqo;
+            	for (SQLIndex.Column col : sourceTableIndex.getChildren(SQLIndex.Column.class)) {
             		displayColumns.add(col.getColumn());
             	}
             }
@@ -231,8 +229,7 @@ public class MatchPool extends MonitorableImpl {
             sql.append(DDLUtils.toQualifiedName(sourceTable));
             sql.append(" source2");
             int index = 0;
-            for (SQLObject sqo : sourceTableIndex.getChildren()) {
-        		SQLIndex.Column col = (SQLIndex.Column) sqo;
+        	for (SQLIndex.Column col : sourceTableIndex.getChildren(SQLIndex.Column.class)) {
         		if (index == 0) { 
             		sql.append("\n WHERE");
             	} else {
