@@ -106,8 +106,10 @@ public class FolderParent extends AbstractMatchMakerObject {
 	}
 
 	@Override
-	public List<? extends SPObject> getChildren() {
-		return Collections.unmodifiableList(plFolders);
+	public List<SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.addAll(plFolders);
+		return Collections.unmodifiableList(children);
 	}
 
 	@Override

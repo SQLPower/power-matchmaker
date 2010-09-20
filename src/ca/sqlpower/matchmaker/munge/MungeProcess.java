@@ -420,7 +420,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			try{
 				removeChild(ms);
 			} catch (ObjectDependentException e) {
-				throw new RuntimeException();
+				throw new RuntimeException(e);
 			}
 			commit();
 		} catch(RuntimeException e) {

@@ -20,7 +20,11 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
 
 /**
  * Settings specific to the Merge engine
@@ -76,7 +80,7 @@ public class MergeSettings extends MatchMakerSettings {
 	public void setBackUp(boolean backUp) {
 		boolean oldValue = this.backUp;
 		this.backUp = backUp;
-		getEventSupport().firePropertyChange("backUp", oldValue, backUp);
+		firePropertyChange("backUp", oldValue, backUp);
 	}
 
 	public boolean getAugmentNull() {
@@ -86,7 +90,7 @@ public class MergeSettings extends MatchMakerSettings {
 	public void setAugmentNull(boolean augmentNull) {
 		boolean oldValue = this.augmentNull;
 		this.augmentNull = augmentNull;
-		getEventSupport().firePropertyChange("augmentNull", oldValue,
+		firePropertyChange("augmentNull", oldValue,
 				this.augmentNull);
 	}
 	
@@ -118,5 +122,15 @@ public class MergeSettings extends MatchMakerSettings {
         buf.append(super.toString());
         buf.append("]");
         return buf.toString();
+	}
+
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return Collections.emptyList();
 	}
 }

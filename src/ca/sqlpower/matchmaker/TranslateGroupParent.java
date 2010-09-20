@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,8 +38,15 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	/**
 	 * Defines an absolute ordering of the child types of this class.
 	 */
+	/**
+	 * This the list that tells us the allowable child types and their order in getting children.
+	 */
+	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.emptyList();
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MatchMakerTranslateGroup.class)));
+	
+	List<MatchMakerTranslateGroup> matchMakerTranslateGroups = new ArrayList<MatchMakerTranslateGroup>();
 	
     private final MatchMakerSession session;
 
@@ -62,7 +71,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
         try {
         	super.removeChild(child);
         } catch (ObjectDependentException e) {
-        	throw new RuntimeException("Object Dependency Exception");
+        	throw new RuntimeException(e);
         }
     }
 
@@ -132,6 +141,24 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	@Override
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
+	}
+	
+	public void addChild(SPObject spo) {
+		addChild(spo, matchMakerTranslateGroups.size());
+	}
+	
+	@Override
+	protected void addChildImpl(SPObject child, int index) {
+		matchMakerTranslateGroups.add(index, (MatchMakerTranslateGroup)child);
+		fireChildAdded(MatchMakerTranslateGroup.class, child, index);
+	}
+	
+	@Override
+	protected boolean removeChildImpl(SPObject child) {
+		int index = matchMakerTranslateGroups.indexOf(child);
+		boolean removed = matchMakerTranslateGroups.remove(child);
+		fireChildRemoved(MatchMakerTranslateGroup.class, child, index);
+		return removed;
 	}
 
 	@Override
