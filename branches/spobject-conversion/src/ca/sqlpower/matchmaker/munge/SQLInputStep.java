@@ -34,6 +34,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.sql.CachedRowSet;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -241,9 +242,9 @@ public class SQLInputStep extends AbstractMungeStep {
                 // existing column changed type -- recreate output with same name and new type
                 int idx = getChildren().indexOf(output);
                 MungeStepOutput<?> newOutput = new MungeStepOutput(colName, TypeMap.typeClass(c.getType()));
-                addChild(idx, newOutput);
+                addChild(newOutput, idx);
                 MungeProcess mp = getParent();
-                for (MungeStep step : mp.getChildren()) {
+                for (MungeStep step : mp.getChildren(MungeStep.class)) {
                     for (int i = 0; i < step.getInputCount(); i++) {
                         InputDescriptor id = step.getInputDescriptor(i);
                         MungeStepOutput input = step.getMSOInputs().get(i);
@@ -258,7 +259,11 @@ public class SQLInputStep extends AbstractMungeStep {
                     }
                     
                 }
-                removeChild(output);
+                try {
+                	removeChild(output);
+                } catch (ObjectDependentException e) {
+                	throw new RuntimeException(e);
+                }
                 orphanOutputs.remove(output);
             } else {
                 // existing column with existing output -- nothing to do
@@ -269,10 +274,14 @@ public class SQLInputStep extends AbstractMungeStep {
         // clean up outputs whose columns no longer exist in the table
         for (MungeStepOutput mso : orphanOutputs) {
             MungeProcess mp = getParent();
-            for (MungeStep step : mp.getChildren()) {
+            for (MungeStep step : mp.getChildren(MungeStep.class)) {
                 step.disconnectInput(mso);
             }
-            removeChild(mso);
+            try {
+            	removeChild(mso);
+            } catch (ObjectDependentException e) {
+            	throw new RuntimeException(e);
+            }
         }
     }
     

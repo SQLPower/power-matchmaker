@@ -149,7 +149,7 @@ public class MungeProcessGraphModel implements GraphModel<MungeStep, MungeProces
      * @return
      */
     public Collection<Edge> getOutboundEdges(MungeStep node) {
-        List<MungeStepOutput> nodeOutputs = node.getChildren();
+        List<MungeStepOutput> nodeOutputs = node.getChildren(MungeStepOutput.class);
         List<Edge> obe = new ArrayList<Edge>();
         for (Edge e : edges) {
             if (nodeOutputs.contains(e.output)) {

@@ -137,7 +137,7 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 		} catch (Throwable t) {
 			for (MungeStep step: processOrder) {
 				try {
-					step.rollback();
+					step.mungeRollback();
 				} catch (Exception e) {
 					getLogger().error("Execption thrown while attempting to rollback step " + step.getName(), e);
 				}

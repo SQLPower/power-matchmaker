@@ -41,7 +41,7 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException(
 			"Lower case munge step does not support removeInput()");
 	}

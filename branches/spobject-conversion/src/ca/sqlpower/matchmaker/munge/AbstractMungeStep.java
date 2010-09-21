@@ -39,6 +39,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLType;
 import ca.sqlpower.validation.ValidateResult;
@@ -777,6 +778,31 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     public void setInputs(List<Input> inputs) {
     	this.inputs.clear();
     	this.inputs.addAll(inputs);
+    }
+    
+    /**
+	 * Only needed by XML DAO.
+	 */
+    public void setChildren(List<MungeStepOutput> xy) {
+    	try {
+    		begin("Updating entire children list");
+	        for (MungeStepOutput spo : getChildren(MungeStepOutput.class)) {
+	        	try {
+					removeChild(spo);
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				} catch (ObjectDependentException e) {
+					e.printStackTrace();
+				}
+	        }
+	        for (MungeStepOutput mso : xy) {
+	        	addChild(mso);
+	        }
+    	} catch (RuntimeException e) {
+    		rollback(e.getMessage());
+    		throw e;
+    	}
+    	
     }
 	
 	/**

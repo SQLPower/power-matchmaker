@@ -50,7 +50,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Double metaphoen substitution munge step does not support removeInput()");
 	}
 	

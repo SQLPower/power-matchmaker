@@ -79,7 +79,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Translate word munge step does not support removeInput()");
 	}
 	
