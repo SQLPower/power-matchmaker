@@ -311,7 +311,7 @@ public class ProjectDAOXML implements ProjectDAO {
             
             int stepID = 0;
             
-            for (MungeStep step : mp.getChildren()) {
+            for (MungeStep step : mp.getChildren(MungeStep.class)) {
                 print("<munge-step");
                 String stepIDStr = "step." + projectID + "." + processID + "." + stepID;
                 steps.put(step, stepIDStr);
@@ -335,7 +335,7 @@ public class ProjectDAOXML implements ProjectDAO {
                 
                 int outputID = 0;
                 
-                for (MungeStepOutput<?> mso : step.getChildren()) {
+                for (MungeStepOutput<?> mso : step.getChildren(MungeStepOutput.class)) {
                     print("<output");
                     String outputIDStr = "output." + projectID + "." + processID + "." + stepID + "." + outputID;
                     outputs.put(mso, outputIDStr);
@@ -352,7 +352,7 @@ public class ProjectDAOXML implements ProjectDAO {
 
             println("<connections>");
             indent++;
-            for (MungeStep step : mp.getChildren()) {
+            for (MungeStep step : mp.getChildren(MungeStep.class)) {
                 print("<munge-step");
                 printAttribute("ref", steps.get(step));
                 niprintln(">");
@@ -403,7 +403,7 @@ public class ProjectDAOXML implements ProjectDAO {
                 printIndex(tmr.getTableIndex());
             }
             
-            for (ColumnMergeRules cmr : tmr.getChildren()) {
+            for (ColumnMergeRules cmr : tmr.getChildren(ColumnMergeRules.class)) {
                 print("<column-merge-rule");
                 printCommonAttributes(cmr);
                 printAttribute("column-name", cmr.getColumnName());
@@ -511,7 +511,7 @@ public class ProjectDAOXML implements ProjectDAO {
      * 
      * @param mmo The object whose attributes to print.
      */
-    private void printCommonAttributes(MatchMakerObject<?, ?> mmo) {
+    private void printCommonAttributes(MatchMakerObject mmo) {
         printAttribute("name", mmo.getName());
         printAttribute("visible", String.valueOf(mmo.isVisible()));
     }
