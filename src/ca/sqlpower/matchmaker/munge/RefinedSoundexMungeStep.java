@@ -40,7 +40,7 @@ public class RefinedSoundexMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Refined soundex substitution munge step does not support removeInput()");
 	}
 	

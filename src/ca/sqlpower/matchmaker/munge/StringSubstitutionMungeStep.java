@@ -69,7 +69,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("String substitution munge step does not support removeInput()");
 	}
 	

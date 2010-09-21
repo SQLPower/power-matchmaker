@@ -148,7 +148,7 @@ public class MungeProcessor extends AbstractProcessor {
      * default accessibility so that the unit test can call it.
      */
 	void determineProcessOrder() {
-		List<MungeStep> steps = new ArrayList<MungeStep>(mungeProcess.getChildren());
+		List<MungeStep> steps = new ArrayList<MungeStep>(mungeProcess.getChildren(MungeStep.class));
     	// topo sort
     	MungeProcessGraphModel gm = new MungeProcessGraphModel(steps);
     	DepthFirstSearch<MungeStep, Edge> dfs = new DepthFirstSearch<MungeStep, Edge>();

@@ -44,7 +44,7 @@ public class MD5CheckSumMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("MD5 CheckSum substitution munge step does not support removeInput()");
 	}
 	

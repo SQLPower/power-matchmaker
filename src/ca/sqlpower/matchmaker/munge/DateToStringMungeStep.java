@@ -75,7 +75,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	}
 
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Date to String munge step does not support removeInput()");
 	}
 

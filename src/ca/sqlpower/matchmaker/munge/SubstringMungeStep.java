@@ -54,7 +54,7 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Substring munge step does not support removeInput()");
 	}
 	

@@ -71,7 +71,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Retain characters munge step does not support removeInput()");
 	}
 	

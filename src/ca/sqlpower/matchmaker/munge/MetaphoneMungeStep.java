@@ -40,7 +40,7 @@ public class MetaphoneMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Metaphone soundex substitution munge step does not support removeInput()");
 	}
 	
