@@ -113,7 +113,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.open(logger);
 		step.call();
 		step.commit();
-		step.close();
+		step.mungeClose();
 		
 		f = new File(fileName);
 		assertTrue(f.exists());

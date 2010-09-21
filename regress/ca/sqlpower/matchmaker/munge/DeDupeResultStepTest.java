@@ -42,7 +42,7 @@ public class DeDupeResultStepTest extends TestCase {
 		MungeStep inputStep = new SQLInputStep();
 		
         for (int i = 0; i < 3; i++) {
-            inputStep.addChild(new MungeStepOutput<String>("output_"+i, String.class));
+            inputStep.addChild(new MungeStepOutput<String>("output_"+i, String.class), i);
         }
 		
 		Project project = new Project();
@@ -73,7 +73,7 @@ public class DeDupeResultStepTest extends TestCase {
 		MungeProcess mp = new MungeProcess();
 		mp.addChild(inputStep);
 		mp.addChild(step);
-		project.addMungeProcess(mp);
+		project.addChild(mp);
 	}
 
 	public void test() throws Exception {

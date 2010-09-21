@@ -64,7 +64,7 @@ public class StringToDateMungeStepTest extends TestCase {
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		StringToDateMungeStep temp = (StringToDateMungeStep) step;
 		temp.connectInput(0, mso);
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		
 		temp.setTimeFormat("");
 		
@@ -83,7 +83,7 @@ public class StringToDateMungeStepTest extends TestCase {
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		StringToDateMungeStep temp = (StringToDateMungeStep) step;
 		temp.connectInput(0, mso);
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		
 		temp.setDateFormat("");
 		temp.setOutputFormat(StringToDateMungeStep.OUTPUT_FORMATS.get(1));
@@ -103,7 +103,7 @@ public class StringToDateMungeStepTest extends TestCase {
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		StringToDateMungeStep temp = (StringToDateMungeStep) step;
 		temp.connectInput(0, mso);
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		mso.setData("Thursday/01/February/2007 01:01:01 PM");
 
 		temp.setDateFormat(StringToDateMungeStep.DATE_FORMATS.get(10));
@@ -136,7 +136,7 @@ public class StringToDateMungeStepTest extends TestCase {
 		mso.setData("One Billion Yen!!!!!");
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals(null, (Date)out.getData());
 	}
 	

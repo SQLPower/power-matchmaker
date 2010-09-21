@@ -41,7 +41,7 @@ public class StringToNumberMungeStepTest extends TestCase {
 		mso.setData("0");
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals(new BigDecimal(0), (BigDecimal)out.getData());
 	}
 	
@@ -50,7 +50,7 @@ public class StringToNumberMungeStepTest extends TestCase {
 		mso.setData("1");
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals(new BigDecimal(1), (BigDecimal)out.getData());
 	}
 	
@@ -59,7 +59,7 @@ public class StringToNumberMungeStepTest extends TestCase {
 		mso.setData("-1");
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals(new BigDecimal(-1), (BigDecimal)out.getData());
 	}
 	
@@ -68,7 +68,7 @@ public class StringToNumberMungeStepTest extends TestCase {
 		mso.setData(null);
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertNull(out.getData());
 	}
 	
@@ -90,7 +90,7 @@ public class StringToNumberMungeStepTest extends TestCase {
 		mso.setData("One Billion Dollars!!!!!");
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals(null, (BigDecimal)out.getData());
 	}
 	

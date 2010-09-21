@@ -40,12 +40,11 @@ public class AbstractMungeStepTest extends TestCase {
 	 */
 	public void testAddInput() {
 		InputDescriptor desc = new InputDescriptor("test", Object.class);
-		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
-			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
-		mungeStep.addMatchMakerListener(mml);
+		MatchMakerEventCounter mml = new MatchMakerEventCounter();
+		mungeStep.addSPListener(mml);
 		mungeStep.addInput(desc);
 		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
-		mungeStep.removeMatchMakerListener(mml);
+		mungeStep.removeSPListener(mml);
 		mungeStep.addInput(desc);
 		assertEquals("Got extra events",1,mml.getAllEventCounts());
 	}
@@ -57,9 +56,8 @@ public class AbstractMungeStepTest extends TestCase {
 	public void testRemoveInput() {
 		InputDescriptor desc = new InputDescriptor("test", Object.class);
 		mungeStep.addInput(desc);
-		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
-			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
-		mungeStep.addMatchMakerListener(mml);
+		MatchMakerEventCounter mml = new MatchMakerEventCounter();
+		mungeStep.addSPListener(mml);
 		mungeStep.removeInput(0);
 		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
 	}
@@ -69,18 +67,16 @@ public class AbstractMungeStepTest extends TestCase {
 	 * that it fires a property changed event
 	 */
 	public void testSetParameter() {
-		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
-			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
-		mungeStep.addMatchMakerListener(mml);
+		MatchMakerEventCounter mml = new MatchMakerEventCounter();
+		mungeStep.addSPListener(mml);
 		mungeStep.setParameter("test", "test");
 		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
 		assertEquals("Parameter cannot be found", "test", mungeStep.getParameter("test"));
 	}
 	
 	public void testConnectInput() {
-		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
-			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
-		mungeStep.addMatchMakerListener(mml);
+		MatchMakerEventCounter mml = new MatchMakerEventCounter();
+		mungeStep.addSPListener(mml);
 		InputDescriptor desc = new InputDescriptor("test", String.class);
 		mungeStep.addInput(desc);
 		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
@@ -93,9 +89,8 @@ public class AbstractMungeStepTest extends TestCase {
 	}
 	
 	public void testDisconnectInput() {
-		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
-			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
-		mungeStep.addMatchMakerListener(mml);
+		MatchMakerEventCounter mml = new MatchMakerEventCounter();
+		mungeStep.addSPListener(mml);
 		InputDescriptor desc = new InputDescriptor("test", String.class);
 		mungeStep.addInput(desc);
 		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
