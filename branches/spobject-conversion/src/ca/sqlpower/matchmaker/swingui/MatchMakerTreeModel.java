@@ -380,7 +380,7 @@ public class MatchMakerTreeModel implements TreeModel {
                 MatchMakerObject mmo = (MatchMakerObject)e.getSource();
                 while (mmo != null) {
                     sb.insert(0, "->" + mmo.getName());
-                    mmo = (MatchMakerObject)mmo.getParent();
+                    mmo = mmo.getParent();
                 }
                 logger.debug("Parent of inserted MMObject: "+sb);
                 logger.debug("          inserted child: "+e.getChild());
