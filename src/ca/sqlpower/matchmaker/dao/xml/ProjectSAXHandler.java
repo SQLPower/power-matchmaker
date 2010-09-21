@@ -407,7 +407,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                 checkMandatory("id", id);
                 checkMandatory("name", process.getName());
 
-                project.addMungeProcess(process); // FIXME have to do this in endElement
+                project.addMungeProcess(process, project.getMungeProcesses().size()); // FIXME have to do this in endElement
 
             } else if (qName.equals("munge-step") && parentIs("munge-process")) {
                 String type = attributes.getValue("step-type");
@@ -550,7 +550,7 @@ public class ProjectSAXHandler extends DefaultHandler {
             } else if (qName.equals("table-merge-rule")) {
                 tableMergeRules = new TableMergeRules();
                 tableMergeRulesIdMap.put(attributes.getValue("id"), tableMergeRules);
-                project.addTableMergeRule(tableMergeRules);
+                project.addTableMergeRules(tableMergeRules, project.getTableMergeRules().size());
                 
                 for (int i = 0; i < attributes.getLength(); i++) {
                     String aname = attributes.getQName(i);
