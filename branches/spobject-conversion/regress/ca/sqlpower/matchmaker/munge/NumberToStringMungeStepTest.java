@@ -40,7 +40,7 @@ public class NumberToStringMungeStepTest extends TestCase {
 		mso.setData(null);
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertNull(out.getData());
 	}
 	
@@ -49,7 +49,7 @@ public class NumberToStringMungeStepTest extends TestCase {
 		mso.setData(new BigDecimal(0));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals("0", out.getData());
 	}
 	
@@ -58,7 +58,7 @@ public class NumberToStringMungeStepTest extends TestCase {
 		mso.setData(new BigDecimal(1));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals("1", out.getData());
 	}
 	
@@ -67,7 +67,7 @@ public class NumberToStringMungeStepTest extends TestCase {
 		mso.setData(new BigDecimal(-1));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals("-1", out.getData());
 	}
 	
@@ -76,7 +76,7 @@ public class NumberToStringMungeStepTest extends TestCase {
 		mso.setData(new BigDecimal(-1234567890));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren().get(0);
+		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals("-1234567890", out.getData());
 	}
 }

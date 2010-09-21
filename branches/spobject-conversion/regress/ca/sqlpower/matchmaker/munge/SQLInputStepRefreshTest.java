@@ -46,7 +46,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         
         inputStep.refresh(logger);
         
-        assertEquals(2, inputStep.getChildCount());
+        assertEquals(2, inputStep.getChildren(MungeStepOutput.class).size());
         assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
         assertEquals("DOB", inputStep.getChildren().get(1).getName());
     }
@@ -61,7 +61,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         
         inputStep.refresh(logger);
         
-        assertEquals(4, inputStep.getChildCount());
+        assertEquals(4, inputStep.getChildren(MungeStepOutput.class).size());
         assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
         assertEquals("NAME", inputStep.getChildren().get(1).getName());
         assertEquals("DOB", inputStep.getChildren().get(2).getName());

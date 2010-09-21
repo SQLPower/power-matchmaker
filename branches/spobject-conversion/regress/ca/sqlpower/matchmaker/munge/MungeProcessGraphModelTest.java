@@ -89,28 +89,28 @@ public class MungeProcessGraphModelTest extends TestCase {
         steps.add(a);
 
         b = new TestingMungeStep("B", 1, 1);
-        b.connectInput(0, a.getChildren().get(0));
+        b.connectInput(0, a.getChildren(MungeStepOutput.class).get(0));
         steps.add(b);
 
         c = new TestingMungeStep("C", 1, 2);
-        c.connectInput(0, a.getChildren().get(0));
+        c.connectInput(0, a.getChildren(MungeStepOutput.class).get(0));
         steps.add(c);
 
         d = new TestingMungeStep("D", 1, 1);
         steps.add(d);
 
         e = new TestingMungeStep("E", 1, 0);
-        e.connectInput(0, b.getChildren().get(0));
+        e.connectInput(0, b.getChildren(MungeStepOutput.class).get(0));
         steps.add(e);
 
         f = new TestingMungeStep("F", 3, 0);
-        f.connectInput(0, a.getChildren().get(0));
+        f.connectInput(0, a.getChildren(MungeStepOutput.class).get(0));
         // purposely leaving input 1 not connected (for testing)
-        f.connectInput(2, c.getChildren().get(0));
+        f.connectInput(2, c.getChildren(MungeStepOutput.class).get(0));
         steps.add(f);
 
         g = new TestingMungeStep("G", 1, 1);
-        g.connectInput(0, c.getChildren().get(1));
+        g.connectInput(0, c.getChildren(MungeStepOutput.class).get(1));
         steps.add(g);
 
         gm = new MungeProcessGraphModel(steps);
@@ -122,35 +122,35 @@ public class MungeProcessGraphModelTest extends TestCase {
     public void testSingleOutputMultipleConnections() throws Exception {
         Collection<MungeProcessGraphModel.Edge> obe = gm.getOutboundEdges(a);
         assertEquals(3, obe.size());
-        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(a.getChildren().get(0), b)));
-        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(a.getChildren().get(0), c)));
-        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(a.getChildren().get(0), f)));
+        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(a.getChildren(MungeStepOutput.class).get(0), b)));
+        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(a.getChildren(MungeStepOutput.class).get(0), c)));
+        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(a.getChildren(MungeStepOutput.class).get(0), f)));
     }
     
     public void testSingleInput() throws Exception {
         Collection<MungeProcessGraphModel.Edge> ibe = gm.getInboundEdges(b);
         assertEquals(1, ibe.size());
-        assertTrue(ibe.contains(new MungeProcessGraphModel.Edge(a.getChildren().get(0), b)));
+        assertTrue(ibe.contains(new MungeProcessGraphModel.Edge(a.getChildren(MungeStepOutput.class).get(0), b)));
     }
 
     public void testSingleOutput() throws Exception {
         Collection<MungeProcessGraphModel.Edge> obe = gm.getOutboundEdges(b);
         assertEquals(1, obe.size());
-        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(b.getChildren().get(0), e)));
+        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(b.getChildren(MungeStepOutput.class).get(0), e)));
     }
     
     public void testMultipleOutputs() throws Exception {
         Collection<MungeProcessGraphModel.Edge> obe = gm.getOutboundEdges(c);
         assertEquals(2, obe.size());
-        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(c.getChildren().get(0), f)));
-        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(c.getChildren().get(1), g)));
+        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(c.getChildren(MungeStepOutput.class).get(0), f)));
+        assertTrue(obe.contains(new MungeProcessGraphModel.Edge(c.getChildren(MungeStepOutput.class).get(1), g)));
     }
     
     public void testMultipleInputs() throws Exception {
         Collection<MungeProcessGraphModel.Edge> ibe = gm.getInboundEdges(f);
         assertEquals(2, ibe.size());
-        assertTrue(ibe.contains(new MungeProcessGraphModel.Edge(a.getChildren().get(0), f)));
-        assertTrue(ibe.contains(new MungeProcessGraphModel.Edge(c.getChildren().get(0), f)));
+        assertTrue(ibe.contains(new MungeProcessGraphModel.Edge(a.getChildren(MungeStepOutput.class).get(0), f)));
+        assertTrue(ibe.contains(new MungeProcessGraphModel.Edge(c.getChildren(MungeStepOutput.class).get(0), f)));
     }
 
     public void testNoInputs() throws Exception {

@@ -72,7 +72,7 @@ public class SQLInputStepTest extends TestCase {
         project.setSourceTable(table);
         
         process = new MungeProcess();
-        project.addMungeProcess(process);
+        project.addChild(process);
         
         step = new SQLInputStep();
         process.addChild(step);
