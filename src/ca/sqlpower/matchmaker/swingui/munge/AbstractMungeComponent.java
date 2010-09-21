@@ -41,6 +41,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,14 +70,16 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.util.TransactionEvent;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -265,7 +268,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		autoScrollTimer.setRepeats(true);
 		
 		dropNibIndex = -1;
-		connected = new int[step.getChildCount()];
+		connected = new int[step.getChildren(MungeStepOutput.class).size()];
 		for (int x = 0; x < connected.length;x++) {
 			connected[x] = 0;
 		}
@@ -278,7 +281,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		mungeComKeyListener = new MungeComponentKeyListener();
 		addKeyListener(mungeComKeyListener);
 		
-		step.addMatchMakerListener(new StepEventHandler());
+		step.addSPListener(new StepEventHandler());
 		setName(step.getName());
 		
 		int borderTop;
@@ -289,7 +292,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 		
 		int borderBottom;
-		if (getStep().getChildCount() == 0) {
+		if (getStep().getChildren(MungeStepOutput.class).size() == 0) {
 			borderBottom = 0;
 		} else {
 			borderBottom = ConnectorIcon.getNibInstance(Object.class).getIconHeight();
@@ -333,10 +336,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		outputNames.setOpaque(false);
 		outputNames.setLayout(new FlowLayout());
 		
-		outputLabels = new CoolJLabel[step.getChildCount()];
+		outputLabels = new CoolJLabel[step.getChildren(MungeStepOutput.class).size()];
 		
 		for (int x = 0; x < outputLabels.length; x++) {
-			MungeStepOutput out = step.getChildren().get(x);
+			MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(x);
 			outputLabels[x] = new CoolJLabel(out.getName(), out.getType());
 			outputLabels[x].collapse();
 			outputNames.add(outputLabels[x]);
@@ -716,14 +719,14 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 		}
 		
-		for (int i = 0; i < getStep().getChildCount(); i++) {
+		for (int i = 0; i < getStep().getChildren(MungeStepOutput.class).size(); i++) {
 			if (!isOutputConnected(i) || (dropNib != null && dropNibIndex == i)) {
 				int xPos = getOutputPosition(i).x;
 				Icon nib;
 				
 				int droppingOffset;
 				if (dropNib == null || dropNibIndex != i) {
-					nib = ConnectorIcon.getNibInstance(getStep().getChildren().get(i).getType());
+					nib = ConnectorIcon.getNibInstance(getStep().getChildren(MungeStepOutput.class).get(i).getType());
 					droppingOffset = 0;
 				} else {
 					nib = dropNib;
@@ -762,7 +765,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return the list
 	 */
 	public List<MungeStepOutput> getOutputs() {
-		return step.getChildren();
+		return step.getChildren(MungeStepOutput.class);
 	}
 	
 	/**
@@ -848,15 +851,35 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * A Set of listeners that detect changes in the MungeSteps and redraws them
 	 */
-	private class StepEventHandler implements MatchMakerListener<MungeStep, MungeStepOutput> {
-		public void mmChildrenInserted(
-				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {}
+	private class StepEventHandler implements SPListener {
+		
+		@Override
+		public void childAdded(SPChildEvent e) {
+			//no-op
+		}
 
-		public void mmChildrenRemoved(
-				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {}
+		@Override
+		public void childRemoved(SPChildEvent e) {
+			//no-op
+		}
 
-		public void mmPropertyChanged(
-				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
+		@Override
+		public void transactionStarted(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void transactionEnded(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void transactionRollback(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
 			if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_EXPANDED)) {
 				setExpanded(Boolean.parseBoolean((String)evt.getNewValue()));
 			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_X)) {
@@ -866,13 +889,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 			} else if (evt.getPropertyName().equals("addInputs")){
 				repaint();
 			} else if (!evt.getPropertyName().equals("inputs")
-					&& evt.isUndoEvent()) {
+					&& !((SPObject)evt.getSource()).isMagicEnabled()) {
 				reload();
 			}
 		}
-
-		public void mmStructureChanged(
-				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {}
 	}
 	
 	/**
@@ -1130,7 +1150,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			int selected = getClosestIOIndex(p, CLICK_TOLERANCE, false);			
 			
 			if (selected != -1 && step.isInputStep()) {
-				MungeStepOutput<?> out = step.getChildren().get(selected);
+				MungeStepOutput<?> out = step.getChildren(MungeStepOutput.class).get(selected);
 				setToolTipText(out.getName() + " ("	+ shortClassName(out.getType()) + ")");
 			}
 			if (dropNibIndex != selected && selected != -1 && isOutputConnected(selected)) {
@@ -1275,7 +1295,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		int dropAmount;
 		public DropDownAction(int index, int dropAmount) {
 			this.dropAmount = dropAmount;
-			dropNib = ConnectorIcon.getNibInstance(getStep().getChildren().get(index).getType());
+			dropNib = ConnectorIcon.getNibInstance(getStep().getChildren(MungeStepOutput.class).get(index).getType());
 			dropNibOffSet = dropNib.getIconHeight();
 			dropNibIndex = index;
 		}
