@@ -117,6 +117,10 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 		return allowedChildTypes;
 	}
 	
+	public void addChild(SPObject spo) {
+		addChild(spo,children.size());
+	}
+	
 	protected void addChildImpl(SPObject spo, int index) {
 		children.add(index, (MatchMakerTranslateWord) spo);
 		fireChildAdded(MatchMakerTranslateWord.class, spo, index);
