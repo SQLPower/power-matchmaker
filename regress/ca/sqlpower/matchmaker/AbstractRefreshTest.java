@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.DatabaseConnectedTestCase;
@@ -111,15 +112,15 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
         
         mungeProcess = new MungeProcess();
         mungeProcess.setName("Simple");
-        p.addMungeProcess(mungeProcess);
+        p.addChild(mungeProcess);
         inputStep = new SQLInputStep();
         mungeProcess.addChild(inputStep);
         inputStep.refresh(logger);
         
-        assertEquals(3, inputStep.getChildCount());
-        assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
-        assertEquals("NAME", inputStep.getChildren().get(1).getName());
-        assertEquals("DOB", inputStep.getChildren().get(2).getName());
+        assertEquals(3, inputStep.getChildren(MungeStepOutput.class).size());
+        assertEquals("CUSTOMER_ID", inputStep.getChildren(MungeStepOutput.class).get(0).getName());
+        assertEquals("NAME", inputStep.getChildren(MungeStepOutput.class).get(1).getName());
+        assertEquals("DOB", inputStep.getChildren(MungeStepOutput.class).get(2).getName());
         
     }
     
