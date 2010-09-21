@@ -20,6 +20,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -33,9 +35,14 @@ public class TestingAbstractMatchMakerObject
 	/**
 	 * Defines an absolute ordering of the child types of this class.
 	 */
+	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.emptyList();
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(TestingAbstractMatchMakerObject.class, StubMatchMakerObject.class,
+						AbstractMatchMakerObject.class)));
 	
+    private final List<TestingAbstractMatchMakerObject> children = new ArrayList<TestingAbstractMatchMakerObject>();
+    
 	int i;
 
 	public TestingAbstractMatchMakerObject( ) {
@@ -55,8 +62,12 @@ public class TestingAbstractMatchMakerObject
 	public int hashCode() {
 		return i;
 	}
+	public void setHashCode(int i) {
+		this.i = i;
+	}
+	
 	public List<? extends SPObject> getChildren() {
-		return Collections.emptyList();
+		return Collections.unmodifiableList(children);
 	}
 
 	public boolean hasListener(SPListener listener) {
@@ -64,16 +75,33 @@ public class TestingAbstractMatchMakerObject
 	}
 
 	public TestingAbstractMatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession session) {
-		return null;
+		TestingAbstractMatchMakerObject dup = new TestingAbstractMatchMakerObject();
+		dup.setHashCode(hashCode());
+		dup.setParent(parent);
+		dup.setSession(getSession());
+		return dup;
 	}
 
 	@Override
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
+	
+	public void addChild(SPObject spo) {
+		addChild(spo, children.size());
+	}
+	
+	@Override
+	protected void addChildImpl(SPObject child, int index) {
+		children.add(index, (TestingAbstractMatchMakerObject)child);
+		fireChildAdded(TestingAbstractMatchMakerObject.class, child, index);
+	}
 
 	@Override
 	protected boolean removeChildImpl(SPObject child) {
-		return false;
+		int index = children.indexOf(child);
+		boolean removed = children.remove((TestingAbstractMatchMakerObject)child);
+		fireChildRemoved(TestingAbstractMatchMakerObject.class, child, index);
+		return removed;
 	}
 }
