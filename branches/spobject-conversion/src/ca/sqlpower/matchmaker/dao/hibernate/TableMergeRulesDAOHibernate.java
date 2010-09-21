@@ -35,7 +35,7 @@ public class TableMergeRulesDAOHibernate extends AbstractMatchMakerDAOHibernate<
 	public void delete(TableMergeRules deleteMe) {
 		Project parent = deleteMe.getParentProject();
 		if (parent != null ){
-			parent.removeTableMergeRule(deleteMe);
+			parent.removeTableMergeRules(deleteMe);
 		}
 		super.delete(deleteMe);
 	}

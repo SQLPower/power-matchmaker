@@ -30,6 +30,7 @@ import org.hibernate.Session;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
+import ca.sqlpower.object.ObjectDependentException;
 
 public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOHibernate<MatchMakerTranslateGroup> implements MatchMakerTranslateGroupDAO {
     static final Logger logger = Logger.getLogger(MatchMakerTranslateGroupDAOHibernate.class);
@@ -80,7 +81,13 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 			boolean tgChanged = false;
 			for (MatchMakerTranslateWord tw : translateGroup.getChildren()) {
 				if (tw == null) {
-					translateGroup.removeChild(tw);
+					try {
+						translateGroup.removeChild(tw);
+					} catch (IllegalArgumentException e) {
+						throw new RuntimeException(e);
+					} catch (ObjectDependentException e) {
+						throw new RuntimeException(e);
+					}
 					tgChanged = true;
 				}
 			}
@@ -97,7 +104,13 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 			tgChanged = false;
 			for (MatchMakerTranslateWord tw : tg.getChildren()) {
 				if (tw == null) {
-					tg.removeChild(tw);
+					try {
+						tg.removeChild(tw);
+					} catch (IllegalArgumentException e) {
+						throw new RuntimeException(e);
+					} catch (ObjectDependentException e) {
+						throw new RuntimeException(e);
+					}
 					tgChanged = true;
 				}
 			}

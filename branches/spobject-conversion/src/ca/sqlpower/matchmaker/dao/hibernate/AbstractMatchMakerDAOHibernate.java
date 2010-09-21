@@ -26,6 +26,7 @@ import org.hibernate.Transaction;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.object.ObjectDependentException;
 
 /**
  * Abstract data access class that implements a basic findAll, save and delete.
@@ -60,7 +61,11 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		try {
 			s.delete(deleteMe);
 			if (deleteMe.getParent() != null) {
-				deleteMe.getParent().removeChild(deleteMe);
+				try {
+					deleteMe.getParent().removeChild(deleteMe);
+				} catch (ObjectDependentException e) {
+					throw new RuntimeException(e);
+				}
 			}
 			s.flush();
 			t.commit();
