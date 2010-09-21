@@ -40,10 +40,10 @@ import ca.sqlpower.sqlobject.SQLTable;
  * 		<dt>merge action  <dd> table merge rule merge action in a combo box
  * </dl>
  */
-public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel, TableMergeRules> {
+public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Project> {
 
 	public MergeTableRuleTableModel(Project project) {
-		super(project.getTableMergeRulesFolder());
+		super(project);
 	}
 	
 	public int getColumnCount() {
@@ -51,7 +51,7 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel, Tabl
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TableMergeRules tableMergeRule = mmo.getChildren().get(rowIndex);
+		TableMergeRules tableMergeRule = mmo.getChildren(TableMergeRules.class).get(rowIndex);
 		if (columnIndex == 0) {
 			return tableMergeRule.getCatalogName();
 		} else if (columnIndex == 1) {
@@ -71,7 +71,7 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel, Tabl
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		TableMergeRules rule = mmo.getChildren().get(rowIndex);
+		TableMergeRules rule = mmo.getChildren(TableMergeRules.class).get(rowIndex);
 		
 		if (columnIndex == 3 && !rule.isSourceMergeRule()) {
 			return true;
@@ -109,7 +109,7 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel, Tabl
 	}
 	
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		TableMergeRules rule = mmo.getChildren().get(rowIndex);
+		TableMergeRules rule = mmo.getChildren(TableMergeRules.class).get(rowIndex);
 		if (rule.isSourceMergeRule()) return;
 		
 		if (columnIndex == 3) {

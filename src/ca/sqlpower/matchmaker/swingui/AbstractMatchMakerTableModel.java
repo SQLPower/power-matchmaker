@@ -27,20 +27,19 @@ import javax.swing.table.AbstractTableModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.TransactionEvent;
 
-public abstract class AbstractMatchMakerTableModel extends AbstractTableModel implements CleanupModel {
+public abstract class AbstractMatchMakerTableModel<T extends MatchMakerObject> extends AbstractTableModel implements CleanupModel {
 	
 	private static final Logger logger = Logger.getLogger(AbstractMatchMakerTableModel.class);
 
-	protected Project mmo;
+	protected T mmo;
 	private TableModelEventAdapter mmoListener = new TableModelEventAdapter();
 	
-	protected AbstractMatchMakerTableModel (Project mmo) {
+	protected AbstractMatchMakerTableModel (T mmo) {
 		this.mmo = mmo;
 		SQLPowerUtils.listenToShallowHierarchy(mmoListener, mmo);
 		logger.debug("Table Model initialized.");

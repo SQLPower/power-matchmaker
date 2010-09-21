@@ -628,7 +628,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
 				mergeRule.setTable(sourceTable);
 				mergeRule.setTableIndex(sourceTableIndex);
 				mergeRule.deriveColumnMergeRules();
-				for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+				for (ColumnMergeRules cmr : mergeRule.getChildren(ColumnMergeRules.class)) {
 					if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
 						cmr.setActionType(MergeActionType.NA);
 					}
@@ -640,7 +640,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
         		for (TableMergeRules tmr : project.getTableMergeRules()) {
         			if (tmr.isSourceMergeRule()) {
         				tmr.setTableIndex(sourceTableIndex);
-        				for (ColumnMergeRules cmr : tmr.getChildren()) {
+        				for (ColumnMergeRules cmr : tmr.getChildren(ColumnMergeRules.class)) {
         					if (tmr.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
         						cmr.setActionType(MergeActionType.NA);
         					} else if (cmr.getActionType() == MergeActionType.NA) {

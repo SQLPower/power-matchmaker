@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,6 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -71,7 +71,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeColumnRuleEditor extends AbstractUndoableEditorPane {
+public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMergeRules>{
 
 	private class MergeColumnRuleJTableValidator implements Validator {
 
@@ -535,8 +535,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane {
 	}
 
 	@Override
-	public void undoEventFired(
-			MatchMakerEvent evt) {
+	public void undoEventFired(PropertyChangeEvent evt) {
 		if (!mmo.isSourceMergeRule()) {
 			if (mmo.getParentMergeRule() != null) {
 				parentMergeRule.setSelectedItem(mmo.getParentMergeRule().getSourceTable());

@@ -45,6 +45,7 @@ import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
@@ -250,10 +251,10 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 	 * 								multiple munge process produce the same match
 	 * </dl>
 	 */
-	private class MungeProcessTableModel extends AbstractMatchMakerTableModel{
+	private class MungeProcessTableModel extends AbstractMatchMakerTableModel <Project>{
 
 		public MungeProcessTableModel(Project project) {
-			super(project.getMungeProcessesFolder());
+			super(project);
 		}
 
 		public int getColumnCount() {
@@ -261,7 +262,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			MungeProcess mungeProcess = mmo.getChildren().get(rowIndex);
+			MungeProcess mungeProcess = mmo.getChildren(MungeProcess.class).get(rowIndex);
 			switch (columnIndex) {
 			case 0:  return mungeProcess.getName();
 			case 1:  return mungeProcess.getDesc();
@@ -345,7 +346,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 	}
 
 	public boolean applyChanges() {
-		swingSession.save(project.getMungeProcessesFolder());
+		swingSession.save(project);
 		return true;
 	}
 
@@ -360,6 +361,11 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 	public boolean hasUnsavedChanges() {
 		logger.debug("MungeProgressGroupEditor panel automatically saves changes");
 		return false;
+	}
+
+	@Override
+	public MatchMakerObject getCurrentEditingMMO() {
+		return null;
 	}
 
 }

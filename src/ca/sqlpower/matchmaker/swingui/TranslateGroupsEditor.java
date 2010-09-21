@@ -83,7 +83,7 @@ public class TranslateGroupsEditor extends NoEditEditorPane {
 	public TranslateGroupsEditor(MatchMakerSwingSession swingSession) {
 		super();
 		this.swingSession = swingSession;
-		this.translateGroups = swingSession.getTranslations().getChildren();
+		this.translateGroups = swingSession.getTranslations().getChildren(MatchMakerTranslateGroup.class);
 		
 		setupTable();
         super.setPanel(buildUI());
@@ -217,7 +217,7 @@ public class TranslateGroupsEditor extends NoEditEditorPane {
 		
 		public TranslateGroupsTableModel(MatchMakerSwingSession swingSession) {
 			this.swingSession = swingSession;
-			rows = swingSession.getTranslations().getChildren();
+			rows = swingSession.getTranslations().getChildren(MatchMakerTranslateGroup.class);
 		}
 		
 		public int getColumnCount() {
