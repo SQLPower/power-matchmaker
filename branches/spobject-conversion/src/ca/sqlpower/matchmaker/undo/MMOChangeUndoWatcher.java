@@ -28,10 +28,10 @@ import javax.swing.undo.UndoableEdit;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.TransactionEvent;
 
@@ -91,7 +91,7 @@ implements SPListener {
     	SQLPowerUtils.listenToHierarchy(e.getChild(), this);
     	
     	logger.debug("Child: " + e.getChild() + " is inserted into: " + e.getSource().toString());
-    	if (!e.isUndoEvent()) {
+    	if (e.getSource().isMagicEnabled()) {
     		UndoableEdit ue = new MMOChildrenInsertUndoableEdit(e, null);
 
     		if (undoCount > 0) {
@@ -109,8 +109,24 @@ implements SPListener {
 
 	@Override
 	public void childRemoved(SPChildEvent e) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: SPListener.childRemoved()");
+        hasChanged = true;
+        SQLPowerUtils.unlistenToHierarchy(e.getChild(), this);
+    	
+    	logger.debug("Child: " + e.getChild() + " is inserted into: " + e.getSource().toString());
+    	if (e.getSource().isMagicEnabled()) {
+    		UndoableEdit ue = new MMOChildrenRemoveUndoableEdit(e, null);
+
+    		if (undoCount > 0) {
+    			ce.addEdit(ue);
+    		} else {
+    			undo.addEdit(ue);
+    		}
+    	} else {
+    		if (!undo.canUndo()) {
+    			hasChanged = false;
+    		}
+    	}
+    	swingSession.refreshUndoAction();
 		
 	}
 
@@ -137,56 +153,10 @@ implements SPListener {
 
 	@Override
 	public void propertyChanged(PropertyChangeEvent evt) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: SPListener.propertyChanged()");
-		
-	}
-
-    /**
-     * Listener implementation.
-     */
-    public void mmChildrenInserted(SPChildEvent e) {
-    }
-
-    /**
-     * Listener implementation.
-     */
-    public void mmChildrenRemoved(MatchMakerEvent<T,C> evt) {
-        hasChanged = true;
-        for (MatchMakerObject<T,C> child : evt.getChildren()) {
-            MatchMakerUtils.unlistenToHierarchy(this, child);
-        }
-    	
-    	logger.debug("Children: " + evt.getChildren() + " is inserted into: " + evt.getSource().toString());
-    	if (!evt.isUndoEvent()) {
-    		UndoableEdit ue = new MMOChildrenRemoveUndoableEdit(evt, null);
-
-    		if (undoCount > 0) {
-    			ce.addEdit(ue);
-    		} else {
-    			undo.addEdit(ue);
-    		}
-    	} else {
-    		if (!undo.canUndo()) {
-    			hasChanged = false;
-    		}
-    	}
-    	swingSession.refreshUndoAction();
-    }
-    
-    /**
-     * Listener implementation. 
-     */
-    public void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
         hasChanged = true;
         logger.debug("Watcher: " + this + ", Property: " + evt.getPropertyName() + " from " + evt.getSource().toString() + " has changed.");
         logger.debug("old value: " + evt.getOldValue() + ", new value: " + evt.getNewValue());
-        if (evt.getChangeIndices() != null) {
-	        for (int i : evt.getChangeIndices()) {
-	        	logger.debug("index: " + i);
-	        }
-        }
-        if (!evt.isUndoEvent()) {
+        if (((SPObject)evt.getSource()).isMagicEnabled()) {
 			UndoableEdit ue = new MMOPropertyChangeUndoableEdit(evt);
 			
         	if ("UNDOSTATE".equals(evt.getPropertyName())) {
@@ -218,7 +188,7 @@ implements SPListener {
 			pane.undoEventFired(evt);
 		}
         swingSession.refreshUndoAction();
-    }
+	}
 
     /**
      * Returns the last value given to {@link #setHasChanged(boolean)}, unless this object

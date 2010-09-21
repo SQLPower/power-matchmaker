@@ -269,8 +269,8 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
             for (int i=selectedIndeces.size()-1;i >= 0; i--){
                 try {
 					mmo.removeChild(mmo.getChildren().get((int)selectedIndeces.get(i)));
-				} catch (ObjectDependentException e1) {
-					throw new RuntimeException(e1);
+				} catch (ObjectDependentException ex) {
+					throw new RuntimeException(ex);
 				}
             }
         }

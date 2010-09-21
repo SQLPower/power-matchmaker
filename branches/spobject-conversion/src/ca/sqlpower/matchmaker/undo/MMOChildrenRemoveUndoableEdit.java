@@ -26,16 +26,17 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPChildEvent;
 
 public class MMOChildrenRemoveUndoableEdit extends AbstractUndoableEdit{
 	
 	private static final Logger logger = Logger.getLogger(MMOChildrenRemoveUndoableEdit.class);
 	
-	private MatchMakerEvent undoEvent;
+	private SPChildEvent undoEvent;
 	private MatchMakerObject mmo;
 
-	public MMOChildrenRemoveUndoableEdit(MatchMakerEvent e, MatchMakerObject mmo){
+	public MMOChildrenRemoveUndoableEdit(SPChildEvent e, MatchMakerObject mmo){
 		super();
 		undoEvent = e;
 		this.mmo = mmo;
@@ -44,41 +45,41 @@ public class MMOChildrenRemoveUndoableEdit extends AbstractUndoableEdit{
 	public void undo(){
 		super.undo();
 		try {
-			undoEvent.getSource().setUndoing(true);
+			undoEvent.getSource().setMagicEnabled(false);
 			if (!(undoEvent.getSource() instanceof AbstractMatchMakerObject)) {
 				throw new CannotUndoException();
 			}
 			AbstractMatchMakerObject ammo = (AbstractMatchMakerObject) undoEvent.getSource();
-			for (int i = 0; i < undoEvent.getChangeIndices().length; i++) {
-				if (!(undoEvent.getChildren().get(i) instanceof AbstractMatchMakerObject)) {
-					throw new CannotUndoException();
-				} 
-				AbstractMatchMakerObject child = (AbstractMatchMakerObject) undoEvent.getChildren().get(i);
-				ammo.addChild(undoEvent.getChangeIndices()[i], child);
-			}
+			if (!(undoEvent.getChild() instanceof AbstractMatchMakerObject)) {
+				throw new CannotUndoException();
+			} 
+			AbstractMatchMakerObject child = (AbstractMatchMakerObject) undoEvent.getChild();
+			ammo.addChild(child, undoEvent.getIndex());
 			
 		} finally {
-			undoEvent.getSource().setUndoing(false);
+			undoEvent.getSource().setMagicEnabled(true);
 		}
 	}
 
 	public void redo(){
 		super.redo();
 		try {
-			undoEvent.getSource().setUndoing(true);
+			undoEvent.getSource().setMagicEnabled(false);
 			if (!(undoEvent.getSource() instanceof AbstractMatchMakerObject)) {
 				throw new CannotUndoException();
 			}
 			AbstractMatchMakerObject ammo = (AbstractMatchMakerObject) undoEvent.getSource();
-			for (Object insertedChild : undoEvent.getChildren()) {
-				if (!(insertedChild instanceof AbstractMatchMakerObject)) {
-					throw new CannotUndoException();
-				}
-				AbstractMatchMakerObject child = (AbstractMatchMakerObject) insertedChild;
+			if (!(undoEvent.getChild() instanceof AbstractMatchMakerObject)) {
+				throw new CannotUndoException();
+			}
+			AbstractMatchMakerObject child = (AbstractMatchMakerObject) undoEvent.getChild();
+			try {
 				ammo.removeChild(child);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException(e);
 			}
 		} finally {
-			undoEvent.getSource().setUndoing(false);
+			undoEvent.getSource().setMagicEnabled(true);
 		}
 	}
 }

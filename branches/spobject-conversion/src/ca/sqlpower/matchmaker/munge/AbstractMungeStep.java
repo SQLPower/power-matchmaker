@@ -184,9 +184,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
                     " does not support data type " + o.getType());
         }
 		
-        inputs.get(index).current = o;
+        inputs.get(index).setCurrent(o);
         
-		fireChildAdded(Input.class, o, index);
 		boolean noEmptyInputs = true;
 		for (Input input: inputs) {
 			if (input.getCurrent() == null) noEmptyInputs = false;
@@ -212,7 +211,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	    int disconnectCount = 0;
 		for (int i = 0; i < inputs.size(); i++) {
 			Input in = inputs.get(i);
-			if (in.current == mso) {
+			if (in.getCurrent() == mso) {
 				in.disconnect();
 				disconnectCount++;
 			}
