@@ -57,23 +57,23 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.EngineEvent;
 import ca.sqlpower.matchmaker.EngineListener;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
-import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
+import ca.sqlpower.util.SQLPowerUtils;
+import ca.sqlpower.util.TransactionEvent;
 import ca.sqlpower.validation.FileNameValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -137,6 +137,11 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		}
 	}
 
+	/**
+	 * A listener that keeps the runActionStatus refreshed.
+	 */
+	public final SPListener engineStatusListener;
+	
 	/**
 	 * The session this panel belongs to.
 	 */
@@ -306,6 +311,40 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		this.project = project;
 		this.type = engineType;
 		handler = new FormValidationHandler(status);
+		engineStatusListener = new SPListener() {
+			@Override
+			public void childAdded(SPChildEvent e) {
+				// no-op
+			}
+
+			@Override
+			public void childRemoved(SPChildEvent e) {
+				// no-op
+			}
+
+			@Override
+			public void propertyChanged(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals("engineRunning")) {
+					refreshRunActionStatus();
+				}
+			}
+
+			@Override
+			public void transactionEnded(TransactionEvent e) {
+				// no-op
+			}
+
+			@Override
+			public void transactionRollback(TransactionEvent e) {
+				// no-op
+			}
+
+			@Override
+			public void transactionStarted(TransactionEvent e) {
+				// no-op
+			}
+			
+		};
 		propertyChangeListener = new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshRunActionStatus();
@@ -359,7 +398,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		
 		this.panel = buildUI();
 		
-		MatchMakerUtils.listenToShallowHierarchy(this, project);
+		SQLPowerUtils.listenToShallowHierarchy(engineStatusListener, project);
 	}
 	
 	/**
@@ -598,29 +637,37 @@ public class EngineSettingsPanel implements DataEntryPanel {
 			
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 				final JLabel poolSettingLabel = new JLabel(mungeSettings.getPoolFilterSetting().getLongDescription());
-				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
-					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
-						public void mmChildrenInserted(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+				SPListener poolFilterSettingChangeListener
+					= new SPListener() {
+						public void childAdded(SPChildEvent evt) {
 							// no-op
 						}
 
-						public void mmChildrenRemoved(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+						public void childRemoved(SPChildEvent evt) {
 							// no-op
 						}
 
-						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+						public void propertyChanged(PropertyChangeEvent evt) {
 							if (evt.getPropertyName() == "poolFilterSetting") {
 								PoolFilterSetting newValue = (PoolFilterSetting) evt.getNewValue();
 								poolSettingLabel.setText(newValue.getLongDescription());
 							}
 						}
+						
+						public void transactionStarted(TransactionEvent evt) {
+							// no-op
+						}
 
-						public void mmStructureChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+						public void transactionRollback(TransactionEvent evt) {
 							// no-op
 						}
 						
+						public void transactionEnded(TransactionEvent evt) {
+							
+						}
+						
 				};
-				mungeSettings.addMatchMakerListener(poolFilterSettingChangeListener);
+				mungeSettings.addSPListener(poolFilterSettingChangeListener);
 				Font f = poolSettingLabel.getFont();
 				Font newFont = f.deriveFont(Font.ITALIC);
 				poolSettingLabel.setFont(newFont);
@@ -642,31 +689,37 @@ public class EngineSettingsPanel implements DataEntryPanel {
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 				MungeSettings mungeSettings = (MungeSettings) engineSettings;
 				final JLabel autoValidateSettingLabel = new JLabel(((MungeSettings) engineSettings).getAutoValidateSetting().getLongDescription());
-				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
-					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
-						public void mmChildrenInserted(
-								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+				SPListener poolFilterSettingChangeListener
+					= new SPListener() {
+						public void childAdded(SPChildEvent evt) {
 							// no-op
 						}
 	
-						public void mmChildrenRemoved(
-								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+						public void childRemoved(
+								SPChildEvent evt) {
 							// no-op
 						}
 	
-						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+						public void propertyChanged(PropertyChangeEvent evt) {
 							if (evt.getPropertyName() == "autoValidateSetting") {
 								AutoValidateSetting newValue = (AutoValidateSetting) evt.getNewValue();
 								autoValidateSettingLabel.setText(newValue.getLongDescription());
 							}
 						}
 	
-						public void mmStructureChanged(
-								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
+						public void transactionStarted(TransactionEvent evt) {
+							// no-op
+						}
+						
+						public void transactionRollback(TransactionEvent evt) {
+							// no-op
+						}
+						
+						public void transactionEnded(TransactionEvent evt) {
 							// no-op
 						}
 				};
-				mungeSettings.addMatchMakerListener(poolFilterSettingChangeListener);
+				mungeSettings.addSPListener(poolFilterSettingChangeListener);
 				Font f = autoValidateSettingLabel.getFont();
 				Font newFont = f.deriveFont(Font.ITALIC);
 				autoValidateSettingLabel.setFont(newFont);
