@@ -87,7 +87,7 @@ public class NewMungeProcessAction extends AbstractAction {
     	}
     	process.setColour(color);
     	
-    	project.addMungeProcess(process);
+    	project.addMungeProcess(process,project.getMungeProcesses().size());
     	SQLInputStep inputStep = new SQLInputStep();
 		inputStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
 		process.addChild(inputStep);

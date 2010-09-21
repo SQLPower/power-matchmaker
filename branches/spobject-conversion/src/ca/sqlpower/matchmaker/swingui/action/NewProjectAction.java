@@ -62,7 +62,7 @@ public final class NewProjectAction extends AbstractAction {
 			return;
 		}
 		
-		PlFolder<Project> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
+		PlFolder folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
 		if (folder == null) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"Please select a folder first",
