@@ -75,7 +75,7 @@ public class DeleteFolderDialog {
         moveContent.setSelected(true);
         moveTo = new JComboBox();
         List<PlFolder> folders = new ArrayList<PlFolder>();
-        folders.addAll(session.getCurrentFolderParent().getChildren());
+        folders.addAll(session.getCurrentFolderParent().getChildren(PlFolder.class));
         folders.remove(folder);
         moveTo.setModel(new DefaultComboBoxModel(folders.toArray()));
         moveTo.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
@@ -118,7 +118,7 @@ public class DeleteFolderDialog {
         public void actionPerformed(ActionEvent e) {
         	if ( moveContent.getModel().isSelected()) {
         		PlFolder newFolder = (PlFolder) moveTo.getSelectedItem();
-        		while (folder.getChildCount() >0) {
+        		while (folder.getChildren().size() > 0) {
         			Project m = (Project) folder.getChildren().get(0);
         			session.move(m, newFolder);
         		}

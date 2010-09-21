@@ -19,8 +19,8 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,20 +33,18 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.object.AbstractSPListener;
 import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.util.SQLPowerUtils;
+import ca.sqlpower.util.TransactionEvent;
 
 /**
  * A tree model implementation that adapts a hierarchy of MatchMakerObjects
@@ -132,7 +130,7 @@ public class MatchMakerTreeModel implements TreeModel {
     /**
      * This tree's root node.
      */
-	private final MMRootNode root = new MMRootNode();
+	private final MMRootNode rootNode;
 
     /**
      * The cache that is maintained by {@link #getActionNodes(Project)}. Don't ever access
@@ -168,22 +166,18 @@ public class MatchMakerTreeModel implements TreeModel {
      *            {@link ProjectActionNode#performAction()} unless this is
      *            actually a MatchMakerSwingSession.
      */
-	public MatchMakerTreeModel(FolderParent current, FolderParent backup,
-			TranslateGroupParent translate, MatchMakerSession s) {
+	public MatchMakerTreeModel(MMRootNode rootNode, MatchMakerSession s) {
 		session = s;
-        root.setSession(s);
+        this.rootNode = rootNode;
         
-        this.current = current;
-		root.addChild(current);
+        this.current = rootNode.getCurrentFolderParent();
 
-        this.backup = backup;
-		root.addChild(backup);
+        this.backup = rootNode.getBackupFolderParent();
 		
-		this.translate = translate;
-		root.addChild(translate);
+		this.translate = rootNode.getTranslateGroupParent();
         
-		MatchMakerUtils.listenToHierarchy(listener, root);
-		MatchMakerUtils.listenToShallowHierarchy(cacheLisener, current);
+		SQLPowerUtils.listenToHierarchy(rootNode, listener);
+		SQLPowerUtils.listenToShallowHierarchy(cacheLisener, current);
 	}
 
     /**
@@ -225,7 +219,7 @@ public class MatchMakerTreeModel implements TreeModel {
             Project project = (Project) mmoParent;
             MatchMakerObject [] visible = new MatchMakerObject [getChildCount(project)];
             int count = 0;
-            for (MatchMakerObject child : project.getChildren()) {
+            for (MatchMakerObject child : project.getChildren(MatchMakerObject.class)) {
             	if (child.isVisible()) {
             		visible[count++] = child;
             	}
@@ -239,11 +233,11 @@ public class MatchMakerTreeModel implements TreeModel {
         } else {
         	int real = index;
         	for (int i = 0; i < index; i++) {
-        		if (!mmoParent.getChildren().get(i).isVisible()) {
+        		if (!mmoParent.getChildren(MatchMakerObject.class).get(i).isVisible()) {
         			real++;
         		}
         	}
-            mmoChild = mmoParent.getChildren().get(real);
+            mmoChild = mmoParent.getChildren(MatchMakerObject.class).get(real);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Child "+index+" of \""+mmoParent.getName()+"\" is "+
@@ -264,7 +258,7 @@ public class MatchMakerTreeModel implements TreeModel {
             count = mmo.getChildren().size();
         }
         
-        for (MatchMakerObject child : mmo.getChildren()) {
+        for (MatchMakerObject child : mmo.getChildren(MatchMakerObject.class)) {
         	if (!child.isVisible()) {
         		logger.debug("--------------------------------");
         		count--;
@@ -290,7 +284,7 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public Object getRoot() {
-		return root;
+		return rootNode;
 	}
 
 	public boolean isLeaf(Object node) {
@@ -367,88 +361,94 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public void refresh() {
-		fireTreeNodesChanged(new TreeModelEvent(root, new TreePath(root)));
+		fireTreeNodesChanged(new TreeModelEvent(rootNode, new TreePath(rootNode)));
 	}
 
 	private class TreeModelEventAdapter
-			implements AbstractSPListener {
-        
-		public void PropertyChanged(MatchMakerEvent evt) {
-            logger.debug("Got PropertyChanged event. property="+
-                    evt.getPropertyName()+"; source="+evt.getSource());
-			TreePath paths = getPathForNode(evt.getSource());
-			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
-			fireTreeNodesChanged(e);
-		}
+			implements SPListener {
 
-		public void ChildrenInserted(MatchMakerEvent evt) {
-			TreePath paths = getPathForNode(evt.getSource());
-			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
-					.getChangeIndices(), evt.getChildren().toArray());
+		@Override
+		public void childAdded(SPChildEvent e) {
+			TreePath paths = getPathForNode((MatchMakerObject)e.getSource());
+            MatchMakerObject children[] = {(MatchMakerObject) e.getSource()};
+            int indices[] = {e.getIndex()};
+			TreeModelEvent evt = new TreeModelEvent((MatchMakerObject) e.getSource(), paths,
+					indices ,children);
 			if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children inserted event!");
                 StringBuilder sb = new StringBuilder();
-                MatchMakerObject mmo = evt.getSource();
+                MatchMakerObject mmo = (MatchMakerObject)e.getSource();
                 while (mmo != null) {
                     sb.insert(0, "->" + mmo.getName());
-                    mmo = mmo.getParent();
+                    mmo = (MatchMakerObject)mmo.getParent();
                 }
                 logger.debug("Parent of inserted MMObject: "+sb);
-                logger.debug("          inserted children: "+evt.getChildren());
+                logger.debug("          inserted child: "+e.getChild());
                 
                 sb = new StringBuilder();
                 sb.append("{");
-                for (int i = 0; i < evt.getChangeIndices().length; i++) {
-                    if (i != 0) sb.append(", ");
-                    sb.append(evt.getChangeIndices()[i]);
-                }
+                sb.append(e.getIndex());
                 sb.append("}");
                 logger.debug("     inserted child indices: "+sb);
                 logger.debug("Traceback:", new Exception());
 			}
-			fireTreeNodesInserted(e);
-			for ( MatchMakerObject o : evt.getChildren() ) {
-				MatchMakerUtils.listenToHierarchy(listener,o);
-			}
+			fireTreeNodesInserted(evt);
+			SQLPowerUtils.listenToHierarchy(e.getChild(), listener);
 		}
 
-		public void ChildrenRemoved(MatchMakerEvent evt) {
-			TreePath path = getPathForNode(evt.getSource());
+		@Override
+		public void childRemoved(SPChildEvent e) {
+			TreePath path = getPathForNode((MatchMakerObject) e.getSource());
             if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children removed event!");
                 StringBuilder sb = new StringBuilder();
-                MatchMakerObject mmo = evt.getSource();
+                MatchMakerObject mmo = (MatchMakerObject) e.getSource();
                 while (mmo != null) {
                     sb.insert(0, "->" + mmo.getName());
-                    mmo = mmo.getParent();
+                    mmo = (MatchMakerObject) mmo.getParent();
                 }
                 logger.debug("Parent of removed MMObject: "+sb);
-                logger.debug("          removed children: "+evt.getChildren());
+                logger.debug("          removed child: "+e.getChild());
                 
                 sb = new StringBuilder();
                 sb.append("{");
-                for (int i = 0; i < evt.getChangeIndices().length; i++) {
-                    if (i != 0) sb.append(", ");
-                    sb.append(evt.getChangeIndices()[i]);
-                }
+                sb.append(e.getIndex());
                 sb.append("}");
-                logger.debug("     removed child indices: "+sb);
+                logger.debug("     removed child index: "+sb);
                 logger.debug("Traceback:", new Exception());
             }
-			TreeModelEvent e = new TreeModelEvent(evt.getSource(), path, evt
-					.getChangeIndices(), evt.getChildren().toArray());
+            MatchMakerObject children[] = {(MatchMakerObject) e.getSource()};
+            int indices[] = {e.getIndex()};
+			TreeModelEvent evt = new TreeModelEvent((MatchMakerObject) e.getSource(), path,
+					indices ,children);
             logger.debug("About to fire tree model event: "+e);
-			fireTreeNodesRemoved(e);
-			for ( MatchMakerObject o : evt.getChildren() ) {
-				MatchMakerUtils.unlistenToHierarchy(listener,o);
-			}
+			fireTreeNodesRemoved(evt);
+			SQLPowerUtils.unlistenToHierarchy(e.getChild(), listener);
 		}
 
-		public void StructureChanged(MatchMakerEvent evt) {
-            logger.debug("Got mmObjectChanged event for " + evt.getSource());
-			TreePath paths = getPathForNode(evt.getSource());
-			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
-			fireTreeStructureChanged(e);
+		@Override
+		public void transactionStarted(TransactionEvent e) {
+			// no-op
+		}
+
+		@Override
+		public void transactionEnded(TransactionEvent e) {
+			// no-op
+		}
+
+		@Override
+		public void transactionRollback(TransactionEvent e) {
+			// no-op
+		}
+
+		@Override
+		public void propertyChanged(PropertyChangeEvent e) {
+            logger.debug("Got PropertyChanged event. property="+
+                    e.getPropertyName()+"; source="+e.getSource());
+			TreePath paths = getPathForNode((MatchMakerObject)e.getSource());
+			TreeModelEvent evt = new TreeModelEvent(e.getSource(), paths);
+			fireTreeNodesChanged(evt);
+			
 		}
 	}
 
@@ -456,7 +456,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		List<MatchMakerObject> path = new LinkedList<MatchMakerObject>();
 		while (source != null) {
 			path.add(0, source);
-			source = source.getParent();
+			source = (MatchMakerObject)source.getParent();
 		}
 		return new TreePath(path.toArray());
 	}
@@ -465,36 +465,47 @@ public class MatchMakerTreeModel implements TreeModel {
 		current.addChild(folder);
 	}
 	
-	private class ActionCacheEventAdapter
-		implements AbstractSPListener{
+	private class ActionCacheEventAdapter implements SPListener{
 
-		public void childAdded(SPChildEvent evt) {
-			if (evt.getSource() instanceof FolderParent) {
-				for (C folder : evt.getChild()) {
-					folder.addMatchMakerListener(this);
+		public void childAdded(SPChildEvent e) {
+			if (e.getSource() instanceof FolderParent) {
+				PlFolder folder = (PlFolder)e.getChild();
+				folder.addSPListener(this);
 				}
-			}
 		}
 
-		public void childRemoved(SPChildEvent evt) {
-			if (evt.getSource() instanceof FolderParent) {
-				for (C folder : evt.getChildren()) {
-					for (Object project : folder.getChildren()) {
-						projectActionCache.remove(project);
-					}
-					folder.removeMatchMakerListener(this);
+		public void childRemoved(SPChildEvent e) {
+			if (e.getSource() instanceof FolderParent) {
+				PlFolder folder = (PlFolder)e.getChild();
+				for (Project project : folder.getChildren(Project.class)) {
+					projectActionCache.remove(project);
 				}
-			} else if (evt.getSource() instanceof PlFolder) {
-				for (C project : evt.getChildren()) {
+				folder.removeSPListener(this);
+			} else if (e.getSource() instanceof PlFolder) {
+				for (Project project : e.getSource().getChildren(Project.class)) {
 					projectActionCache.remove(project);
 				}
 			}
 		}
 
-		public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
+			//no-op
 		}
 
-		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
+		@Override
+		public void transactionStarted(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void transactionEnded(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void transactionRollback(TransactionEvent e) {
+			//no-op
 		}
 	}
 }

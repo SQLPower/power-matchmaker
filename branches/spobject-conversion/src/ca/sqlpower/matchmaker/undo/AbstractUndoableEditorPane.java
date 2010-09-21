@@ -30,12 +30,12 @@ import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.MatchMakerEditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
-public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C extends MatchMakerObject> implements MatchMakerEditorPane<T>, CleanupModel {
+public abstract class AbstractUndoableEditorPane implements MatchMakerEditorPane, CleanupModel {
 	
 	private static final Logger logger = Logger.getLogger(AbstractUndoableEditorPane.class);
 	
 	protected final MatchMakerSwingSession swingSession;
-	protected final T mmo;
+	protected final MatchMakerObject mmo;
 	/**
 	 * The panel that holds this editor's GUI.
 	 */
@@ -48,7 +48,7 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C ex
 	 */ 
 	protected MMOChangeUndoWatcher undo;
 	
-	public AbstractUndoableEditorPane(MatchMakerSwingSession swingSession, T mmo) {
+	public AbstractUndoableEditorPane(MatchMakerSwingSession swingSession, MatchMakerObject mmo) {
 		this.swingSession = swingSession;
 		this.mmo = mmo;
 		if (mmo == null) {
@@ -88,14 +88,13 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C ex
 		undo.cleanup();
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void initUndo() {
-		undo = new MMOChangeUndoWatcher<T, C>(mmo,this,swingSession);
+		undo = new MMOChangeUndoWatcher(mmo,this,swingSession);
 	}
 
-	public abstract void undoEventFired(MatchMakerEvent<T,C> evt);
+	public abstract void undoEventFired(MatchMakerEvent evt);
 	
-	public T getCurrentEditingMMO() {
+	public MatchMakerObject getCurrentEditingMMO() {
 		return mmo;
 	}
 }

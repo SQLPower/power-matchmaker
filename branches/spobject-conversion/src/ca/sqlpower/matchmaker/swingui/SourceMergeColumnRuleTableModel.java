@@ -31,7 +31,7 @@ import ca.sqlpower.sqlobject.SQLColumn;
  * merge rules of a source merge rule. It has two columns: column name and action.
  */
 public class SourceMergeColumnRuleTableModel extends
-		AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> {
+		AbstractMatchMakerTableModel {
 	
 	public SourceMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);

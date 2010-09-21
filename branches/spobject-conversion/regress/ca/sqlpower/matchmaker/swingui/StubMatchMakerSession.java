@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -124,6 +125,10 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
     public void removeWarningListener(WarningListener l) {
         logger.debug("Stub call: StubMatchMakerSession.removeWarningListener()");
+    }
+    
+	public MMRootNode getRootNode() {
+    	return null;
     }
 
     public TranslateGroupParent getTranslations() {

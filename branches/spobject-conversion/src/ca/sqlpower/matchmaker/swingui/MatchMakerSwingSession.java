@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -76,28 +77,26 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -115,6 +114,9 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -132,6 +134,7 @@ import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.SQLPowerUtils;
+import ca.sqlpower.util.TransactionEvent;
 import ca.sqlpower.util.Version;
 
 /**
@@ -462,8 +465,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         buttonPanel.add(new JButton(closeWarningDialogAction));
         cp.add(buttonPanel, BorderLayout.SOUTH);
         
-        MatchMakerUtils.listenToHierarchy(removeEditorListener, getCurrentFolderParent());
-        MatchMakerUtils.listenToHierarchy(removeEditorListener, getTranslateGroupParent());
+        SQLPowerUtils.listenToHierarchy(getCurrentFolderParent(), removeEditorListener);
+        SQLPowerUtils.listenToHierarchy(getTranslateGroupParent(), removeEditorListener);
 	}
 
 	public void showGUI() {
@@ -580,7 +583,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		Container projectBarPane = frame.getContentPane();
 		projectBarPane.setLayout(new BorderLayout());
 
-		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),getTranslateGroupParent(), this));
+		tree = new JTree(new MatchMakerTreeModel(getRootNode(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
 		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
@@ -611,6 +614,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		frame.setBounds(sessionContext.getFrameBounds());
 		frame.addWindowListener(new MatchMakerFrameWindowListener());
 	}
+    
+	/**
+	 * Retrieves the root node of all MatchMakerObject objects
+	 */
+    public MMRootNode getRootNode() {
+    	MMRootNode rootNode = sessionImpl.getRootNode();
+    	return rootNode;
+    }
 
     public FolderParent getBackupFolderParent() {
     	FolderParent backup = sessionImpl.getBackupFolderParent();
@@ -989,6 +1000,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * It will be removed when the application is completed;
 	 * only used in about half a dozen places now...
 	 */
+	@SuppressWarnings("unused")
 	private class DummyAction extends AbstractAction {
 
 		private String label;
@@ -1052,8 +1064,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * @param mmo The MatchMakerObject to delete, both from the persistence
      * layer and by removing it from its parent object.
      */
-	@SuppressWarnings("unchecked")
-	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
+	public void delete(MatchMakerObject mmo) {
 		if (mmo.getParent() != null) {
 		    MatchMakerDAO dao = getDAO(mmo.getClass());
 		    logger.debug("dao is:"+ dao+ "mmo is"+ mmo);
@@ -1100,14 +1111,17 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param objectToMove the object you want to move
 	 * @param destination the new parent object
 	 */
-	@SuppressWarnings("unchecked")
 	public void move(MatchMakerObject objectToMove, MatchMakerObject destination) {
 		if (!destination.allowsChildren()) throw new IllegalArgumentException("The destination object "+destination+" Does not support children");
-		MatchMakerObject oldParent = objectToMove.getParent();
+		MatchMakerObject oldParent = (MatchMakerObject) objectToMove.getParent();
 		if (oldParent != null) {
-			oldParent.removeChild(objectToMove);
+			try {
+				oldParent.removeChild(objectToMove);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException(e);
+			}
 		}
-		destination.addChild(objectToMove);
+		destination.addChild(objectToMove,destination.getChildren(objectToMove.getClass()).size());
 		save(destination);
 	}
 
@@ -1479,13 +1493,18 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * editor pane to null if the current editor pane is editing
 	 * the child being removed
 	 */
-	private class SelectRemoveEditorListener implements MatchMakerListener {
+	private class SelectRemoveEditorListener implements SPListener {
+		
 		private Boolean selectNewChild = true;
+		
+		public void setSelectNewChild(Boolean selectNewChild) {
+			this.selectNewChild = selectNewChild;
+		}
 
-		public void mmChildrenInserted(MatchMakerEvent evt) {
-			// selects the new child on the tree if one new child is added
-			if (selectNewChild && !evt.isUndoEvent() && !evt.isCompoundEvent() && evt.getChildren().size() == 1) {
-				final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
+		@Override
+		public void childAdded(SPChildEvent e) {// selects the new child on the tree if one new child is added
+			if (selectNewChild) {
+				final MatchMakerObject insertedMMO = (MatchMakerObject)e.getChild();
 				if (!(insertedMMO instanceof SQLInputStep
 						|| insertedMMO instanceof MungeResultStep
 						|| insertedMMO instanceof MungeStepOutput)) {
@@ -1498,36 +1517,42 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 					});
 				}
 			}
-			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
-				MatchMakerUtils.listenToHierarchy(this, mmo);
-			}
+			SQLPowerUtils.listenToHierarchy(e.getChild(), this);
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent evt) {
+		@Override
+		public void childRemoved(SPChildEvent e) {
 			//sets the current editor pane to null if object is removed.
 			if (oldPane instanceof MatchMakerEditorPane) {
-				for (MatchMakerObject removedChild : (List<MatchMakerObject>)evt.getChildren()) {
-					MatchMakerObject editorMMO = ((MatchMakerEditorPane)oldPane).getCurrentEditingMMO();
-					if (removedChild.equals(editorMMO) || SQLPowerUtils.hierarchyContains(removedChild, editorMMO)) {
-						MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-						TreePath treePath = treeModel.getPathForNode(evt.getSource());
-						getTree().setSelectionPath(treePath);
-					}
+				MatchMakerObject removedChild = (MatchMakerObject) e.getChild();
+				MatchMakerObject editorMMO = ((MatchMakerEditorPane)oldPane).getCurrentEditingMMO();
+				if (removedChild.equals(editorMMO) || SQLPowerUtils.hierarchyContains(removedChild, editorMMO)) {
+					MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+					TreePath treePath = treeModel.getPathForNode((MatchMakerObject)e.getSource());
+					getTree().setSelectionPath(treePath);
 				}
 			}
-			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
-				MatchMakerUtils.unlistenToHierarchy(this, mmo);
-			}
+			SQLPowerUtils.unlistenToHierarchy(e.getChild(), this);
 		}
 
-		// don't care
-		public void mmPropertyChanged(MatchMakerEvent evt) {}
+		@Override
+		public void transactionStarted(TransactionEvent e) {
+			//no-op
+		}
 
-		// don't care
-		public void mmStructureChanged(MatchMakerEvent evt) {}
+		@Override
+		public void transactionEnded(TransactionEvent e) {
+			//no-op			
+		}
 
-		public void setSelectNewChild(Boolean selectNewChild) {
-			this.selectNewChild = selectNewChild;
+		@Override
+		public void transactionRollback(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
+			//no-op
 		}
 	}
 	

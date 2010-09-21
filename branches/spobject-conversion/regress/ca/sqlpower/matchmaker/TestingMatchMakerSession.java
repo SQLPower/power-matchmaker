@@ -194,6 +194,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
      */
     public void removeWarningListener(WarningListener l) {
     }
+    
+	public MMRootNode getRootNode() {
+    	return null;
+    }
 
     public TranslateGroupParent getTranslations() {
     	if (translateGroupParent == null){
