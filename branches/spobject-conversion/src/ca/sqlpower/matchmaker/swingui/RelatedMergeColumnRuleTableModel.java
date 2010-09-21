@@ -33,7 +33,7 @@ import ca.sqlpower.sqlobject.SQLColumn;
  * and action.
  */
 public class RelatedMergeColumnRuleTableModel extends 
-	AbstractMatchMakerTableModel {
+	AbstractMatchMakerTableModel <TableMergeRules> {
 	
 	public RelatedMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);
@@ -61,7 +61,7 @@ public class RelatedMergeColumnRuleTableModel extends
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		ColumnMergeRules rule = mmo.getChildren().get(rowIndex);
+		ColumnMergeRules rule = mmo.getChildren(ColumnMergeRules.class).get(rowIndex);
 		if (columnIndex == 0) {
 			return rule.getColumn();
 		} else if (columnIndex == 1) {
@@ -72,7 +72,7 @@ public class RelatedMergeColumnRuleTableModel extends
 			return rule.getActionType();
 		} else if (columnIndex == 4) {
 			if (rule.getImportedKeyColumn() == null) {
-				return mmo.getChildren().get(rowIndex).getUpdateStatement();
+				return mmo.getChildren(ColumnMergeRules.class).get(rowIndex).getUpdateStatement();
 			} else {
 				return "Not applicable";
 			}
@@ -83,7 +83,7 @@ public class RelatedMergeColumnRuleTableModel extends
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		ColumnMergeRules colRule = mmo.getChildren().get(rowIndex);
+		ColumnMergeRules colRule = mmo.getChildren(ColumnMergeRules.class).get(rowIndex);
 		if (columnIndex == 4) { 
 			if (colRule.getImportedKeyColumn() != null) {
 				return false;
@@ -120,7 +120,7 @@ public class RelatedMergeColumnRuleTableModel extends
 	
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		ColumnMergeRules rule = mmo.getChildren().get(rowIndex);
+		ColumnMergeRules rule = mmo.getChildren(ColumnMergeRules.class).get(rowIndex);
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {

@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +45,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
@@ -67,10 +67,10 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Implements the DataEntryPanel functionality for editing a munge process (MatchRuleSet).
  */
-public class MungeProcessEditor extends AbstractUndoableEditorPane {
+public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess> {
+	
     private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
 
-	
     /**
      * The project that is or will be the parent of the process we're editing.
      * If this editor was created for a new process, it will not belong to this
@@ -104,10 +104,12 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane {
      */
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
             Project project, MungeProcess process) throws SQLObjectException {
+    	
         super(swingSession, process);
         logger.debug("Creating a new munge process editor");
         
         this.parentProject = project;
+        
         if (mmo.getParentProject() != null && mmo.getParentProject() != parentProject) {
         	throw new IllegalStateException(
         	"The given process has a parent which is not the given parent match obejct!");
@@ -130,7 +132,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane {
         
         stepPrecheckResults = new ArrayList<ValidateResult>();
         
-        for (MungeStep step : process.getChildren()) {
+        for (MungeStep step : process.getChildren(MungeStep.class)) {
 			if (step instanceof AbstractMungeStep) {
 				((AbstractMungeStep) step).setPreviewMode(true);
 			}
@@ -259,7 +261,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane {
             return false;
         }
         
-        MungeProcessGraphModel gm = new MungeProcessGraphModel(mmo.getChildren());
+        MungeProcessGraphModel gm = new MungeProcessGraphModel(mmo.getChildren(MungeStep.class));
         DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge> dfs = new DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge>();
         dfs.performSearch(gm);
         
@@ -276,7 +278,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane {
         }
 
         if (mmo.getParentProject() == null) {
-            parentProject.addMungeProcess(mmo);
+            parentProject.addChild(mmo);
         }
         return super.applyChanges();
     }
@@ -290,7 +292,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane {
     
     @Override
     public void cleanup() {
-        for (MungeStep step : getCurrentEditingMMO().getChildren()) {
+        for (MungeStep step : getCurrentEditingMMO().getChildren(MungeStep.class)) {
 			if (step instanceof AbstractMungeStep) {
 				((AbstractMungeStep) step).setPreviewMode(false);
 			}
@@ -329,7 +331,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane {
         	
 			short value = Short.parseShort((String)contents.toString());
 		
-			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
+			for (MungeProcess mp : parentProject.getChildren(MungeProcess.class)) {
                 if (mp == null) throw new NullPointerException("Null munge process in project!");
 				short otherPriority = 0;
                 if (mp.getMatchPriority() != null) {
@@ -356,13 +358,11 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane {
 		//TODO select the mso
 	}
 
-	@Override
-	public void undoEventFired(MatchMakerEvent<MungeProcess, MungeStep> evt) {
+	public void undoEventFired(PropertyChangeEvent evt) {
 		setDefaults();
 	}
 
 	public MungePen getMungePen() {
 		return mungePen;
 	}
-
 }

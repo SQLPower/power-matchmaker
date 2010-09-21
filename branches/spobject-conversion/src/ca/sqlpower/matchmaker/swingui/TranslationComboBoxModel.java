@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,8 +31,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.util.TransactionEvent;
 
 /**
  * Provides the glue that allows a combo box to display the list of translation
@@ -56,7 +58,7 @@ public class TranslationComboBoxModel implements ComboBoxModel {
     
 	public TranslationComboBoxModel(TranslateGroupParent tgp) {
 		this.tgp = tgp;
-        tgp.addMatchMakerListener(new ComboBoxModelEventAdapter());
+        tgp.addSPListener(new ComboBoxModelEventAdapter());
 	}
 	
 	public Object getElementAt(int index) {
@@ -95,7 +97,7 @@ public class TranslationComboBoxModel implements ComboBoxModel {
 		listeners.remove(l);
 	}
 
-    private void fireIntervalAdded(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt){
+    private void fireIntervalAdded(SPChildEvent evt){
     	int correction;
     	if (firstItemNull) {
     		correction = 1;
@@ -105,11 +107,11 @@ public class TranslationComboBoxModel implements ComboBoxModel {
         sendOffListEvent(new ListDataEvent(
         		this,
         		ListDataEvent.INTERVAL_ADDED,
-        		evt.getChangeIndices()[0] + correction,
-        		evt.getChangeIndices()[0] + correction));
+        		evt.getIndex() + correction,
+        		evt.getIndex() + correction));
     }
     
-    private void fireIntervalRemoved(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt){
+    private void fireIntervalRemoved(SPChildEvent evt){
     	int correction;
     	if (firstItemNull) {
     		correction = 1;
@@ -119,22 +121,8 @@ public class TranslationComboBoxModel implements ComboBoxModel {
         sendOffListEvent(new ListDataEvent(
         		this,
         		ListDataEvent.INTERVAL_REMOVED,
-        		evt.getChangeIndices()[0] + correction,
-        		evt.getChangeIndices()[0] + correction));
-    }
-    
-    private void fireChanged() {
-    	int correction;
-    	if (firstItemNull) {
-    		correction = 1;
-    	} else {
-    		correction = 0;
-    	}
-        sendOffListEvent(new ListDataEvent(
-        		this,
-        		ListDataEvent.CONTENTS_CHANGED,
-        		0,
-        		tgp.getChildCount() - 1 + correction));
+        		evt.getIndex() + correction,
+        		evt.getIndex() + correction));
     }
     
     
@@ -164,29 +152,43 @@ public class TranslationComboBoxModel implements ComboBoxModel {
 		this.firstItemNull = firstItemNull;
 	}
 	
-    private class ComboBoxModelEventAdapter implements MatchMakerListener<TranslateGroupParent, MatchMakerTranslateGroup> {
-    	public void mmChildrenInserted(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
+    private class ComboBoxModelEventAdapter implements SPListener {
+    	
+    	@Override
+		public void childAdded(SPChildEvent e) {
             logger.debug("Received child added event");
-            fireIntervalAdded(evt);
-        }
+            fireIntervalAdded(e);
+		}
 
-        public void mmChildrenRemoved(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
+		@Override
+		public void childRemoved(SPChildEvent e) {
             logger.debug("Received child removed event");
             if (!tgp.getChildren().contains(selectedItem))
             {
                 selectedItem = null;
             }
-            fireIntervalRemoved(evt);
-        }
+            fireIntervalRemoved(e);
+		}
 
-        public void mmPropertyChanged(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
-            // not used
-        }
+		@Override
+		public void transactionStarted(TransactionEvent e) {
+			//no-op
+		}
 
-        public void mmStructureChanged(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
-            logger.debug("Received structure changed event");
-            fireChanged();
-        }
+		@Override
+		public void transactionEnded(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void transactionRollback(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
+			//no-op
+		}
     }
 
 }

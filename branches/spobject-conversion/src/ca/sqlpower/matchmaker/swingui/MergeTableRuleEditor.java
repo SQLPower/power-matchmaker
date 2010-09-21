@@ -23,6 +23,7 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -46,7 +47,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.action.DeriveRelatedRulesAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
@@ -62,7 +62,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeTableRuleEditor extends AbstractUndoableEditorPane {
+public class MergeTableRuleEditor extends AbstractUndoableEditorPane <Project>{
 
 	private static final Logger logger = Logger.getLogger(MergeTableRuleEditor.class);
 	
@@ -264,7 +264,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane {
 
 
 	@Override
-	public void undoEventFired(MatchMakerEvent evt) {
+	public void undoEventFired(PropertyChangeEvent evt) {
 		//No components needs refresh.
 	}
 }

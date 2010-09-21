@@ -23,6 +23,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,9 +45,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -65,7 +66,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * An editor pane that allows the user to add/remove/move 
  * translate word pares
  */
-public class TranslateWordsEditor extends AbstractUndoableEditorPane {
+public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMakerTranslateGroup> {
 	
 	private JScrollPane translateWordsScrollPane;
 	private JTable translateWordsTable;
@@ -177,7 +178,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane {
 		translateWordsTable = new EditableJTable();
         translateWordsTable.setName("Translate Words");
         TranslateWordsTableModel tm = new TranslateWordsTableModel(mmo);
-        translateWordsTable.setModel (tm);
+        translateWordsTable.setModel(tm);
         translateWordsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting()) return;
@@ -249,7 +250,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane {
             word.setFrom(from.getText());
             word.setTo(to.getText());
             mmo.addChild(word);
-            translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(mmo.getChildCount()-1,
+            translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(mmo.getChildren().size()-1,
             		0, true).getBounds());
             from.setText("");
             to.setText("");
@@ -266,7 +267,11 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane {
                 selectedIndeces.add(new Integer(selectedRowIndex));
             }
             for (int i=selectedIndeces.size()-1;i >= 0; i--){
-                mmo.removeChild(mmo.getChildren().get((int)selectedIndeces.get(i)));
+                try {
+					mmo.removeChild(mmo.getChildren().get((int)selectedIndeces.get(i)));
+				} catch (ObjectDependentException e1) {
+					throw new RuntimeException(e1);
+				}
             }
         }
     };
@@ -323,9 +328,9 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() - 1) ){						
-					mmo.moveChild(index, mmo.getChildCount() - 1);
- 					translateWordsTable.setRowSelectionInterval(mmo.getChildCount()-1,mmo.getChildCount()-1);
-					scrollToSelected(mmo.getChildCount()-1);
+					mmo.moveChild(index, mmo.getChildren().size() - 1);
+ 					translateWordsTable.setRowSelectionInterval(mmo.getChildren().size()-1,mmo.getChildren().size()-1);
+					scrollToSelected(mmo.getChildren().size()-1);
 				}
 			}
 		}
@@ -352,9 +357,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane {
 	}
 
 	@Override
-	public void undoEventFired(
-			MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
+	public void undoEventFired(PropertyChangeEvent evt) {
 		groupName.setText(mmo.getName());
 	}
-
 }

@@ -24,7 +24,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 
-public class TranslateWordsTableModel extends AbstractMatchMakerTableModel<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
+public class TranslateWordsTableModel extends AbstractMatchMakerTableModel<MatchMakerTranslateGroup> {
     
     
 	
