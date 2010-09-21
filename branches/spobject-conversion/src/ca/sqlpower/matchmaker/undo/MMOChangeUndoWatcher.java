@@ -112,7 +112,7 @@ implements SPListener {
         hasChanged = true;
         SQLPowerUtils.unlistenToHierarchy(e.getChild(), this);
     	
-    	logger.debug("Child: " + e.getChild() + " is inserted into: " + e.getSource().toString());
+    	logger.debug("Child: " + e.getChild() + " is removed from: " + e.getSource().toString());
     	if (e.getSource().isMagicEnabled()) {
     		UndoableEdit ue = new MMOChildrenRemoveUndoableEdit(e, null);
 
