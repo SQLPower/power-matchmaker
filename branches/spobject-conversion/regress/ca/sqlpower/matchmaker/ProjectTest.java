@@ -123,11 +123,12 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 
     public void testMatchMakerFolderFiresEventForMungeProcesses(){
         MatchMakerEventCounter l = new MatchMakerEventCounter();
-        project.getMungeProcessesFolder().addMatchMakerListener(l);
+        project.addSPListener(l);
         List<MungeProcess> mmoList = new ArrayList<MungeProcess>();
-        project.setMungeProcesses(mmoList);
-        assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
-        assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
+        for(MungeProcess m : mmoList) {
+        	project.addChild(m);
+        }assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
+        assertEquals("Wrong type of event fired",1,l.getPropertyChangedCount());
     }
     
     public void testCreateResultTable() throws SQLObjectException {

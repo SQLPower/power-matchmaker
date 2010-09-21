@@ -57,10 +57,10 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
         MatchMakerEventCounter listener = new MatchMakerEventCounter();
         MungeProcess process = new MungeProcess();
 
-        process.addMatchMakerListener(listener);
+        process.addSPListener(listener);
         process.setParentProject(project);
         assertEquals("Incorrect number of events fired",1,listener.getAllEventCounts());
-        assertEquals("Wrong property fired in the event","parent",listener.getLastEvt().getPropertyName());
+        assertEquals("Wrong property fired in the event","parent",listener.getLastPropertyChangeEvent().getPropertyName());
     }
 
 }

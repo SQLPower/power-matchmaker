@@ -43,12 +43,12 @@ import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class MatchPoolTest extends TestCase {
 
@@ -111,11 +111,11 @@ public class MatchPoolTest extends TestCase {
 
 		mungeProcessOne = new MungeProcess();
 		mungeProcessOne.setName("Munge_Process_One");
-		project.addMungeProcess(mungeProcessOne);
+		project.addChild(mungeProcessOne);
 
 		mungeProcessTwo = new MungeProcess();
 		mungeProcessTwo.setName("Munge_Process_Two");
-		project.addMungeProcess(mungeProcessTwo);
+		project.addChild(mungeProcessTwo);
 		
 		pool = MMTestUtils.createTestingPool(session, project, mungeProcessOne, mungeProcessTwo);
 	}

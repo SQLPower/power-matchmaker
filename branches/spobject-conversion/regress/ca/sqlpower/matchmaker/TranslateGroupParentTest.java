@@ -28,18 +28,18 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 
 public class TranslateGroupParentTest extends TestCase {
-    PlFolder<MatchMakerObject> folder;
+    PlFolder folder;
     Project project;
     MungeProcess cg;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
-        folder = new PlFolder<MatchMakerObject>();
+        folder = new PlFolder();
         project = new Project();
         folder.addChild(project);
         cg = new MungeProcess();
-        project.addMungeProcess(cg);
+        project.addChild(cg);
         session = new TestingMatchMakerSession(); 
         List<PlFolder> folders = new ArrayList<PlFolder>();
         folders.add(folder);

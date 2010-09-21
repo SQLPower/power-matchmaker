@@ -42,7 +42,7 @@ public class PotentialMatchRecordTest extends TestCase {
 		project.setSession(session);
 		MungeProcess mungeProcess = new MungeProcess();
 		mungeProcess.setName("mungeprocess");
-		project.getMungeProcessesFolder().addChild(mungeProcess);
+		project.addChild(mungeProcess);
 		MatchPool pool = new MatchPool(project);
 		SourceTableRecord str1 = new SourceTableRecord(session, project, Collections.singletonList("str1"));
 		SourceTableRecord str2 = new SourceTableRecord(session, project, Collections.singletonList("str2"));
