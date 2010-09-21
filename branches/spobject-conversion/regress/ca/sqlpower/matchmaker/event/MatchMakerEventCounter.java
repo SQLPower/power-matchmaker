@@ -20,13 +20,19 @@
 
 package ca.sqlpower.matchmaker.event;
 
+import java.beans.PropertyChangeEvent;
+
 import ca.sqlpower.object.CountingSPListener;
+import ca.sqlpower.object.SPChildEvent;
 
 /**
  *	Get counts of the various match maker event types
  */
 public class MatchMakerEventCounter extends CountingSPListener {
 
+	private PropertyChangeEvent lastPropertyChangeEvent;
+	private SPChildEvent lastSPChildEvent;
+	
 	public int getAllEventCounts(){
 		return childAddedCount +
 				childRemovedCount +
@@ -34,6 +40,32 @@ public class MatchMakerEventCounter extends CountingSPListener {
 				transactionRollbackCount +
 				transactionStartedCount +
 				propertyChangedCount;
+	}
+	
+	@Override
+	public void childAdded(SPChildEvent e) {
+		lastSPChildEvent = e;
+		super.childAdded(e);
+	}
+	
+	@Override
+	public void childRemoved(SPChildEvent e) {
+		lastSPChildEvent = e;
+		super.childRemoved(e);
+	}
+	
+	@Override
+	public void propertyChanged(PropertyChangeEvent evt) {
+		lastPropertyChangeEvent = evt;
+		super.propertyChanged(evt);
+	}
+	
+	public PropertyChangeEvent getLastPropertyChangeEvent() {
+		return lastPropertyChangeEvent;
+	}
+	
+	public SPChildEvent getLastSPChildEvent() {
+		return lastSPChildEvent;
 	}
 
 }
