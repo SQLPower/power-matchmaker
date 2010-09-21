@@ -216,7 +216,7 @@ public class Project extends AbstractMatchMakerObject {
 		} else if(spo instanceof TableMergeRules) {
 			addTableMergeRules((TableMergeRules)spo, index);
 		} else {
-			throw new RuntimeException("Cannot add a child of this type to proejct.");
+			throw new RuntimeException("Cannot add " + spo.getName() + " as a child to " + getName() + " as it is of type " + spo.getClass() + " which this class " + getClass() + " does not support.");
 		}
 	}
 	public void addMungeProcess(MungeProcess spo, int index) {
