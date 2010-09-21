@@ -76,10 +76,8 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.AbstractSPListener;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.util.TransactionEvent;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -851,32 +849,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * A Set of listeners that detect changes in the MungeSteps and redraws them
 	 */
-	private class StepEventHandler implements SPListener {
-		
-		@Override
-		public void childAdded(SPChildEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void childRemoved(SPChildEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void transactionStarted(TransactionEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void transactionEnded(TransactionEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void transactionRollback(TransactionEvent e) {
-			//no-op
-		}
+	private class StepEventHandler extends AbstractSPListener {
 
 		@Override
 		public void propertyChanged(PropertyChangeEvent evt) {
