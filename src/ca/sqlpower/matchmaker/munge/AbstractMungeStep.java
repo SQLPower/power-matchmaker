@@ -219,7 +219,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		return disconnectCount;
 	}
 	
-	public void addChildImpl(SPObject ob) {
+	@Override
+	protected void addChildImpl(SPObject ob, int index) {
 		mungeStepOutputs.add((MungeStepOutput) ob);
 		fireChildAdded(SQLInputStep.class, ob, mungeStepOutputs.size());
 	}
