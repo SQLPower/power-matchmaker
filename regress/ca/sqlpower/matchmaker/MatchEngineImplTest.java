@@ -107,7 +107,7 @@ public class MatchEngineImplTest extends TestCase {
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessOne.addChild(inputStep);
 		
-		project.addMungeProcess(mungeProcessOne);
+		project.addChild(mungeProcessOne);
 
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessOne.addChild(outputStep);
@@ -154,7 +154,7 @@ public class MatchEngineImplTest extends TestCase {
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessTwo.addChild(inputStep);
 		
-		project.addMungeProcess(mungeProcessTwo);
+		project.addChild(mungeProcessTwo);
 		
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessTwo.addChild(outputStep);

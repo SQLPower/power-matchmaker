@@ -265,9 +265,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		} else if (property.getPropertyType() == MatchMakerObject.class) {
 			((MatchMakerObject) oldVal).setName("Testing New Name");
 			return oldVal;
-		} else if (property.getPropertyType() == MatchMakerFolder.class) {
-			((MatchMakerObject) oldVal).setName("Testing New Name");
-			return oldVal;
 		} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 			((MatchMakerObject) oldVal).setName("Testing New Name2");
 			return oldVal;
@@ -337,7 +334,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		MatchMakerObject mmo = getTarget();
 
 		MatchMakerEventCounter listener = new MatchMakerEventCounter();
-		mmo.addMatchMakerListener(listener);
+		mmo.addSPListener(listener);
 
 		List<PropertyDescriptor> settableProperties;
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
@@ -372,10 +369,10 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						if (listener.getAllEventCounts() == oldChangeCount + 1) {
 							assertEquals("Property name mismatch for "+property.getName()+ " in "+mmo.getClass(),
 									property.getName(),
-									listener.getLastEvt().getPropertyName());
+									listener.getLastPropertyChangeEvent().getPropertyName());
 							assertEquals("New value for "+property.getName()+" was wrong",
 									newVal,
-									listener.getLastEvt().getNewValue());
+									listener.getLastPropertyChangeEvent().getNewValue());
 						}
 					} catch (InvocationTargetException e) {
 						System.out.println("(non-fatal) Failed to write property '"+property.getName()+" to type "+mmo.getClass().getName());
@@ -465,7 +462,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			newVal = File.createTempFile("mmTest",".tmp");
 			((File)newVal).deleteOnExit();
 		} else if (property.getPropertyType() == PlFolder.class) {
-			newVal = new PlFolder<Project>();
+			newVal = new PlFolder();
 		} else if (property.getPropertyType() == ProjectMode.class) {
 			if (oldVal == ProjectMode.BUILD_XREF) {
 				newVal = ProjectMode.FIND_DUPES;
