@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.undo;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,18 +33,15 @@ import javax.swing.undo.CannotUndoException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.munge.InputDescriptor;
-import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 
 public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 	
 	private static final Logger logger = Logger.getLogger(MMOPropertyChangeUndoableEdit.class);
 	
-	private MatchMakerEvent undoEvent;
+	private PropertyChangeEvent undoEvent;
 
-	public MMOPropertyChangeUndoableEdit(MatchMakerEvent e){
+	public MMOPropertyChangeUndoableEdit(PropertyChangeEvent e){
 		super();
 		undoEvent = e;
 	}
@@ -51,7 +49,7 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 	public void undo(){
 		super.undo();
 		try {
-			undoEvent.getSource().setUndoing(true);
+			((MatchMakerObject)undoEvent.getSource()).setUndoing(true);
 		    modifyProperty(undoEvent.getOldValue());
 		} catch (IllegalAccessException e) {
 			logger.error("Couldn't access setter for "+
@@ -66,14 +64,14 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 					undoEvent.getSource(), e);
 			throw new CannotUndoException();
 		} finally {
-			undoEvent.getSource().setUndoing(false);
+			((MatchMakerObject)undoEvent.getSource()).setUndoing(false);
 		}
 	}
 
 	public void redo(){
 		super.redo();
 		try {
-			undoEvent.getSource().setUndoing(true);
+			((MatchMakerObject)undoEvent.getSource()).setUndoing(true);
 		    modifyProperty(undoEvent.getNewValue());
 		} catch (IllegalAccessException e) {
 			logger.error("Couldn't access setter for "+
@@ -88,7 +86,7 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 					undoEvent.getSource(), e);
 			throw new CannotUndoException();
 		} finally {
-			undoEvent.getSource().setUndoing(false);
+			((MatchMakerObject)undoEvent.getSource()).setUndoing(false);
 		}
 	}
 	
@@ -100,59 +98,17 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 		BeanInfo info = Introspector.getBeanInfo(undoEvent.getSource().getClass());
 		
 		logger.debug("Modifying property " + undoEvent.getPropertyName() + " on object " + undoEvent.getSource() + " with value " + value);
-		if (logger.isDebugEnabled() && undoEvent.getChangeIndices() != null) {
-			for (int i : undoEvent.getChangeIndices()) {
-				logger.debug("Change on index " + i);
-			}
-		}
 		PropertyDescriptor[] props = info.getPropertyDescriptors();
 		for (PropertyDescriptor prop : Arrays.asList(props)) {
 		    if (prop.getName().equals(undoEvent.getPropertyName())) {
 		        Method writeMethod = prop.getWriteMethod();
-		        if (writeMethod != null && !(undoEvent.getSource() instanceof MungeStep && undoEvent.getPropertyName().equals("inputs"))) {
+		        if (writeMethod != null) {
                     logger.debug("writeMethod is: " + writeMethod);
                     logger.debug("value is: " + (value != null ? value.getClass().getName() : "") + value);
 		            writeMethod.invoke(undoEvent.getSource(), new Object[] { value });
 		            return;
 		        }
 		    }
-		}
-		logger.debug("Undoing specific types");
-		if (undoEvent.getSource() instanceof MungeStep) {
-			if (undoEvent.getPropertyName().equals("inputs")) {
-				MungeStep step = (MungeStep)undoEvent.getSource();
-				if (value == null) {
-					for(int index : undoEvent.getChangeIndices()) {
-						step.disconnectInput(index);
-					}
-				} else {
-					if (value instanceof MungeStepOutput) { 
-						for(int index : undoEvent.getChangeIndices()) {
-							step.connectInput(index, (MungeStepOutput) value);
-						}
-					} else {
-						throw new IllegalStateException("inputs of wrong type: " + value.getClass());
-					}
-				}
-			} else if (undoEvent.getPropertyName().equals("addInputs")) {
-				MungeStep step = (MungeStep)undoEvent.getSource();
-				if (value == null) {
-					for(int index : undoEvent.getChangeIndices()) {
-						step.removeInput(index);
-					}
-				} else {
-					if (value instanceof InputDescriptor) { 
-						for(int index : undoEvent.getChangeIndices()) {
-							step.addInput((InputDescriptor) value, index);
-						}
-					} else {
-						throw new IllegalStateException("input descriptor of wrong type: " + value.getClass());
-					}
-				}
-			} else {
-				MungeStep step = (MungeStep)undoEvent.getSource();
-				step.setParameter(undoEvent.getPropertyName(), (String) value);
-			}
 		}
 	}
 }
