@@ -67,7 +67,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Implements the DataEntryPanel functionality for editing a munge process (MatchRuleSet).
  */
-public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
+public class MungeProcessEditor extends AbstractUndoableEditorPane {
     private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
 
 	

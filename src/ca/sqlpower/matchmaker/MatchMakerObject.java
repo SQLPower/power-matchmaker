@@ -23,9 +23,6 @@ import ca.sqlpower.object.SPObject;
 
 /**
  * The interface for all of the match maker specific business objects
- *
- * @param T The type of this implementation of MatchMakerObject
- * @param C The type of children this implementation of MatchMakerObject contains
  */
 public interface MatchMakerObject extends Auditable, SPObject {
 	

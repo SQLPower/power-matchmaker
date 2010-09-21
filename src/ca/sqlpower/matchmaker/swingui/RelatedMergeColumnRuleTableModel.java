@@ -33,7 +33,7 @@ import ca.sqlpower.sqlobject.SQLColumn;
  * and action.
  */
 public class RelatedMergeColumnRuleTableModel extends 
-	AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> {
+	AbstractMatchMakerTableModel {
 	
 	public RelatedMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);

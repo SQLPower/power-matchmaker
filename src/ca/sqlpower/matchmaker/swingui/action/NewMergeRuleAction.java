@@ -58,7 +58,4 @@ public class NewMergeRuleAction extends AbstractAction {
 		d.setLocationRelativeTo(swingSession.getFrame());
         d.setVisible(true);
 	}
-
-	
-	
 }

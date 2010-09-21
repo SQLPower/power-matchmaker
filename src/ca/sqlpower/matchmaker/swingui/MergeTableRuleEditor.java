@@ -51,6 +51,7 @@ import ca.sqlpower.matchmaker.swingui.action.DeriveRelatedRulesAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 
@@ -61,7 +62,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, TableMergeRules> {
+public class MergeTableRuleEditor extends AbstractUndoableEditorPane {
 
 	private static final Logger logger = Logger.getLogger(MergeTableRuleEditor.class);
 	
@@ -206,7 +207,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
-			mmo.getTableMergeRulesFolder().moveChild(selectedRow, selectedRow-1);
+			mmo.moveChild(selectedRow, selectedRow-1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
 		}
 	};
@@ -215,7 +216,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
-			mmo.getTableMergeRulesFolder().moveChild(selectedRow, selectedRow+1);
+			mmo.moveChild(selectedRow, selectedRow+1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
 		}
 	};
@@ -232,8 +233,12 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 			if (responds != JOptionPane.YES_OPTION)
 				return;
 
-			TableMergeRules rule = mmo.getTableMergeRules().get(selectedRow);
-			mmo.removeTableMergeRule(rule);
+			TableMergeRules rule = mmo.getChildren(TableMergeRules.class).get(selectedRow);
+			try {
+				mmo.removeChild(rule);
+			} catch (ObjectDependentException e1) {
+				throw new RuntimeException(e1);
+			}
 			if (selectedRow >= mergeRulesTable.getRowCount()) {
 				selectedRow = mergeRulesTable.getRowCount() - 1;
 			}
@@ -259,7 +264,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 
 
 	@Override
-	public void undoEventFired(MatchMakerEvent<Project, TableMergeRules> evt) {
+	public void undoEventFired(MatchMakerEvent evt) {
 		//No components needs refresh.
 	}
 }

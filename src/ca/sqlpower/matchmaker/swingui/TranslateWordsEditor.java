@@ -65,7 +65,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * An editor pane that allows the user to add/remove/move 
  * translate word pares
  */
-public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
+public class TranslateWordsEditor extends AbstractUndoableEditorPane {
 	
 	private JScrollPane translateWordsScrollPane;
 	private JTable translateWordsTable;

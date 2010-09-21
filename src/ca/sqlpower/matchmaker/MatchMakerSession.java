@@ -164,6 +164,11 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      */
     public void removeWarningListener(WarningListener l);
 
+	/**
+	 * Retrieves the root node of all MatchMakerObject objects
+	 */
+    public MMRootNode getRootNode();
+    
     /**
      * get all of the translations the user can see
      */

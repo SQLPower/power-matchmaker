@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.undo;
 
+import java.beans.PropertyChangeEvent;
+
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
@@ -26,18 +28,20 @@ import javax.swing.undo.UndoableEdit;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.util.SQLPowerUtils;
+import ca.sqlpower.util.TransactionEvent;
 
 /**
  * Utility class that registers every change to a subtree of MatchMakerObjects
  * by flipping its hasChanged flag to true. Mainly intended to support the
  * hasUnsavedChanges feature of DataEntryPanel.
  */
-public class MMOChangeUndoWatcher <T extends MatchMakerObject,C extends MatchMakerObject>
-implements MatchMakerListener<T,C> {
+public class MMOChangeUndoWatcher
+implements SPListener {
 
 	private static final Logger logger = Logger.getLogger(MMOChangeUndoWatcher.class);
 	
@@ -45,7 +49,7 @@ implements MatchMakerListener<T,C> {
     private UndoManager undo;
     private AbstractUndoableEditorPane pane;
     private MatchMakerSwingSession swingSession;
-    private MatchMakerObject<T, C> mmo;
+    private MatchMakerObject mmo;
     
     /**
      *  A "start compound edit" event would create a new instance of compound edit
@@ -67,13 +71,13 @@ implements MatchMakerListener<T,C> {
      * 
      * @param mmo The root node of the subtree to monitor.
      */
-    public MMOChangeUndoWatcher(MatchMakerObject<T,C> mmo, AbstractUndoableEditorPane pane, MatchMakerSwingSession session) {
+    public MMOChangeUndoWatcher(MatchMakerObject mmo, AbstractUndoableEditorPane pane, MatchMakerSwingSession session) {
     	this.swingSession = session;
     	this.mmo = mmo;
     	this.pane = pane;
     	
     	logger.debug("Initializing undo watcher: " + this);
-        MatchMakerUtils.listenToHierarchy(this, mmo);
+        SQLPowerUtils.listenToHierarchy(mmo, this);
         undo = new UndoManager();
         swingSession.setUndo(undo);
         undoCount = 0;
@@ -81,18 +85,14 @@ implements MatchMakerListener<T,C> {
         hasChanged = false;
     }
 
-    /**
-     * Listener implementation.
-     */
-    public void mmChildrenInserted(MatchMakerEvent<T,C> evt) {
+	@Override
+	public void childAdded(SPChildEvent e) {
     	hasChanged = true;
-    	for (MatchMakerObject<T,C> child : evt.getChildren()) {
-    		MatchMakerUtils.listenToHierarchy(this, child);
-    	}
+    	SQLPowerUtils.listenToHierarchy(e.getChild(), this);
     	
-    	logger.debug("Children: " + evt.getChildren() + " is inserted into: " + evt.getSource().toString());
-    	if (!evt.isUndoEvent()) {
-    		UndoableEdit ue = new MMOChildrenInsertUndoableEdit(evt, null);
+    	logger.debug("Child: " + e.getChild() + " is inserted into: " + e.getSource().toString());
+    	if (!e.isUndoEvent()) {
+    		UndoableEdit ue = new MMOChildrenInsertUndoableEdit(e, null);
 
     		if (undoCount > 0) {
     			ce.addEdit(ue);
@@ -105,6 +105,47 @@ implements MatchMakerListener<T,C> {
     		}
     	}
     	swingSession.refreshUndoAction();
+	}
+
+	@Override
+	public void childRemoved(SPChildEvent e) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: SPListener.childRemoved()");
+		
+	}
+
+	@Override
+	public void transactionStarted(TransactionEvent e) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: SPListener.transactionStarted()");
+		
+	}
+
+	@Override
+	public void transactionEnded(TransactionEvent e) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: SPListener.transactionEnded()");
+		
+	}
+
+	@Override
+	public void transactionRollback(TransactionEvent e) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: SPListener.transactionRollback()");
+		
+	}
+
+	@Override
+	public void propertyChanged(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: SPListener.propertyChanged()");
+		
+	}
+
+    /**
+     * Listener implementation.
+     */
+    public void mmChildrenInserted(SPChildEvent e) {
     }
 
     /**
@@ -180,16 +221,6 @@ implements MatchMakerListener<T,C> {
     }
 
     /**
-     * Listener implementation. Should only be called when the mmo is 
-     * saved and setChildren is called.
-     */
-    @SuppressWarnings("unchecked")
-    public void mmStructureChanged(MatchMakerEvent<T,C> evt) {
-    	MatchMakerUtils.unlistenToHierarchy(this, mmo);
-    	MatchMakerUtils.listenToHierarchy(this, mmo);
-    }
-
-    /**
      * Returns the last value given to {@link #setHasChanged(boolean)}, unless this object
      * has received any MatchMakerObject events since then, in which case the return value
      * will be <tt>true</tt>.
@@ -234,7 +265,7 @@ implements MatchMakerListener<T,C> {
     	if (undo != null) {
     		logger.debug("Cleaning up undo watcher: " + this);
     		undo.die();
-			MatchMakerUtils.unlistenToHierarchy(this, mmo);
+			SQLPowerUtils.unlistenToHierarchy(mmo, this);
 			mmo = null;
 			pane = null;
 			swingSession.refreshUndoAction();

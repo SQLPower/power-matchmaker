@@ -27,15 +27,17 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.object.SPChildEvent;
 
 public class MMOChildrenInsertUndoableEdit extends AbstractUndoableEdit{
 	
 	private static final Logger logger = Logger.getLogger(MMOChildrenInsertUndoableEdit.class);
 	
-	private MatchMakerEvent undoEvent;
+	private SPChildEvent undoEvent;
 	private MatchMakerObject mmo;
 
-	public MMOChildrenInsertUndoableEdit(MatchMakerEvent e, MatchMakerObject mmo){
+	public MMOChildrenInsertUndoableEdit(SPChildEvent e, MatchMakerObject mmo){
+		
 		super();
 		undoEvent = e;
 		this.mmo = mmo;

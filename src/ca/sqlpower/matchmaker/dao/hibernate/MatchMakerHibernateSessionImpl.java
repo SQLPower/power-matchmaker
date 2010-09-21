@@ -456,6 +456,13 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		}
 		return rootNode.getCurrentFolderParent();
 	}
+	
+	/**
+	 * Retrieves the root node of all MatchMakerObject objects
+	 */
+    public MMRootNode getRootNode() {
+    	return rootNode;
+    }
 
 	/**
      * Retrieves all the PL Folders from the database that have backed-up project
