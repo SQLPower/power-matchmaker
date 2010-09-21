@@ -38,14 +38,14 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingMatchMakerContext;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.dao.AbstractDAOTestCase;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -192,7 +192,7 @@ public class ProjectXMLDAOTest extends TestCase {
         
         MungeProcess mp = new MungeProcess();
         AbstractDAOTestCase.setAllSetters(session, mp, getPropertiesToIgnore());
-        p.addMungeProcess(mp);
+        p.addChild(mp);
         
         SQLInputStep inputStep = new SQLInputStep();
         mp.addChild(inputStep);
@@ -216,9 +216,9 @@ public class ProjectXMLDAOTest extends TestCase {
             actionTypeIndex++;
             tmr.addChild(cmr);
         }
-        tmr.getChildren().get(0).setUpdateStatement("test update statement");
-        AbstractDAOTestCase.setAllSetters(session, tmr.getChildren().get(1), getPropertiesToIgnore());
-        p.addTableMergeRule(tmr);
+        tmr.getChildren(ColumnMergeRules.class).get(0).setUpdateStatement("test update statement");
+        AbstractDAOTestCase.setAllSetters(session, tmr.getChildren(ColumnMergeRules.class).get(1), getPropertiesToIgnore());
+        p.addChild(tmr);
         
         tmr = new TableMergeRules();
         AbstractDAOTestCase.setAllSetters(session, tmr, getPropertiesToIgnore());
@@ -227,7 +227,7 @@ public class ProjectXMLDAOTest extends TestCase {
         tmr.setSchemaName("schem");
         tmr.setTableName("fake_table_to_merge");
         tmr.setParentMergeRule(p.getTableMergeRules().get(0));
-        p.getChildren().get(1).addChild(0, tmr); // putting child before parent on purpose to test that ordering is not sensitive to this
+        p.getChildren(ColumnMergeRules.class).get(1).addChild(tmr, 0); // putting child before parent on purpose to test that ordering is not sensitive to this
         
         // ========================= Now the save and load =========================
         
@@ -246,14 +246,14 @@ public class ProjectXMLDAOTest extends TestCase {
             assertNotNull(readBackProcess);
             assertPropertiesEqual(originalProcess, readBackProcess);
             
-            for (int i = 0; i < originalProcess.getChildCount(); i++) {
-                MungeStep originalStep = originalProcess.getChildren().get(i);
-                MungeStep readBackStep = readBackProcess.getChildren().get(i);
+            for (int i = 0; i < originalProcess.getChildren(AbstractMungeStep.class).size(); i++) {
+                MungeStep originalStep = originalProcess.getChildren(AbstractMungeStep.class).get(i);
+                MungeStep readBackStep = readBackProcess.getChildren(AbstractMungeStep.class).get(i);
                 assertPropertiesEqual(originalStep, readBackStep, "project", "rolledBack", "inputs");
                 
-                for (int j = 0; j < originalStep.getChildCount(); j++) {
-                    MungeStepOutput originalOutput = originalStep.getChildren().get(j);
-                    MungeStepOutput readBackOutput = readBackStep.getChildren().get(j);
+                for (int j = 0; j < originalStep.getChildren(MungeStepOutput.class).size(); j++) {
+                    MungeStepOutput originalOutput = originalStep.getChildren(MungeStepOutput.class).get(j);
+                    MungeStepOutput readBackOutput = readBackStep.getChildren(MungeStepOutput.class).get(j);
                     assertPropertiesEqual(originalOutput, readBackOutput, "parent");
                 }
 
@@ -270,16 +270,14 @@ public class ProjectXMLDAOTest extends TestCase {
             }
         }
         
-        MatchMakerFolder<TableMergeRules> originalMergeRulesFolder = p.getChildren().get(1);
-        MatchMakerFolder<TableMergeRules> readBackMergeRulesFolder = readBack.getChildren().get(1);
-        for (int i = 0; i < originalMergeRulesFolder.getChildCount(); i++) {
-            TableMergeRules originalTMR = originalMergeRulesFolder.getChildren().get(i);
-            TableMergeRules readBackTMR = readBackMergeRulesFolder.getChildren().get(i);
+        for (int i = 0; i < p.getChildren(TableMergeRules.class).size(); i++) {
+            TableMergeRules originalTMR = p.getChildren(TableMergeRules.class).get(i);
+            TableMergeRules readBackTMR = readBack.getChildren(TableMergeRules.class).get(i);
             assertPropertiesEqual(originalTMR, readBackTMR);
             
-            for (int j = 0; j < originalTMR.getChildCount(); j++) {
-                ColumnMergeRules originalCMR = originalTMR.getChildren().get(j);
-                ColumnMergeRules readBackCMR = readBackTMR.getChildren().get(j);
+            for (int j = 0; j < originalTMR.getChildren(ColumnMergeRules.class).size(); j++) {
+                ColumnMergeRules originalCMR = originalTMR.getChildren(ColumnMergeRules.class).get(j);
+                ColumnMergeRules readBackCMR = readBackTMR.getChildren(ColumnMergeRules.class).get(j);
                 assertPropertiesEqual(originalCMR, readBackCMR);
             }
         }
