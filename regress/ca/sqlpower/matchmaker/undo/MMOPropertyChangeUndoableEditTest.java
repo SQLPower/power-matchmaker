@@ -19,9 +19,9 @@
 
 package ca.sqlpower.matchmaker.undo;
 
+import java.beans.PropertyChangeEvent;
+
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.StringConstantMungeStep;
 
@@ -39,12 +39,8 @@ public class MMOPropertyChangeUndoableEditTest extends TestCase {
 		resultStep.connectInput(0, stringConstantStep.getChildren().get(0));
 		assertEquals(2, resultStep.getInputCount());
 		
-		MatchMakerEvent<DeDupeResultStep, MatchMakerObject> inputChangeEvent = new MatchMakerEvent<DeDupeResultStep, MatchMakerObject>();
-		inputChangeEvent.setSource(resultStep);
-		inputChangeEvent.setOldValue(null);
-		inputChangeEvent.setPropertyName("inputs");
-		int[] changedIndices = { 0 };
-		inputChangeEvent.setChangeIndices(changedIndices);
+		PropertyChangeEvent inputChangeEvent = 
+			new PropertyChangeEvent(resultStep, "current", null, stringConstantStep.getChildren().get(0));
 		MMOPropertyChangeUndoableEdit edit = new MMOPropertyChangeUndoableEdit(inputChangeEvent);
 		
 		edit.undo();
