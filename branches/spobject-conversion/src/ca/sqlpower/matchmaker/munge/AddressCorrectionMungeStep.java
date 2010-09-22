@@ -210,7 +210,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			output = address;
 		}
 		
-		List<MungeStepOutput> outputs = getChildren(); 
+		List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
 		outputs.get(0).setData(output.getAddress());
 		outputs.get(1).setData(addressLine2);
 		outputs.get(2).setData(output.getSuite());
@@ -267,7 +267,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			String country = (countryMSO != null) ? (String)countryMSO.getData() : null;
 			
 			logger.debug("Found an output address:\n" + address);
-			List<MungeStepOutput> outputs = getChildren(); 
+			List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
 			outputs.get(0).setData(address.getAddress());
 			outputs.get(1).setData(addressLine2);
 			outputs.get(2).setData(address.getSuite());
@@ -430,7 +430,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 					
 					logger.debug("Top suggestion from validator is: " + correctedAddress);
 					
-					List<MungeStepOutput> outputs = getChildren(); 
+					List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
 					
 					outputs.get(0).setData(correctedAddress.getAddress());
 					outputs.get(1).setData(addressLine2);

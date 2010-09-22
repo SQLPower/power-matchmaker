@@ -118,7 +118,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     @Override
     public Boolean doCall() throws Exception {
         // Clear out all the output values in case the request fails!
-        for (MungeStepOutput<?> output : getChildren()) {
+        for (MungeStepOutput<?> output : getChildren(MungeStepOutput.class)) {
             output.setData(null);
         }
         
