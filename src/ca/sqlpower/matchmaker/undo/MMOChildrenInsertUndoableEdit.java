@@ -51,7 +51,7 @@ public class MMOChildrenInsertUndoableEdit extends AbstractUndoableEdit{
 				throw new CannotUndoException();
 			}
 			AbstractMatchMakerObject ammo = (AbstractMatchMakerObject) undoEvent.getSource();
-			if (!(undoEvent.getChild() instanceof AbstractMatchMakerObject)) {
+			if (!(undoEvent.getChild() instanceof MatchMakerObject)) {
 					throw new CannotUndoException();
 			}
 			AbstractMatchMakerObject child = (AbstractMatchMakerObject) undoEvent.getChild();

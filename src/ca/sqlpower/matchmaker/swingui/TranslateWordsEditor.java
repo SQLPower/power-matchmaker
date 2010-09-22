@@ -289,7 +289,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
-					mmo.moveChild(index, index-1);
+					mmo.moveChild(index, index-1, MatchMakerTranslateWord.class);
 					translateWordsTable.setRowSelectionInterval(index-1, index-1);
 					scrollToSelected(index-1);
 				}
@@ -302,7 +302,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() -1) ){						
-					mmo.moveChild(index, index+1);
+					mmo.moveChild(index, index+1, MatchMakerTranslateWord.class);
 					translateWordsTable.setRowSelectionInterval(index+1, index+1);
 				 	scrollToSelected(index+1);
 				}
@@ -315,7 +315,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
-					mmo.moveChild(index, 0);
+					mmo.moveChild(index, 0, MatchMakerTranslateWord.class);
 					translateWordsTable.setRowSelectionInterval(0,0);
 					scrollToSelected(0);
 				}
@@ -328,7 +328,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() - 1) ){						
-					mmo.moveChild(index, mmo.getChildren().size() - 1);
+					mmo.moveChild(index, mmo.getChildren(MatchMakerTranslateWord.class).size() - 1, MatchMakerTranslateWord.class);
  					translateWordsTable.setRowSelectionInterval(mmo.getChildren().size()-1,mmo.getChildren().size()-1);
 					scrollToSelected(mmo.getChildren().size()-1);
 				}

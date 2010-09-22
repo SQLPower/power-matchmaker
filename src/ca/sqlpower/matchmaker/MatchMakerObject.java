@@ -77,7 +77,7 @@ public interface MatchMakerObject extends Auditable, SPObject {
 	 */
 	void endCompoundEdit();
 
-	void moveChild(int from, int to);
+	void moveChild(int from, int to, Class<? extends MatchMakerObject> classType);
 	
 	@Override
 	public MatchMakerObject getParent();

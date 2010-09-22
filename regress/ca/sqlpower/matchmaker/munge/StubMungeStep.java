@@ -257,7 +257,7 @@ public class StubMungeStep implements MungeStep {
 	}
 
 	@Override
-	public void moveChild(int from, int to) {
+	public void moveChild(int from, int to, Class<? extends MatchMakerObject> classType) {
 		
 	}
 
