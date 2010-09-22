@@ -73,7 +73,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 			setAllSetters(getSession(), mergeRules, getNonPersitingProperties());
 			mergeRules.setName("MergeRule "+count);
 			mergeRules.setTableName("table"+count);
-            project.addTableMergeRule(mergeRules);
+            project.addChild(mergeRules);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -118,14 +118,14 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 	public void testTableParentIsTheCorrectObject() throws Exception {
 		createNewObjectUnderTest();
 		TableMergeRules mergeRules = project.getTableMergeRules().get(0);
-		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",project.getTableMergeRulesFolder(),mergeRules.getParent());
+		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",project, mergeRules.getParent());
 	}
 
 	public void testTableParentIsTheCorrectObjectAfterDAOSave() throws Exception {
 		createNewObjectUnderTest();
 		new ProjectDAOHibernate(getSession()).save(project);
 		TableMergeRules mergeRules = project.getTableMergeRules().get(0);
-		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",project.getTableMergeRulesFolder(),mergeRules.getParent());
+		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",project, mergeRules.getParent());
 	}
 	
 	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
@@ -179,7 +179,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 		}
 
 		assertEquals("TableMergeRules should have 2 children.", 2, savedItem1.getChildren().size());
-		ColumnMergeRules savedcmr1 = savedItem1.getChildren().get(0);
+		ColumnMergeRules savedcmr1 = savedItem1.getChildren(ColumnMergeRules.class).get(0);
 		assertEquals("Imported key column is not persisted.", cmr1.getImportedKeyColumnName(), savedcmr1.getImportedKeyColumnName());
 
 		

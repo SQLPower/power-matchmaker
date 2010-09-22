@@ -79,7 +79,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		try {
 			setAllSetters(getSession(), mungeProcess, getNonPersitingProperties());
             mungeProcess.setName("Munge Process "+count);
-            project.addMungeProcess(mungeProcess);
+            project.addChild(mungeProcess);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -139,9 +139,9 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		MungeStep ms = new SQLInputStep();
 		item1.addChild(ms);
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("TEST_MSO", String.class);
-		ms.addChild(mso);
+		ms.addChild(mso,0);
 		MungeStepOutput<String> mso2 = new MungeStepOutput<String>("TEST_MSO2", String.class);
-		ms.addChild(mso2);
+		ms.addChild(mso2,1);
 		ms.addInput(new InputDescriptor("asdf", String.class));
 		ms.connectInput(0, mso2);
 
@@ -156,9 +156,9 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 			item.setSession(getSession());
 		}
 		assertEquals("MungeProcess should have 1 child.", 1, savedItem1.getChildren().size());
-		MungeStep saveMS = savedItem1.getChildren().get(0);
+		MungeStep saveMS = savedItem1.getChildren(MungeStep.class).get(0);
 		assertEquals("MungeStep should have 2 child.", 2, saveMS.getChildren().size());
-		MungeStepOutput<String> saveMSO2 = saveMS.getChildren().get(1);
+		MungeStepOutput saveMSO2 = saveMS.getChildren(MungeStepOutput.class).get(1);
 		assertEquals("MungeStep should have its first input equals its second output.", saveMSO2, saveMS.getMSOInputs().get(0));
 	}
     
@@ -170,9 +170,9 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		MungeStep ms = new SQLInputStep();
 		item1.addChild(ms);
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("TEST_MSO", String.class);
-		ms.addChild(mso);
+		ms.addChild(mso, 0);
 		MungeStepOutput<String> mso2 = new MungeStepOutput<String>("TEST_MSO2", String.class);
-		ms.addChild(mso2);
+		ms.addChild(mso2, 1);
 		ms.addInput(new InputDescriptor("TEST_INPUT", String.class));
 
 		dao.save(item1);
@@ -186,9 +186,8 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 			item.setSession(getSession());
 		}
 		assertEquals("MungeProcess should have 1 child.", 1, savedItem1.getChildren().size());
-		MungeStep saveMS = savedItem1.getChildren().get(0);
+		MungeStep saveMS = savedItem1.getChildren(MungeStep.class).get(0);
 		assertEquals("MungeStep should have 2 child.", 2, saveMS.getChildren().size());
-		MungeStepOutput<String> saveMSO2 = saveMS.getChildren().get(1);
 
 		assertNull("MungeStep should have a null input.", saveMS.getMSOInputs().get(0));
 		assertEquals("MungeStep should still have same input descriptor.", "TEST_INPUT", saveMS.getInputDescriptor(0).getName());
