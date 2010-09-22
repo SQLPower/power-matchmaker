@@ -27,6 +27,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLTable;
 
@@ -120,6 +123,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
          * Returns the human-readable English text shown to the user for
          * this action type.
          */
+        @Accessor
         public String getText() {
             return text;
         }
@@ -272,11 +276,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		return columnRule;
 	}
 
-
+	@Accessor
 	public MergeActionType getActionType() {
 		return actionType;
 	}
 	
+	@Mutator
 	public void setActionType(MergeActionType actionType) {
 		MergeActionType oldValue = this.actionType;
 		this.actionType = actionType;
@@ -284,11 +289,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@Accessor
 	public String getName() {
 		return getColumnName();
 	}
 	
 	@Override
+	@NonProperty
 	public List<SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.add(cachedColumn);
@@ -297,6 +304,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	}
 	
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
@@ -311,20 +319,22 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		throw new RuntimeException("Cannot remove this child to the class.");
 	}
 
+	@Accessor
 	public SQLColumn getColumn() {
 			return cachedColumn.getColumn();
 	}
 
-
+	@Accessor
 	public String getColumnName() {
 		return cachedColumn.getColumnName();
 	}
 
-
+	@Mutator
 	public void setColumn(SQLColumn column) {
 		cachedColumn.setColumn(column);
 	}
 
+	@Mutator
 	public void setColumnName(String columnName) {
 		cachedColumn.setColumnName(columnName);
 	}
@@ -338,17 +348,19 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		return buf.toString();
 	}
 
+	@Accessor
 	public boolean isInPrimaryKey() {
 		return inPrimaryKey;
 	}
 
-
+	@Mutator
 	public void setInPrimaryKey(boolean inPrimaryKey) {
 		boolean oldValue = this.inPrimaryKey;
 		this.inPrimaryKey = inPrimaryKey;
 		firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
 	}
 	
+	@Mutator
 	public void setInPrimaryKeyAndAction(boolean inPrimaryKey) {
 		try {
 			begin("Setting in Primary Key");
@@ -365,22 +377,27 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		}
 	}
 
+	@Accessor
 	public SQLColumn getImportedKeyColumn() {
 		return importedCachedColumn.getColumn();
 	}
 
+	@Accessor
 	public String getImportedKeyColumnName() {
 		return importedCachedColumn.getColumnName();
 	}
 	
+	@Mutator
 	public void setImportedKeyColumn(SQLColumn importedKeyColumn) {
 		importedCachedColumn.setColumn(importedKeyColumn);
 	}
 	
+	@Mutator
 	public void setImportedKeyColumnName(String columnName) {
 		importedCachedColumn.setColumnName(columnName);
 	}
 	
+	@Mutator
 	public void setImportedKeyColumnAndAction(SQLColumn importedKeyColumn) {
 		if (getImportedKeyColumn() == importedKeyColumn) return;
 		try {
@@ -398,11 +415,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		}
 	}
 
+	@Accessor
 	public String getUpdateStatement() {
 		return updateStatement;
 	}
 
-
+	@Mutator
 	public void setUpdateStatement(String updateStatement) {
 		String oldValue = this.getUpdateStatement();
 		this.updateStatement = updateStatement;
