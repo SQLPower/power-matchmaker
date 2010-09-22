@@ -187,7 +187,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 			logger.debug("moving merge rule "+selectedRow+" up");
 			project.getChildren(MungeProcess.class).get(selectedRow).setMatchPriority(selectedRow - 1);
 			project.getChildren(MungeProcess.class).get(selectedRow - 1).setMatchPriority(selectedRow);
-			project.moveChild(selectedRow, selectedRow-1);
+			project.moveChild(selectedRow, selectedRow-1, MungeProcess.class);
 			mungeProcessTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
 			applyChanges();
 		}
@@ -199,7 +199,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 			logger.debug("moving merge rule "+selectedRow+" down");
 			project.getChildren(MungeProcess.class).get(selectedRow).setMatchPriority(selectedRow + 1);
 			project.getChildren(MungeProcess.class).get(selectedRow + 1).setMatchPriority(selectedRow);
-			project.moveChild(selectedRow, selectedRow+1);
+			project.moveChild(selectedRow, selectedRow+1, MungeProcess.class);
 			mungeProcessTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
 			applyChanges();
 		}
