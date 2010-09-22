@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.object.ObjectDependentException;
 
 public class TranslationComboBoxModelTest extends TestCase {
 
@@ -136,7 +137,11 @@ public class TranslationComboBoxModelTest extends TestCase {
     }
 
     public void testChildRemovedPassedOnCorrectly(){
-        tgp.removeChild(tg);
+        try {
+			tgp.removeChild(tg);
+		} catch (ObjectDependentException e) {
+			throw new RuntimeException(e);
+		}
         assertEquals("Incorrect number of events fired ",1,counter.getAllEvents());
         assertEquals("Event fired to the wrong location ",1,counter.getIntervalRemoved());
         assertEquals("Wrong Type of event ",ListDataEvent.INTERVAL_REMOVED,counter.getLastEvent().getType());
@@ -146,7 +151,11 @@ public class TranslationComboBoxModelTest extends TestCase {
 
     public void testChildRemovedPassedOnCorrectlyWhenFirstItemNull(){
     	tcbm.setFirstItemNull(true);
-        tgp.removeChild(tg);
+    	try {
+			tgp.removeChild(tg);
+		} catch (ObjectDependentException e) {
+			throw new RuntimeException(e);
+		}
         assertEquals("Incorrect number of events fired ",1,counter.getAllEvents());
         assertEquals("Event fired to the wrong location ",1,counter.getIntervalRemoved());
         assertEquals("Wrong Type of event ",ListDataEvent.INTERVAL_REMOVED,counter.getLastEvent().getType());

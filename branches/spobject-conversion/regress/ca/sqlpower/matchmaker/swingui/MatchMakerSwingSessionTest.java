@@ -83,7 +83,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
            
             @Override
             public PlFolder findFolder(String foldername) {
-                for (PlFolder folder : getCurrentFolderParent().getChildren()){
+                for (PlFolder folder : getCurrentFolderParent().getChildren(PlFolder.class)){
                     if (folder.getName().equals(foldername)) return folder;
                 }
                 return null;

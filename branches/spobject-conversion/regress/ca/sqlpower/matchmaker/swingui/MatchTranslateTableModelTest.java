@@ -27,6 +27,7 @@ import javax.swing.event.TableModelListener;
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.object.ObjectDependentException;
 
 public class MatchTranslateTableModelTest extends TestCase {
 
@@ -86,7 +87,11 @@ public class MatchTranslateTableModelTest extends TestCase {
     }
     
     public void testFireRowRemoved(){
-        translateGroup.removeChild(tw);
+        try {
+			translateGroup.removeChild(tw);
+		} catch (ObjectDependentException e) {
+			throw new RuntimeException(e);
+		}
         assertEquals("Incorrect number of events fired ",1,ec.getTableChangedCount());
         assertEquals("Wrong Type of event ",TableModelEvent.DELETE,ec.getLastEvent().getType());
         assertEquals("Wrong lower bound ", 0, ec.getLastEvent().getFirstRow());
