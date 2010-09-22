@@ -53,7 +53,6 @@ public class CachableTable extends AbstractMatchMakerObject{
      * sourceTable, xrefTable, or resultTable).
      */
     private final String propertyName;
-    private AbstractMatchMakerObject mmo;
     private String catalogName;
     private String schemaName;
     private String tableName;
@@ -75,7 +74,6 @@ public class CachableTable extends AbstractMatchMakerObject{
      * on behalf of mmo will report.
      */
     public CachableTable(String propertyName) {
-    	if (mmo == null) throw new NullPointerException("Can't make a cachable table for a null owner");
     	if (propertyName == null) throw new NullPointerException("Can't make a cachable table for a null property name");
 		this.propertyName = propertyName;
     }
@@ -167,7 +165,7 @@ public class CachableTable extends AbstractMatchMakerObject{
             return null;
         }
     	
-    	MatchMakerSession session = mmo.getSession();
+    	MatchMakerSession session = getSession();
         MatchMakerSessionContext context = session.getContext();
         List<JDBCDataSource> dataSources = context.getDataSources();
         for (JDBCDataSource spd : dataSources) {
@@ -210,13 +208,12 @@ public class CachableTable extends AbstractMatchMakerObject{
 
         try {
 			logger.debug("getSourceTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
-			logger.debug("mmo.parent="+mmo.getParent());
 			
 			SQLDatabase db = null;
 			if (getJDBCDataSource() == null) {
-				db = mmo.getSession().getDatabase();
+				db = getSession().getDatabase();
 			} else {
-				db = mmo.getSession().getDatabase(getJDBCDataSource());
+				db = getSession().getDatabase(getJDBCDataSource());
 			}
 			
 			if (SQLObjectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
@@ -230,8 +227,8 @@ public class CachableTable extends AbstractMatchMakerObject{
 				cachedTable = table;
 				return cachedTable;
 			} else {
-				mmo.getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
-						" in Project "+mmo.getName()+ " is not compatible with the "+db.getName() +" database. " +
+				getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
+						" in Project "+getName()+ " is not compatible with the "+db.getName() +" database. " +
 				"The table selection has been reset to nothing");
 				return null;
 			}
@@ -267,7 +264,7 @@ public class CachableTable extends AbstractMatchMakerObject{
     @Override
     public String toString() {
     	return "CachableTable:" +
-    			" mmo="+(mmo == null ? "null" : mmo.getClass().getName() + System.identityHashCode(mmo)) + 
+    			" parent="+(getParent() == null ? "null" : getParent().getClass().getName() + System.identityHashCode(getParent())) + 
     			" ds=" + getSPDataSourceName() +
     			" catalogName=" + catalogName +
     			" schemaName="+schemaName+
