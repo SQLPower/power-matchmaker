@@ -33,6 +33,7 @@ import org.hibernate.SessionFactory;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -384,5 +385,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		// no-op
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.removeStatusMessage()");
 		
+	}
+
+	@Override
+	public MMRootNode getRootNode() {
+		logger.debug("Stub call: MatchMakerSession.getRootNode()");
+		return null;
 	}
 }
