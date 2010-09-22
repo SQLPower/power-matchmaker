@@ -33,7 +33,7 @@ import javax.swing.undo.CannotUndoException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.object.SPObject;
 
 public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 	
@@ -49,7 +49,7 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 	public void undo(){
 		super.undo();
 		try {
-			((MatchMakerObject)undoEvent.getSource()).setUndoing(true);
+			((SPObject)undoEvent.getSource()).setMagicEnabled(false);
 		    modifyProperty(undoEvent.getOldValue());
 		} catch (IllegalAccessException e) {
 			logger.error("Couldn't access setter for "+
@@ -64,14 +64,14 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 					undoEvent.getSource(), e);
 			throw new CannotUndoException();
 		} finally {
-			((MatchMakerObject)undoEvent.getSource()).setUndoing(false);
+			((SPObject)undoEvent.getSource()).setMagicEnabled(true);
 		}
 	}
 
 	public void redo(){
 		super.redo();
 		try {
-			((MatchMakerObject)undoEvent.getSource()).setUndoing(true);
+			((SPObject)undoEvent.getSource()).setMagicEnabled(false);
 		    modifyProperty(undoEvent.getNewValue());
 		} catch (IllegalAccessException e) {
 			logger.error("Couldn't access setter for "+
@@ -86,7 +86,7 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 					undoEvent.getSource(), e);
 			throw new CannotUndoException();
 		} finally {
-			((MatchMakerObject)undoEvent.getSource()).setUndoing(false);
+			((SPObject)undoEvent.getSource()).setMagicEnabled(true);
 		}
 	}
 	

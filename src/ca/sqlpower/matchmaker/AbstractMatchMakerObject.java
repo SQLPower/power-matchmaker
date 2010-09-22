@@ -27,6 +27,12 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.object.AbstractSPObject;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.Transient;
+import ca.sqlpower.util.RunnableDispatcher;
+import ca.sqlpower.util.SessionNotFoundException;
+import ca.sqlpower.util.WorkspaceContainer;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
@@ -38,7 +44,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @param <C> The child type of this matchmaker object implementation
  */
 public abstract class AbstractMatchMakerObject extends AbstractSPObject implements MatchMakerObject 
-	 {
+{
 
     private static final Logger logger = Logger.getLogger(AbstractMatchMakerObject.class);
     
@@ -84,6 +90,7 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 		}
 	}
 
+	@Transient @Mutator
 	public void setSession(MatchMakerSession matchMakerSession) {
 		this.matchMakerSession = matchMakerSession;
 	}
@@ -92,7 +99,8 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	 * Returns this object's session, if it has one. Otherwise, defers
 	 * to the parent's getSession() method.
 	 */
-    public MatchMakerSession getSession() {
+    @Transient @Accessor
+	public MatchMakerSession getSession() {
         if (getParent() == this) {
             // this check prevents infinite recursion in case of funniness
             throw new IllegalStateException("Something tells me this class belongs to the royal family");
@@ -116,6 +124,24 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
             return ((MatchMakerObject)parent).getSession();
         }
     }
+	
+	public WorkspaceContainer getWorkspaceContainer() {
+		if(getSession() != null)
+			return getSession();
+		else if(getParent() != null)
+			return getParent().getWorkspaceContainer();
+		else
+			throw new SessionNotFoundException("Root object does not have a workspace container reference");
+	}
+	
+	public RunnableDispatcher getRunnableDispatcher() throws SessionNotFoundException {
+		if(getSession() != null)
+			return getSession();
+		else if(getParent() != null)
+			return getParent().getRunnableDispatcher();
+		else
+			throw new SessionNotFoundException("Root object does not have a runnable dispatcher reference");
+	}
 
 	public Date getCreateDate() {
 		return createDate;
@@ -127,27 +153,16 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 
 
 	/////// Event stuff ///////
-
+	@Mutator
 	public void setVisible(boolean visible) {
 		boolean old = this.visible;
 		this.visible = visible;
 		firePropertyChange("visible", old, visible);
 	}
 	
+	@Accessor
 	public boolean isVisible() {
 		return visible;
-	}
-	
-	/////// Undo Stuff ///////
-	// fires the event as a undo event if this is true;
-	private boolean isUndoing;
-
-	public boolean isUndoing() {
-		return isUndoing;
-	}
-
-	public void setUndoing(boolean isUndoing) {
-		this.isUndoing = isUndoing;
 	}
 
     @Override

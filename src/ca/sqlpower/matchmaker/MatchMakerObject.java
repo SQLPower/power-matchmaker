@@ -52,17 +52,6 @@ public interface MatchMakerObject extends Auditable, SPObject {
 	 */
 	boolean isVisible();
 	
-	
-	/**
-	 * Returns true if the object is undoing.
-	 */
-	boolean isUndoing();
-	
-	/**
-	 * Sets if the object is undoing.
-	 */
-	void setUndoing(boolean isUndoing);
-	
 	/**
 	 * Starts a compound edit so that the whole compound edit can
 	 * be undo'ed at the same time. Note that one must call endCompoundEdit after or the
