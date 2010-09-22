@@ -317,7 +317,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         newProject.setResultTableName("new_result_table");
 		newProject.setSession(getSession());
         
-        oldProject.addMungeProcess(process);
+        oldProject.addChild(process);
 
         ProjectDAO dao = getDataAccessObject();
         
@@ -351,7 +351,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             //A temporary fix for moving munge processes. This makes a copy of the mungeProcess and 
             //adds it to the newProject.
             MungeProcess mungeProcess2 = process.duplicate(newProject, getSession());
-            newProject.addMungeProcess(mungeProcess2);
+            newProject.addChild(mungeProcess2);
             dao.save(newProject);
             
             try { 
@@ -401,7 +401,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
          PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
          plFolderDAO.save(f);
 
-         oldProject.addMungeProcess(process);
+         oldProject.addChild(process);
 
          ProjectDAO dao = getDataAccessObject();
 

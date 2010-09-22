@@ -25,20 +25,18 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
-public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<PlFolder<MatchMakerObject>,PlFolderDAO>  {
+public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<PlFolder,PlFolderDAO>  {
 
 	int count=0;
 
 	@Override
-	public PlFolder<MatchMakerObject> createNewObjectUnderTest() throws Exception {
+	public PlFolder createNewObjectUnderTest() throws Exception {
 		count++;
-		PlFolder<MatchMakerObject> plFolder =
-			new PlFolder<MatchMakerObject>("Test Folder"+count);
+		PlFolder plFolder = new PlFolder("Test Folder"+count);
 		count++;
 		plFolder.setSession(getSession());
 		plFolder.setName("test "+count);
@@ -70,7 +68,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
         dao.save(f);
 		List<PlFolder> folders = dao.findAll();
 		PlFolder fAgain = folders.get(folders.indexOf(f));
-		assertEquals("Wrong number of children", 1,fAgain.getChildCount());
+		assertEquals("Wrong number of children", 1,fAgain.getChildren(Project.class).size());
 		assertEquals("Wrong child",project, fAgain.getChildren().get(0));
 	}
 
@@ -84,8 +82,8 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
         m.setName("project");
         m.setType(ProjectMode.FIND_DUPES);
 
-        PlFolder<Project> oldFolder = new PlFolder<Project>("old");
-        PlFolder<Project> newFolder = new PlFolder<Project>("new");
+        PlFolder oldFolder = new PlFolder("old");
+        PlFolder newFolder = new PlFolder("new");
 
         oldFolder.addChild(m);
         PlFolderDAO dao = getDataAccessObject();
