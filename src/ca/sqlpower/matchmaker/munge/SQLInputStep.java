@@ -100,14 +100,14 @@ public class SQLInputStep extends AbstractMungeStep {
         
         if (!rs.next()) {
             for (int i = 0; i < table.getColumns().size(); i++) {
-                MungeStepOutput<?> o = getChildren().get(i);
+                MungeStepOutput<?> o = getChildren(MungeStepOutput.class).get(i);
                 o.setData(null);
             }
             return false;
         }
         
         for (int i = 0; i < table.getColumns().size(); i++) {
-            MungeStepOutput<?> o = getChildren().get(i);
+            MungeStepOutput<?> o = getChildren(MungeStepOutput.class).get(i);
             if (o.getType() == String.class) {
                 MungeStepOutput<String> oo = (MungeStepOutput<String>) o;
                 oo.setData(rs.getString(i + 1));
@@ -230,7 +230,7 @@ public class SQLInputStep extends AbstractMungeStep {
      * columns' types have changed.
      */
     private void setupOutputs() throws SQLObjectException {
-        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren());
+        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren(MungeStepOutput.class));
         for (SQLColumn c : table.getColumns()) {
             String colName = c.getName();
             MungeStepOutput<?> output = getOutputByName(colName);

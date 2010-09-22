@@ -225,8 +225,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		fireChildAdded(SQLInputStep.class, ob, mungeStepOutputs.size());
 	}
 	
-	public List<MungeStepOutput> getChildren() {
-		return Collections.unmodifiableList(mungeStepOutputs);
+	public List<SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.addAll(mungeStepOutputs);
+		children.addAll(inputs);
+		return Collections.unmodifiableList(children);
 	}
 	
 	public int addInput(InputDescriptor desc) {
@@ -378,7 +381,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			step.parameters = new HashMap<String, String>(this.parameters);
 			step.setParent(parent);
 			step.setSession(session);
-			step.setUndoing(this.isUndoing());
 			step.setVisible(this.isVisible());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -655,7 +657,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     protected void printOutputs() {
     	if (logger.isDebugEnabled()) {
     		String out = getName() + " Outputs: ";
-    		for (MungeStepOutput mso : getChildren()) {
+    		for (MungeStepOutput mso : getChildren(MungeStepOutput.class)) {
     			if (mso == null) {
     				out += "[ null ] ";
     			} else {
@@ -701,7 +703,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      * Returns null if no such MungeStepOutput exists.
      */
     public MungeStepOutput getOutputByName(String name) {
-    	for(MungeStepOutput o: getChildren()) {
+    	for(MungeStepOutput o: getChildren(MungeStepOutput.class)) {
     		if (o.getName().equals(name)) {
     			return o;
     		}
@@ -734,7 +736,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     		result.append(" " + mso);
     	}
     	result.append("] [Outputs:");
-    	for (MungeStepOutput mso : getChildren()) {
+    	for (MungeStepOutput mso : getChildren(MungeStepOutput.class)) {
     		result.append(" " + mso);
     	}
     	result.append("] [Parameters:");
@@ -769,7 +771,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			throw new IllegalStateException(
 					"This step has the incorrect number of outputs");
 		}
-		return getChildren().get(0);
+		return getChildren(MungeStepOutput.class).get(0);
     }
     
     /**
