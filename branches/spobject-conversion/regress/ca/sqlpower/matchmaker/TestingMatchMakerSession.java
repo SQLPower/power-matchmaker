@@ -29,10 +29,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -212,7 +215,9 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 
     public FolderParent getCurrentFolderParent() {
     	FolderParent current = new FolderParent(this);
-    	current.getChildren().addAll(folders);
+    	for(PlFolder child : folders) {
+    		current.addChild(child);
+    	}
     	return current;
     }
 
@@ -361,6 +366,29 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	public void removeStatusMessage() {
 		// np-op
 		logger.debug("Stub call: TestingMatchMakerSession.removeStatusMessage()");
-		
+	}
+	
+	@Override
+	public SPObject getWorkspace() {
+		return getRootNode();
+	}
+	
+	@Override
+    public void runInForeground(Runnable runner) {
+        SwingUtilities.invokeLater(runner);
+    }
+
+	@Override
+    public void runInBackground(Runnable runner) {
+        runInBackground(runner, "worker");
+    }
+
+	public void runInBackground(final Runnable runner, String name) {
+        new Thread(runner, name).start();       
+    }
+
+	@Override
+	public boolean isForegroundThread() {
+        return true;
 	}
 }
