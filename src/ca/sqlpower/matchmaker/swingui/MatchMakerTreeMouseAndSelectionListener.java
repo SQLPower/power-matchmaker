@@ -178,7 +178,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMergeRulesMenuItems(JPopupMenu m, TableMergeRules mergeRule) {
-		if (!mergeRule.getTableName().equals(mergeRule.getParentProject().getSourceTableName())) {
+		if (!mergeRule.getTableName().equals(((Project)mergeRule.getParent()).getSourceTableName())) {
 			m.add(new JMenuItem(new DeleteMergeRuleAction(swingSession,
 					mergeRule)));
 		}
@@ -450,7 +450,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						}
 					}
 					TableMergeRules f = (TableMergeRules) o;
-					Project m = (Project) f.getParentProject();
+					Project m = (Project) f.getParent();
 					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
 					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
@@ -465,7 +465,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						}
 					}
 					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules) o).getParent();
-					Project m = (Project) f.getParentProject();
+					Project m = (Project) f.getParent();
 					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
 					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);

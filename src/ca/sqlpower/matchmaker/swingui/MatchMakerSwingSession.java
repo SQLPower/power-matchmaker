@@ -118,6 +118,7 @@ import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -1017,7 +1018,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof TableMergeRules) {
-			Project project = ((TableMergeRules)mmo).getParentProject();
+			Project project = (Project) ((TableMergeRules)mmo).getParent();
 			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof PlFolder){
@@ -1565,5 +1566,29 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		statusLabel.setText("");
 		logger.debug("Stub call: MatchMakerSwingSession.removeStatusMessage()");
 		
+	}
+
+	@Override
+	public SPObject getWorkspace() {
+		return getRootNode();
+	}
+	
+	@Override
+    public void runInForeground(Runnable runner) {
+        SwingUtilities.invokeLater(runner);
+    }
+
+	@Override
+    public void runInBackground(Runnable runner) {
+        runInBackground(runner, "worker");
+    }
+
+	public void runInBackground(final Runnable runner, String name) {
+        new Thread(runner, name).start();       
+    }
+
+	@Override
+	public boolean isForegroundThread() {
+        return true;
 	}
 }
