@@ -47,12 +47,9 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(AddressCorrectionMungeStep.class, MungeResultStep.class,
-						SQLInputStep.class)));
+				Arrays.asList(MungeStep.class)));
 	
-	protected List<AddressCorrectionMungeStep> addressCorrectionMungeSteps = new ArrayList<AddressCorrectionMungeStep>();
-	protected List<MungeResultStep> mungeResultSteps = new ArrayList<MungeResultStep>();
-	protected List<SQLInputStep> sqlInputSteps = new ArrayList<SQLInputStep>();
+	private final List<MungeStep> mungeSteps = new ArrayList<MungeStep>();
 	
 	/**
 	 * This is the name given to a rule set made by the Match Maker
@@ -264,9 +261,8 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());
 		
-		for (SPObject spo : getChildren()) {
-			MungeStep step = (MungeStep) spo;
-            MungeStep newStep = (MungeStep) step.duplicate(mungeProcess,s);
+		for (MungeStep step : getChildren(MungeStep.class)) {
+            MungeStep newStep = (MungeStep)step.duplicate(mungeProcess,s);
 			mungeProcess.addChild(newStep);
 		}
 		
@@ -292,74 +288,20 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	}
 
 	public void addChild(SPObject spo) {
-		int size = -1;
-		if(spo instanceof AddressCorrectionMungeStep) {
-			size = addressCorrectionMungeSteps.size();
-		} else if (spo instanceof MungeResultStep) {
-			size = mungeResultSteps.size();
-		} else {
-			size = sqlInputSteps.size();
-		}
-		addChild(spo, size);
+		addChild(spo, mungeSteps.size());
 	}
 	
 	@Override
 	protected void addChildImpl(SPObject spo, int index) {
-		if(spo instanceof AddressCorrectionMungeStep) {
-			addAddressCorrectionMungeStep((AddressCorrectionMungeStep)spo, index);
-		} else if (spo instanceof MungeResultStep) {
-			addMungeResultStep((MungeResultStep)spo, index);
-		} else {
-			addSQLInputStep((SQLInputStep)spo, index);
-		}
-	}
-	
-	private void addSQLInputStep(SQLInputStep spo, int index) {
-		sqlInputSteps.add(index, spo);
-		fireChildAdded(SQLInputStep.class, spo, index);
-	}
-
-	private void addMungeResultStep(MungeResultStep spo, int index) {
-		mungeResultSteps.add(index, spo);
-		fireChildAdded(MungeResultStep.class, spo, index);
-	}
-
-	private void addAddressCorrectionMungeStep(AddressCorrectionMungeStep spo, int index) {
-		addressCorrectionMungeSteps.add(index, spo);
-		fireChildAdded(AddressCorrectionMungeStep.class, spo, index);
+		mungeSteps.add(index, (MungeStep)spo);
+		fireChildAdded(MungeStep.class, spo, index);
 	}
 
 	@Override
 	protected boolean removeChildImpl(SPObject spo) {
-		boolean removed;
-		if(spo instanceof AddressCorrectionMungeStep) {
-			removed = removeAddressCorrectionMungeStep((AddressCorrectionMungeStep)spo);
-		} else if (spo instanceof MungeResultStep) {
-			removed = removeMungeResultStep((MungeResultStep)spo);
-		} else {
-			removed = removeSQLInputStep((SQLInputStep)spo);
-		}
-		return removed;
-	}
-
-	private boolean removeSQLInputStep(SQLInputStep spo) {
-		int index = sqlInputSteps.indexOf(spo);
-		boolean removed = sqlInputSteps.remove(spo);
-		fireChildRemoved(SQLInputStep.class, spo, index);
-		return removed;
-	}
-
-	private boolean removeMungeResultStep(MungeResultStep spo) {
-		int index = mungeResultSteps.indexOf(spo);
-		boolean removed = mungeResultSteps.remove(spo);
-		fireChildRemoved(MungeResultStep.class, spo, index);
-		return removed;
-	}
-
-	public boolean removeAddressCorrectionMungeStep(AddressCorrectionMungeStep spo) {
-		int index = addressCorrectionMungeSteps.indexOf(spo);
-		boolean removed = addressCorrectionMungeSteps.remove(spo);
-		fireChildRemoved(AddressCorrectionMungeStep.class, spo, index);
+		int index = mungeSteps.indexOf(spo);
+		boolean removed = mungeSteps.remove(spo);
+		fireChildRemoved(MungeStep.class, spo, index);
 		return removed;
 	}
 	
@@ -441,11 +383,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 
 	@Override
 	public List<? extends SPObject> getChildren() {
-		List<SPObject> children = new ArrayList<SPObject>();
-		children.addAll(addressCorrectionMungeSteps);
-		children.addAll(mungeResultSteps);
-		children.addAll(sqlInputSteps);
-		return Collections.unmodifiableList(children);
+		return Collections.unmodifiableList(mungeSteps);
 	}
 	
 	@Override
