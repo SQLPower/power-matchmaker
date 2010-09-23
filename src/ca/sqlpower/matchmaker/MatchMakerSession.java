@@ -31,7 +31,9 @@ import ca.sqlpower.sqlobject.SQLDatabaseMapping;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.RunnableDispatcher;
 import ca.sqlpower.util.Version;
+import ca.sqlpower.util.WorkspaceContainer;
 
 /**
  * The MatchMakerSession interface represents one person's login to
@@ -47,7 +49,7 @@ import ca.sqlpower.util.Version;
  *
  * @version $Id$
  */
-public interface MatchMakerSession extends SQLDatabaseMapping {
+public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContainer, RunnableDispatcher {
 
     /**
      * The session context that created this session.

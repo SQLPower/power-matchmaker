@@ -159,6 +159,8 @@ public class TableMergeRules
 	public TableMergeRules() {
 		//set defaults
 		tableIndex = new TableIndex(cachableTable,"tableIndex");
+		cachableTable.setParent(this);
+		tableIndex.setParent(this);
 		setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
 	}
 
@@ -310,19 +312,6 @@ public class TableMergeRules
 	public void setTableIndex(SQLIndex index) {
 		tableIndex.setTableIndex(index);
 	}
-	
-	/**
-     * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
-     * (a folder) is null, returns null.
-     */
-    public Project getParentProject() {
-        MatchMakerObject parentFolder = getParent();
-        if (parentFolder == null) {
-            return null;
-        } else {
-            return (Project) parentFolder.getParent();
-        }
-    }
     
     public void deriveColumnMergeRules() {
     	if (getSourceTable() == null) {
@@ -339,19 +328,6 @@ public class TableMergeRules
 		} catch (SQLObjectException e) {
 			throw new RuntimeException("Error deriving column merge rules.", e);
 		}
-    }
-
-    /**
-     * Sets the parent of this object to be the merge rules folder of the given project object
-     *
-     * this will fire a <b>parent</b> changed event not a parent match event
-     */
-    public void setParentProject(Project parent) {
-        if (parent == null) {
-            setParent(null);
-        } else {
-            setParent(parent);
-        }
     }
 
 	public Long getOid() {
@@ -464,9 +440,10 @@ public class TableMergeRules
 	 * rule of its parent project.
 	 */
 	public boolean isSourceMergeRule() {
-		if (getParentProject() != null && getParentProject().getSourceTable() != null 
+		Project p = (Project)getParent();
+		if (p != null && p.getSourceTable() != null 
 				&& getSourceTable() != null) {
-			SQLTable matchSourceTable= getParentProject().getSourceTable();
+			SQLTable matchSourceTable = p.getSourceTable();
 			return matchSourceTable.equals(getSourceTable());
 		} else {
 			return false;

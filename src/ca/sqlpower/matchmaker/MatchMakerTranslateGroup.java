@@ -95,7 +95,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 		g.setName(this.getName());
 		g.setVisible(isVisible());
 		int i = 0;
-		for (MatchMakerTranslateWord w: (List<MatchMakerTranslateWord>)getChildren()){
+		for (MatchMakerTranslateWord w: getChildren(MatchMakerTranslateWord.class)){
 			MatchMakerTranslateWord duplicate = w.duplicate(g,s);
 			g.addChild(duplicate, i);
 			i++;

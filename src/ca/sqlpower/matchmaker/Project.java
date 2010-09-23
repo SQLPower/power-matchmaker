@@ -193,11 +193,15 @@ public class Project extends AbstractMatchMakerObject {
     
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable("sourceTable");
+	    sourceTablePropertiesDelegate.setParent(this);
 	    resultTablePropertiesDelegate = new CachableTable("resultTable");
+	    resultTablePropertiesDelegate.setParent(this);
 	    xrefTablePropertiesDelegate = new CachableTable("xrefTable");
+	    xrefTablePropertiesDelegate.setParent(this);
         
         setType(ProjectMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(sourceTablePropertiesDelegate,"sourceTableIndex");
+        sourceTableIndex.setParent(this);
 	}
 	
 	public void addChild(SPObject spo) {

@@ -29,6 +29,7 @@ import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.util.RunnableDispatcher;
 import ca.sqlpower.util.SessionNotFoundException;
@@ -60,13 +61,18 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	public AbstractMatchMakerObject() {
 		visible = true;
 	}
-	
+
+	@Transient @Accessor
 	public String getLastUpdateAppUser() {
 		return lastUpdateAppUser;
 	}
+
+	@Transient @Accessor
 	public String getLastUpdateOSUser() {
 		return lastUpdateOsUser;
 	}
+
+	@Transient @Accessor
 	public Date getLastUpdateDate() {
 		return lastUpdateDate;
 	}
@@ -143,10 +149,12 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 			throw new SessionNotFoundException("Root object does not have a runnable dispatcher reference");
 	}
 
+	@Transient @Accessor
 	public Date getCreateDate() {
 		return createDate;
 	}
 	
+	@Accessor
 	public MatchMakerObject getParent() {
 		return (MatchMakerObject) super.getParent();
 	}
@@ -181,7 +189,8 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	}
 
 	@Override
-	public  List<? extends SPObject> getDependencies() {
+	@NonProperty
+	public List<? extends SPObject> getDependencies() {
 		//TODO: Might add this in at somepoint. Not sure, this just removes a necessary override.
 		return null;
 	}
@@ -213,7 +222,7 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	}
 	
 	/**
-     * Swaps the elements at the specified positions.
+     * Swaps the elements at the specified positions in the specific child type list.
      * (If the specified positions are equal, invoking this method leaves
      * the list unchanged.)
      *
@@ -251,6 +260,12 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 		}
 	}
 	
+	/**
+     * Moves the element from one index to another in the specific child type list.
+     *
+     * @param i the index of one element to be swapped.
+     * @param j the index of the other element to be swapped.
+     */
 	public void moveChild(int from, int to, Class<? extends MatchMakerObject> classType) {
 		if (to == from) return;
 		MatchMakerObject child = getChildren(classType).get(from);
