@@ -20,7 +20,13 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.object.SPObject;
+
 public class MergeSettingsTest extends MatchMakerTestCase {
+
+	public MergeSettingsTest(String name) {
+		super(name);
+	}
 
 	MergeSettings ms;
 
@@ -31,6 +37,16 @@ public class MergeSettingsTest extends MatchMakerTestCase {
 
 	@Override
 	protected MatchMakerObject getTarget() {
+		return ms;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return null;
+	}
+
+	@Override
+	public SPObject getSPObjectUnderTest() {
 		return ms;
 	}
 

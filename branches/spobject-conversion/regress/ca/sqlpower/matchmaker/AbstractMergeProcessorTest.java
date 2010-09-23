@@ -153,7 +153,10 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		if (project.doesResultTableExist()) {
 			ddlg.dropTable(project.getResultTable());
 		}
-		ddlg.addTable(project.createResultTable());
+		
+		SQLTable t = project.createResultTable();
+		
+		ddlg.addTable(t);
 		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(1));
 		
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {

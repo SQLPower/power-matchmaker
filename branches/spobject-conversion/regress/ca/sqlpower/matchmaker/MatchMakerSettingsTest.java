@@ -28,6 +28,10 @@ import ca.sqlpower.object.SPObject;
 
 public class MatchMakerSettingsTest extends MatchMakerTestCase {
 
+	public MatchMakerSettingsTest(String name) {
+		super(name);
+	}
+
 	String appUserName = "User Name";
 	MatchMakerSettings mms;
 
@@ -63,5 +67,15 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 	@Override
 	public void testDuplicate() throws Exception {
 		// this class is not duplicated only its subclasses are.
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return null;
+	}
+
+	@Override
+	public SPObject getSPObjectUnderTest() {
+		return mms;
 	}
 }

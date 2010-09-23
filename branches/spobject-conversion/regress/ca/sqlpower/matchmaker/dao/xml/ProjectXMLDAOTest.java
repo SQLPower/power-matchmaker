@@ -203,7 +203,7 @@ public class ProjectXMLDAOTest extends TestCase {
         
         MungeStep step = new ConcatMungeStep();
         mp.addChild(step);
-        step.connectInput(0, inputStep.getChildren().get(1)); // string_col
+        step.connectInput(0, inputStep.getChildren(MungeStepOutput.class).get(1)); // string_col
         
         TableMergeRules tmr = new TableMergeRules();
         tmr.setTable(p.getSourceTable());
