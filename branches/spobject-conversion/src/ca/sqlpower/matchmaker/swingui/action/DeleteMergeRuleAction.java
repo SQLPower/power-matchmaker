@@ -48,7 +48,7 @@ public class DeleteMergeRuleAction extends AbstractAction {
 				JOptionPane.QUESTION_MESSAGE);
 		if (responds != JOptionPane.YES_OPTION)
 			return;
-		Project project = mergeRule.getParentProject();
+		Project project = (Project)mergeRule.getParent();
 		project.removeTableMergeRules(mergeRule);
 		swingSession.save(project);
 	}

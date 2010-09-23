@@ -135,7 +135,17 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
     }
 
 	public TranslateGroupParent duplicate(MatchMakerObject parent, MatchMakerSession session) {
-		throw new IllegalAccessError("Translate group not duplicatable");
+		TranslateGroupParent g = new TranslateGroupParent(session);
+		g.setParent(parent);
+		g.setName(this.getName());
+		g.setVisible(isVisible());
+		int i = 0;
+		for (MatchMakerTranslateGroup w: getChildren(MatchMakerTranslateGroup.class)){
+			MatchMakerTranslateGroup duplicate = w.duplicate(g,session);
+			g.addChild(duplicate, i);
+			i++;
+		}
+		return g;
 	}
 
 	@Override

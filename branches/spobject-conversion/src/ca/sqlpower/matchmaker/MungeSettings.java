@@ -32,6 +32,8 @@ import ca.sqlpower.object.SPObject;
  */
 public class MungeSettings extends MatchMakerSettings {
 
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.emptyList();
 	/**
 	 * An enumeration of settings for which records to store in a result table.
 	 */
@@ -335,6 +337,6 @@ public class MungeSettings extends MatchMakerSettings {
 
 	@Override
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return Collections.emptyList();
+		return allowedChildTypes;
 	}
 }

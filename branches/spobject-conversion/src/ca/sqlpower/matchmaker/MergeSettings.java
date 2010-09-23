@@ -30,6 +30,9 @@ import ca.sqlpower.object.SPObject;
  * Settings specific to the Merge engine
  */
 public class MergeSettings extends MatchMakerSettings {
+	
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.emptyList();
 	/**
 	 * Backup the data that is going to be merged
 	 */
@@ -131,6 +134,6 @@ public class MergeSettings extends MatchMakerSettings {
 
 	@Override
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return Collections.emptyList();
+		return allowedChildTypes;
 	}
 }
