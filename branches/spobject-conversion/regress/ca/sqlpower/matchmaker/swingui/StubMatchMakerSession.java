@@ -41,6 +41,7 @@ import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
@@ -237,4 +238,14 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	public boolean isForegroundThread() {
 		return false;
 	}
+	
+	public List<UserDefinedSQLType> getSQLTypes()
+    {
+    	return null;
+    }
+    
+    public UserDefinedSQLType getSQLType(int sqlType)
+    {
+    	return null;
+    }
 }
