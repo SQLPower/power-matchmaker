@@ -33,23 +33,32 @@ import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.testutil.MockJDBCDriver;
+import ca.sqlpower.testutil.NewValueMaker;
 
 public class ProjectTest extends MatchMakerTestCase<Project> {
 
-    Project project;
+    public ProjectTest(String name) {
+		super(name);
+	}
+
+	Project project;
 	private TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
@@ -125,10 +134,12 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         MatchMakerEventCounter l = new MatchMakerEventCounter();
         project.addSPListener(l);
         List<MungeProcess> mmoList = new ArrayList<MungeProcess>();
+        mmoList.add(new MungeProcess());
         for(MungeProcess m : mmoList) {
         	project.addChild(m);
-        }assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
-        assertEquals("Wrong type of event fired",1,l.getPropertyChangedCount());
+        }
+        assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
+        assertEquals("Wrong type of event fired",0,l.getPropertyChangedCount());
     }
     
     public void testCreateResultTable() throws SQLObjectException {
@@ -255,7 +266,24 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     public void testCreateResultTableInCorrectCatalogSchema() throws Exception {
     	// dumb source table and index with no columns to satisfy createResultsTable() preconditions
     	SQLTable tab = new SQLTable(session.getDatabase(), true);
-    	SQLIndex idx = new SQLIndex("my_index", true, null, null, null);
+    	
+    	SQLColumn pk1 = new SQLColumn(tab, "pk1", Types.VARCHAR, 20, 0);
+    	pk1.setNullable(DatabaseMetaData.columnNoNulls);
+    	tab.addColumn(pk1);
+    
+    	SQLColumn pk2 = new SQLColumn(tab, "pk2", Types.INTEGER, 20, 0);
+    	pk2.setNullable(DatabaseMetaData.columnNoNulls);
+    	tab.addColumn(pk2);
+    	
+    	SQLColumn col = new SQLColumn(tab, "normal_col_1", Types.VARCHAR, 20, 0);
+    	col.setNullable(DatabaseMetaData.columnNullable);
+    	tab.addColumn(col);
+    	
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
+    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
+    	tab.addIndex(idx);
+    	
     	project.setSourceTable(tab);
     	project.setSourceTableIndex(idx);
     	
@@ -512,8 +540,6 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		session.setConnection(db.getConnection());
 		project.setSession(session);
 		
-		
-		
     	SQLTable sourceTable = new SQLTable(db.getSchemaByName(ds.getPlSchema()), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -651,4 +677,18 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         assertTrue(newTableInDatabase.getColumns().size() > 0);
         assertSame(newTable, newTableInDatabase);
     }
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeProcess.class;
+	}
+	
+	@Override
+	public SPObject getSPObjectUnderTest() {
+		return getTarget();
+	}
+	
+	@Override
+	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
+		return new MatchMakerNewValueMaker(root, dsCollection);
+	}
 }

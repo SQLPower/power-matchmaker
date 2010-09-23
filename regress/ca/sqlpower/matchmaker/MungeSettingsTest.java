@@ -22,7 +22,13 @@ package ca.sqlpower.matchmaker;
 
 import java.util.Date;
 
+import ca.sqlpower.object.SPObject;
+
 public class MungeSettingsTest extends MatchMakerTestCase {
+
+	public MungeSettingsTest(String name) {
+		super(name);
+	}
 
 	MungeSettings ms;
 	protected void setUp() throws Exception {
@@ -41,4 +47,14 @@ public class MungeSettingsTest extends MatchMakerTestCase {
         assertEquals(myDate, ms.getLastRunDate());
         assertNotSame(myDate, ms.getLastRunDate());
     }
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return null;
+	}
+
+	@Override
+	public SPObject getSPObjectUnderTest() {
+		return getTarget();
+	}
 }

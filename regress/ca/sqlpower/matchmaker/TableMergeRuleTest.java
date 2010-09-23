@@ -21,14 +21,24 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.testutil.NewValueMaker;
 
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 
-	TableMergeRules tableMergeRules;
+	TableMergeRules m1;
 	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession();
 
-	public TableMergeRuleTest() {
+	public TableMergeRuleTest(String name) {
+		super(name);
+	}
+	
+	public void setUp() throws Exception {
+
 		propertiesToIgnoreForEventGeneration.add("tableName");
 		propertiesToIgnoreForEventGeneration.add("schemaName");
 		propertiesToIgnoreForEventGeneration.add("catalogName");
@@ -46,18 +56,22 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		//this should not differ but there is a check that ensues that the DS
 		//exists
 		propertiesThatDifferOnSetAndGet.add("spDataSource");
+		
+		super.setUp();
+		m1 = new TableMergeRules();
+		m1.setSession(testingMatchMakerSession);
 	}
+	
 	@Override
 	protected TableMergeRules getTarget() {
-		
-		TableMergeRules tmr = new TableMergeRules();
-		tmr.setSession(testingMatchMakerSession);
-		return tmr;
+		return m1;
 	}
 
 	public void testEquals() {
-		TableMergeRules m1 = getTarget();
-		TableMergeRules m2 = getTarget();
+		m1 = new TableMergeRules();
+		TableMergeRules m2 = new TableMergeRules();
+		m1.setSession(testingMatchMakerSession);
+		m2.setSession(testingMatchMakerSession);
 		
 		Project parent1 = new Project();
 		parent1.setSession(new TestingMatchMakerSession());
@@ -100,8 +114,10 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 	}
 	
 	public void testIsSourceMergeRule() {
-		TableMergeRules m1 = getTarget();
-		TableMergeRules m2 = getTarget();
+		m1 = new TableMergeRules();
+		TableMergeRules m2 = new TableMergeRules();
+		m1.setSession(testingMatchMakerSession);
+		m2.setSession(testingMatchMakerSession);
 		Project project = new Project();
 		
 		SQLTable t1 = new SQLTable();
@@ -110,8 +126,8 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		m1.setTable(t1);
 		m2.setTable(t2);
 		project.setSourceTable(t1);
-		m1.setParentProject(project);
-		m2.setParentProject(project);
+		m1.setParent(project);
+		m2.setParent(project);
 		
 		assertTrue("Same source table of its parent project, should be a source merge rule",
 				m1.isSourceMergeRule());
@@ -121,5 +137,18 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		m1.setParent(null);
 		assertFalse("Parent project is null, should not be a source merge rule",
 				m1.isSourceMergeRule());
+	}
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return ColumnMergeRules.class;
+	}
+	@Override
+	public SPObject getSPObjectUnderTest() {
+		return getTarget();
+	}
+	
+	@Override
+	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
+		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

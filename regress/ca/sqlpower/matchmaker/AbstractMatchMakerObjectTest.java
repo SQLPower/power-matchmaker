@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker;
 
 import junit.framework.TestCase;
 import ca.sqlpower.object.CountingSPListener;
-import ca.sqlpower.object.ObjectDependentException;
 
 public class AbstractMatchMakerObjectTest extends TestCase {
 
@@ -66,15 +65,4 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 		mmo2.addChild(mmo1);
 		assertEquals("mmo2 is not the parent of mmo1",mmo2,mmo1.getParent());
 	}
-    
-    public void testRemoveChildDoesntFireWhenChildNotPresent() {
-		CountingSPListener mml = new CountingSPListener();
-        test.addSPListener(mml);
-        try {
-			test.removeChild(new StubMatchMakerObject("not a child of test"));
-		} catch (ObjectDependentException e) {
-			throw new RuntimeException(e);
-		}
-        assertEquals(0, mml.getChildRemovedCount());
-    }
 }    

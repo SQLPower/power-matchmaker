@@ -23,18 +23,29 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
+import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.testutil.NewValueMaker;
 
-public class TranslateGroupParentTest extends TestCase {
-    PlFolder folder;
+public class TranslateGroupParentTest extends MatchMakerTestCase {
+	
+    public TranslateGroupParentTest(String name) {
+		super(name);
+	}
+
+	PlFolder folder;
     Project project;
     MungeProcess cg;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
+    	super.setUp();
         folder = new PlFolder();
         project = new Project();
         folder.addChild(project);
@@ -67,4 +78,23 @@ public class TranslateGroupParentTest extends TestCase {
         assertFalse("Oops found the translate group in the business model",tgp.isInUseInBusinessModel(tg));
     }
 
+	@Override
+	protected MatchMakerObject getTarget() throws SQLObjectException {
+		return tgp;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MatchMakerTranslateGroup.class;
+	}
+
+	@Override
+	public SPObject getSPObjectUnderTest() {
+		return tgp;
+	}
+	
+	@Override
+	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
+		return new MatchMakerNewValueMaker(root, dsCollection);
+	}
 }

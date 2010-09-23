@@ -20,17 +20,25 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.testutil.NewValueMaker;
 
-public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
+public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 
-	ColumnMergeRules rule;
+	ColumnMergeRules m1;
 	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession();
 
-	public ColumnMergeRuleTest() {
+	public ColumnMergeRuleTest(String name) {
+		
+		super(name);
+		
 		propertiesToIgnoreForEventGeneration.add("columnName");
 		propertiesToIgnoreForEventGeneration.add("importedKeyColumnName");
 		propertiesToIgnoreForDuplication.add("columnName");
@@ -44,21 +52,25 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		propertiesThatHaveSideEffects.add("importedKeyColumn");
 		propertiesThatHaveSideEffects.add("parent");
 	}
-	@Override
-	protected ColumnMergeRules getTarget() throws SQLObjectException {
-		
+	
+	protected void setUp() throws Exception {
+		super.setUp();
 		TableMergeRules tmr = new TableMergeRules();
 		tmr.setSession(testingMatchMakerSession);
 		tmr.setTable(new SQLTable(new SQLDatabase(),true));
 		tmr.getSourceTable().addColumn(new SQLColumn(tmr.getSourceTable(),"new",1,1,1));
-		ColumnMergeRules cmr = new ColumnMergeRules();
-		cmr.setParent(tmr);
-		return cmr;
+		m1 = new ColumnMergeRules();
+		m1.setParent(tmr);
+	}
+	
+	@Override
+	protected ColumnMergeRules getTarget() throws SQLObjectException {
+		return m1;
 	}
 
 	public void testEquals() throws SQLObjectException {
-		ColumnMergeRules m1 = getTarget();
-		ColumnMergeRules m2 = getTarget();
+		m1 = getTarget();
+		ColumnMergeRules m2 = new ColumnMergeRules();
 		m1.setParent(null);
 		m2.setParent(null);
 		
@@ -114,5 +126,22 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		
 		m2.setImportedKeyColumn(c1);
 		assertEquals("Two objects with same imported key columns should equal", m1, m2);
+	}
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return null;
+	}
+	@Override
+	public SPObject getSPObjectUnderTest() {
+		try {
+			return getTarget();
+		} catch (SQLObjectException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
+		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }
