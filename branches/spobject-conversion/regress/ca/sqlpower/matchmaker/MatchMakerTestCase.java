@@ -23,18 +23,13 @@ import java.awt.Color;
 import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -44,11 +39,10 @@ import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
-import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
+import ca.sqlpower.object.PersistedSPObjectTest;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -60,7 +54,11 @@ import ca.sqlpower.sqlobject.SQLTable;
  * @param <C> The class under test
  * @version $Id$
  */
-public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends TestCase {
+public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends PersistedSPObjectTest {
+
+	public MatchMakerTestCase(String name) {
+		super(name);
+	}
 
 	/**
 	 * The object under test.
@@ -95,24 +93,33 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 
 		List<PropertyDescriptor> settableProperties;
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
+        propertiesToIgnoreForDuplication.add("UUID");
         propertiesToIgnoreForDuplication.add("oid");
         propertiesToIgnoreForDuplication.add("parent");
         propertiesToIgnoreForDuplication.add("parentProject");
         propertiesToIgnoreForDuplication.add("session");
+        propertiesToIgnoreForDuplication.add("allowedChildTypes");
         propertiesToIgnoreForDuplication.add("class");
         propertiesToIgnoreForDuplication.add("createDate");
         propertiesToIgnoreForDuplication.add("createAppUser");
         propertiesToIgnoreForDuplication.add("createOsUser");
+        propertiesToIgnoreForDuplication.add("dependencies");
+        propertiesToIgnoreForDuplication.add("children");
         propertiesToIgnoreForDuplication.add("lastUpdateDate");
         propertiesToIgnoreForDuplication.add("lastUpdateAppUser");
         propertiesToIgnoreForDuplication.add("lastUpdateOSUser");
+        propertiesToIgnoreForDuplication.add("magicEnabled");
         propertiesToIgnoreForDuplication.add("mergingEngine");
         propertiesToIgnoreForDuplication.add("matchingEngine");
         propertiesToIgnoreForDuplication.add("cleansingEngine");
         propertiesToIgnoreForDuplication.add("addressCorrectionEngine");
         propertiesToIgnoreForDuplication.add("addressCommittingEngine");
         propertiesToIgnoreForDuplication.add("undoing");
+        propertiesToIgnoreForDuplication.add("results");
         propertiesToIgnoreForDuplication.add("runningEngine");
+        propertiesToIgnoreForDuplication.add("runnableDispatcher");
+        propertiesToIgnoreForDuplication.add("workspaceContainer");
+        propertiesToIgnoreForDuplication.add("tableMergeRules");
         
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");
@@ -147,29 +154,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				if(oldVal == null) {
 					throw new NullPointerException("We forgot to set "+property.getName());
 				} else {
-					if (mmo instanceof MungeProcess && property.getDisplayName().equals("children")){
-						assertEquals("The number of MungeStep's are different.", ((List) oldVal).size(), ((List) copyVal).size());
-						for (int i = 0; i < ((List) oldVal).size(); i++) {
-							MungeStep oldStep = (MungeStep) ((List) oldVal).get(i);
-							MungeStep copyStep = (MungeStep) ((List) copyVal).get(i);
-							assertNotSame("The two MungeStep's share the same instance.", oldVal, copyVal);
-
-							assertEquals("The two names are different.", oldStep.getName(), copyStep.getName());
-							assertEquals("The two undoing properties are different.", oldStep.isUndoing(), copyStep.isUndoing());
-							assertEquals("The two visible properties are different.", oldStep.isVisible(), copyStep.isVisible());
-							assertEquals("The two lists of parameters are different.", oldStep.getParameterNames().size(), copyStep.getParameterNames().size());
-							for (String param : oldStep.getParameterNames()) {
-								assertEquals("The two values for parameter " + param + " are different",
-										oldStep.getParameter(param), copyStep.getParameter(param));
-							}
-						}
-					} else if (oldVal instanceof MungeStep) {
+					if (oldVal instanceof MungeStep) {
 						MungeStep oldStep = (MungeStep) oldVal;
 						MungeStep copyStep = (MungeStep) copyVal;
 						assertNotSame("The two MungeStep's share the same instance.", oldVal, copyVal);
 
 						assertEquals("The two names are different.", oldStep.getName(), copyStep.getName());
-						assertEquals("The two undoing properties are different.", oldStep.isUndoing(), copyStep.isUndoing());
 						assertEquals("The two visible properties are different.", oldStep.isVisible(), copyStep.isVisible());
 						assertEquals("The two lists of parameters are different.", oldStep.getParameterNames().size(), copyStep.getParameterNames().size());
 						for (String param : oldStep.getParameterNames()) {
@@ -326,65 +316,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		}
 	}
 
-	public void testAllSettersGenerateEvents()
-	throws IllegalArgumentException, IllegalAccessException,
-	InvocationTargetException, NoSuchMethodException, IOException,
-	SQLObjectException {
-
-		MatchMakerObject mmo = getTarget();
-
-		MatchMakerEventCounter listener = new MatchMakerEventCounter();
-		mmo.addSPListener(listener);
-
-		List<PropertyDescriptor> settableProperties;
-		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
-        propertiesToIgnoreForEventGeneration.add("oid");
-        propertiesToIgnoreForEventGeneration.add("session");
-        propertiesToIgnoreForEventGeneration.add("parentProject");
-        propertiesToIgnoreForEventGeneration.add("undoing");
-        propertiesToIgnoreForEventGeneration.add("children");  // setChildren() doesn't generate events--it is only for the persistence layer
-        
-		for (PropertyDescriptor property : settableProperties) {
-			if (propertiesToIgnoreForEventGeneration.contains(property.getName())) continue;
-			Object oldVal;
-
-			try {
-				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
-				// check for a setter
-				if (property.getWriteMethod() != null)
-				{
-					Object newVal = getNewDifferentValue(mmo, property, oldVal);
-
-                    assertFalse("Old value and new value are equivalent for class "+property.getPropertyType()+" of property "+property.getName() +" old ["+oldVal+"] new ["+newVal+"]",
-                            oldVal == null? oldVal == newVal:oldVal.equals(newVal));
-					int oldChangeCount = listener.getAllEventCounts();
-
-					try {
-
-						PropertyUtils.setProperty(mmo, property.getName(), newVal);
-
-						// some setters fire multiple events (they change more than one property)
-						assertTrue("Event for set "+property.getName()+" on "+mmo.getClass().getName()+" didn't fire!",
-								listener.getAllEventCounts() > oldChangeCount);
-						if (listener.getAllEventCounts() == oldChangeCount + 1) {
-							assertEquals("Property name mismatch for "+property.getName()+ " in "+mmo.getClass(),
-									property.getName(),
-									listener.getLastPropertyChangeEvent().getPropertyName());
-							assertEquals("New value for "+property.getName()+" was wrong",
-									newVal,
-									listener.getLastPropertyChangeEvent().getNewValue());
-						}
-					} catch (InvocationTargetException e) {
-						System.out.println("(non-fatal) Failed to write property '"+property.getName()+" to type "+mmo.getClass().getName());
-					}
-				}
-
-			} catch (NoSuchMethodException e) {
-				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
-			}
-		}
-	}
-
 	/**
 	 * Returns a new value that is not equal to oldVal. The returned object
 	 * will always be a NEW instance compatible with oldVal. This differs from
@@ -537,77 +468,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	}
 	
 	/**
-	 * Tests for inconsistent getter/setter pairs. It checks to see if a call to
-	 * the getter of a property will return the same value that has been previously
-	 * used in a setter of the property.
-	 * 
-	 * @throws Exception
-	 */
-	public void testInconsistentGetterSetterPairs() throws Exception {
-		MatchMakerObject mmo = getTarget();
-		propertiesThatDifferOnSetAndGet.add("session");
-		List<PropertyDescriptor> settableProperties;
-		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
-		for (PropertyDescriptor property : settableProperties) {
-			if (propertiesThatDifferOnSetAndGet.contains(property.getName())) continue;
-			Object oldVal;
-			try {
-				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
-				// check for a setter
-				if (property.getWriteMethod() != null)
-				{
-					Object newVal = getNewDifferentValue(mmo, property, oldVal);
-					PropertyUtils.setProperty(mmo, property.getName(), newVal);
-				
-					Object valueGot = PropertyUtils.getProperty(mmo, property.getName());
-					assertEquals("Property "+property.getName()+" differs on object "+ mmo +" between getter and setter",newVal,valueGot);
-				}
-			} catch (NoSuchMethodException e) {
-				
-				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
-			}
-		}
-	}
-	
-	/**
-	 * Tests for getters and setters that have side effects on other properties of the object.
-	 * 
-	 * Note: This test isn't all that good because given the right order we
-	 * can override the side effects
-	 */
-	public void testGettersAndSettersSideEffects() throws Exception {
-		MatchMakerObject mmo = getTarget();
-		propertiesThatDifferOnSetAndGet.add("session");
-		propertiesThatDifferOnSetAndGet.add("undoing");
-		
-		propertiesThatHaveSideEffects.addAll(propertiesThatDifferOnSetAndGet);
-		List<PropertyDescriptor> settableProperties;
-		Map<String,Object> setValues = new HashMap<String,Object>();
-		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
-		for (PropertyDescriptor property : settableProperties) {
-			if (!propertiesThatHaveSideEffects.contains(property.getName())) {
-				Object oldVal;
-				try {
-					oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
-					// check for a setter
-					if (property.getWriteMethod() != null)
-					{
-						Object newVal = getNewDifferentValue(mmo, property, oldVal);
-						PropertyUtils.setProperty(mmo, property.getName(), newVal);
-						setValues.put(property.getName(), newVal);
-					}
-				} catch (NoSuchMethodException e) {
-					System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
-				}
-			}
-		}
-		for (String propertyName: setValues.keySet()) {
-			Object valueGot = PropertyUtils.getProperty(mmo, propertyName);
-			assertEquals("Property "+propertyName+" differs on object "+ mmo +" between getter and setter",setValues.get(propertyName),valueGot);
-		}
-	}
-
-    /**
      * The child list should never be null for any Match Maker Object, even if
      * that object's type is childless.
      */
