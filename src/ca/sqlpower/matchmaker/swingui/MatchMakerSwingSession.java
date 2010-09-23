@@ -663,6 +663,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     	return Collections.unmodifiableList(this.getContext().getPlDotIni().getSQLTypes());
     }
     
+    /** 
+     * Gets the basic SQL type from the PL.INI file.
+     */
+    public UserDefinedSQLType getSQLType(int sqlType)
+    {
+    	List<UserDefinedSQLType> types = getSQLTypes();
+    	for(UserDefinedSQLType s : types) {
+    		if(s.getType().equals(sqlType)) {
+    			return s;
+    		}
+    	}
+    	throw new IllegalArgumentException(sqlType + " is not a sql datatype.");
+    }
+    
     private final class EditProjectAction extends AbstractAction {
 		private EditProjectAction(String name) {
 			super(name);

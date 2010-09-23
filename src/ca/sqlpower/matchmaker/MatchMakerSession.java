@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.util.Date;
+import java.util.List;
 
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
@@ -30,6 +31,7 @@ import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLDatabaseMapping;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.RunnableDispatcher;
 import ca.sqlpower.util.Version;
@@ -278,5 +280,15 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 * 
 	 */
 	public void removeStatusMessage();
+	
+	 /** 
+     * Gets the basic SQL types from the PL.INI file
+     */
+    public List<UserDefinedSQLType> getSQLTypes();
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file.
+     */
+    public UserDefinedSQLType getSQLType(int sqlType);
 }
 

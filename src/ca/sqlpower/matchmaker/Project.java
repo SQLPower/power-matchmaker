@@ -377,34 +377,34 @@ public class Project extends AbstractMatchMakerObject {
 
 		SQLColumn col;
 		for (int i = 0; i < si.getChildCount(); i++) {
-			col = new SQLColumn(t, "candidate_1"+i+"_mapped", Types.VARCHAR, 1, 0);
+			col = new SQLColumn(t, "candidate_1"+i+"_mapped", getSession().getSQLType(Types.VARCHAR), 1, 0, false);
 			t.addColumn(col);
 		}
 
 		for (int i = 0; i < si.getChildCount(); i++) {
-			col = new SQLColumn(t, "candidate_2"+i+"_mapped", Types.VARCHAR, 1, 0);
+			col = new SQLColumn(t, "candidate_2"+i+"_mapped", getSession().getSQLType(Types.VARCHAR), 1, 0, false);
 			t.addColumn(col);
 		}
 
-		col = new SQLColumn(t, "match_percent", Types.INTEGER, 10, 0);
+		col = new SQLColumn(t, "match_percent", getSession().getSQLType(Types.INTEGER), 0, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "group_id", Types.VARCHAR, 30, 0);
+		col = new SQLColumn(t, "group_id", getSession().getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_date", Types.TIMESTAMP, 0, 0);
+		col = new SQLColumn(t, "match_date", getSession().getSQLType(Types.TIME), 6, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_status", Types.VARCHAR, 15, 0);
+		col = new SQLColumn(t, "match_status", getSession().getSQLType(Types.VARCHAR), 15, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_status_date", Types.TIMESTAMP, 0, 0);
+		col = new SQLColumn(t, "match_status_date", getSession().getSQLType(Types.TIME), 6, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_status_user", Types.VARCHAR, 35, 0);
+		col = new SQLColumn(t, "match_status_user", getSession().getSQLType(Types.VARCHAR), 35, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "dup1_master_ind", Types.VARCHAR, 1, 0);
+		col = new SQLColumn(t, "dup1_master_ind", getSession().getSQLType(Types.VARCHAR), 1, 0, false);
 		t.addColumn(col);
 
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
@@ -431,7 +431,7 @@ public class Project extends AbstractMatchMakerObject {
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
-			SQLColumn newCol = new SQLColumn(t, baseName+i, idxCol.getType(), idxCol.getPrecision(), idxCol.getScale());
+			SQLColumn newCol = new SQLColumn(t, baseName+i, idxCol.getUserDefinedSQLType(), idxCol.getPrecision(), idxCol.getScale(), idxCol.isAutoIncrement());
 			t.addColumn(newCol);
 		}
 	}
