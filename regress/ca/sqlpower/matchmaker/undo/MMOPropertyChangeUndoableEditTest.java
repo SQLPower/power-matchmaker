@@ -22,7 +22,9 @@ package ca.sqlpower.matchmaker.undo;
 import java.beans.PropertyChangeEvent;
 
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.StringConstantMungeStep;
 
 public class MMOPropertyChangeUndoableEditTest extends TestCase {
@@ -35,17 +37,19 @@ public class MMOPropertyChangeUndoableEditTest extends TestCase {
 	public void testSetMungeStepInputToNull() {
 		StringConstantMungeStep stringConstantStep = new StringConstantMungeStep();
 		DeDupeResultStep resultStep = new DeDupeResultStep();
-		assertEquals(1, resultStep.getInputCount());
-		resultStep.connectInput(0, stringConstantStep.getChildren().get(0));
-		assertEquals(2, resultStep.getInputCount());
+		assertEquals("Wrong amount of inputs", 1, resultStep.getInputCount());
+		resultStep.connectInput(0, stringConstantStep.getChildren(MungeStepOutput.class).get(0));
+		assertEquals("Wrong amount of inputs", 2, resultStep.getInputCount());
 		
 		PropertyChangeEvent inputChangeEvent = 
-			new PropertyChangeEvent(resultStep, "current", null, stringConstantStep.getChildren().get(0));
+			new PropertyChangeEvent(resultStep.getChildren(AbstractMungeStep.Input.class).get(0), "current", null, stringConstantStep.getChildren(MungeStepOutput.class).get(0));
 		MMOPropertyChangeUndoableEdit edit = new MMOPropertyChangeUndoableEdit(inputChangeEvent);
+
+		assertNotNull("Your input should be connected", resultStep.getMSOInputs().get(0));
 		
 		edit.undo();
-		assertNotNull(resultStep.getInputs());
-		assertEquals(2, resultStep.getInputCount());
-		assertNull(resultStep.getMSOInputs().get(0));
+		assertNotNull("You should still have inputs", resultStep.getInputs());
+		assertEquals("You should have all inputs still there" ,2, resultStep.getInputCount());
+		assertNull("Your original input should be disconnected", resultStep.getMSOInputs().get(0));
 	}
 }
