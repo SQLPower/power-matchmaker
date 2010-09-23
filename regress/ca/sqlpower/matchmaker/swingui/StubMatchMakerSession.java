@@ -36,6 +36,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -217,5 +218,23 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	public void removeStatusMessage() {
 		logger.debug("Stub call: StubMatchMakerSession.removeStatusMessage()");
 		
+	}
+
+	@Override
+	public SPObject getWorkspace() {
+		return null;
+	}
+
+	@Override
+	public void runInForeground(Runnable runner) {
+	}
+
+	@Override
+	public void runInBackground(Runnable runner) {
+	}
+
+	@Override
+	public boolean isForegroundThread() {
+		return false;
 	}
 }

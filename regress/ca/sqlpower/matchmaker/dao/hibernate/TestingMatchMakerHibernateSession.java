@@ -43,6 +43,7 @@ import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -391,5 +392,25 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	public MMRootNode getRootNode() {
 		logger.debug("Stub call: MatchMakerSession.getRootNode()");
 		return null;
+	}
+
+	@Override
+	public SPObject getWorkspace() {
+		return getRootNode();
+	}
+
+	@Override
+	public void runInForeground(Runnable runner) {
+		
+	}
+
+	@Override
+	public void runInBackground(Runnable runner) {
+		
+	}
+
+	@Override
+	public boolean isForegroundThread() {
+		return false;
 	}
 }
