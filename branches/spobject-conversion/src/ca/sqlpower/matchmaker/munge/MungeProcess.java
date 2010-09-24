@@ -288,7 +288,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		if(spo instanceof SQLInputStep) {
 			addChild(spo, inputSteps.size());
 		} else if(spo instanceof MungeResultStep) {
-			throw new IllegalArgumentException();
+			addChild(spo, 0);
 		} else if(spo instanceof AddressCorrectionMungeStep){
 			addChild(spo, mungeSteps.size());
 		}
@@ -296,7 +296,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	
 	@Override
 	protected void addChildImpl(SPObject spo, int index) {
-		if(spo instanceof SQLInputStep) {
+		if (spo instanceof SQLInputStep) {
 			inputSteps.add(index, (SQLInputStep)spo);
 			for(AddressCorrectionMungeStep s : getChildren(AddressCorrectionMungeStep.class)) {
 				s.setInputStep((SQLInputStep)spo);
@@ -306,15 +306,28 @@ public class MungeProcess extends AbstractMatchMakerObject {
 				((AddressCorrectionMungeStep)spo).setInputStep(input);
 			}
 			mungeSteps.add(index, (MungeStep)spo);
-		} else if(spo instanceof MungeResultStep) {
-			if(resultStep != null) {
-				resultStep = (MungeResultStep)spo;
-			}
-			else {
-				throw new IllegalArgumentException("The MungeResultStep should be set at the constructor of MungeProcess.");
-			}
+		} else if (spo instanceof MungeResultStep) {
+			setResultStep((MungeResultStep) spo);
 		} else {
 			mungeSteps.add(index, (MungeStep)spo);
+		}
+	}
+
+	/**
+	 * Sets the result step of a munge process. This can only be done once and
+	 * should be done in the constructor but is not yet due to backwards
+	 * compatibility with old Hibernate code. This should be fixed sometime soon
+	 * in the future.
+	 */
+	public void setResultStep(MungeResultStep step) {
+		if (resultStep == null) {
+			resultStep = step;
+			for (SQLInputStep input : inputSteps) {
+				this.resultStep.addInputStep(input);
+			}
+			resultStep.setParent(this);
+		} else {
+			throw new IllegalArgumentException("The MungeResultStep should be set at the constructor of MungeProcess.");
 		}
 	}
 
@@ -373,7 +386,9 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(inputSteps);
 		children.addAll(mungeSteps);
-		children.add(resultStep);
+		if (resultStep != null) {
+			children.add(resultStep);
+		}
 		return Collections.unmodifiableList(children);
 	}
 
