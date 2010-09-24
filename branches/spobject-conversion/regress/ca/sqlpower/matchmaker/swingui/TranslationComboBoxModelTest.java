@@ -124,21 +124,33 @@ public class TranslationComboBoxModelTest extends TestCase {
     }
 
     public void testChildInsertedPassedOnCorrectlyWhenFirstItemNull(){
-    	tcbm.setFirstItemNull(true);
-        MatchMakerTranslateGroup tg2 = new MatchMakerTranslateGroup();
+
+    	MatchMakerTranslateGroup tg2 = new MatchMakerTranslateGroup();
         tg2.setName("Translate Group 2");
         
         tgp.addChild(tg2);
         assertEquals("Incorrect number of events fired ",1,counter.getAllEvents());
         assertEquals("Event fired to the wrong location ",1,counter.getIntervalAdded());
         assertEquals("Wrong Type of event ",ListDataEvent.INTERVAL_ADDED,counter.getLastEvent().getType());
-        assertEquals("Wrong lower bound ", 2, counter.getLastEvent().getIndex0());
-        assertEquals("Wrong Upper bound ", 2, counter.getLastEvent().getIndex1());
+        assertEquals("Wrong lower bound ", 1, counter.getLastEvent().getIndex0());
+        assertEquals("Wrong Upper bound ", 1, counter.getLastEvent().getIndex1());
     }
 
     public void testChildRemovedPassedOnCorrectly(){
+
+        tgp = new TranslateGroupParent(session);
+        
+    	MatchMakerTranslateGroup tg2 = new MatchMakerTranslateGroup();
+        tg2.setName("Translate Group 2");
+        
+        tgp.addChild(tg2);
+
+        tcbm = new TranslationComboBoxModel(tgp);
+        counter = new ListDataEventCounter();
+        tcbm.addListDataListener(counter);
+        
         try {
-			tgp.removeChild(tg);
+			tgp.removeChild(tg2);
 		} catch (ObjectDependentException e) {
 			throw new RuntimeException(e);
 		}
@@ -171,8 +183,4 @@ public class TranslationComboBoxModelTest extends TestCase {
     	tcbm.setFirstItemNull(true);
 		assertNull(tcbm.getElementAt(0));
 	}
-    
-    protected void tearDown() throws Exception {
-        tgp.getChildren().clear();
-    }
 }

@@ -67,7 +67,6 @@ public abstract class AbstractMatchMakerTableModel<T extends MatchMakerObject> e
 		@Override
 		public void childAdded(SPChildEvent e) {
 			if(e.getSource() == mmo){
-	            fireTableStructureChanged();
 	            Object addedChild = e.getChild();
 	            ((MatchMakerObject) addedChild).addSPListener(this);
             }

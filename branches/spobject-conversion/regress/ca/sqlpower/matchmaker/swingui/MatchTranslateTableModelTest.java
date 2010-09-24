@@ -57,7 +57,6 @@ public class MatchTranslateTableModelTest extends TestCase {
         }
     }
     
-    
     private JTable table;
     private TranslateWordsTableModel model;
     private MatchMakerTranslateGroup translateGroup;
@@ -77,8 +76,10 @@ public class MatchTranslateTableModelTest extends TestCase {
     }
     
     public void testFireRowAdded(){
+    	ec.setTableChangedCount(0);
         MatchMakerTranslateWord tw2 = new MatchMakerTranslateWord();
         tw2.setFrom("tw2");
+        assertEquals("Incorrect number of events fired ",0,ec.getTableChangedCount());
         translateGroup.addChild(tw2);
         assertEquals("Incorrect number of events fired ",1,ec.getTableChangedCount());
         assertEquals("Wrong Type of event ",TableModelEvent.INSERT,ec.getLastEvent().getType());

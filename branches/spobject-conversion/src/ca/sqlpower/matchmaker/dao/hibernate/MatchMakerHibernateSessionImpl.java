@@ -26,10 +26,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -72,6 +75,7 @@ import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
@@ -667,4 +671,50 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		logger.debug("Stub call: MatchMakerHibernateSessionImpl.removeStatusMessage()");
 		
 	}
+
+	@Override
+	public SPObject getWorkspace() {
+		return getRootNode();
+	}
+	
+	@Override
+    public void runInForeground(Runnable runner) {
+        SwingUtilities.invokeLater(runner);
+    }
+
+	@Override
+    public void runInBackground(Runnable runner) {
+        runInBackground(runner, "worker");
+    }
+
+	public void runInBackground(final Runnable runner, String name) {
+        new Thread(runner, name).start();       
+    }
+
+	@Override
+	public boolean isForegroundThread() {
+        return true;
+	}
+	
+	 /** 
+     * Gets the basic SQL types from the PL.INI file
+     */
+    public List<UserDefinedSQLType> getSQLTypes()
+    {
+    	return Collections.unmodifiableList(this.getContext().getPlDotIni().getSQLTypes());
+    }
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file.
+     */
+    public UserDefinedSQLType getSQLType(int sqlType)
+    {
+    	List<UserDefinedSQLType> types = getSQLTypes();
+    	for(UserDefinedSQLType s : types) {
+    		if(s.getType().equals(sqlType)) {
+    			return s;
+    		}
+    	}
+    	throw new IllegalArgumentException(sqlType + " is not a sql datatype.");
+    }
 }
