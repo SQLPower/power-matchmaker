@@ -403,11 +403,11 @@ public class MatchMakerTreeModel implements TreeModel {
             List<FolderNode> folderList = new ArrayList<FolderNode>();
             foldersInTables.put(p, folderList);
             FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class, null);
-            MungeProcessFolder.setName("Munge Process FOLDAR");
+            MungeProcessFolder.setName("Munge Processes");
             folderList.add(MungeProcessFolder);
             
             FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class, null);
-            TableMergeRuleFolder.setName("Table Rool");
+            TableMergeRuleFolder.setName("Table Rule");
             folderList.add(TableMergeRuleFolder);
         }
     }
