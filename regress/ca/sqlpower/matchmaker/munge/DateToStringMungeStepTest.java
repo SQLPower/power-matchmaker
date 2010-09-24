@@ -53,7 +53,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		testInput.setData(date);
 		step.connectInput(0, testInput);
 		step.open(logger);
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		for (String format : DateToStringMungeStep.DATE_FORMATS) {
 			step.setFormat(format);
@@ -70,7 +70,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		testInput.setData(date);
 		step.connectInput(0, testInput);
 		step.open(logger);
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		for (String format : DateToStringMungeStep.TIME_FORMATS) {
 			step.setFormat(format);
@@ -84,7 +84,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		testInput.setData(date);
 		step.connectInput(0, testInput);
 		step.open(logger);
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		step.call();
 		assertEquals("2/1/2007 1:01:01 PM", output.getData());
@@ -100,7 +100,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);

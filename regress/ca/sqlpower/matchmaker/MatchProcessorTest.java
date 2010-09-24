@@ -165,7 +165,7 @@ public class MatchProcessorTest extends TestCase {
 		Collections.shuffle(results);
 
 		MungeProcess process = new MungeProcess();
-		process.setParentProject(project);
+		process.setParent(project);
 		pool = new MatchPool(project);
 		matcher = new MatchProcessor(pool, process, results, logger);
 	}

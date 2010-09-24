@@ -128,9 +128,9 @@ public class SQLInputStepTest extends TestCase {
     
     public void testOutputsNullAtFirst() throws Exception {
         step.open(logger);
-        assertNull(step.getChildren().get(0).getData());
-        assertNull(step.getChildren().get(1).getData());
-        assertNull(step.getChildren().get(2).getData());
+        assertNull(step.getMungeStepOutputs().get(0).getData());
+        assertNull(step.getMungeStepOutputs().get(1).getData());
+        assertNull(step.getMungeStepOutputs().get(2).getData());
         step.commit();
         step.mungeClose();
     }
@@ -138,9 +138,9 @@ public class SQLInputStepTest extends TestCase {
     public void testOutputsNullAfterEnd() throws Exception {
         step.open(logger);
         while (step.call() == Boolean.TRUE);
-        assertNull(step.getChildren().get(0).getData());
-        assertNull(step.getChildren().get(1).getData());
-        assertNull(step.getChildren().get(2).getData());
+        assertNull(step.getMungeStepOutputs().get(0).getData());
+        assertNull(step.getMungeStepOutputs().get(1).getData());
+        assertNull(step.getMungeStepOutputs().get(2).getData());
         step.commit();
         step.mungeClose();
     }
@@ -148,19 +148,19 @@ public class SQLInputStepTest extends TestCase {
     public void testOutputsTrackResults() throws Exception {
         step.open(logger);
         step.call();
-        assertEquals("row1,1",             step.getChildren().get(0).getData());
-        assertEquals(new BigDecimal("12"), step.getChildren().get(1).getData());
-        assertEquals(new Date(1234),       step.getChildren().get(2).getData());
+        assertEquals("row1,1",             step.getMungeStepOutputs().get(0).getData());
+        assertEquals(new BigDecimal("12"), step.getMungeStepOutputs().get(1).getData());
+        assertEquals(new Date(1234),       step.getMungeStepOutputs().get(2).getData());
 
         step.call();
-        assertEquals(null, step.getChildren().get(0).getData());
-        assertEquals(null, step.getChildren().get(1).getData());
-        assertEquals(null, step.getChildren().get(2).getData());
+        assertEquals(null, step.getMungeStepOutputs().get(0).getData());
+        assertEquals(null, step.getMungeStepOutputs().get(1).getData());
+        assertEquals(null, step.getMungeStepOutputs().get(2).getData());
 
         step.call();
-        assertEquals("row3,1",             step.getChildren().get(0).getData());
-        assertEquals(new BigDecimal("32"), step.getChildren().get(1).getData());
-        assertEquals(new Date(5678),       step.getChildren().get(2).getData());
+        assertEquals("row3,1",             step.getMungeStepOutputs().get(0).getData());
+        assertEquals(new BigDecimal("32"), step.getMungeStepOutputs().get(1).getData());
+        assertEquals(new Date(5678),       step.getMungeStepOutputs().get(2).getData());
         
         step.commit();
         step.mungeClose();

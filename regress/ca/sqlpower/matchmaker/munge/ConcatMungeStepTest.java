@@ -49,7 +49,7 @@ public class ConcatMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
@@ -68,7 +68,7 @@ public class ConcatMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
@@ -81,7 +81,7 @@ public class ConcatMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -113,7 +113,7 @@ public class ConcatMungeStepTest extends TestCase {
 
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren(); 
+        List<MungeStepOutput> results = step.getMungeStepOutputs(); 
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("abc!def", result);
@@ -134,7 +134,7 @@ public class ConcatMungeStepTest extends TestCase {
 
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren(); 
+        List<MungeStepOutput> results = step.getMungeStepOutputs(); 
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("!", result);
@@ -149,7 +149,7 @@ public class ConcatMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren(); 
+        List<MungeStepOutput> results = step.getMungeStepOutputs(); 
         MungeStepOutput output = results.get(0);
         String result = (String)output.getData();
         assertEquals("cow", result);
@@ -165,7 +165,7 @@ public class ConcatMungeStepTest extends TestCase {
         step.removeInput(1);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren(); 
+        List<MungeStepOutput> results = step.getMungeStepOutputs(); 
         MungeStepOutput output = results.get(0);
         String result = (String)output.getData();
         assertEquals("cow", result);
@@ -179,7 +179,7 @@ public class ConcatMungeStepTest extends TestCase {
         step.removeInput(0);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren(); 
+        List<MungeStepOutput> results = step.getMungeStepOutputs(); 
         MungeStepOutput output = results.get(0);
         String result = (String)output.getData();
         assertEquals("", result);
@@ -190,7 +190,7 @@ public class ConcatMungeStepTest extends TestCase {
         step.removeInput(0);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren(); 
+        List<MungeStepOutput> results = step.getMungeStepOutputs(); 
         MungeStepOutput output = results.get(0);
         String result = (String)output.getData();
         assertEquals(null, result);

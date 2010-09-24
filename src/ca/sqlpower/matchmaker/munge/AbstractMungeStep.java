@@ -714,7 +714,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     /**
      * Returns the mungeStepOutput children;
      */
-    public List<MungeStepOutput> getMungeStepOutput() {
+    public List<MungeStepOutput> getMungeStepOutputs() {
     	return Collections.unmodifiableList(mungeStepOutputs);
     }
 
