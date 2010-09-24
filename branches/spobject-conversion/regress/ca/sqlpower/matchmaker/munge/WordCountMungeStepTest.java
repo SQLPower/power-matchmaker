@@ -45,7 +45,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(1, result.intValue());
@@ -57,7 +57,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(7, result.intValue());
@@ -70,7 +70,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(7, result.intValue());
@@ -87,7 +87,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(3, result.intValue());
@@ -104,7 +104,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(2, result.intValue());
@@ -116,7 +116,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(0, result.intValue());

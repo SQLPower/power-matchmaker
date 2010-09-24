@@ -44,7 +44,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcdefg", result);
@@ -56,7 +56,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcdef!@#$%^&*", result);
@@ -69,7 +69,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);

@@ -46,7 +46,7 @@ public class SubstringMungeStepTest extends TestCase {
 		step.setParameter(step.END_PARAMETER_NAME, 9);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCabc", result);
@@ -61,7 +61,7 @@ public class SubstringMungeStepTest extends TestCase {
 		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCabc", result);
@@ -72,7 +72,7 @@ public class SubstringMungeStepTest extends TestCase {
 		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		step.call();
-		results = step.getChildren(); 
+		results = step.getMungeStepOutputs(); 
 		output = results.get(0);
 		result = (String)output.getData();
 		assertEquals("", result);
@@ -100,7 +100,7 @@ public class SubstringMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);

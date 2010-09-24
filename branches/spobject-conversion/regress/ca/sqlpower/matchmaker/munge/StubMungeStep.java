@@ -187,13 +187,6 @@ public class StubMungeStep implements MungeStep {
 	@Override public void setVisible(boolean v) {
 	}
 
-    @Override public boolean isUndoing() {
-		return false;
-	}
-
-	@Override public void setUndoing(boolean isUndoing) {
-	}
-
 	@Override public boolean isInputStep() {
 		return false;
 	}

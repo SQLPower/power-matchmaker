@@ -105,32 +105,32 @@ public class MungeProcessorTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MungeProcess mungeProcess = new MungeProcess();
-        mungeProcess.setParentProject(new Project());
+        mungeProcess.setParent(new Project());
 
         a = new TestingMungeStep("A", 0, 1);
 
         b = new TestingMungeStep("B", 1, 1);
-        b.connectInput(0, a.getChildren().get(0));
+        b.connectInput(0, a.getMungeStepOutputs().get(0));
 
         c = new TestingMungeStep("C", 1, 2);
-        c.connectInput(0, a.getChildren().get(0));
+        c.connectInput(0, a.getMungeStepOutputs().get(0));
 
         d = new TestingMungeStep("D", 1, 1);
 
         e = new TestingMungeStep("E", 1, 1);
-        e.connectInput(0, b.getChildren().get(0));
+        e.connectInput(0, b.getMungeStepOutputs().get(0));
 
         f = new TestingMungeStep("F", 3, 1);
-        f.connectInput(0, a.getChildren().get(0));
+        f.connectInput(0, a.getMungeStepOutputs().get(0));
         // purposely leaving input 1 not connected (for testing)
-        f.connectInput(2, c.getChildren().get(0));
+        f.connectInput(2, c.getMungeStepOutputs().get(0));
 
         g = new TestingMungeStep("G", 1, 1);
-        g.connectInput(0, c.getChildren().get(1));
+        g.connectInput(0, c.getMungeStepOutputs().get(1));
         
         r = new TestingResultMungeStep("R", 2);
-        r.connectInput(0, e.getChildren().get(0));
-        r.connectInput(1, f.getChildren().get(0));
+        r.connectInput(0, e.getMungeStepOutputs().get(0));
+        r.connectInput(1, f.getMungeStepOutputs().get(0));
         
         // The order in which MungeSteps are added should be
         // randomized to ensure the processor isn't just processing

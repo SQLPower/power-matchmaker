@@ -44,7 +44,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("SM0", result);
@@ -57,7 +57,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		step.setParameter(step.USE_ALTERNATE_PARAMETER_NAME, true);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("XMT", result);
@@ -69,7 +69,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);

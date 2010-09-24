@@ -77,7 +77,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
     public void testRefreshConnectedOutputStepWithDroppedColumn() throws Exception {
         StringConstantMungeStep stringStep = new StringConstantMungeStep();
         mungeProcess.addChild(stringStep);
-        MungeStepOutput connectedOutput = stringStep.getChildren().get(0);
+        MungeStepOutput connectedOutput = stringStep.getMungeStepOutputs().get(0);
         resultStep.connectInput(1, connectedOutput);
         assertSame(connectedOutput, resultStep.getInputs().get(1).getCurrent());
         
@@ -114,7 +114,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
         
         StringConstantMungeStep stringStep = new StringConstantMungeStep();
         mungeProcess.addChild(stringStep);
-        MungeStepOutput connectedOutput = stringStep.getChildren().get(0);
+        MungeStepOutput connectedOutput = stringStep.getMungeStepOutputs().get(0);
         resultStep.connectInput(1, connectedOutput);
         assertSame(connectedOutput, resultStep.getInputs().get(1).getCurrent());
 

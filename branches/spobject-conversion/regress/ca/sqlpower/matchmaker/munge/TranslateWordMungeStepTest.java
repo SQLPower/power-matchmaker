@@ -60,7 +60,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("efg", result);
@@ -74,7 +74,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("1234ABC1234", result);
@@ -92,7 +92,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12123434", result);
@@ -111,7 +111,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("1234badc", result);
@@ -129,7 +129,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12\\-+*?()[]{}|$^<=34", result);
@@ -147,7 +147,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("-foo-foo-foo-", result);
@@ -162,7 +162,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12341234", result);
@@ -175,7 +175,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);

@@ -50,7 +50,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcdefg", result);
@@ -64,7 +64,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("123ABC123", result);
@@ -82,7 +82,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("123123", result);
@@ -101,7 +101,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("123cba", result);
@@ -119,7 +119,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		step.setParameter(step.TO_PARAMETER_NAME, "!");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("a!z", result);
@@ -137,7 +137,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		step.setParameter(step.TO_PARAMETER_NAME, "-");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("-foo-foo-foo-", result);
@@ -154,7 +154,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("-d-d-d-", result);
@@ -166,7 +166,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);

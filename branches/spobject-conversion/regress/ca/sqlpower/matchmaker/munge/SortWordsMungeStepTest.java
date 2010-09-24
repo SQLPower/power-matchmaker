@@ -44,7 +44,7 @@ public class SortWordsMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String) output.getData();
 		assertNull(result);
@@ -68,7 +68,7 @@ public class SortWordsMungeStepTest extends TestCase {
 	    step.connectInput(0, testInput);
 	    step.open(logger);
 	    step.call();
-	    List<MungeStepOutput> results = step.getChildren();
+	    List<MungeStepOutput> results = step.getMungeStepOutputs();
 	    MungeStepOutput output = results.get(0);
 	    String result = (String) output.getData();
 	    assertEquals("alpha bravo charlie", result);
@@ -80,7 +80,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha bravo charlie", result);
@@ -94,7 +94,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("aba+a abc+def+aa z", result);
@@ -108,7 +108,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("+a +z a a+a c+def+aa", result);
@@ -120,7 +120,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha", result);
@@ -132,7 +132,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha", result);
@@ -145,7 +145,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha bravo crix", result);
@@ -159,7 +159,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha bravo crix", result);
@@ -173,7 +173,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("br crix lph vo", result);
@@ -188,7 +188,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha\\bravo\\crix", result);
