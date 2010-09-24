@@ -407,7 +407,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                 checkMandatory("id", id);
                 checkMandatory("name", process.getName());
 
-                project.addMungeProcess(process, project.getMungeProcesses().size()); // FIXME have to do this in endElement
+                project.addChild(process); // FIXME have to do this in endElement
 
             } else if (qName.equals("munge-step") && parentIs("munge-process")) {
                 String type = attributes.getValue("step-type");

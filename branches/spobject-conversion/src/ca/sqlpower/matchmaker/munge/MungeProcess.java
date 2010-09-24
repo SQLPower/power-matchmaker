@@ -49,7 +49,25 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
 				Arrays.asList(MungeStep.class)));
 	
+	/**
+	 * The intermediate munge steps used between start and finish of the process.
+	 * They appear in the the middle of getChildren();
+	 */
 	private final List<MungeStep> mungeSteps = new ArrayList<MungeStep>();
+
+	/**
+	 * The MungeStep that is used to accumulate the resulting munged data.
+	 * Any class can get the munge results by calling {@link #getResults()},
+	 * which will delegate to getting the results from this output step.
+	 * This will appear last in getChildren();
+	 */
+	private MungeResultStep resultStep;
+	
+	/**
+	 * The input steps. It includes things like string constants as well as the main input.
+	 * They appear first in getChildren();
+	 */
+	private final List<SQLInputStep> inputSteps = new ArrayList<SQLInputStep>();
 	
 	/**
 	 * This is the name given to a rule set made by the Match Maker
@@ -102,18 +120,6 @@ public class MungeProcess extends AbstractMatchMakerObject {
      * in the GUI.
      */
 	private Color colour = DEFAULT_COLOR;
-
-	/**
-	 * The MungeStep that is used to accumulate the resulting munged data.
-	 * Any class can get the munge results by calling {@link #getResults()},
-	 * which will delegate to getting the results from this output step.
-	 */
-	private MungeResultStep resultStep;
-	
-	/**
-	 * The input steps that are presently here.	 
-	 */
-	private List<SQLInputStep> inputSteps = new ArrayList<SQLInputStep>();
 	
 	/**
      * Constructor that sets up a default Munge process.
@@ -287,14 +293,41 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		return getName();
 	}
 
+	/**
+	 * Add only munge input and middle steps, not results steps using this method.
+	 */
 	public void addChild(SPObject spo) {
-		addChild(spo, mungeSteps.size());
+		if(spo instanceof SQLInputStep) {
+			addChild(spo, inputSteps.size());
+		} else if(spo instanceof MungeResultStep) {
+			throw new IllegalArgumentException();
+		} else if(spo instanceof AddressCorrectionMungeStep){
+			addChild(spo, mungeSteps.size());
+		}
 	}
 	
 	@Override
 	protected void addChildImpl(SPObject spo, int index) {
-		mungeSteps.add(index, (MungeStep)spo);
-		fireChildAdded(MungeStep.class, spo, index);
+		if(spo instanceof SQLInputStep) {
+			inputSteps.add(index, (SQLInputStep)spo);
+			for(AddressCorrectionMungeStep s : getChildren(AddressCorrectionMungeStep.class)) {
+				s.setInputStep((SQLInputStep)spo);
+			}
+		} else if (spo instanceof AddressCorrectionMungeStep) {
+			for (SQLInputStep input : inputSteps) {
+				((AddressCorrectionMungeStep)spo).setInputStep(input);
+			}
+			mungeSteps.add(index, (MungeStep)spo);
+		} else if(spo instanceof MungeResultStep) {
+			if(resultStep != null) {
+				resultStep = (MungeResultStep)spo;
+			}
+			else {
+				throw new IllegalArgumentException("The MungeResultStep should be set at the constructor of MungeProcess.");
+			}
+		} else {
+			mungeSteps.add(index, (MungeStep)spo);
+		}
 	}
 
 	@Override
@@ -303,39 +336,6 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		boolean removed = mungeSteps.remove(spo);
 		fireChildRemoved(MungeStep.class, spo, index);
 		return removed;
-	}
-	
-	/**
-	 * Updates the result and input steps if nessary.
-	 * 
-	 * @param child The child to add to the process
-	 */
-	private void includeMungeStep(MungeStep child) {
-		if (child instanceof SQLInputStep) {
-			inputSteps.add((SQLInputStep) child);
-			if (resultStep != null) {
-				resultStep.addInputStep((SQLInputStep) child);
-			}
-			for (SPObject spo : getChildren()) {
-				MungeStep step = (MungeStep) spo;
-				if (child instanceof AddressCorrectionMungeStep) {
-					((AddressCorrectionMungeStep)step).setInputStep(child);
-				}
-			}
-		} else if (child instanceof MungeResultStep) {
-			if (resultStep != null && resultStep != child) {
-				throw new IllegalStateException("A transformation can only have one result transformer");
-			} else if (resultStep == null) {
-				this.resultStep = (MungeResultStep) child;
-				for (SQLInputStep input : inputSteps) {
-					this.resultStep.addInputStep(input);
-				}
-			}
-		} else if (child instanceof AddressCorrectionMungeStep) {
-			for (SQLInputStep input : inputSteps) {
-				((AddressCorrectionMungeStep)child).setInputStep(input);
-			}
-		}
 	}
 	
 	public void removeChildAndInputs(MungeStep ms) {
@@ -371,18 +371,37 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		}
 	}
 	
-	public void setChildren(List<MungeStep> children) {
-		for (MungeStep ms : children) {
-			includeMungeStep(ms);
-		}
-	}
-	
-	MungeResultStep getResultStep() {
+
+	/**
+	 * Gets the result munge step in the process, i.e. the munge step everything
+	 * goes to and has no outputs.
+	 */
+	public MungeResultStep getResultStep() {
 		return resultStep;
 	}
 
 	@Override
-	public List<? extends SPObject> getChildren() {
+	public List<SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.addAll(inputSteps);
+		children.addAll(mungeSteps);
+		children.add(resultStep);
+		return Collections.unmodifiableList(children);
+	}
+
+	/**
+	 * Gets the input munge steps in the process, i.e. those with only
+	 * inputs.
+	 */
+	public List<SQLInputStep> getInputSteps() {
+		return Collections.unmodifiableList(inputSteps);
+	}
+	
+	/**
+	 * Gets the intermediate munge steps in the process, i.e. those with both
+	 * inputs and outputs.
+	 */
+	public List<MungeStep> getMungeSteps() {
 		return Collections.unmodifiableList(mungeSteps);
 	}
 	
