@@ -712,6 +712,20 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     }
 
     /**
+     * Returns the mungeStepOutput children;
+     */
+    public List<MungeStepOutput> getMungeStepOutput() {
+    	return Collections.unmodifiableList(mungeStepOutputs);
+    }
+
+    /**
+     * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input)
+     */
+    public List<AbstractMungeStep.Input> getMungeStepInputs() {
+    	return Collections.unmodifiableList(inputs);
+    }
+
+    /**
      * Returns the MMO ancestor of this munge step that is a Project.
      * Returns null if there is no such ancestor.
      */
