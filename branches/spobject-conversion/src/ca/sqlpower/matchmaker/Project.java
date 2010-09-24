@@ -392,13 +392,13 @@ public class Project extends AbstractMatchMakerObject {
 		col = new SQLColumn(t, "group_id", getSession().getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_date", getSession().getSQLType(Types.TIME), 6, 0, false);
+		col = new SQLColumn(t, "match_date", getSession().getSQLType(Types.TIMESTAMP), 0, 0, false);
 		t.addColumn(col);
 
 		col = new SQLColumn(t, "match_status", getSession().getSQLType(Types.VARCHAR), 15, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_status_date", getSession().getSQLType(Types.TIME), 6, 0, false);
+		col = new SQLColumn(t, "match_status_date", getSession().getSQLType(Types.TIMESTAMP), 0, 0, false);
 		t.addColumn(col);
 
 		col = new SQLColumn(t, "match_status_user", getSession().getSQLType(Types.VARCHAR), 35, 0, false);
