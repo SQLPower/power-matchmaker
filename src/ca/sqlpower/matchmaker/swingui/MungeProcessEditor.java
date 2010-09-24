@@ -110,7 +110,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess>
         
         this.parentProject = project;
         
-        if (mmo.getParentProject() != null && mmo.getParentProject() != parentProject) {
+        if (mmo.getParent() != null && mmo.getParent() != parentProject) {
         	throw new IllegalStateException(
         	"The given process has a parent which is not the given parent match obejct!");
         }
@@ -277,7 +277,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess>
 	        }
         }
 
-        if (mmo.getParentProject() == null) {
+        if (mmo.getParent() == null) {
             parentProject.addChild(mmo);
         }
         return super.applyChanges();

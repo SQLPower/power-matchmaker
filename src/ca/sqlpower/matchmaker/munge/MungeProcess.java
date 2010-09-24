@@ -135,32 +135,20 @@ public class MungeProcess extends AbstractMatchMakerObject {
         this.oid = oid;
     }
     
-    /**
-     * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
-     * (a folder) is null, returns null.
-     */
-    public Project getParentProject() {
-        MatchMakerObject parentFolder = getParent();
-        if (parentFolder == null) {
-            return null;
-        } else {
-            return (Project) parentFolder.getParent();
-        }
+    @Override
+    public Project getParent() {
+    	return (Project) super.getParent();
     }
-
-    /**
-     * Sets the parent of this object to be the rule set folder of the given project object
-     *
-     * this will fire a <b>parent</b> changed event not a parent match event
-     */
-    public void setParentProject(Project parent) {
-        if (parent == null) {
-            setParent(null);
-        } else {
-            setParent(parent);
-        }
+    
+    @Override
+    public void setParent(SPObject parent) {
+    	if (!(parent instanceof Project)) {
+    		throw new IllegalArgumentException("The parent " + parent + 
+    				" cannot be the parent of a munge process because it is not a project.");
+    	}
+    	super.setParent(parent);
     }
-
+    
 	public String getDesc() {
 		return desc;
 	}

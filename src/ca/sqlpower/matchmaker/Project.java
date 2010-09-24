@@ -225,11 +225,13 @@ public class Project extends AbstractMatchMakerObject {
 	}
 	public void addMungeProcess(MungeProcess spo, int index) {
 		mungeProcesses.add(index, spo);
+		spo.setParent(this);
 		fireChildAdded(MungeProcess.class, spo, index);
 	}
 	
 	public void addTableMergeRules(TableMergeRules spo, int index) {
 		tableMergeRules.add(index, spo);
+		spo.setParent(this);
 		fireChildAdded(TableMergeRules.class, spo, index);
 	}
 	

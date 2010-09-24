@@ -41,7 +41,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
@@ -51,19 +50,11 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.ColumnMergeRulesDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
-import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
-import ca.sqlpower.matchmaker.dao.MungeStepDAO;
-import ca.sqlpower.matchmaker.dao.PlFolderDAO;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
-import ca.sqlpower.matchmaker.dao.TableMergeRulesDAO;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.security.PLSecurityException;
@@ -125,12 +116,18 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 
     private final MatchMakerSessionContext context;
-    private final SessionFactory hibernateSessionFactory;
 	private final SQLDatabase database;
 	private PLSecurityManager sm;
 	private PLUser appUser;
 	private String dbUser;
 	private Date sessionStartTime;
+	
+	/**
+	 * This DAO will be used to save the project on every major change.
+	 */
+	// TODO: Make this actually do something
+	//private ProjectDAOXML projectDAOXML = new ProjectDAOXML(new ByteArrayOutputStream());
+	private TimedGeneralDAO timedGeneralDAO = new TimedGeneralDAO(null);
 	
     /**
      * This node is the root node of all MatchMakerObjects and everything stems from this.
@@ -138,14 +135,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      */
     private MMRootNode rootNode;
     
-    private PlFolderDAO folderDAO;
-    private ProjectDAO projectDAO;
-    private MungeProcessDAO mungeProcessDAO;
-    private MungeStepDAO mungeStepDAO;
-    private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
-    private TableMergeRulesDAO tableMergeRulesDAO;
-    private ColumnMergeRulesDAO columnMergeRulesDAO;
-
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
 	private Session hSession;
@@ -167,6 +156,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 			JDBCDataSource ds) throws PLSecurityException,
 			SQLException, SQLObjectException,
 			MatchMakerConfigurationException, RepositoryVersionException {
+		
+		rootNode = new MMRootNode(this);
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
         
@@ -240,17 +231,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
                                     false);  // since this is a database login, we don't require correct app-level password
 		appUser = sm.getPrincipal();
 		sessionStartTime = new Date();
-		this.hibernateSessionFactory = buildHibernateSessionFactory(ds);
-
-		hSession = hibernateSessionFactory.openSession();
-        folderDAO = new PlFolderDAOHibernate(this);
-        projectDAO = new ProjectDAOHibernate(this);
-        mungeProcessDAO = new MungeProcessDAOHibernate(this);
-        mungeStepDAO = new MungeStepDAOHibernate(this);
-        matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
-        tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
-        columnMergeRulesDAO = new ColumnMergeRulesDAOHibernate(this);
-        rootNode = new MMRootNode(this);
+        //rootNode = new MMRootNode(this);
         con.close();
 	}
 
@@ -316,23 +297,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-        if (businessClass == PlFolder.class) {
-            return (MatchMakerDAO<T>) folderDAO;
-        } else if (businessClass == Project.class) {
-            return (MatchMakerDAO<T>) projectDAO;
-        } else if (businessClass == MungeProcess.class){
-            return (MatchMakerDAO<T>) mungeProcessDAO;
-        } else if (MungeStep.class.isAssignableFrom(businessClass)){
-            return (MatchMakerDAO<T>) mungeStepDAO;
-        } else if (businessClass == MatchMakerTranslateGroup.class){
-            return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;
-        } else if (businessClass == TableMergeRules.class) {
-            return (MatchMakerDAO<T>) tableMergeRulesDAO;
-        } else if (businessClass == ColumnMergeRules.class) {
-            return (MatchMakerDAO<T>) columnMergeRulesDAO;
-        } else {
-            throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
-        }
+    	// TODO: This is where the proper XML parser should always be returned.
+        return timedGeneralDAO;
     }
 
     /**
@@ -408,11 +374,18 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
     public Project getProjectByName(String name) {
-    	return projectDAO.findByName(name);
+    	for (PlFolder folder : rootNode.getCurrentFolderParent().getPlFolders()) {
+    		for (Project p : folder.getProjects()) {
+    			if (p.getName().equals(name)) {
+    				return p;
+    			}
+    		}
+    	}
+    	return null;
     }
 
 	public boolean isThisProjectNameAcceptable(String name) {
-		return projectDAO.isThisProjectNameAcceptable(name);
+		return getProjectByName(name) == null;
 	}
 
     public String createNewUniqueName() {
@@ -433,7 +406,15 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
 	public long countProjectByName(String name) {
-		return projectDAO.countProjectByName(name);
+		long projectCount = 0;
+    	for (PlFolder folder : rootNode.getCurrentFolderParent().getPlFolders()) {
+    		for (Project p : folder.getProjects()) {
+    			if (p.getName().equals(name)) {
+    				projectCount++;
+    			}
+    		}
+    	}
+		return projectCount;
 	}
 
     public TranslateGroupParent getTranslations() {
@@ -453,9 +434,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      */
 	public FolderParent getCurrentFolderParent() {
 		if (rootNode.getCurrentFolderParent().getChildren().isEmpty()) {
-			PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
-			for(PlFolder f :folderDAO.findAll()) {
-				rootNode.getCurrentFolderParent().addChild(f);
+			MatchMakerDAO folderDAO = (MatchMakerDAO) getDAO(PlFolder.class);
+			for(Object f :folderDAO.findAll()) {
+				rootNode.getCurrentFolderParent().addChild((PlFolder)f);
 			}
 		}
 		return rootNode.getCurrentFolderParent();
@@ -632,9 +613,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	 * Call this method to close the hibernate resources and database connection.
 	 */
 	public boolean close() {
-		if (hSession.isConnected()) hSession.close();
-		if (database.isConnected()) database.disconnect();
-		if (!hibernateSessionFactory.isClosed()) hibernateSessionFactory.close();
+		//if (hSession.isConnected()) hSession.close();
+		//if (database.isConnected()) database.disconnect();
 
 		fireSessionClosing();
 		

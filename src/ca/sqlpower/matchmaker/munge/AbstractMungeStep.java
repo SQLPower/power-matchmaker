@@ -728,6 +728,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     /**
      * Returns the MMO ancestor of this munge step that is a Project.
      * Returns null if there is no such ancestor.
+     * XXX There is a utility method that you can use instead of this. (getAncestor(class)).
      */
     public Project getProject() {
         for (MatchMakerObject mmo = getParent(); mmo != null; mmo = (MatchMakerObject) mmo.getParent()) {
