@@ -68,8 +68,8 @@ public class MatchMakerSwingSessionTest extends TestCase {
             @Override
             public FolderParent getCurrentFolderParent() {
             	folders = new FolderParent(this);
-                folders.getChildren().add(folder1);
-                folders.getChildren().add(folder2);
+                folders.addChild(folder1);
+                folders.addChild(folder2);
                 return folders;
             }
             

@@ -150,7 +150,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 
 	@Override
 	public List<? extends SPObject> getChildren() {
-		return Collections.emptyList();
+		return Collections.unmodifiableList(matchMakerTranslateGroups);
 	}
 	
 	public void addChild(SPObject spo) {
