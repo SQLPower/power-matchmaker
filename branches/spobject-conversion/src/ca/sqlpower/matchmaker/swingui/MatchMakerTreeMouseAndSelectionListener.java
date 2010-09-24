@@ -407,14 +407,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 							return;
 						}
 					}
-					Project m = ((MungeProcess) o).getParentProject();
+					Project m = ((MungeProcess) o).getParent();
 					MungeProcessEditor editor = new MungeProcessEditor(swingSession, m, (MungeProcess) o);
 					logger.debug("Created new munge process editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof MungeStep) {
 					MungeProcess mp = (MungeProcess)((MungeStep) o).getParent();
-					Project m = mp.getParentProject();
+					Project m = mp.getParent();
 					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
 						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {
@@ -429,7 +429,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 				} else if (o instanceof MungeStepOutput) {
 					MungeStep ms = (MungeStep)((MungeStepOutput) o).getParent();
 					MungeProcess mp = (MungeProcess)(ms.getParent());
-					Project m = mp.getParentProject();
+					Project m = mp.getParent();
 					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
 						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {

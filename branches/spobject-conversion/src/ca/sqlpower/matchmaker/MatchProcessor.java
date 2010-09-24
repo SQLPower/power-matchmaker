@@ -64,7 +64,7 @@ public class MatchProcessor extends AbstractProcessor {
 		this.matchData = matchData;
 		this.pool = pool;
 		this.mungeProcess = process; 
-		if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
+		if (mungeProcess.getParent().getMungeSettings().getDebug()) {
 			logger.setLevel(Level.DEBUG);
 		}
 		monitorableHelper.setJobSize(matchData.size());

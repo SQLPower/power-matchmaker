@@ -201,6 +201,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         this.swingPrefs = prefsRootNode;
         this.context = delegateContext;
         ExceptionReport.init();
+        
+        // delegateContext will be a MatchMakerHibernateSessionContext
 
         // Set a login action property so that if there is no connection selected 
         // in the dbConnectionManager GUI, the corresponding button will be disabled.
@@ -368,11 +370,11 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         try {
         	ensureDefaultRepositoryDefined();
         	
-            if (!isAutoLoginEnabled()) {
+            /*if (!isAutoLoginEnabled()) {
                 showLoginDialog(getLastLoginDataSource());
-            } else {
+            } else {*/
             	autoLogin();
-            }
+            //}
         } catch (Exception ex) {
            	MMSUtils.showExceptionDialogNoReport("DQguru Startup Failed", ex);
         }
@@ -387,14 +389,14 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		JDBCDataSource dbSource = getAutoLoginDataSource();
 		final MatchMakerSession sessionDelegate;
 		try {
-			if (dbSource != null) {
+			/*if (dbSource != null) {
 				// tries to login to the auto login database
 				sessionDelegate = context.createSession(dbSource,
 					dbSource.getUser(), dbSource.getPass());
-			} else {
+			} else {*/
 				// first time running match maker, run default
 				sessionDelegate = context.createDefaultSession();
-			}
+			//}
 			MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
 			getSessions().add(session);
 		    session.addSessionLifecycleListener(getSessionLifecycleListener());

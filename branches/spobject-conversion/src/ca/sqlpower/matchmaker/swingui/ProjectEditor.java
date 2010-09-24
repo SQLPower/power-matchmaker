@@ -53,7 +53,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
@@ -799,7 +799,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
 				}
 			}
 			
-			ProjectDAO dao = (ProjectDAO) swingSession.getDAO(Project.class);
+			TimedGeneralDAO dao = (TimedGeneralDAO) swingSession.getDAO(Project.class);
 			SPDataSource ds = (SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem();
 			String catalogName = getSelectedCatalogName();
 			String schemaName = getSelectedSchemaName();

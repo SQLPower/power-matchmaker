@@ -59,6 +59,7 @@ public class FolderParent extends AbstractMatchMakerObject {
     @Override
     protected void addChildImpl(SPObject spo, int index) {
     	plFolders.add(index, (PlFolder)spo);
+    	spo.setParent(this);
     	fireChildAdded(PlFolder.class, spo, index);
     }
     
@@ -115,5 +116,9 @@ public class FolderParent extends AbstractMatchMakerObject {
 	@Override
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
+	}
+	
+	public List<PlFolder> getPlFolders() {
+		return Collections.unmodifiableList(plFolders);
 	}
 }

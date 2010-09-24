@@ -88,16 +88,12 @@ import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
-import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
-import ca.sqlpower.matchmaker.dao.PlFolderDAO;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -1029,22 +1025,22 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public void save(MatchMakerObject mmo) {
 		if (mmo instanceof Project){
 			Project project = (Project)mmo;
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof TableMergeRules) {
 			Project project = (Project) ((TableMergeRules)mmo).getParent();
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof PlFolder){
-			PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(PlFolder.class);
 			dao.save((PlFolder) mmo);
 		} else if (mmo instanceof MungeProcess) {
 			MungeProcess cg = (MungeProcess)mmo;
-			MungeProcessDAO dao = (MungeProcessDAO) getDAO(MungeProcess.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MungeProcess.class);
 			dao.save(cg);
 		} else if (mmo instanceof MatchMakerTranslateGroup) {
 			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup)mmo;
-			MatchMakerTranslateGroupDAO dao = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MatchMakerTranslateGroup.class);
 			dao.save(tg);
 		} else {
 			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");

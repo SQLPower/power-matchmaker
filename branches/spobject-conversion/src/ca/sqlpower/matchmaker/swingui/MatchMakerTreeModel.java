@@ -33,16 +33,22 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.swingui.FolderNode;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.TransactionEvent;
 
@@ -56,6 +62,14 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerTreeModel.class);
 
+	/**
+	 * Each table in the tree model is entered in the map when it is added to the tree
+	 * and is mapped to folders that contains the children of the table broken into their
+	 * types.
+	 */
+	protected final Map<SPObject, List<FolderNode>> foldersInTables = 
+	    new HashMap<SPObject, List<FolderNode>>();
+	
     /**
      * All the types of actions associated with each project in the tree.
      */
@@ -178,6 +192,8 @@ public class MatchMakerTreeModel implements TreeModel {
         
 		SQLPowerUtils.listenToHierarchy(rootNode, listener);
 		SQLPowerUtils.listenToShallowHierarchy(cacheLisener, current);
+		
+		setupTreeForNode(rootNode);
 	}
 
     /**
@@ -212,24 +228,22 @@ public class MatchMakerTreeModel implements TreeModel {
     }
     
 	public Object getChild(Object parent, int index) {
+		if (parent instanceof FolderNode) {
+        	return ((FolderNode)parent).getChildren().get(index);
+        } 
+		
         final MatchMakerObject mmoParent = (MatchMakerObject) parent;
         final MatchMakerObject mmoChild;
     
         if (mmoParent instanceof Project) {
-            Project project = (Project) mmoParent;
-            MatchMakerObject [] visible = new MatchMakerObject [getChildCount(project)];
-            int count = 0;
-            for (MatchMakerObject child : project.getChildren(MatchMakerObject.class)) {
-            	if (child.isVisible()) {
-            		visible[count++] = child;
-            	}
-            }
-            for (ProjectActionNode child : getActionNodes(project)) {
-            	if (child.isVisible()) {
-            		visible[count++] = child;
-            	}
-            }
-            mmoChild = visible[index];
+        	List<Object> lob = new ArrayList<Object>();
+        	lob.addAll(foldersInTables.get(parent));
+        	for (ProjectActionNode pan : getActionNodes((Project)parent)) {
+        		if (pan.isVisible()) {
+        			lob.add(pan);
+        		}
+        	}
+            return lob.get(index);
         } else {
         	int real = index;
         	for (int i = 0; i < index; i++) {
@@ -248,12 +262,13 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public int getChildCount(Object parent) {
+		if (parent instanceof FolderNode) {
+			return ((FolderNode)parent).getChildren().size();
+		}
 		final MatchMakerObject mmo = (MatchMakerObject) parent;
         int count;
         if (mmo instanceof Project) {
-            Project project = (Project) mmo;
-            List<ProjectActionNode> projectActions = getActionNodes(project);
-            count = mmo.getChildren().size() + projectActions.size();
+            return foldersInTables.get((Project) mmo).size() + getActionNodes((Project) mmo).size();
         } else {
             count = mmo.getChildren().size();
         }
@@ -272,8 +287,8 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public int getIndexOfChild(Object parent, Object child) {
-        final MatchMakerObject mmoParent = (MatchMakerObject) parent;
-        final MatchMakerObject mmoChild = (MatchMakerObject) child;
+        final SPObject mmoParent = (SPObject) parent;
+        final SPObject mmoChild = (SPObject) child;
         final int index = mmoParent.getChildren().indexOf(mmoChild);
 
         if (logger.isDebugEnabled()) {
@@ -288,6 +303,12 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public boolean isLeaf(Object node) {
+		if (node instanceof FolderNode) return false;
+		
+		if (node instanceof ColumnMergeRules) {
+			return true;
+		}
+		
         final MatchMakerObject mmoNode = (MatchMakerObject) node;
         final boolean isLeaf = !mmoNode.allowsChildren();
 
@@ -360,6 +381,38 @@ public class MatchMakerTreeModel implements TreeModel {
 		logger.debug("done");
 	}
 
+	/**
+	 * Recursively walks the tree doing any necessary setup for each node.
+	 * At current this just adds folders for {@link SQLTable} objects.
+	 */
+	private void setupTreeForNode(SPObject node) {
+	    if (node instanceof Project) {
+	        createFolders((Project) node);
+	    } 
+        for (SPObject child : node.getChildren()) {
+            setupTreeForNode(child);
+        }
+	}
+	
+    /**
+     * Creates all of the folders the given table should contain for its children
+     * and adds them to the {@link #foldersInTables} map.
+     */
+    private void createFolders(final Project p) {
+        if (foldersInTables.get(p) == null) {
+            List<FolderNode> folderList = new ArrayList<FolderNode>();
+            foldersInTables.put(p, folderList);
+            FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class, null);
+            MungeProcessFolder.setName("Munge Process FOLDAR");
+            folderList.add(MungeProcessFolder);
+            
+            FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class, null);
+            TableMergeRuleFolder.setName("Table Rool");
+            folderList.add(TableMergeRuleFolder);
+        }
+    }
+
+	
 	public void refresh() {
 		fireTreeNodesChanged(new TreeModelEvent(rootNode, new TreePath(rootNode)));
 	}
@@ -369,15 +422,16 @@ public class MatchMakerTreeModel implements TreeModel {
 
 		@Override
 		public void childAdded(SPChildEvent e) {
-			TreePath paths = getPathForNode((MatchMakerObject)e.getSource());
-            MatchMakerObject children[] = {(MatchMakerObject) e.getSource()};
-            int indices[] = {e.getIndex()};
-			TreeModelEvent evt = new TreeModelEvent((MatchMakerObject) e.getSource(), paths,
-					indices ,children);
+			MatchMakerObject source = (MatchMakerObject)e.getSource();
+			TreePath path = getPathForNode(source);
+            MatchMakerObject child = (MatchMakerObject) e.getChild();
+            int index = e.getIndex();
+			TreeModelEvent evt = new TreeModelEvent(source, path,
+					new int[]{index}, new MatchMakerObject[]{child});
 			if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children inserted event!");
                 StringBuilder sb = new StringBuilder();
-                MatchMakerObject mmo = (MatchMakerObject)e.getSource();
+                MatchMakerObject mmo = source;
                 while (mmo != null) {
                     sb.insert(0, "->" + mmo.getName());
                     mmo = mmo.getParent();
@@ -393,6 +447,22 @@ public class MatchMakerTreeModel implements TreeModel {
                 logger.debug("Traceback:", new Exception());
 			}
 			fireTreeNodesInserted(evt);
+			
+			if (e.getChild() instanceof Project && foldersInTables.get(e.getChild()) == null) {
+				Project project = (Project) e.getChild();
+				createFolders(project);
+
+				List<FolderNode> folderList = foldersInTables.get(project);
+				int[] positions = new int[folderList.size()];
+				for (int i = 0; i < folderList.size(); i++) {
+					positions[i] = i;
+				}
+				final TreeModelEvent ev = new TreeModelEvent(project, getPathForNode((MatchMakerObject)project), positions, folderList.toArray());
+				fireTreeNodesInserted(ev);
+			} else {
+				setupTreeForNode((SPObject) e.getChild());
+
+			}
 			SQLPowerUtils.listenToHierarchy(e.getChild(), listener);
 		}
 

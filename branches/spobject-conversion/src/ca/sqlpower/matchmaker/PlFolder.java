@@ -188,4 +188,8 @@ public class PlFolder extends AbstractMatchMakerObject {
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
+	
+	public List<Project> getProjects() {
+		return Collections.unmodifiableList(projects);
+	}
 }

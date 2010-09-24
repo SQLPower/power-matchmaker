@@ -306,7 +306,7 @@ public class MungePreviewer extends MungeProcessor {
 		
 		if (refreshEnabled) {
 			try {
-				Project project = process.getParentProject();
+				Project project = process.getParent();
 				
 				// XXX: A quick fix, but ideally, each project type would be a
 				// subclass of Project and have a 'getEngine' method that would

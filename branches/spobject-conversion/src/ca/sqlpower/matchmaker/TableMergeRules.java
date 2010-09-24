@@ -398,7 +398,7 @@ public class TableMergeRules
 	}
 	
 	public void addChild(ColumnMergeRules cmr) {
-		addChildImpl(cmr, columnMergeRules.size());
+		addChild(cmr, columnMergeRules.size());
 	}
 	
 	protected void addChildImpl(SPObject cmr, int index) {
@@ -410,7 +410,8 @@ public class TableMergeRules
 	}
 	
 	public void addColumnMergeRules(ColumnMergeRules cmr, int index) {
-		columnMergeRules.add(index, (ColumnMergeRules)cmr);
+		columnMergeRules.add(index, cmr);
+		cmr.setParent(this);
 		fireChildAdded(ColumnMergeRules.class, cmr, index);
 	}
 	

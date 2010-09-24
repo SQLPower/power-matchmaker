@@ -60,7 +60,7 @@ public class AutoMatcher extends MonitorableImpl {
 	 * a duplicate. When this operation is over, the engine lock will be released.
 	 */
 	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException, InterruptedException {
-	    final Project project = mungeProcess.getParentProject();
+	    final Project project = mungeProcess.getParent();
 	    project.acquireEngineLock(this);
 	    try {
 	        actuallyDoAutoMatch(mungeProcess);

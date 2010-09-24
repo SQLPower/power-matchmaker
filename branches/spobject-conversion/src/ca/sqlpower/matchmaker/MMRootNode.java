@@ -58,7 +58,11 @@ public class MMRootNode extends AbstractMatchMakerObject {
     public MMRootNode(MatchMakerSession session) {
         setName("Root Node");
         currentFolderParent = new FolderParent(session);
+        currentFolderParent.setName("Current Projects");
+        currentFolderParent.setParent(this);
         backupFolderParent = new FolderParent(session);
+        backupFolderParent.setName("Backup Projects");
+        backupFolderParent.setParent(this);
         tgp = new TranslateGroupParent(session);
         tgp.setName("Translation Groups");
     }
