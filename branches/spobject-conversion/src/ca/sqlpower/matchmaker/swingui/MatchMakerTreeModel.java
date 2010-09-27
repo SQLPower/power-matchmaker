@@ -40,9 +40,9 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
@@ -402,11 +402,11 @@ public class MatchMakerTreeModel implements TreeModel {
         if (foldersInTables.get(p) == null) {
             List<FolderNode> folderList = new ArrayList<FolderNode>();
             foldersInTables.put(p, folderList);
-            FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class, null);
+            FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class);
             MungeProcessFolder.setName("Munge Processes");
             folderList.add(MungeProcessFolder);
             
-            FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class, null);
+            FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class);
             TableMergeRuleFolder.setName("Table Rule");
             folderList.add(TableMergeRuleFolder);
         }
@@ -422,16 +422,25 @@ public class MatchMakerTreeModel implements TreeModel {
 
 		@Override
 		public void childAdded(SPChildEvent e) {
-			MatchMakerObject source = (MatchMakerObject)e.getSource();
-			TreePath path = getPathForNode(source);
-            MatchMakerObject child = (MatchMakerObject) e.getChild();
-            int index = e.getIndex();
-			TreeModelEvent evt = new TreeModelEvent(source, path,
-					new int[]{index}, new MatchMakerObject[]{child});
+			SPObject parent = (SPObject)e.getSource();
+			MatchMakerObject child = (MatchMakerObject) e.getChild();
+            if (parent instanceof Project) {
+                for (FolderNode folder : foldersInTables.get(parent)) {
+                    if (folder.getContainingChildType().isAssignableFrom(child.getClass())) {
+                        parent = folder;
+                        break;
+                    }
+                }
+            }
+			TreeModelEvent evt = new TreeModelEvent(MatchMakerTreeModel.this, getPathForNode(parent), 
+					new int[]{e.getIndex()}, new MatchMakerObject[]{child});
+			
+			fireTreeNodesInserted(evt);
+			
 			if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children inserted event!");
                 StringBuilder sb = new StringBuilder();
-                MatchMakerObject mmo = source;
+                SPObject mmo = parent;
                 while (mmo != null) {
                     sb.insert(0, "->" + mmo.getName());
                     mmo = mmo.getParent();
@@ -446,7 +455,6 @@ public class MatchMakerTreeModel implements TreeModel {
                 logger.debug("     inserted child indices: "+sb);
                 logger.debug("Traceback:", new Exception());
 			}
-			fireTreeNodesInserted(evt);
 			
 			if (e.getChild() instanceof Project && foldersInTables.get(e.getChild()) == null) {
 				Project project = (Project) e.getChild();
@@ -522,11 +530,11 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 	}
 
-	public TreePath getPathForNode(MatchMakerObject source) {
-		List<MatchMakerObject> path = new LinkedList<MatchMakerObject>();
+	public TreePath getPathForNode(SPObject source) {
+		List<SPObject> path = new LinkedList<SPObject>();
 		while (source != null) {
 			path.add(0, source);
-			source = (MatchMakerObject)source.getParent();
+			source = (SPObject)source.getParent();
 		}
 		return new TreePath(path.toArray());
 	}
