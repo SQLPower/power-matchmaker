@@ -934,6 +934,25 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
 				add(ioc);
 				modelMap.get(parent).setConnectOutput(parNum, true);
+			} else if (evt.getPropertyName().equals("current") && evt.getSource() instanceof AbstractMungeStep.Input && evt.getNewValue() == null) {
+				logger.debug("connection caught");
+				//connected and input
+				MungeStepOutput mso = (MungeStepOutput)evt.getOldValue();
+				MungeStep child = (MungeStep)((AbstractMungeStep.Input)evt.getSource()).getParent();
+				
+				MungeStep parent = mso.getParent();
+				int parNum = parent.getMungeStepOutputs().indexOf(mso);
+				int childNum = child.getMungeStepInputs().indexOf((AbstractMungeStep.Input)evt.getSource());	
+				
+				//This stupid loop is needed because remove uses direct comparison
+				for (IOConnector con : getConnections()) {
+					if (con.getParentCom().equals(modelMap.get(parent)) 
+							&& con.getChildCom().equals(modelMap.get(child))
+							&& con.getParentNumber() == parNum && con.getChildNumber() == childNum) {
+						remove(con);
+						con.getParentCom().setConnectOutput(con.getParentNumber(), false);
+					}
+				}
 			}
 			SwingUtilities.invokeLater(new Runnable(){
 					public void run() {
