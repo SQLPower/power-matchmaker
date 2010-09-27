@@ -627,7 +627,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return Point where the IOC is
 	 */
 	public Point getOutputPosition(int outputNum) {
-		int outputs = step.getChildren().size();
+		int outputs = step.getChildren(MungeStepOutput.class).size();
 		int xPos = (int) (((double)(outputNum+1)/((double)outputs+1))*getWidth());
 		Point orig =  new Point(xPos,getHeight() - getBorder().getBorderInsets(this).bottom);
 		
