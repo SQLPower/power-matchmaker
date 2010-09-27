@@ -352,7 +352,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			}
 			
 			//disconnect outputs
-			for (SPObject spo : ms.getChildren()) {
+			for (SPObject spo : ms.getMungeStepOutputs()) {
 				MungeStepOutput mso = (MungeStepOutput) spo;
 				for (SPObject spo2 : getChildren()) {
 					MungeStep child = (MungeStep) spo2;
