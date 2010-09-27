@@ -763,7 +763,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return the list
 	 */
 	public List<MungeStepOutput> getOutputs() {
-		return step.getChildren(MungeStepOutput.class);
+		return step.getMungeStepOutputs();
 	}
 	
 	/**

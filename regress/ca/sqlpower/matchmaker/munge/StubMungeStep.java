@@ -379,4 +379,18 @@ public class StubMungeStep implements MungeStep {
 	@Override
 	public void mungeCommit() throws Exception {
 	}
+	
+	/**
+     * Returns the mungeStepOutput children;
+     */
+    public List<MungeStepOutput> getMungeStepOutputs() {
+    	return null;
+    }
+
+    /**
+     * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input)
+     */
+    public List<AbstractMungeStep.Input> getMungeStepInputs() {
+    	return null;
+    }
 }
