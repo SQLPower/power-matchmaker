@@ -801,19 +801,22 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
     		
 			int x = e.getIndex();
 			
-			((MungeProcess)e.getSource()).getMungeSteps().get(x).addSPListener(mungeStepListener);
+			MungeStep newMungeStep = ((MungeProcess)e.getSource()).getMungeSteps().get(x);
+			
+			newMungeStep.addSPListener(mungeStepListener);
+			for(AbstractMungeStep.Input in : newMungeStep.getMungeStepInputs()) {
+				in.addSPListener(mungeStepListener);
+			}
 			SwingSessionContext ssc = (SwingSessionContext) process.getSession().getContext();
-			AbstractMungeComponent mcom = (ssc.getMungeComponent(((MungeProcess)e.getSource()).getMungeSteps().get(x),
-					handler, process.getSession()));
-			modelMap.put(((MungeProcess)e.getSource()).getMungeSteps().get(x), mcom);
+			AbstractMungeComponent mcom = (ssc.getMungeComponent(newMungeStep, handler, process.getSession()));
+			modelMap.put(newMungeStep, mcom);
 			add(mcom);
 			logger.debug("Generating positions from properites");
 			
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
 			int y = e.getIndex();
 			MungeStep ms = ((MungeProcess)e.getSource()).getMungeSteps().get(y);
-			for (int z = 0; z < ms.getMSOInputs().size(); z++) {
-				MungeStepOutput link = ms.getMSOInputs().get(z);
+			for (MungeStepOutput link : ms.getMSOInputs()) {
 				if (link != null) {
 					MungeStep parent = (MungeStep)link.getParent();
 					int parNum = parent.getMungeStepOutputs().indexOf(link);
