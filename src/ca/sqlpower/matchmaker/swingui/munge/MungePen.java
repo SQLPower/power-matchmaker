@@ -833,6 +833,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			MungeStep ms = (MungeStep)e.getChild();
 			AbstractMungeComponent mcom = modelMap.remove(ms);
 			ms.removeSPListener(mungeStepListener);
+			for(AbstractMungeStep.Input in : ms.getMungeStepInputs()) {
+				in.removeSPListener(mungeStepListener);
+			}
 			removeAllListeners(mcom);
 			remove(mcom);
 			repaint();

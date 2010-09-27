@@ -229,7 +229,7 @@ public class MatchMakerTreeModel implements TreeModel {
     
 	public Object getChild(Object parent, int index) {
 		if (parent instanceof FolderNode) {
-        	return ((FolderNode)parent).getChildren().get(index);
+			return ((FolderNode)parent).getChildren().get(index);
         } 
 		
         final MatchMakerObject mmoParent = (MatchMakerObject) parent;
@@ -536,6 +536,14 @@ public class MatchMakerTreeModel implements TreeModel {
 	public TreePath getPathForNode(SPObject source) {
 		List<SPObject> path = new LinkedList<SPObject>();
 		while (source != null) {
+		    if (path.size() > 0 && source instanceof Project) {
+		        for (FolderNode folder : foldersInTables.get(source)) {
+		            if (folder.getContainingChildType().isAssignableFrom(path.get(0).getClass())) {
+		                path.add(0, folder);
+		                break;
+		            }
+		        }
+		    }
 			path.add(0, source);
 			source = (SPObject)source.getParent();
 		}
