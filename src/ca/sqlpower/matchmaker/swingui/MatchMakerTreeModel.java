@@ -402,12 +402,15 @@ public class MatchMakerTreeModel implements TreeModel {
         if (foldersInTables.get(p) == null) {
             List<FolderNode> folderList = new ArrayList<FolderNode>();
             foldersInTables.put(p, folderList);
-            FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class);
-            MungeProcessFolder.setName("Munge Processes");
-            folderList.add(MungeProcessFolder);
+            if(p.getType() == ProjectMode.FIND_DUPES)      
+            {
+            	FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class);
+                MungeProcessFolder.setName("Munge Processes");
+                folderList.add(MungeProcessFolder);
+            }
             
             FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class);
-            TableMergeRuleFolder.setName("Table Rule");
+            TableMergeRuleFolder.setName("Table Merge Rules");
             folderList.add(TableMergeRuleFolder);
         }
     }
