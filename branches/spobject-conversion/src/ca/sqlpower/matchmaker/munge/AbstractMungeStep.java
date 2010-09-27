@@ -465,6 +465,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			this.current = current;
 			this.descriptor = descriptor;
 			this.parentStep = step;
+			setParent(step);
 		}
 
 		/**

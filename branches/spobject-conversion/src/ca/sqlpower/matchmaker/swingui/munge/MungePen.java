@@ -407,6 +407,10 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		for (MungeStep ms : process.getChildren(MungeStep.class)) {
 			ms.addSPListener(mungeStepListener);
 			
+			for(AbstractMungeStep.Input in : ms.getMungeStepInputs()) {
+				in.addSPListener(mungeStepListener);
+			}
+			
 			SwingSessionContext ssc = ((SwingSessionContext) process.getSession().getContext());
 			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, process.getSession());
 			modelMap.put(ms, mcom);
@@ -797,17 +801,17 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
     		
 			int x = e.getIndex();
 			
-			e.getSource().getChildren(MungeStep.class).get(x).addSPListener(mungeStepListener);
+			((MungeProcess)e.getSource()).getMungeSteps().get(x).addSPListener(mungeStepListener);
 			SwingSessionContext ssc = (SwingSessionContext) process.getSession().getContext();
 			AbstractMungeComponent mcom = (ssc.getMungeComponent(e.getSource().getChildren(MungeStep.class).get(x),
 					handler, process.getSession()));
-			modelMap.put(e.getSource().getChildren(MungeStep.class).get(x), mcom);
+			modelMap.put(((MungeProcess)e.getSource()).getMungeSteps().get(x), mcom);
 			add(mcom);
 			logger.debug("Generating positions from properites");
 			
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
 			int y = e.getIndex();
-			MungeStep ms = e.getSource().getChildren(MungeStep.class).get(y);
+			MungeStep ms = ((MungeProcess)e.getSource()).getMungeSteps().get(y);
 			for (int z = 0; z < ms.getMSOInputs().size(); z++) {
 				MungeStepOutput link = ms.getMSOInputs().get(z);
 				if (link != null) {
@@ -861,29 +865,10 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
     private class MungePenMungeStepListener implements SPListener {
 
 		@Override
-		public void childAdded(SPChildEvent e) {
-			if (e.getChild() instanceof AbstractMungeStep.Input &&
-				e.getSource() instanceof MungeStepOutput) {
-				logger.debug("connection caught");
-				//connected and input
-				MungeStepOutput mso = ((AbstractMungeStep.Input)e.getSource()).getCurrent();
-				
-				
-				MungeStep child = (MungeStep)((AbstractMungeStep.Input)e.getSource()).getParent();
-				MungeStep parent = (MungeStep)mso.getParent();
-				int parNum = parent.getChildren(MungeStepOutput.class).indexOf(mso);
-				int childNum = e.getIndex();
-				
-				
-				IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
-				add(ioc);
-				modelMap.get(parent).setConnectOutput(parNum, true);
+		public void childAdded(SPChildEvent e) { 
+			if(e.getSource() instanceof MungeStep && e.getChild() instanceof AbstractMungeStep.Input) {
+				((MungeStep)e.getSource()).getMungeStepInputs().get(e.getIndex()).addSPListener(mungeStepListener);
 			}
-			SwingUtilities.invokeLater(new Runnable(){
-					public void run() {
-						repaint();
-					}
-				});
 		}
 
 		@Override
@@ -932,7 +917,26 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		@Override
 		public void propertyChanged(PropertyChangeEvent evt) {
-			//no-op
+			if (evt.getPropertyName().equals("current") && evt.getSource() instanceof AbstractMungeStep.Input) {
+				logger.debug("connection caught");
+				//connected and input
+				MungeStepOutput mso = ((AbstractMungeStep.Input)evt.getSource()).getCurrent();
+				MungeStep child = (MungeStep)((AbstractMungeStep.Input)evt.getSource()).getParent();
+				
+				MungeStep parent = mso.getParent();
+				int parNum = parent.getMungeStepOutputs().indexOf(mso);
+				int childNum = child.getMungeStepInputs().indexOf((AbstractMungeStep.Input)evt.getSource());
+				
+				
+				IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
+				add(ioc);
+				modelMap.get(parent).setConnectOutput(parNum, true);
+			}
+			SwingUtilities.invokeLater(new Runnable(){
+					public void run() {
+						repaint();
+					}
+				});
 		}
     }
 
