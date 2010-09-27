@@ -40,6 +40,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionType;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.swingui.ColoredIcon;
+import ca.sqlpower.swingui.FolderNode;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -115,7 +116,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 				setIcon(infoIcon);
 			}
 		} else if (value instanceof PlFolder ||	value instanceof TranslateGroupParent || 
-				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup){
+				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup ||
+				value instanceof FolderNode){
 			setIcon(folderIcon);
 		} else if (value instanceof MatchMakerTranslateWord) {
 			setIcon(translateWordIcon);
