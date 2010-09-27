@@ -1195,7 +1195,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		if (checkInputs) {
 			count = getStep().getMSOInputs().size();
 		} else {
-			count = getStep().getChildren().size();
+			count = getStep().getMungeStepOutputs().size();
 		}
 		
 		//squared because it should be faster then using the sqrt method later
