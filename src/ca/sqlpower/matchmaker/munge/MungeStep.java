@@ -25,8 +25,8 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.validation.ValidateResult;
 
 /**
@@ -176,6 +176,16 @@ public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
 	 * @return A non-modifiable list of the current inputs to this step.
 	 */
 	List<MungeStepOutput> getMSOInputs();
+	
+	/**
+     * Returns the mungeStepOutput children;
+     */
+    List<MungeStepOutput> getMungeStepOutputs();
+
+    /**
+     * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input)
+     */
+    List<AbstractMungeStep.Input> getMungeStepInputs();
 	
 	/**
 	 * Causes this munge step to evaluate its current input values and produce
