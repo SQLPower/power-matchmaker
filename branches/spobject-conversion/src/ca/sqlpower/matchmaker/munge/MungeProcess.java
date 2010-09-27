@@ -289,7 +289,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			addChild(spo, inputSteps.size());
 		} else if(spo instanceof MungeResultStep) {
 			addChild(spo, 0);
-		} else if(spo instanceof AddressCorrectionMungeStep){
+		} else {
 			addChild(spo, mungeSteps.size());
 		}
 	}
