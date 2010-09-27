@@ -201,9 +201,16 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	
 	private String updateStatement;
 	
-	private final ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
+	private final ColumnMergeRulesCachableColumn cachedColumn;
 	
-	private final ColumnMergeRulesImportedCachableColumn importedCachedColumn = new ColumnMergeRulesImportedCachableColumn();
+	private final ColumnMergeRulesImportedCachableColumn importedCachedColumn;
+	
+	public ColumnMergeRules() {
+		cachedColumn = new ColumnMergeRulesCachableColumn();
+		cachedColumn.setParent(this);
+		importedCachedColumn = new ColumnMergeRulesImportedCachableColumn();
+		importedCachedColumn.setParent(this);
+	}
 	
 	@Override
 	public int hashCode() {
