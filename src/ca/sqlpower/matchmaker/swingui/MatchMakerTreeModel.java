@@ -405,12 +405,12 @@ public class MatchMakerTreeModel implements TreeModel {
             if(p.getType() == ProjectMode.FIND_DUPES)      
             {
             	FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class);
-                MungeProcessFolder.setName("Munge Processes");
+                MungeProcessFolder.setName("Transformations");
                 folderList.add(MungeProcessFolder);
             }
             
             FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class);
-            TableMergeRuleFolder.setName("Table Merge Rules");
+            TableMergeRuleFolder.setName("Merge Rules");
             folderList.add(TableMergeRuleFolder);
         }
     }
