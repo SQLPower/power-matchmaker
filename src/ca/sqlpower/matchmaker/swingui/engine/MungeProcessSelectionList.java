@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui.engine;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -112,7 +113,14 @@ public abstract class MungeProcessSelectionList extends JButton {
 	 * Builds and returns the popup menu for choosing the munge processes. 
 	 */
 	private void buildPopupMenu() {
-		mps = project.getMungeProcesses();
+		if (mps == null) {
+			mps = new ArrayList<MungeProcess>();
+		} else {
+			mps.clear();
+		}
+		for(MungeProcess mp : project.getMungeProcesses()) {
+			mps.add(mp);
+		}
 		popupMenu = new JPopupMenu("Choose Processes");
 		
 		popupMenu.addPopupMenuListener(new PopupMenuListener(){
@@ -199,7 +207,10 @@ public abstract class MungeProcessSelectionList extends JButton {
 	 * Refreshes the list so it will contain newly created Munge Processes.
 	 */
 	private void refreshList() {
-		mps = project.getMungeProcesses();
+		mps.clear();
+		for(MungeProcess mp : project.getMungeProcesses()) {
+			mps.add(mp);
+		}
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList.setListData(mps.toArray());
 		processesList.setSelectedIndices(getSelectedIndices());
