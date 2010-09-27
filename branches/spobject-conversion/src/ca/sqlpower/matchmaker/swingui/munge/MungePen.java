@@ -803,7 +803,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			
 			((MungeProcess)e.getSource()).getMungeSteps().get(x).addSPListener(mungeStepListener);
 			SwingSessionContext ssc = (SwingSessionContext) process.getSession().getContext();
-			AbstractMungeComponent mcom = (ssc.getMungeComponent(e.getSource().getChildren(MungeStep.class).get(x),
+			AbstractMungeComponent mcom = (ssc.getMungeComponent(((MungeProcess)e.getSource()).getMungeSteps().get(x),
 					handler, process.getSession()));
 			modelMap.put(((MungeProcess)e.getSource()).getMungeSteps().get(x), mcom);
 			add(mcom);
@@ -816,7 +816,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				MungeStepOutput link = ms.getMSOInputs().get(z);
 				if (link != null) {
 					MungeStep parent = (MungeStep)link.getParent();
-					int parNum = parent.getChildren().indexOf(link);
+					int parNum = parent.getMungeStepOutputs().indexOf(link);
 					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
 					add(ioc);
 					logger.debug("parent: " + modelMap.get(parent) + "num: " + parNum);
@@ -917,7 +917,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		@Override
 		public void propertyChanged(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals("current") && evt.getSource() instanceof AbstractMungeStep.Input) {
+			if (evt.getPropertyName().equals("current") && evt.getSource() instanceof AbstractMungeStep.Input && evt.getOldValue() == null) {
 				logger.debug("connection caught");
 				//connected and input
 				MungeStepOutput mso = ((AbstractMungeStep.Input)evt.getSource()).getCurrent();
