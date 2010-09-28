@@ -435,7 +435,7 @@ public class MatchMakerTreeModel implements TreeModel {
                     }
                 }
             }
-			TreeModelEvent evt = new TreeModelEvent(MatchMakerTreeModel.this, getPathForNode(parent), 
+			TreeModelEvent evt = new TreeModelEvent(parent, getPathForNode(parent), 
 					new int[]{e.getIndex()}, new MatchMakerObject[]{child});
 			
 			fireTreeNodesInserted(evt);

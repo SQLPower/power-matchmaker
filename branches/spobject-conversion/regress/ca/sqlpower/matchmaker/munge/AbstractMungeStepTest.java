@@ -43,7 +43,7 @@ public class AbstractMungeStepTest extends TestCase {
 		MatchMakerEventCounter mml = new MatchMakerEventCounter();
 		mungeStep.addSPListener(mml);
 		mungeStep.addInput(desc);
-		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
+		assertEquals("Did not get any events",1,mml.getChildAddedCount());
 		mungeStep.removeSPListener(mml);
 		mungeStep.addInput(desc);
 		assertEquals("Got extra events",1,mml.getAllEventCounts());
@@ -59,7 +59,7 @@ public class AbstractMungeStepTest extends TestCase {
 		MatchMakerEventCounter mml = new MatchMakerEventCounter();
 		mungeStep.addSPListener(mml);
 		mungeStep.removeInput(0);
-		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
+		assertEquals("Did not get any events",1,mml.getChildRemovedCount());
 	}
 
 	/**
@@ -79,12 +79,13 @@ public class AbstractMungeStepTest extends TestCase {
 		mungeStep.addSPListener(mml);
 		InputDescriptor desc = new InputDescriptor("test", String.class);
 		mungeStep.addInput(desc);
-		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
+		mungeStep.getMungeStepInputs().get(0).addSPListener(mml);
+		assertEquals("Did not get event for adding input",1,mml.getChildAddedCount());
 		MungeStepOutput o = new MungeStepOutput<String>("test", String.class);
 		int oldInputCount = mungeStep.getMSOInputs().size();
 		mungeStep.connectInput(0, o);
 		assertEquals(oldInputCount + 1, mungeStep.getMSOInputs().size());
-		assertEquals("Did not get event for connecting input",3,mml.getPropertyChangedCount());
+		assertEquals("Did not get event for connecting input",1,mml.getPropertyChangedCount());
 		assertTrue("Munge step output did not get connected", mungeStep.getMSOInputs().contains(o));
 	}
 	
@@ -93,12 +94,13 @@ public class AbstractMungeStepTest extends TestCase {
 		mungeStep.addSPListener(mml);
 		InputDescriptor desc = new InputDescriptor("test", String.class);
 		mungeStep.addInput(desc);
-		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
+		mungeStep.getMungeStepInputs().get(0).addSPListener(mml);
+		assertEquals("Did not get event for adding input",1,mml.getChildAddedCount());
 		MungeStepOutput o = new MungeStepOutput<String>("test", String.class);
 		mungeStep.connectInput(0, o);
-		assertEquals("Did not get event for connecting input",3,mml.getPropertyChangedCount());
+		assertEquals("Did not get event for connecting input",1,mml.getPropertyChangedCount());
 		mungeStep.disconnectInput(0);
-		assertEquals("Did not get any event for disconnecting input",4,mml.getPropertyChangedCount());
+		assertEquals("Did not get any event for disconnecting input",2,mml.getPropertyChangedCount());
 		assertFalse("Munge step output did not get disconnected", mungeStep.getMSOInputs().contains(o));
 	}
     
@@ -128,7 +130,7 @@ public class AbstractMungeStepTest extends TestCase {
     
     public void testCommitBeforeOpen() throws Exception {
         try {
-            mungeStep.commit();
+            mungeStep.mungeCommit();
             fail("Commit should fail when step not open");
         } catch (IllegalStateException ex) {
             // expected
@@ -137,13 +139,13 @@ public class AbstractMungeStepTest extends TestCase {
 
     public void testCommit() throws Exception {
         mungeStep.open(Logger.getLogger(getClass()));
-        mungeStep.commit();
+        mungeStep.mungeCommit();
         assertTrue(mungeStep.isCommitted());
     }
     
     public void testReopenAfterCommit() throws Exception {
         mungeStep.open(Logger.getLogger(getClass()));
-        mungeStep.commit();
+        mungeStep.mungeCommit();
         mungeStep.mungeClose();
         assertTrue(mungeStep.isCommitted());
         assertFalse(mungeStep.isRolledBack());
@@ -197,7 +199,7 @@ public class AbstractMungeStepTest extends TestCase {
     public void testCallAfterCommit() throws Exception {
         mungeStep.open(Logger.getLogger(getClass()));
         mungeStep.call();
-        mungeStep.commit();
+        mungeStep.mungeCommit();
         try {
             mungeStep.call();
             fail("call after commit should be illegal");

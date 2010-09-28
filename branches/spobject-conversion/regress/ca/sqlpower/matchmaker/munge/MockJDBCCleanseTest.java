@@ -42,8 +42,8 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	
 	public void testDoNothing() throws Exception {
         
-        assertSame(project, step.getParent().getParent().getParent());
-        assertSame(ProjectMode.CLEANSE, ((Project) (step.getParent().getParent().getParent())).getType());
+        assertSame(project, step.getParent().getParent());
+        assertSame(ProjectMode.CLEANSE, ((Project) (step.getParent().getParent())).getType());
 
 	    MungeProcessor mp = new MungeProcessor(process, logger);
 	    try {
