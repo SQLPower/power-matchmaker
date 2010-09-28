@@ -31,6 +31,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.swingui.FolderNode;
 
 public class MatchMakerTreeModelTest extends TestCase {
 
@@ -58,17 +59,15 @@ public class MatchMakerTreeModelTest extends TestCase {
 
 		treeModel.addTreeModelListener(counter);
 		folder.addChild(mmo);
-		assertEquals("insert event count should be 1",
-				1, counter.getChildrenInsertedCount());
-		assertEquals("total event count should be 1",
-				1, counter.getAllEventCounts());
-		assertEquals("Last event source should be folder",
-				folder,counter.getLastEvt().getSource());
+		assertEquals("insert event count should be 2 because we are adding the project and FolderNodes",
+				2, counter.getChildrenInsertedCount());
+		assertEquals("total event count should be 2", 2, counter.getAllEventCounts());
+		assertEquals("Last event source should be folder",  mmo, counter.getLastEvt().getSource());
 		TreeModelEvent evt = counter.getLastEvt();
-		assertEquals(1, evt.getChildIndices().length);
-		assertEquals(1, evt.getChildren().length);
+		assertEquals(2, evt.getChildIndices().length);
+		assertEquals(2, evt.getChildren().length);
 		assertEquals(folder.getChildren().indexOf(mmo), evt.getChildIndices()[0]);
-		assertSame(mmo, ((PlFolder)evt.getChildren()[0]).getChildren(Project.class).get(0));
+		assertSame(mmo, ((FolderNode)evt.getChildren()[0]).getParent());
 	}
 
 	/**
@@ -87,8 +86,8 @@ public class MatchMakerTreeModelTest extends TestCase {
 				1, counter.getChildrenInsertedCount());
 		assertEquals("total event count should be 1",
 				1, counter.getAllEventCounts());
-		assertEquals("Last event source should be folder",
-				mmo,counter.getLastEvt().getSource());
+		assertEquals("Parent of last event source should be project",
+				mmo,((FolderNode)counter.getLastEvt().getSource()).getParent());
 	}
 
 	/**

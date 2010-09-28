@@ -122,7 +122,7 @@ public class SQLInputStepTest extends TestCase {
         assertTrue(step.call());
         assertTrue(step.call());
         assertFalse(step.call());
-        step.commit();
+        step.mungeCommit();
         step.mungeClose();
     }
     
@@ -131,7 +131,7 @@ public class SQLInputStepTest extends TestCase {
         assertNull(step.getMungeStepOutputs().get(0).getData());
         assertNull(step.getMungeStepOutputs().get(1).getData());
         assertNull(step.getMungeStepOutputs().get(2).getData());
-        step.commit();
+        step.mungeCommit();
         step.mungeClose();
     }
 
@@ -141,7 +141,7 @@ public class SQLInputStepTest extends TestCase {
         assertNull(step.getMungeStepOutputs().get(0).getData());
         assertNull(step.getMungeStepOutputs().get(1).getData());
         assertNull(step.getMungeStepOutputs().get(2).getData());
-        step.commit();
+        step.mungeCommit();
         step.mungeClose();
     }
 
@@ -162,7 +162,7 @@ public class SQLInputStepTest extends TestCase {
         assertEquals(new BigDecimal("32"), step.getMungeStepOutputs().get(1).getData());
         assertEquals(new Date(5678),       step.getMungeStepOutputs().get(2).getData());
         
-        step.commit();
+        step.mungeCommit();
         step.mungeClose();
     }
 }

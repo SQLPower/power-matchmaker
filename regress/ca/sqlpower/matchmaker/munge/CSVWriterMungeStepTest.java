@@ -58,7 +58,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
+		step.mungeCommit();
 		step.mungeClose();
 		
 		File f = new File(fileName);
@@ -78,7 +78,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
+		step.mungeCommit();
 		step.mungeClose();
 		
 		File f = new File(fileName);
@@ -99,7 +99,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
+		step.mungeCommit();
 		step.mungeClose();
 		
 		File f = new File(fileName);
@@ -112,7 +112,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		step.commit();
+		step.mungeCommit();
 		step.mungeClose();
 		
 		f = new File(fileName);
@@ -153,7 +153,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
+		step.mungeCommit();
 		step.mungeClose();
 		
 		File f = new File(fileName);
