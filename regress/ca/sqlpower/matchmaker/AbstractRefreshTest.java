@@ -118,9 +118,9 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
         inputStep.refresh(logger);
         
         assertEquals(3, inputStep.getChildren(MungeStepOutput.class).size());
-        assertEquals("CUSTOMER_ID", inputStep.getChildren(MungeStepOutput.class).get(0).getName());
-        assertEquals("NAME", inputStep.getChildren(MungeStepOutput.class).get(1).getName());
-        assertEquals("DOB", inputStep.getChildren(MungeStepOutput.class).get(2).getName());
+        assertEquals("CUSTOMER_ID", inputStep.getMungeStepOutputs().get(0).getName());
+        assertEquals("NAME", inputStep.getMungeStepOutputs().get(1).getName());
+        assertEquals("DOB", inputStep.getMungeStepOutputs().get(2).getName());
         
     }
     
