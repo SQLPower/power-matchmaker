@@ -33,6 +33,10 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.
@@ -124,23 +128,28 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	/**
      * Constructor that sets up a default Munge process.
 	 */
+	@Constructor
 	public MungeProcess() {
 	}
 
-    public Long getOid() {
+	@NonProperty
+	public Long getOid() {
         return oid;
     }
 
+	@NonProperty
     public void setOid(Long oid) {
         this.oid = oid;
     }
     
     @Override
-    public Project getParent() {
+    @Accessor
+	public Project getParent() {
     	return (Project) super.getParent();
     }
     
     @Override
+    @Mutator
     public void setParent(SPObject parent) {
     	if (!(parent instanceof Project)) {
     		throw new IllegalArgumentException("The parent " + parent + 
@@ -149,40 +158,48 @@ public class MungeProcess extends AbstractMatchMakerObject {
     	super.setParent(parent);
     }
     
+    @Accessor
 	public String getDesc() {
 		return desc;
 	}
 
+    @Mutator
 	public void setDesc(String desc) {
 		String oldDesc = this.desc;
 		this.desc = desc;
 		firePropertyChange("desc", oldDesc, desc);
 	}
 
+	@Accessor
 	public Integer getMatchPriority() {
 		return matchPriority;
 	}
 
+	@Mutator
 	public void setMatchPriority(Integer matchPriority) {
         Integer oldValue = this.matchPriority;
 		this.matchPriority = matchPriority;
 		firePropertyChange("matchPriority", oldValue, matchPriority);
 	}
 
+	@Accessor
 	public boolean getActive() {
 		return active;
 	}
 
+	@Mutator
 	public void setActive(boolean active) {
 		boolean oldValue = this.active;
 		this.active = active;
 		firePropertyChange("active", oldValue, active);
 	}
 
+	@Accessor
 	public String getFilter() {
 		return filter;
 	}
 
+	@Mutator
 	public void setFilter(String filter) {
 		String oldValue = this.filter;
 		this.filter = filter;
@@ -192,6 +209,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	/**
 	 * Indicates whether this munge process will be displayed on the Match Validation screen
 	 */
+	@Accessor
 	public boolean isValidate() {
 		return validate;
 	}
@@ -199,17 +217,20 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	/**
 	 * Sets whether this munge process will be displayed on the Match Validation screen
 	 */
+	@Mutator
 	public void setValidate(boolean validate) {
 		boolean oldValue = this.validate;
 		this.validate = validate;
 		firePropertyChange("validate", oldValue, validate);
 	}
 
-    public Color getColour() {
+	@Accessor
+	public Color getColour() {
         return colour;
     }
     
-    public void setColour(Color mungeProcessColor) {
+	@Mutator
+	public void setColour(Color mungeProcessColor) {
         Color oldValue = this.colour;
         this.colour = mungeProcessColor;
         firePropertyChange("colour", oldValue, mungeProcessColor);
@@ -269,6 +290,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 * a munge processor.
 	 * @throws NullPointerException if the output step has not been set.
 	 */
+	@NonProperty
 	public List<MungeResult> getResults() {
 		if (resultStep == null) {
 			throw new NullPointerException("The output step for this process has not been set!");
@@ -322,6 +344,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 * compatibility with old Hibernate code. This should be fixed sometime soon
 	 * in the future.
 	 */
+	@NonProperty
 	public void setResultStep(MungeResultStep step) {
 		if (resultStep == null) {
 			resultStep = step;
@@ -394,11 +417,13 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 * Gets the result munge step in the process, i.e. the munge step everything
 	 * goes to and has no outputs.
 	 */
+	@NonProperty
 	public MungeResultStep getResultStep() {
 		return resultStep;
 	}
 
 	@Override
+	@NonProperty
 	public List<SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(inputSteps);
@@ -413,6 +438,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 * Gets the input munge steps in the process, i.e. those with only
 	 * inputs.
 	 */
+	@NonProperty
 	public List<SQLInputStep> getInputSteps() {
 		return Collections.unmodifiableList(inputSteps);
 	}
@@ -421,11 +447,13 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 * Gets the intermediate munge steps in the process, i.e. those with both
 	 * inputs and outputs.
 	 */
+	@NonProperty
 	public List<MungeStep> getMungeSteps() {
 		return Collections.unmodifiableList(mungeSteps);
 	}
 	
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}

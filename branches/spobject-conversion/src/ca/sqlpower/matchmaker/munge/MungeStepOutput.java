@@ -30,6 +30,11 @@ import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 
 /**
  * MungeStepOutput instances represent an output connection point of a MungeStep
@@ -45,7 +50,8 @@ import ca.sqlpower.object.SPObject;
 public class MungeStepOutput<T> extends AbstractMatchMakerObject 
 								implements Comparable<MungeStepOutput<T>> {
 	
-	
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
 
 	private static final Logger logger = Logger.getLogger(MungeStepOutput.class);
 	
@@ -62,7 +68,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	 * This is a bound property. This object will fire a MatchMakerObject property
 	 * change event when this property is updated.
 	 */
-	private Class<T> type;
+	private final Class<T> type;
 	
 	/**
 	 * The current data value of this step.  This will change with every call to the
@@ -71,16 +77,12 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	private T data;
 	
 	/**
-	 * Default Constructor used by hibernate
-	 */
-	public MungeStepOutput() {
-	}
-	
-	/**
 	 * Creates a new MungeStepOutput with the given initial name (can be changed
 	 * later) and type (permanently fixed at the given value).
 	 */
-	public MungeStepOutput(String name, Class<T> type) {
+	@Constructor
+	public MungeStepOutput(@ConstructorParameter(propertyName="Name") String name,
+						@ConstructorParameter(propertyName="type") Class<T> type) {
 		setName(name);
 		this.type = type;
 	}
@@ -88,6 +90,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	/**
 	 * Returns the data type that this output holds.
 	 */
+	@Accessor
 	public Class<T> getType() {
 		return type;
 	}
@@ -95,6 +98,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	/**
 	 * Returns the current data in this output.
 	 */
+	@Accessor
 	public T getData() {
 		return data;
 	}
@@ -103,8 +107,11 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	 * Sets the 
 	 * @param data
 	 */
+	@Mutator
 	public void setData(T data) {
+		T oldData = data;
 		this.data = data;
+		firePropertyChange("data", oldData, data);
 	}
 
 	/**
@@ -186,16 +193,14 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 		return "<" + getName() + ": " + getData() + ">";
 	}
 
-	public void setType(Class<T> type) {
-		this.type = type;
-	}
-
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return Collections.emptyList();
+		return allowedChildTypes;
 	}
 
 	@Override
+	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
 	}
