@@ -38,8 +38,7 @@ public class ProjectActionNode extends AbstractMatchMakerObject {
 	/**
      * List of allowable child types
      */
-    @SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+    public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.emptyList();
 	
     private final ProjectActionType projectActionType;
