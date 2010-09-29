@@ -46,10 +46,10 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
@@ -357,7 +357,7 @@ public class ProjectDAOXML implements ProjectDAO {
                 printAttribute("ref", steps.get(step));
                 niprintln(">");
                 indent++;
-                for (Input msi : ((AbstractMungeStep) step).getInputs()) {
+                for (MungeStepInput msi : ((AbstractMungeStep) step).getMungeStepInputs()) {
                     print("<input");
                     printAttribute("name", msi.getName());
                     printAttribute("data-type", msi.getType());

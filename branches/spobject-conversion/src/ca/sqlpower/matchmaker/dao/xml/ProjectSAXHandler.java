@@ -39,21 +39,21 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -158,7 +158,7 @@ public class ProjectSAXHandler extends DefaultHandler {
      * Inputs of the current munge step we're processing. The step's normal input list will be
      * replaced by this one in endElement.
      */
-    private List<Input> stepInputs;
+    private List<MungeStepInput> stepInputs;
 
     private List<AbstractMungeStep> steps;
 
@@ -508,7 +508,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     throw new SAXException("Bad munge step reference \"" + stepId + "\" at " + locationAsString());
                 }
 
-                stepInputs = new ArrayList<Input>();
+                stepInputs = new ArrayList<MungeStepInput>();
 
             } else if (qName.equals("input") && parentIs("munge-step")) {
 
@@ -549,7 +549,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     }
                 }
                 InputDescriptor inDesc = new InputDescriptor(name, type);
-                Input in = new Input(null, inDesc, step);
+                MungeStepInput in = new MungeStepInput(null, inDesc, step);
                 if (connected) {
                     in.setCurrent(fromOutput);
                 }

@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.undo;
 import java.beans.PropertyChangeEvent;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.StringConstantMungeStep;
@@ -42,7 +41,7 @@ public class MMOPropertyChangeUndoableEditTest extends TestCase {
 		assertEquals("Wrong amount of inputs", 2, resultStep.getInputCount());
 		
 		PropertyChangeEvent inputChangeEvent = 
-			new PropertyChangeEvent(resultStep.getChildren(AbstractMungeStep.Input.class).get(0), "current", null, stringConstantStep.getChildren(MungeStepOutput.class).get(0));
+			new PropertyChangeEvent(resultStep.getMungeStepInputs().get(0), "current", null, stringConstantStep.getChildren(MungeStepOutput.class).get(0));
 		MMOPropertyChangeUndoableEdit edit = new MMOPropertyChangeUndoableEdit(inputChangeEvent);
 
 		assertNotNull("Your input should be connected", resultStep.getMSOInputs().get(0));
