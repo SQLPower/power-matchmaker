@@ -29,8 +29,7 @@ import java.util.Random;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.SPObject;
 
-public class TestingAbstractMatchMakerObject
-				extends AbstractMatchMakerObject{
+public class TestingAbstractMatchMakerObject extends AbstractMatchMakerObject{
 	
 	/**
 	 * Defines an absolute ordering of the child types of this class.

@@ -79,7 +79,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
         mungeProcess.addChild(stringStep);
         MungeStepOutput connectedOutput = stringStep.getMungeStepOutputs().get(0);
         resultStep.connectInput(1, connectedOutput);
-        assertSame(connectedOutput, resultStep.getInputs().get(1).getCurrent());
+        assertSame(connectedOutput, resultStep.getMungeStepInputs().get(1).getCurrent());
         
         sqlx("ALTER TABLE customer DROP COLUMN name");
         db.refresh();
@@ -116,7 +116,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
         mungeProcess.addChild(stringStep);
         MungeStepOutput connectedOutput = stringStep.getMungeStepOutputs().get(0);
         resultStep.connectInput(1, connectedOutput);
-        assertSame(connectedOutput, resultStep.getInputs().get(1).getCurrent());
+        assertSame(connectedOutput, resultStep.getMungeStepInputs().get(1).getCurrent());
 
         sqlx("ALTER TABLE customer ALTER COLUMN name DECIMAL(10)");
         db.refresh();
@@ -125,7 +125,7 @@ public class CleanseResultStepRefreshTest extends AbstractRefreshTest {
         assertEquals(3, resultStep.getInputCount());
         assertEquals("NAME", resultStep.getInputDescriptor(1).getName());
         assertEquals(BigDecimal.class, resultStep.getInputDescriptor(1).getType());
-        assertNull(resultStep.getInputs().get(1).getCurrent());
+        assertNull(resultStep.getMungeStepInputs().get(1).getCurrent());
     }
 
 

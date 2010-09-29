@@ -21,12 +21,8 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.testutil.NewValueMaker;
 
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 
@@ -141,14 +137,5 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return ColumnMergeRules.class;
-	}
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return getTarget();
-	}
-	
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

@@ -19,9 +19,11 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-public class StringConstantMungeStepTest extends AbstractMungeStepTest {
+public class StringConstantMungeStepTest extends TestCase {
 
     StringConstantMungeStep step;
     

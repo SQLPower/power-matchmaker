@@ -25,12 +25,7 @@ import java.util.List;
 
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.testutil.NewValueMaker;
 
 public class TranslateGroupParentTest extends MatchMakerTestCase {
 	
@@ -79,7 +74,7 @@ public class TranslateGroupParentTest extends MatchMakerTestCase {
     }
 
 	@Override
-	protected MatchMakerObject getTarget() throws SQLObjectException {
+	protected MatchMakerObject getTarget() {
 		return tgp;
 	}
 
@@ -87,14 +82,9 @@ public class TranslateGroupParentTest extends MatchMakerTestCase {
 	protected Class<? extends SPObject> getChildClassType() {
 		return MatchMakerTranslateGroup.class;
 	}
-
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return tgp;
-	}
 	
 	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
+	public void testDuplicate() throws Exception {
+		// TranslateGroupParent does not duplicate.
 	}
 }

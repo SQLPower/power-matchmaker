@@ -21,14 +21,18 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.log4j.Logger;
 
-public class BooleanConstantMungeStepTest extends AbstractMungeStepTest {
+public class BooleanConstantMungeStepTest extends AbstractMungeStepTest<BooleanConstantMungeStep> {
 
 	BooleanConstantMungeStep step;
-    
+
+	public BooleanConstantMungeStepTest(String name) {
+		super(name);
+	}
+	
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
         step = new BooleanConstantMungeStep();
+        super.setUp();
     }
     
     public void testNull() throws Exception {
@@ -53,5 +57,10 @@ public class BooleanConstantMungeStepTest extends AbstractMungeStepTest {
         MungeStepOutput<Boolean> out = step.getOut();
         assertFalse(out.getData().booleanValue());
     }
+
+	@Override
+	protected BooleanConstantMungeStep getTarget() {
+		return step;
+	}
    
 }
