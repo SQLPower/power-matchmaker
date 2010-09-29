@@ -19,14 +19,9 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
-import ca.sqlpower.object.PersistedSPObjectTest;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
-public class MMRootNodeTest extends PersistedSPObjectTest {
+public class MMRootNodeTest extends MatchMakerTestCase<MMRootNode> {
 	
 	MMRootNode rootNode;
 	final String appUserName = "test_user";
@@ -48,12 +43,12 @@ public class MMRootNodeTest extends PersistedSPObjectTest {
 	}
 
 	@Override
-	public SPObject getSPObjectUnderTest() {
+	protected MMRootNode getTarget() {
 		return rootNode;
 	}
-
+	
 	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
+	public void testDuplicate() throws Exception {
+		// this object does not duplicate
 	}
 }

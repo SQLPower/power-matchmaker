@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
@@ -46,7 +47,7 @@ import ca.sqlpower.sqlobject.SQLTable;
  * Hibernate mappings are the only part of the application that use this
  * functionality.
  */
-public class CachableTable extends AbstractMatchMakerObject{
+public class CachableTable extends AbstractMatchMakerObject {
 	
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.emptyList();
@@ -60,7 +61,7 @@ public class CachableTable extends AbstractMatchMakerObject{
     private String catalogName;
     private String schemaName;
     private String tableName;
-    private SQLTable cachedTable;
+    private SQLTable table;
     
     private String dsName = null;
 
@@ -69,11 +70,6 @@ public class CachableTable extends AbstractMatchMakerObject{
      * session of the given mmo, and fires property change events on its
      * behalf using the given property name.
      * 
-     * @param mmo The match maker object this cachable table acts on behalf
-     * of.  Unfortunately, we have to explicitly ask for an AbstractMatchMakerObject
-     * because this class needs to access its propertyChangeSupport object and
-     * its session reference (these things are not declared on the MatchMakerObject
-     * interface, and shouldn't be). 
      * @param propertyName the property name that all property change events fired
      * on behalf of mmo will report.
      */
@@ -85,8 +81,8 @@ public class CachableTable extends AbstractMatchMakerObject{
 
     @NonProperty
     public String getCatalogName() {
-        if (cachedTable != null) {
-            String catalogName = cachedTable.getCatalogName();
+        if (table != null) {
+            String catalogName = table.getCatalogName();
             if (catalogName == null || catalogName.length() == 0) {
                 return null;
             } else {
@@ -99,14 +95,14 @@ public class CachableTable extends AbstractMatchMakerObject{
 
     @Mutator
     public void setCatalogName(String sourceTableCatalog) {
-        cachedTable = null;
+        table = null;
         this.catalogName = sourceTableCatalog;
     }
 
     @NonProperty
     public String getTableName() {
-        if (cachedTable != null) {
-        	return cachedTable.getName();
+        if (table != null) {
+        	return table.getName();
         } else {
             return tableName;
         }
@@ -114,14 +110,14 @@ public class CachableTable extends AbstractMatchMakerObject{
 
     @NonProperty
     public void setTableName(String sourceTableName) {
-        cachedTable = null;
+        table = null;
         this.tableName = sourceTableName;
     }
 
     @NonProperty
     public String getSchemaName() {
-        if (cachedTable != null) {
-            String schemaName = cachedTable.getSchemaName();
+        if (table != null) {
+            String schemaName = table.getSchemaName();
             if (schemaName == null || schemaName.length() == 0) {
                 return null;
             } else {
@@ -134,7 +130,7 @@ public class CachableTable extends AbstractMatchMakerObject{
 
     @NonProperty
     public void setSchemaName(String sourceTableSchema) {
-        cachedTable = null;
+        table = null;
         this.schemaName = sourceTableSchema;
     }
     
@@ -147,7 +143,7 @@ public class CachableTable extends AbstractMatchMakerObject{
      */
     @NonProperty
     public void setSPDataSource(String spDataSourceName) {
-    	cachedTable = null;
+    	table = null;
     	this.dsName = spDataSourceName;
     }
     
@@ -158,9 +154,9 @@ public class CachableTable extends AbstractMatchMakerObject{
      */
     @NonProperty
     public String getSPDataSourceName() {
-    	if (cachedTable != null && cachedTable.getParentDatabase() != null && 
-    			cachedTable.getParentDatabase().getDataSource() != null) {
-    		return cachedTable.getParentDatabase().getDataSource().getName();
+    	if (table != null && table.getParentDatabase() != null && 
+    			table.getParentDatabase().getDataSource() != null) {
+    		return table.getParentDatabase().getDataSource().getName();
     	}
     	return dsName == null ? "" : dsName;
     }
@@ -170,8 +166,8 @@ public class CachableTable extends AbstractMatchMakerObject{
      */
     @NonProperty
     public JDBCDataSource getJDBCDataSource() {
-    	if (cachedTable != null) {
-    		return cachedTable.getParentDatabase().getDataSource();
+    	if (table != null) {
+    		return table.getParentDatabase().getDataSource();
     	}
 
     	// if no data source is specified, should default to repository data source
@@ -210,19 +206,19 @@ public class CachableTable extends AbstractMatchMakerObject{
      *         up in the session's SQLDatabase, or created in the session's
      *         SQLDatabase if the lookup failed.
      */
-    @NonProperty
-    public SQLTable getSourceTable() {
-    	logger.debug("GetSourceTable(): "+this);
+    @Accessor
+    public SQLTable getTable() {
+    	logger.debug("GetTable(): "+this);
     	
-        if (cachedTable != null) {
-        	return cachedTable;
+        if (table != null) {
+        	return table;
         }
         if (tableName == null) {
         	return null;
         }
 
         try {
-			logger.debug("getSourceTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
+			logger.debug("getTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
 			
 			SQLDatabase db = null;
 			if (getJDBCDataSource() == null) {
@@ -239,11 +235,11 @@ public class CachableTable extends AbstractMatchMakerObject{
 				} else {
 					logger.debug("     Found!");
 				}
-				cachedTable = table;
-				return cachedTable;
+				this.table = table;
+				return table;
 			} else {
 				getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
-						" in Project "+getName()+ " is not compatible with the "+db.getName() +" database. " +
+						" in Project "+getParent().getName()+ " is not compatible with the "+db.getName() +" database. " +
 				"The table selection has been reset to nothing");
 				return null;
 			}
@@ -256,17 +252,17 @@ public class CachableTable extends AbstractMatchMakerObject{
      * Sets the table to the given table, clears the simple string properties, and fires an event.
      * @param table
      */
-    @NonProperty
+    @Mutator
     public void setTable(SQLTable table) {
     	logger.debug("Set Table: " + table);
     	
-        final SQLTable oldValue = cachedTable;
+        final SQLTable oldValue = table;
         final SQLTable newValue = table;
 
         catalogName = null;
         schemaName = null;
         tableName = null;
-        cachedTable = table;
+        this.table = table;
         dsName = null;
 
         //TODO: Choose the right property name
@@ -286,7 +282,7 @@ public class CachableTable extends AbstractMatchMakerObject{
     			" catalogName=" + catalogName +
     			" schemaName="+schemaName+
     			" tableName="+tableName+
-    			" cachedTable="+(cachedTable == null ? "null" : cachedTable.getName()) +
+    			" table="+(table == null ? "null" : table.getName()) +
     			" propertyName="+propertyName;
     }
 
@@ -296,6 +292,8 @@ public class CachableTable extends AbstractMatchMakerObject{
 		CachableTable t = new CachableTable(getPropertyName());
 		t.setParent(parent);
 		t.setSession(session);
+		t.setName(getName());
+		t.setVisible(isVisible());
 		t.setSchemaName(getSchemaName());
 		t.setTableName(getTableName());
 		t.setSPDataSource(getSPDataSourceName());

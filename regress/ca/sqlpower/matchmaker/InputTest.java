@@ -20,15 +20,11 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
-import ca.sqlpower.object.PersistedSPObjectTest;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
-public class InputTest extends PersistedSPObjectTest {
+public class InputTest extends MatchMakerTestCase<AbstractMungeStep.Input> {
 
 	UpperCaseMungeStep upperCaseMungeStep;
 	AbstractMungeStep.Input input;
@@ -47,18 +43,18 @@ public class InputTest extends PersistedSPObjectTest {
 	}
 	
 	@Override
+	public void testDuplicate() throws Exception {
+		// This class does not duplicate
+	}
+	
+	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return null;
 	}
 
 	@Override
-	public SPObject getSPObjectUnderTest() {
+	protected Input getTarget() {
 		return input;
-	}
-
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }
 

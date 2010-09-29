@@ -42,12 +42,17 @@ import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.PersistedSPObjectTest;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.testutil.NewValueMaker;
 
 /**
  * A base test that all test cases of MatchMakerObject implementations should extend.
@@ -87,7 +92,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 		super.tearDown();
 	}
 
-	protected abstract C getTarget() throws SQLObjectException;
+	protected abstract C getTarget();
+	
+	public SPObject getSPObjectUnderTest() {
+		return getTarget();
+	}
 
 	public void testDuplicate() throws Exception {
 		MatchMakerObject mmo = getTarget();
@@ -125,6 +134,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("inputSteps");
         propertiesToIgnoreForDuplication.add("mungeSteps");
         propertiesToIgnoreForDuplication.add("projects");
+        propertiesToIgnoreForDuplication.add("JDBCDataSource");
+        propertiesToIgnoreForDuplication.add("table");
         
         
         //this throws an exception if the DS does not exist
@@ -488,5 +499,10 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
     public void testNullEquality() throws SQLObjectException {
         assertFalse("equals(null) has to work, and return false",getTarget().equals(null));
     }
+	
+	@Override
+	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
+		return new MatchMakerNewValueMaker(root, dsCollection);
+	}
 
 }

@@ -71,8 +71,8 @@ public class TableIndex extends AbstractMatchMakerObject{
     public SQLIndex getTableIndex() throws SQLObjectException {
     	if (sourceTableIndex != null && !sourceTableIndex.isPopulated()) sourceTableIndex.populate();
     	
-    	if (table.getSourceTable() != null && sourceTableIndex != null) {
-    		sourceTableIndex.setParent(table.getSourceTable());
+    	if (table.getTable() != null && sourceTableIndex != null) {
+    		sourceTableIndex.setParent(table.getTable());
     		resolveTableIndexColumns(sourceTableIndex);
     	}
     	return sourceTableIndex;
@@ -84,7 +84,7 @@ public class TableIndex extends AbstractMatchMakerObject{
      * the source table isn't populated yet when it's invoked.
      */
     private void resolveTableIndexColumns(SQLIndex si) throws SQLObjectException {
-    	SQLTable st = table.getSourceTable();
+    	SQLTable st = table.getTable();
     	if (!st.isPopulated()) st.populate();
     	for (SQLIndex.Column col : si.getChildren(SQLIndex.Column.class)) {
     		SQLColumn actualColumn = st.getColumnByName(col.getName());

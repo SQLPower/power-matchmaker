@@ -814,7 +814,7 @@ public class Project extends AbstractMatchMakerObject {
     /////// The source table delegate methods //////
     @NonProperty
     public SQLTable getSourceTable() {
-        return sourceTablePropertiesDelegate.getSourceTable();
+        return sourceTablePropertiesDelegate.getTable();
     }
     @NonProperty
     public String getSourceTableCatalog() {
@@ -858,7 +858,7 @@ public class Project extends AbstractMatchMakerObject {
     /////// The result table delegate methods //////
     @NonProperty
     public SQLTable getResultTable() {
-        return resultTablePropertiesDelegate.getSourceTable();
+        return resultTablePropertiesDelegate.getTable();
     }
     @NonProperty
     public String getResultTableCatalog() {
@@ -902,7 +902,7 @@ public class Project extends AbstractMatchMakerObject {
     /////// The xref table delegate methods //////
     @NonProperty
     public SQLTable getXrefTable() {
-        return xrefTablePropertiesDelegate.getSourceTable();
+        return xrefTablePropertiesDelegate.getTable();
     }
     @NonProperty
     public String getXrefTableCatalog() {
@@ -1047,8 +1047,8 @@ public class Project extends AbstractMatchMakerObject {
 	 * @throws SQLException 
 	 */
 	public Connection createSourceTableConnection() throws SQLException {
-		if (sourceTablePropertiesDelegate.getSourceTable() != null) {
-			return sourceTablePropertiesDelegate.getSourceTable().getParentDatabase().getDataSource().createConnection();
+		if (sourceTablePropertiesDelegate.getTable() != null) {
+			return sourceTablePropertiesDelegate.getTable().getParentDatabase().getDataSource().createConnection();
 		} 
 		return null;
 	}
@@ -1059,8 +1059,8 @@ public class Project extends AbstractMatchMakerObject {
 	 * @throws SQLException 
 	 */
 	public Connection createResultTableConnection() throws SQLException {
-		if (resultTablePropertiesDelegate.getSourceTable() != null) {
-			return resultTablePropertiesDelegate.getSourceTable().getParentDatabase().getDataSource().createConnection();
+		if (resultTablePropertiesDelegate.getTable() != null) {
+			return resultTablePropertiesDelegate.getTable().getParentDatabase().getDataSource().createConnection();
 		} 
 		return null;
 	}

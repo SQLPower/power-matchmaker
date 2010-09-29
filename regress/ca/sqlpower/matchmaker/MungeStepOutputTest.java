@@ -19,16 +19,14 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
-import ca.sqlpower.object.PersistedSPObjectTest;
+import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
-public class MungeStepOutputTest extends PersistedSPObjectTest {
+public class MungeStepOutputTest extends MatchMakerTestCase<MungeStepOutput> {
 	
+	MungeStep parentStep = new UpperCaseMungeStep();
 	MungeStepOutput<String> output;
 	final String appUserName = "test_user";
 	
@@ -41,6 +39,8 @@ public class MungeStepOutputTest extends PersistedSPObjectTest {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		output = new MungeStepOutput<String>("output",String.class);
+		output.setData("mungeData");
+		output.setParent(parentStep);
 	}
 	
 	@Override
@@ -49,12 +49,12 @@ public class MungeStepOutputTest extends PersistedSPObjectTest {
 	}
 
 	@Override
-	public SPObject getSPObjectUnderTest() {
+	protected MungeStepOutput getTarget() {
 		return output;
 	}
-
+	
 	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
+	public void testDuplicate() throws Exception {
+		// MungeStepOutput is not duplicated.
 	}
 }

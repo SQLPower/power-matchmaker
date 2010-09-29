@@ -132,21 +132,23 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
     }
 	
 	public WorkspaceContainer getWorkspaceContainer() {
-		if(getSession() != null)
+		if (getSession() != null) {
 			return getSession();
-		else if(getParent() != null)
+		} else if (getParent() != null) {
 			return getParent().getWorkspaceContainer();
-		else
+		} else {
 			throw new SessionNotFoundException("Root object does not have a workspace container reference");
+		}
 	}
 	
 	public RunnableDispatcher getRunnableDispatcher() throws SessionNotFoundException {
-		if(getSession() != null)
+		if (getSession() != null) {
 			return getSession();
-		else if(getParent() != null)
+		} else if(getParent() != null) {
 			return getParent().getRunnableDispatcher();
-		else
+		} else {
 			throw new SessionNotFoundException("Root object does not have a runnable dispatcher reference");
+		}
 	}
 
 	@Transient @Accessor
@@ -263,8 +265,9 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 	/**
      * Moves the element from one index to another in the specific child type list.
      *
-     * @param i the index of one element to be swapped.
-     * @param j the index of the other element to be swapped.
+     * @param i the index of the child to be moved
+     * @param to the index where you want to move the child to
+     * @param classType the classtype of the child you are moving
      */
 	public void moveChild(int from, int to, Class<? extends MatchMakerObject> classType) {
 		if (to == from) return;
