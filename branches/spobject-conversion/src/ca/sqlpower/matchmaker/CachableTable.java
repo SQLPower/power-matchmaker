@@ -142,7 +142,7 @@ public class CachableTable extends AbstractMatchMakerObject {
      * @param spDataSourceName The name of the datasource.
      */
     @NonProperty
-    public void setSPDataSource(String spDataSourceName) {
+    public void setSPDataSourceName(String spDataSourceName) {
     	table = null;
     	this.dsName = spDataSourceName;
     }
@@ -296,7 +296,7 @@ public class CachableTable extends AbstractMatchMakerObject {
 		t.setVisible(isVisible());
 		t.setSchemaName(getSchemaName());
 		t.setTableName(getTableName());
-		t.setSPDataSource(getSPDataSourceName());
+		t.setSPDataSourceName(getSPDataSourceName());
 		t.setCatalogName(getCatalogName());
 		return t;
 	}

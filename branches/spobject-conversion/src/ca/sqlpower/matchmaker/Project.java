@@ -654,12 +654,12 @@ public class Project extends AbstractMatchMakerObject {
 		firePropertyChange("mergeSettings", oldValue, this.mergeSettings);
 	}
 
-    @NonProperty
+    @Accessor
 	public ProjectMode getType() {
 		return type;
 	}
 
-    @NonProperty
+    @Mutator
 	public void setType(ProjectMode type) {
 		ProjectMode oldValue = this.type;
 		this.type = type;
@@ -847,7 +847,7 @@ public class Project extends AbstractMatchMakerObject {
     @NonProperty
     
     public void setSourceTableSPDatasource(String sourceTableSPDName) {
-    	sourceTablePropertiesDelegate.setSPDataSource(sourceTableSPDName);
+    	sourceTablePropertiesDelegate.setSPDataSourceName(sourceTableSPDName);
     }
 
     @NonProperty
@@ -891,7 +891,7 @@ public class Project extends AbstractMatchMakerObject {
 
     @NonProperty
     public void setResultTableSPDatasource(String resultTableSPDName) {
-    	resultTablePropertiesDelegate.setSPDataSource(resultTableSPDName);
+    	resultTablePropertiesDelegate.setSPDataSourceName(resultTableSPDName);
     }
 
     @NonProperty
@@ -935,7 +935,7 @@ public class Project extends AbstractMatchMakerObject {
 
     @NonProperty
     public void setXrefTableSPDatasource(String xrefTableSPDName) {
-    	xrefTablePropertiesDelegate.setSPDataSource(xrefTableSPDName);
+    	xrefTablePropertiesDelegate.setSPDataSourceName(xrefTableSPDName);
     }
 
     @NonProperty
