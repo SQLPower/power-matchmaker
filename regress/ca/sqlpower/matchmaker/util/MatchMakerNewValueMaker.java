@@ -21,11 +21,13 @@ package ca.sqlpower.matchmaker.util;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
@@ -79,6 +81,14 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return (Long)oldVal + 1;
         } else if (valueType == UpperCaseMungeStep.class) {
         	return new UpperCaseMungeStep();
+        } else if (valueType == MatchMakerObject.class) {
+        	return new TestingAbstractMatchMakerObject();
+        } else if (valueType == TableMergeRules.ChildMergeActionType.class) {
+        	if (TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD.equals(oldVal)) {
+        		return TableMergeRules.ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
+        	} else {
+        		return TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD;
+        	}
         } else {
             return super.makeNewValue(valueType, oldVal, propName);
         }
