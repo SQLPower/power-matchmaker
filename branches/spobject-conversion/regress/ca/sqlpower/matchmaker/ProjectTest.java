@@ -433,18 +433,18 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		
     	SQLTable sourceTable = new SQLTable(db.getSchemaByName(ds.getPlSchema()), "match_source", null, "TABLE", true);
     	
-    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
+    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk1);
     
     	// precision can not be other value than 10 since the sql server does not 
     	// support column width for int, and the column size from jdbc will
     	// be 10.
-    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", Types.INTEGER, 10, 0);
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", session.getSQLType(Types.INTEGER), 0, 0, false);
     	pk2.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk2);
     	
-    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", Types.VARCHAR, 20, 0);
+    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
@@ -477,6 +477,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	
     	SQLSchema sch = db.getSchemaByName(ds.getPlSchema());
     	SQLTable resultTable = new SQLTable(sch,"my_result_table",null,"TABLE",true);
+    	sch.addChild(resultTable);
     	project.setResultTable(resultTable);
     	resultTable = project.createResultTable();
 
@@ -508,13 +509,16 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
 		
+		assertEquals("You should have a primary key index and one other index for your result table.", 2, project.getResultTable().getIndices().size());
+		
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndices().get(1));
 		
 		int successCount = 0;
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
 	    	sql = sqlStatement.getSQLText();
-	    	if ( execSQL(con,sql))	successCount += 1;
+	    	if ( execSQL(con,sql))	
+	    		successCount += 1;
 	    }
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
@@ -542,18 +546,18 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		
     	SQLTable sourceTable = new SQLTable(db.getSchemaByName(ds.getPlSchema()), "match_source", null, "TABLE", true);
     	
-    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
+    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk1);
     
     	// precision can not be other value since the sql server does not 
     	// support column width for int, and the column size from jdbc will
     	// be 10.
-    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", Types.DECIMAL, 10, 0);
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", session.getSQLType(Types.DECIMAL), 10, 0, false);
     	pk2.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk2);
     	
-    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", Types.VARCHAR, 20, 0);
+    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
@@ -586,6 +590,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	
     	SQLSchema sch = db.getSchemaByName(ds.getPlSchema());
     	SQLTable resultTable = new SQLTable(sch,"my_result_table",null,"TABLE",true);
+    	sch.addChild(resultTable);
     	project.setResultTable(resultTable);
     	resultTable = project.createResultTable();
 
@@ -613,7 +618,10 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
+		
+		assertEquals("You should have a primary key index and one other index for your result table.", 2, project.getResultTable().getIndices().size());
+		
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndices().get(1));
 		
 		
 		int successCount = 0;
