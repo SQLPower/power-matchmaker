@@ -30,6 +30,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -228,7 +231,7 @@ public class TableMergeRules
 		newMergeStrategy.setName(getName());
 		newMergeStrategy.setSession(session);
 		newMergeStrategy.setTableName(getTableName());
-		newMergeStrategy.setSpDataSource(getSpDataSource());
+		newMergeStrategy.setSpDataSource(getSpDataSourceName());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
 		newMergeStrategy.setParentMergeRule(getParentMergeRule());
@@ -251,43 +254,53 @@ public class TableMergeRules
 		return newMergeStrategy;
 	}
 
+	@NonProperty
 	public String getCatalogName() {
 		return cachableTable.getCatalogName();
 	}
 
+	@NonProperty
 	public String getSchemaName() {
 		return cachableTable.getSchemaName();
 	}
 
+	@NonProperty
 	public SQLTable getSourceTable() {
 		return cachableTable.getTable();
 	}
 	
+	@NonProperty
 	public String getTableName() {
 		return cachableTable.getTableName();
 	}
 	
-	public String getSpDataSource() {
+	@NonProperty
+	public String getSpDataSourceName() {
 		return cachableTable.getSPDataSourceName();
 	}
 	
+	@NonProperty
 	public void setSpDataSource(String spDataSourceName) {
-		cachableTable.setSPDataSource(spDataSourceName);
+		cachableTable.setSPDataSourceName(spDataSourceName);
 	}
 
+	@NonProperty
 	public void setCatalogName(String sourceTableCatalog) {
 		cachableTable.setCatalogName(sourceTableCatalog);
 	}
 
+	@NonProperty
 	public void setSchemaName(String sourceTableSchema) {
 		cachableTable.setSchemaName(sourceTableSchema);
 	}
 
+	@NonProperty
 	public void setTable(SQLTable table) {
 		this.cachableTable.setTable(table);
 		setName(table==null?null:DDLUtils.toQualifiedName(table));
 	}
 
+	@NonProperty
 	public void setTableName(String sourceTableName) {
 		cachableTable.setTableName(sourceTableName);
 		setName(DDLUtils.toQualifiedName(getCatalogName(),getSchemaName(),sourceTableName));
@@ -301,6 +314,7 @@ public class TableMergeRules
 		return buf.toString();
 	}
 
+	@NonProperty
 	public SQLIndex getTableIndex() {
 		try {
 			return tableIndex.getTableIndex();
@@ -309,6 +323,7 @@ public class TableMergeRules
 		}
 	}
 
+	@NonProperty
 	public void setTableIndex(SQLIndex index) {
 		tableIndex.setTableIndex(index);
 	}
@@ -330,23 +345,28 @@ public class TableMergeRules
 		}
     }
 
+    @NonProperty
 	public Long getOid() {
 		return oid;
 	}
 
+    @NonProperty
 	public void setOid(Long oid) {
 		this.oid = oid;
 	}
 
+	@Accessor
 	public TableMergeRules getParentMergeRule() {
 		return parentMergeRule;
 	}
 	
 	@Override
+	@Accessor
 	public Project getParent() {
 		return (Project)super.getParent();
 	}
 
+	@Mutator
 	public void setParentMergeRule(TableMergeRules parentTable) {
 		if (this.parentMergeRule == parentTable) return;
 		TableMergeRules oldValue = this.parentMergeRule;
@@ -354,6 +374,7 @@ public class TableMergeRules
 		firePropertyChange("parentMergeRule", oldValue, this.parentMergeRule);
 	}
 	
+	@Mutator
 	public void setParentMergeRuleAndImportedKeys(TableMergeRules parentTable) {
 		if (this.parentMergeRule == parentTable) return;
 		try {
@@ -388,14 +409,22 @@ public class TableMergeRules
 		}
 	}
 
+	@Accessor
 	public ChildMergeActionType getChildMergeAction() {
 		return childMergeAction;
 	}
 	
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
 	
+	@NonProperty
+	public List<ColumnMergeRules> getColumnMergeRules() {
+		return Collections.unmodifiableList(columnMergeRules);
+	}
+	
+	@NonProperty
 	public List<SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(columnMergeRules);
@@ -435,6 +464,7 @@ public class TableMergeRules
 		return removed;
 	}
 
+	@Mutator
 	public void setChildMergeAction(ChildMergeActionType childMergeAction) {
 		ChildMergeActionType oldValue = this.childMergeAction;
 		this.childMergeAction = childMergeAction;
@@ -445,6 +475,7 @@ public class TableMergeRules
 	 * This returns whether this merge rule is the source table merge 
 	 * rule of its parent project.
 	 */
+	@NonProperty
 	public boolean isSourceMergeRule() {
 		Project p = getParent();
 		if (p != null && p.getSourceTable() != null 
@@ -456,6 +487,7 @@ public class TableMergeRules
 		}
 	}
 
+	@NonProperty
 	public List<SQLColumn> getPrimaryKeyFromIndex()  {
 		if (getSourceTable() == null) {
 			return null;
@@ -485,6 +517,7 @@ public class TableMergeRules
 	/**
 	 * Finds the primary key for the current table merge rule.
 	 */
+	@NonProperty
 	public List<SQLColumn> getPrimaryKey()  {
 		List<SQLColumn> columns;
 		
@@ -505,6 +538,7 @@ public class TableMergeRules
 	 * Returns a {@link List} of {@link SQLColumn} of all columns in this merge rule's
 	 * table that belong to a unique key, including the primary key and all alternate keys
 	 */
+	@NonProperty
 	public List<SQLColumn> getUniqueKeyColumns() {
 		List<SQLColumn> columns = new ArrayList<SQLColumn>();
 		
@@ -520,13 +554,14 @@ public class TableMergeRules
 	/**
 	 * Finds the imported key for the current table merge rule.
 	 */
+	@NonProperty
 	public List<ColumnMergeRules> getImportedKey() throws SQLObjectException {
 		List<ColumnMergeRules> columns = new ArrayList<ColumnMergeRules>();
 		
 		if (isSourceMergeRule()) {
 			return null;
 		} else {
-			for (ColumnMergeRules cmr : getChildren(ColumnMergeRules.class)) {
+			for (ColumnMergeRules cmr : getColumnMergeRules()) {
 				if (cmr.getImportedKeyColumn() != null) {
 					columns.add(cmr);
 				}

@@ -94,12 +94,14 @@ public class CachableTable extends AbstractMatchMakerObject {
     }
 
     @Mutator
-    public void setCatalogName(String sourceTableCatalog) {
+    public void setCatalogName(String tableCatalog) {
         table = null;
-        this.catalogName = sourceTableCatalog;
+        String oldCatalogName = this.catalogName;
+        this.catalogName = tableCatalog;
+        firePropertyChange("catalogName", oldCatalogName, this.catalogName);
     }
 
-    @NonProperty
+    @Accessor
     public String getTableName() {
         if (table != null) {
         	return table.getName();
@@ -108,13 +110,15 @@ public class CachableTable extends AbstractMatchMakerObject {
         }
     }
 
-    @NonProperty
-    public void setTableName(String sourceTableName) {
+    @Mutator
+    public void setTableName(String tableName) {
         table = null;
-        this.tableName = sourceTableName;
+        String oldTableName = this.tableName;
+        this.tableName = tableName;
+        firePropertyChange("tableName", oldTableName, this.tableName);
     }
 
-    @NonProperty
+    @Accessor
     public String getSchemaName() {
         if (table != null) {
             String schemaName = table.getSchemaName();
@@ -128,10 +132,12 @@ public class CachableTable extends AbstractMatchMakerObject {
         }
     }
 
-    @NonProperty
-    public void setSchemaName(String sourceTableSchema) {
+    @Mutator
+    public void setSchemaName(String tableSchema) {
         table = null;
-        this.schemaName = sourceTableSchema;
+        String oldSchemaName = this.schemaName;
+        this.schemaName = tableSchema;
+        firePropertyChange("schemaName", oldSchemaName, this.schemaName);
     }
     
     /**
@@ -141,10 +147,12 @@ public class CachableTable extends AbstractMatchMakerObject {
      * 
      * @param spDataSourceName The name of the datasource.
      */
-    @NonProperty
+    @Mutator
     public void setSPDataSourceName(String spDataSourceName) {
     	table = null;
+        String oldSPDataSourceName = dsName;
     	this.dsName = spDataSourceName;
+    	firePropertyChange("dsName", oldSPDataSourceName, dsName);
     }
     
     /**
@@ -152,7 +160,7 @@ public class CachableTable extends AbstractMatchMakerObject {
      * from.
      * 
      */
-    @NonProperty
+    @Accessor
     public String getSPDataSourceName() {
     	if (table != null && table.getParentDatabase() != null && 
     			table.getParentDatabase().getDataSource() != null) {
@@ -164,7 +172,7 @@ public class CachableTable extends AbstractMatchMakerObject {
     /**
      * Returns the SPDataSource for the current table
      */
-    @NonProperty
+    @Accessor
     public JDBCDataSource getJDBCDataSource() {
     	if (table != null) {
     		return table.getParentDatabase().getDataSource();
@@ -266,10 +274,10 @@ public class CachableTable extends AbstractMatchMakerObject {
         dsName = null;
 
         //TODO: Choose the right property name
-        firePropertyChange(propertyName, oldValue, newValue);
+        firePropertyChange("table", oldValue, newValue);
     }
 
-    @NonProperty
+    @Accessor
     public String getPropertyName() {
     	return propertyName;
     }

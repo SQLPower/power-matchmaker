@@ -47,7 +47,7 @@ public class MMOPropertyChangeUndoableEditTest extends TestCase {
 		assertNotNull("Your input should be connected", resultStep.getMSOInputs().get(0));
 		
 		edit.undo();
-		assertNotNull("You should still have inputs", resultStep.getInputs());
+		assertNotNull("You should still have inputs", resultStep.getMungeStepInputs());
 		assertEquals("You should have all inputs still there" ,2, resultStep.getInputCount());
 		assertNull("Your original input should be disconnected", resultStep.getMSOInputs().get(0));
 	}

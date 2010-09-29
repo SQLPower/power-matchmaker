@@ -28,6 +28,9 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.NonProperty;
 
 
 /** 
@@ -50,7 +53,8 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	
     private final MatchMakerSession session;
 
-    public TranslateGroupParent(MatchMakerSession session) {
+    @Constructor
+    public TranslateGroupParent(@ConstructorParameter(propertyName="session") MatchMakerSession session) {
         this.session = session;
         
     }
@@ -81,6 +85,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
      * @param tg the translate group.
      * @return true if <tt>tg</tt> exists in the folder hierarchy; false if it doesn't.
      */
+    @NonProperty
     public boolean isInUseInBusinessModel(MatchMakerTranslateGroup tg) {
         for (SPObject spo : session.getCurrentFolderParent().getChildren()) {
         	MatchMakerObject mmo = (MatchMakerObject)spo;
@@ -149,6 +154,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		return Collections.unmodifiableList(matchMakerTranslateGroups);
 	}
@@ -172,6 +178,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}

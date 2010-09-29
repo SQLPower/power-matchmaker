@@ -23,6 +23,11 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -33,32 +38,35 @@ public class TableIndex extends AbstractMatchMakerObject{
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.emptyList();
 	
-	AbstractMatchMakerObject mmo;
- 	/**
+	/**
      * The unique index of the source table that we're using.  Not necessarily one of the
      * unique indices defined in the database; the user can pick an arbitrary set of columns.
      */
-    private SQLIndex sourceTableIndex;
+    private SQLIndex tableIndex;
     
     
     private CachableTable table;
 	private String property;
 
 	/**
-	 * Manages a sqlindex on cachableTable table for mmo. 
+	 * Manages a sqlindex on cachableTable table. 
 	 * 
 	 * The property argument is the property type the index should use for an event.
 	 * We assume all arguments are non-null
 	 */
-	public TableIndex(CachableTable table, String property) {
+	@Constructor
+	public TableIndex(@ConstructorParameter(propertyName="table") CachableTable table, 
+					@ConstructorParameter(propertyName="property") String property) {
 		this.table = table;
 		this.property = property;
 	}
 	
+	@Accessor
 	public CachableTable getCachableTable() {
 		return table;
 	}
 	
+	@Accessor
 	public String getPropertyName() {
 		return property;
 	}
@@ -68,14 +76,15 @@ public class TableIndex extends AbstractMatchMakerObject{
      * column names to actual SQLColumn references on the source table,
      * and then returns it!
      */
+	@Accessor
     public SQLIndex getTableIndex() throws SQLObjectException {
-    	if (sourceTableIndex != null && !sourceTableIndex.isPopulated()) sourceTableIndex.populate();
+    	if (tableIndex != null && !tableIndex.isPopulated()) tableIndex.populate();
     	
-    	if (table.getTable() != null && sourceTableIndex != null) {
-    		sourceTableIndex.setParent(table.getTable());
-    		resolveTableIndexColumns(sourceTableIndex);
+    	if (table.getTable() != null && tableIndex != null) {
+    		tableIndex.setParent(table.getTable());
+    		resolveTableIndexColumns(tableIndex);
     	}
-    	return sourceTableIndex;
+    	return tableIndex;
     }
 
     /**
@@ -92,9 +101,10 @@ public class TableIndex extends AbstractMatchMakerObject{
     	}
 	}
 
+    @Mutator
 	public void setTableIndex(SQLIndex index) {
-    	final SQLIndex oldIndex = sourceTableIndex;
-    	sourceTableIndex = index;
+    	final SQLIndex oldIndex = tableIndex;
+    	tableIndex = index;
     	//TODO: Find the right propertyName
     	firePropertyChange(property, oldIndex, index);
     }
@@ -105,11 +115,12 @@ public class TableIndex extends AbstractMatchMakerObject{
 	 * we check if the index is user created by if the parent
 	 * is null or dosn't contain the sql index.
 	 */
+	@NonProperty
 	public boolean isUserCreated() throws SQLObjectException {
 		if (getTableIndex() == null) return false;
 		if (getTableIndex().getParent() == null ){ 
 			return true;
-		} else if (getTableIndex().getParent().getChildren().contains(sourceTableIndex)){
+		} else if (getTableIndex().getParent().getChildren().contains(tableIndex)){
 			return false;
 		} else {
 			return true;
@@ -120,7 +131,7 @@ public class TableIndex extends AbstractMatchMakerObject{
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Table Index @").append(System.identityHashCode(this));
-		buf.append(", index: "+sourceTableIndex);
+		buf.append(", index: "+tableIndex);
 		return buf.toString();
 	}
 
@@ -128,16 +139,21 @@ public class TableIndex extends AbstractMatchMakerObject{
 	public MatchMakerObject duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
 		TableIndex t = new TableIndex(getCachableTable(), getPropertyName());
-		t.setTableIndex(sourceTableIndex);
+		t.setTableIndex(tableIndex);
+		t.setParent(parent);
+		t.setName(getName());
+		t.setVisible(isVisible());
 		return t;
 	}
 
 	@Override
+	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
