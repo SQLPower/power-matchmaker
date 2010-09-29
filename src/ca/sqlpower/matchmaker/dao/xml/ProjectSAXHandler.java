@@ -455,7 +455,12 @@ public class ProjectSAXHandler extends DefaultHandler {
 
             } else if (qName.equals("output") && parentIs("munge-step")) {
 
-                MungeStepOutput mso = new MungeStepOutput();
+            	/*
+            	 * We put all the properties into a map and initialize this after
+            	 * so that we don't need a setType function for MungeStepOutput
+            	 */
+                MungeStepOutput mso;
+                HashMap<String, String> msoProperties = new HashMap<String,String>();
 
                 String id = null;
 
@@ -464,20 +469,24 @@ public class ProjectSAXHandler extends DefaultHandler {
                     String aval = attributes.getValue(i);
 
                     if (aname.equals("id")) {
-                        mungeStepOutputIdMap.put(aval, mso);
+                        msoProperties.put("id",aval);
                         id = aval;
                     } else if (aname.equals("name")) {
-                        mso.setName(aval);
+                        msoProperties.put("name",aval);
                     } else if (aname.equals("visible")) {
-                        mso.setVisible(Boolean.valueOf(aval));
+                        msoProperties.put("visible",aval);
                     } else if (aname.equals("data-type")) {
                         checkAcceptableOutputType(aval);
-                        mso.setType(Class.forName(aval));
+                        msoProperties.put("data-type",aval);
                     } else {
                         logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
+
+                mso = new MungeStepOutput(msoProperties.get("name"), Class.forName(msoProperties.get("data-type")));
+                mso.setVisible(Boolean.valueOf(msoProperties.get("visible")));
+                mungeStepOutputIdMap.put(msoProperties.get("id"), mso);
 
                 checkMandatory("id", id);
                 checkMandatory("name", mso.getName());
