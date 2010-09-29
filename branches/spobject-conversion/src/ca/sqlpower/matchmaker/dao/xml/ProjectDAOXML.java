@@ -389,7 +389,7 @@ public class ProjectDAOXML implements ProjectDAO {
             tableMergeRules.put(tmr, tmrIDStr);
             printAttribute("id", tmrIDStr);
             printCommonAttributes(tmr);
-            printAttribute("datasource", tmr.getSpDataSource());
+            printAttribute("datasource", tmr.getSpDataSourceName());
             printAttribute("catalog", tmr.getCatalogName());
             printAttribute("schema", tmr.getSchemaName());
             printAttribute("table", tmr.getTableName());

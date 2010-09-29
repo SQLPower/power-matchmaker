@@ -50,10 +50,11 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
-import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -738,11 +739,29 @@ public class ProjectSAXHandler extends DefaultHandler {
             mungeStepOutputIdMap = null;
         } else if (qName.equals("munge-step") && parentIs("munge-process")) {
             logger.debug("setting children to " + stepChildren);
-            step.setChildren(stepChildren);
+            for (MungeStepOutput out : step.getMungeStepOutputs()) {
+            	try {
+					step.removeChild(out);
+				} catch (ObjectDependentException e) {
+					throw new RuntimeException(e);
+				}
+            }
+            for (MungeStepOutput out : stepChildren) {
+            	step.addChild(out);
+            }
             stepChildren = null;
             step = null;
         } else if (qName.equals("munge-step") && parentIs("connections")) {
-            step.setInputs(stepInputs);
+            for (MungeStepInput in : step.getMungeStepInputs()) {
+            	try {
+					step.removeChild(in);
+				} catch (ObjectDependentException e) {
+					throw new RuntimeException(e);
+				}
+            }
+            for (MungeStepInput in : stepInputs) {
+            	step.addChild(in);
+            }
             stepInputs = null;
             step = null;
         }
