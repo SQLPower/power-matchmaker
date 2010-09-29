@@ -35,12 +35,18 @@ import java.util.Queue;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sqlobject.SQLType;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -122,6 +128,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	}
 	
 	@Override
+	@Accessor
 	public MungeProcess getParent() {
 	    return (MungeProcess) super.getParent();
 	}
@@ -164,6 +171,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	 */
 	public void doClose() throws Exception{}
 	
+	@NonProperty
 	public List<MungeStepOutput> getMSOInputs() {
 		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
 		for (Input in: inputs) {
@@ -225,6 +233,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		fireChildAdded(SQLInputStep.class, ob, mungeStepOutputs.size());
 	}
 	
+	@NonProperty
 	public List<SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(mungeStepOutputs);
@@ -316,14 +325,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		return removed;
 	}
 
-    public Collection<String> getParameterNames() {
+	@NonProperty
+	public Collection<String> getParameterNames() {
         return Collections.unmodifiableSet(parameters.keySet());
     }
     
+	@Accessor
 	public String getParameter(String name) {
 		return parameters.get(name);
 	}
 	
+	@Accessor
 	public Boolean getBooleanParameter(String name) {
 		String param = parameters.get(name);
 		if (param != null) {
@@ -333,6 +345,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 	}
 	
+	@NonProperty
 	public Integer getIntegerParameter(String name) {
 		String param = parameters.get(name);
 		if (param != null) {
@@ -342,6 +355,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 	}
 	
+	@Mutator
 	public void setPosition(int x, int y) {
 		try {
 			begin("Setting position");
@@ -354,18 +368,21 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 	}
 	
+	@Mutator
 	public void setParameter(String name, String newValue) {
 		String oldValue = parameters.get(name);
 		parameters.put(name, newValue);
 		firePropertyChange(name, oldValue, newValue);
 	}
 	
+	@Mutator
 	public void setParameter(String name, boolean newValue) {
 		String oldValue = parameters.get(name);
 		parameters.put(name, newValue + "");
 		firePropertyChange(name, oldValue, newValue + "");
 	}
 	
+	@Mutator
 	public void setParameter(String name, int newValue) {
 		String oldValue = parameters.get(name);
 		parameters.put(name, newValue + "");
@@ -410,10 +427,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		return System.identityHashCode(this);
 	}
 	
+	@NonProperty
 	public InputDescriptor getInputDescriptor(int inputNumber) {
 		return inputs.get(inputNumber).descriptor;
 	}
 	
+	@NonProperty
 	public int getInputCount() {
 	    return inputs.size();
 	}
@@ -428,6 +447,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	 * directly.
 	 */
 	public static class Input extends AbstractMatchMakerObject {
+		
+		public static final List<Class<? extends SPObject>> allowedChildTypes = 
+			Collections.emptyList();
 		
 		/**
 		 * used by hibernate
@@ -460,8 +482,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			current = null;
 			firePropertyChange("current",old,null);
 		}
-
-		public Input(MungeStepOutput current, InputDescriptor descriptor, AbstractMungeStep step) {
+		
+		@Constructor
+		public Input(@ConstructorParameter(propertyName="current") MungeStepOutput current,
+				@ConstructorParameter(propertyName="descriptor") InputDescriptor descriptor, 
+				@ConstructorParameter(propertyName="parent") AbstractMungeStep step) {
 			this.current = current;
 			this.descriptor = descriptor;
 			this.parentStep = step;
@@ -484,16 +509,19 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			this.parentStep = parentStep;
 		}
 
+		@Accessor
         public MungeStepOutput getCurrent() {
 			return current;
 		}
 
+		@Mutator
         public void setCurrent(MungeStepOutput current) {
         	MungeStepOutput former = this.current;
 			this.current = current;
 			firePropertyChange("current", former, current);
 		}
-
+        
+        @Accessor
         public String getName() {
 			return descriptor.getName();
 		}
@@ -501,6 +529,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		/**
          * Returns the data type expected by this input.
          */
+        @Accessor
         public Class<?> getType() {
 			return descriptor.getType();
 		}
@@ -520,11 +549,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 
 		@Override
+		@NonProperty
 		public List<Class<? extends SPObject>> getAllowedChildTypes() {
 			return Collections.emptyList();
 		}
 
 		@Override
+		@NonProperty
 		public List<? extends SPObject> getChildren() {
 			return Collections.emptyList();
 		}
@@ -703,7 +734,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      * Returns the first MungeStepOutput it finds with the given name. 
      * Returns null if no such MungeStepOutput exists.
      */
-    public MungeStepOutput getOutputByName(String name) {
+    @NonProperty
+	public MungeStepOutput getOutputByName(String name) {
     	for(MungeStepOutput o: getChildren(MungeStepOutput.class)) {
     		if (o.getName().equals(name)) {
     			return o;
@@ -715,14 +747,16 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     /**
      * Returns the mungeStepOutput children;
      */
-    public List<MungeStepOutput> getMungeStepOutputs() {
+    @NonProperty
+	public List<MungeStepOutput> getMungeStepOutputs() {
     	return Collections.unmodifiableList(mungeStepOutputs);
     }
 
     /**
      * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input)
      */
-    public List<AbstractMungeStep.Input> getMungeStepInputs() {
+    @NonProperty
+	public List<AbstractMungeStep.Input> getMungeStepInputs() {
     	return Collections.unmodifiableList(inputs);
     }
 
@@ -731,6 +765,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      * Returns null if there is no such ancestor.
      * XXX There is a utility method that you can use instead of this. (getAncestor(class)).
      */
+    @Accessor
     public Project getProject() {
         for (MatchMakerObject mmo = getParent(); mmo != null; mmo = (MatchMakerObject) mmo.getParent()) {
             if (mmo instanceof Project) {
@@ -782,7 +817,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     /**
 	 * returns the first child output
 	 */
-    protected MungeStepOutput getOut() {
+    @NonProperty
+	protected MungeStepOutput getOut() {
 		if (mungeStepOutputs.size() != 1) {
 			throw new IllegalStateException(
 					"This step has the incorrect number of outputs");
@@ -793,7 +829,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     /**
 	 * Probably only needed by xml.
 	 */
-    public void setInputs(List<Input> inputs) {
+    @NonProperty
+	public void setInputs(List<Input> inputs) {
     	this.inputs.clear();
     	this.inputs.addAll(inputs);
     }
@@ -801,7 +838,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     /**
 	 * Only needed by XML DAO.
 	 */
-    public void setChildren(List<MungeStepOutput> xy) {
+    @NonProperty
+	public void setChildren(List<MungeStepOutput> xy) {
     	try {
     		begin("Updating entire children list");
 	        for (MungeStepOutput spo : getChildren(MungeStepOutput.class)) {
@@ -826,7 +864,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	/**
      * Probably only needed by xml.
 	 */
-    public List<Input> getInputs() {
+    @NonProperty
+	public List<Input> getInputs() {
     	return inputs;
     }
 
@@ -835,6 +874,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	 * and expect a default Input class that is not Object. It is currently default access for now, since all
 	 * Munge Steps are placed in the ca.sqlpower.matchmaker.munge package anyway. 
 	 */
+    @Mutator
 	void setDefaultInputClass(Class defaultInputClass) {
 		this.defaultInputClass = defaultInputClass;
 	}
@@ -843,6 +883,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		return previewMode;
 	}
 
+	@Transient
+	@Mutator
 	public void setPreviewMode(boolean previewMode) {
 		this.previewMode = previewMode;
 	}
