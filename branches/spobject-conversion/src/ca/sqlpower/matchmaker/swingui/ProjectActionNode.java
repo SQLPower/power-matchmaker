@@ -32,6 +32,10 @@ import ca.sqlpower.object.SPObject;
      * these as extra children for the Project objects in the tree so the entire
      * project workflow is represented in one place, with pretty pictures and
      * everything.
+     * 
+     * This extends AbstractMatchMakerObject for convenience, but this does not
+     * need to be persisted since it has nothing to do with the core, only with
+     * the UI.
      */
 public class ProjectActionNode extends AbstractMatchMakerObject {
 
@@ -48,10 +52,6 @@ public class ProjectActionNode extends AbstractMatchMakerObject {
         this.projectActionType = projectActionType;
         this.project = project;
         setName(projectActionType.toString());
-    }
-
-    public boolean isRoot() {
-        return false;
     }
     
     @Override
