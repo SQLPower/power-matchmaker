@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
 
 public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implements Comparable <MatchMakerTranslateGroup> {
 
@@ -42,6 +44,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
      * should probably be declared in the AbstractMatchMakerObject, but I just need it
      * here right now.
      */
+	@NonProperty
     public Long getOid() {
         return oid;
     }
@@ -69,6 +72,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 		return true;
 	}
 
+	@Constructor
 	public MatchMakerTranslateGroup() {
 	}
     
@@ -108,11 +112,13 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 	}
 
 	@Override
+	@NonProperty
 	public List<MatchMakerTranslateWord> getChildren() {
 		return children;
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}

@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -139,10 +140,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	}
 
 	public class ColumnMergeRulesCachableColumn extends CachableColumn {
+		
+		@Constructor
 		public ColumnMergeRulesCachableColumn() {
 			super("column");
 		}
 		
+		@NonProperty
 		public SQLTable getTable() {
 			TableMergeRules tableMergeRules = (TableMergeRules) getParent().getParent();
 	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
@@ -163,10 +167,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	}
 	
 	public class ColumnMergeRulesImportedCachableColumn extends CachableColumn {
+		
+		@Constructor
 		public ColumnMergeRulesImportedCachableColumn() {
 			super("importedKeyColumn");
 		}
 		
+		@NonProperty
 		public SQLTable getTable() {
 			TableMergeRules tableMergeRules = (TableMergeRules) getParent().getParent();
 	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
@@ -205,6 +212,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	
 	private final ColumnMergeRulesImportedCachableColumn importedCachedColumn;
 	
+	@Constructor
 	public ColumnMergeRules() {
 		cachedColumn = new ColumnMergeRulesCachableColumn();
 		cachedColumn.setParent(this);
@@ -326,22 +334,22 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		throw new RuntimeException("Cannot remove this child to the class.");
 	}
 
-	@Accessor
+	@NonProperty
 	public SQLColumn getColumn() {
 			return cachedColumn.getColumn();
 	}
 
-	@Accessor
+	@NonProperty
 	public String getColumnName() {
 		return cachedColumn.getColumnName();
 	}
 
-	@Mutator
+	@NonProperty
 	public void setColumn(SQLColumn column) {
 		cachedColumn.setColumn(column);
 	}
 
-	@Mutator
+	@NonProperty
 	public void setColumnName(String columnName) {
 		cachedColumn.setColumnName(columnName);
 	}
@@ -384,27 +392,27 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		}
 	}
 
-	@Accessor
+	@NonProperty
 	public SQLColumn getImportedKeyColumn() {
 		return importedCachedColumn.getColumn();
 	}
 
-	@Accessor
+	@NonProperty
 	public String getImportedKeyColumnName() {
 		return importedCachedColumn.getColumnName();
 	}
 	
-	@Mutator
+	@NonProperty
 	public void setImportedKeyColumn(SQLColumn importedKeyColumn) {
 		importedCachedColumn.setColumn(importedKeyColumn);
 	}
 	
-	@Mutator
+	@NonProperty
 	public void setImportedKeyColumnName(String columnName) {
 		importedCachedColumn.setColumnName(columnName);
 	}
 	
-	@Mutator
+	@NonProperty
 	public void setImportedKeyColumnAndAction(SQLColumn importedKeyColumn) {
 		if (getImportedKeyColumn() == importedKeyColumn) return;
 		try {

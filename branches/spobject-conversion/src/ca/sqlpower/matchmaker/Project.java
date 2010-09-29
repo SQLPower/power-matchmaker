@@ -40,6 +40,11 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -191,6 +196,7 @@ public class Project extends AbstractMatchMakerObject {
      */
     private final AtomicReference<Monitorable> runningEngine = new AtomicReference<Monitorable>();
     
+    @Constructor
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable("sourceTable");
 	    sourceTablePropertiesDelegate.setParent(this);
@@ -433,7 +439,7 @@ public class Project extends AbstractMatchMakerObject {
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
-			SQLColumn newCol = new SQLColumn(t, baseName+i, idxCol.getUserDefinedSQLType(), idxCol.getPrecision(), idxCol.getScale(), idxCol.isAutoIncrement());
+			SQLColumn newCol = new SQLColumn(t, baseName+i, getSession().getSQLType(idxCol.getType()), idxCol.getPrecision(), idxCol.getScale(), idxCol.isAutoIncrement());
 			t.addColumn(newCol);
 		}
 	}
@@ -450,7 +456,7 @@ public class Project extends AbstractMatchMakerObject {
 	 * <p>master_idxxx [yyy],
 	 * <p>candidate_1xxx_mapped VARCHAR(1),
 	 * <p>candidate_2xxx_mapped VARCHAR(1),
-	 * <p>match_percent INTEGER(10),
+	 * <p>match_percent INTEGER,
 	 * <p>group_id  VARCHAR(30),
 	 * <p>match_date TIMESTAMP,
 	 * <p>match_status VARCHAR(15),
@@ -610,20 +616,24 @@ public class Project extends AbstractMatchMakerObject {
 		return diffCount == 0;
 	}
 
+	@Accessor
 	public String getFilter() {
 		return filter;
 	}
 
+	@Mutator
 	public void setFilter(String filter) {
 		String oldValue = this.filter;
 		this.filter = filter;
 		firePropertyChange("filter", oldValue, this.filter);
 	}
 
+	@Accessor
 	public MungeSettings getMungeSettings() {
 		return mungeSettings;
 	}
 
+	@Mutator
 	public void setMungeSettings(MungeSettings mungeSettings) {
 		if (mungeSettings==null) throw new NullPointerException("You should not try to set the settings to null");
 		MungeSettings oldValue = this.mungeSettings;
@@ -632,20 +642,24 @@ public class Project extends AbstractMatchMakerObject {
 				this.mungeSettings);
 	}
 
+	@Accessor
 	public MergeSettings getMergeSettings() {
 		return mergeSettings;
 	}
 
+	@Mutator
 	public void setMergeSettings(MergeSettings mergeSettings) {
 		MergeSettings oldValue = this.mergeSettings;
 		this.mergeSettings = mergeSettings;
 		firePropertyChange("mergeSettings", oldValue, this.mergeSettings);
 	}
 
+    @NonProperty
 	public ProjectMode getType() {
 		return type;
 	}
 
+    @NonProperty
 	public void setType(ProjectMode type) {
 		ProjectMode oldValue = this.type;
 		this.type = type;
@@ -657,20 +671,26 @@ public class Project extends AbstractMatchMakerObject {
 		firePropertyChange("type", oldValue, this.type);
 	}
 
+	@Transient
+	@Accessor
 	public ViewSpec getView() {
 		return view;
 	}
 
+	@Transient
+    @Mutator
 	public void setView(ViewSpec view) {
 		ViewSpec oldValue = this.view;
 		this.view = view;
 		firePropertyChange("view", oldValue, this.view);
 	}
 
+	@NonProperty
 	public List<MungeProcess> getMungeProcesses() {
 		return getChildren(MungeProcess.class);
 	}
 
+	@NonProperty
 	public List<TableMergeRules> getTableMergeRules() {
 		return getChildren(TableMergeRules.class);
 	}
@@ -678,6 +698,7 @@ public class Project extends AbstractMatchMakerObject {
 	/**
 	 * Returns a list of munge processes defined by {@link MungeProcess#isValidate()}
 	 */
+	@NonProperty
 	public List<MungeProcess> getValidatingMungeProcesses(){
 		List<MungeProcess> validatingProcesses = new ArrayList<MungeProcess>();
 		for (MungeProcess mp : getMungeProcesses()) {
@@ -687,7 +708,8 @@ public class Project extends AbstractMatchMakerObject {
 		}
 		return validatingProcesses;
 	}
-
+	
+	@NonProperty
 	public MungeProcess getMungeProcessByName(String name) {
 		List <MungeProcess> mungeProcesses = getMungeProcesses();
 		for ( MungeProcess g : mungeProcesses) {
@@ -722,9 +744,13 @@ public class Project extends AbstractMatchMakerObject {
             return false;
         return true;
     }
+	
+	@Accessor
 	public Long getOid() {
 		return oid;
 	}
+	
+	@Mutator
 	public void setOid(Long oid) {
 		this.oid = oid;
 	}
@@ -786,103 +812,133 @@ public class Project extends AbstractMatchMakerObject {
 	
 
     /////// The source table delegate methods //////
+    @NonProperty
     public SQLTable getSourceTable() {
         return sourceTablePropertiesDelegate.getSourceTable();
     }
+    @NonProperty
     public String getSourceTableCatalog() {
         return sourceTablePropertiesDelegate.getCatalogName();
     }
+    @NonProperty
     public String getSourceTableSchema() {
     	return sourceTablePropertiesDelegate.getSchemaName();
     }
+    @NonProperty
     public String getSourceTableName() {
         return sourceTablePropertiesDelegate.getTableName();
     }
+    @NonProperty
     public void setSourceTable(SQLTable sourceTable) {
         sourceTablePropertiesDelegate.setTable(sourceTable);
     }
+    @NonProperty
     public void setSourceTableCatalog(String sourceTableCatalog) {
         sourceTablePropertiesDelegate.setCatalogName(sourceTableCatalog);
     }
+    @NonProperty
     public void setSourceTableSchema(String sourceTableSchema) {
     	sourceTablePropertiesDelegate.setSchemaName(sourceTableSchema);
     }
+    @NonProperty
     public void setSourceTableName(String sourceTableName) {
         sourceTablePropertiesDelegate.setTableName(sourceTableName);
     }
+    @NonProperty
     
     public void setSourceTableSPDatasource(String sourceTableSPDName) {
     	sourceTablePropertiesDelegate.setSPDataSource(sourceTableSPDName);
     }
-    
+
+    @NonProperty
     public String getSourceTableSPDatasource() {
     	return sourceTablePropertiesDelegate.getSPDataSourceName();
     }
 
     /////// The result table delegate methods //////
+    @NonProperty
     public SQLTable getResultTable() {
         return resultTablePropertiesDelegate.getSourceTable();
     }
+    @NonProperty
     public String getResultTableCatalog() {
         return resultTablePropertiesDelegate.getCatalogName();
     }
+    @NonProperty
     public String getResultTableName() {
         return resultTablePropertiesDelegate.getTableName();
     }
+    @NonProperty
     public String getResultTableSchema() {
         return resultTablePropertiesDelegate.getSchemaName();
     }
+    @NonProperty
     public void setResultTable(SQLTable resultTable) {
         resultTablePropertiesDelegate.setTable(resultTable);
     }
+    @NonProperty
     public void setResultTableCatalog(String resultTableCatalog) {
         resultTablePropertiesDelegate.setCatalogName(resultTableCatalog);
     }
+    @NonProperty
     public void setResultTableName(String resultTableName) {
         resultTablePropertiesDelegate.setTableName(resultTableName);
     }
+    @NonProperty
     public void setResultTableSchema(String resultTableSchema) {
         resultTablePropertiesDelegate.setSchemaName(resultTableSchema);
     }
 
+    @NonProperty
     public void setResultTableSPDatasource(String resultTableSPDName) {
     	resultTablePropertiesDelegate.setSPDataSource(resultTableSPDName);
     }
-    
+
+    @NonProperty
     public String getResultTableSPDatasource() {
     	return resultTablePropertiesDelegate.getSPDataSourceName();
     }
 
     /////// The xref table delegate methods //////
+    @NonProperty
     public SQLTable getXrefTable() {
         return xrefTablePropertiesDelegate.getSourceTable();
     }
+    @NonProperty
     public String getXrefTableCatalog() {
         return xrefTablePropertiesDelegate.getCatalogName();
     }
+    @NonProperty
     public String getXrefTableName() {
         return xrefTablePropertiesDelegate.getTableName();
     }
+    @NonProperty
     public String getXrefTableSchema() {
         return xrefTablePropertiesDelegate.getSchemaName();
     }
+    @NonProperty
     public void setXrefTable(SQLTable xrefTable) {
         xrefTablePropertiesDelegate.setTable(xrefTable);
     }
+    @NonProperty
     public void setXrefTableCatalog(String xrefTableCatalog) {
         xrefTablePropertiesDelegate.setCatalogName(xrefTableCatalog);
     }
+    @NonProperty
     public void setXrefTableName(String xrefTableName) {
         xrefTablePropertiesDelegate.setTableName(xrefTableName);
     }
+    @NonProperty
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
-    
+
+    @NonProperty
     public void setXrefTableSPDatasource(String xrefTableSPDName) {
     	xrefTablePropertiesDelegate.setSPDataSource(xrefTableSPDName);
     }
-    
+
+    @NonProperty
     public String getXrefTableSPDatasource() {
     	return xrefTablePropertiesDelegate.getSPDataSourceName();
     }
@@ -895,6 +951,7 @@ public class Project extends AbstractMatchMakerObject {
      * function properly if this set of columns doesn't have the uniqueness
      * property.
      */
+    @NonProperty
 	public SQLIndex getSourceTableIndex() throws SQLObjectException {
 		return sourceTableIndex.getTableIndex();
 	}
@@ -911,6 +968,7 @@ public class Project extends AbstractMatchMakerObject {
      * will have to be wiped out and re-created from scratch.  They both
      * depend on the chosen set of columns that uniquely identify a row.
      */
+    @NonProperty
 	public void setSourceTableIndex(SQLIndex index) {
 		sourceTableIndex.setTableIndex(index);
 	}
@@ -922,6 +980,7 @@ public class Project extends AbstractMatchMakerObject {
 	 * 
 	 * @return The engine implementation.
 	 */
+	@Accessor
 	public CleanseEngineImpl getCleansingEngine() {
 		if (cleansingEngine == null) {
 			cleansingEngine = new CleanseEngineImpl(getSession(), this); 
@@ -936,6 +995,7 @@ public class Project extends AbstractMatchMakerObject {
 	 * 
 	 * @return The engine implementation.
 	 */
+	@Accessor
 	public MatchEngineImpl getMatchingEngine() {
 		if (matchingEngine == null) {
 			matchingEngine = new MatchEngineImpl(getSession(), this); 
@@ -950,6 +1010,7 @@ public class Project extends AbstractMatchMakerObject {
 	 * 
 	 * @return The engine implementation.
 	 */
+	@Accessor
 	public MergeEngineImpl getMergingEngine() {
 		if (mergingEngine == null) {
 			mergingEngine = new MergeEngineImpl(getSession(), this); 
@@ -964,6 +1025,7 @@ public class Project extends AbstractMatchMakerObject {
 	 * 
 	 * @return The Address Correction Engine contained
 	 */
+	@Accessor
 	public AddressCorrectionEngine getAddressCorrectionEngine() {
 		if (addressCorrectionEngine == null) {
 			addressCorrectionEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES);
@@ -971,6 +1033,7 @@ public class Project extends AbstractMatchMakerObject {
 		return addressCorrectionEngine;
 	}
 	
+	@Accessor
 	public AddressCorrectionEngine getAddressCommittingEngine() {
 		if (addressCommittingEngine == null) {
 			addressCommittingEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES);
@@ -1071,11 +1134,13 @@ public class Project extends AbstractMatchMakerObject {
      * @return A way of monitoring the progress of something that holds the engine
      * lock on this project; null if the engine lock is free.
      */
+	@Accessor
 	public Monitorable getRunningEngine() {
 	    return runningEngine.get();
 	}
 
 	@Override
+	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(mungeProcesses);
@@ -1088,6 +1153,7 @@ public class Project extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
