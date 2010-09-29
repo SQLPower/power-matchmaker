@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.NonProperty;
 
 /**
  * A root node to be at the top of the tree of all AbstractMatchMaker objects.
@@ -66,7 +67,8 @@ public class MMRootNode extends AbstractMatchMakerObject {
         tgp = new TranslateGroupParent(session);
         tgp.setName("Translation Groups");
     }
-
+    
+    @NonProperty
 	public boolean isRoot() {
         return true;
     }
@@ -91,18 +93,22 @@ public class MMRootNode extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
-	
+
+	@NonProperty
 	public TranslateGroupParent getTranslateGroupParent() {
 		return tgp;
 	}
-	
+
+	@NonProperty
 	public FolderParent getCurrentFolderParent() {
 		return currentFolderParent;
 	}
-	
+
+	@NonProperty
 	public FolderParent getBackupFolderParent() {
 		return backupFolderParent;
 	}

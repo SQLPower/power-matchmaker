@@ -25,6 +25,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -73,11 +77,13 @@ public class CachableTable extends AbstractMatchMakerObject{
      * @param propertyName the property name that all property change events fired
      * on behalf of mmo will report.
      */
-    public CachableTable(String propertyName) {
+    @Constructor
+    public CachableTable(@ConstructorParameter(propertyName="property") String propertyName) {
     	if (propertyName == null) throw new NullPointerException("Can't make a cachable table for a null property name");
 		this.propertyName = propertyName;
     }
 
+    @NonProperty
     public String getCatalogName() {
         if (cachedTable != null) {
             String catalogName = cachedTable.getCatalogName();
@@ -91,11 +97,13 @@ public class CachableTable extends AbstractMatchMakerObject{
         }
     }
 
+    @Mutator
     public void setCatalogName(String sourceTableCatalog) {
         cachedTable = null;
         this.catalogName = sourceTableCatalog;
     }
 
+    @NonProperty
     public String getTableName() {
         if (cachedTable != null) {
         	return cachedTable.getName();
@@ -104,11 +112,13 @@ public class CachableTable extends AbstractMatchMakerObject{
         }
     }
 
+    @NonProperty
     public void setTableName(String sourceTableName) {
         cachedTable = null;
         this.tableName = sourceTableName;
     }
 
+    @NonProperty
     public String getSchemaName() {
         if (cachedTable != null) {
             String schemaName = cachedTable.getSchemaName();
@@ -122,6 +132,7 @@ public class CachableTable extends AbstractMatchMakerObject{
         }
     }
 
+    @NonProperty
     public void setSchemaName(String sourceTableSchema) {
         cachedTable = null;
         this.schemaName = sourceTableSchema;
@@ -134,6 +145,7 @@ public class CachableTable extends AbstractMatchMakerObject{
      * 
      * @param spDataSourceName The name of the datasource.
      */
+    @NonProperty
     public void setSPDataSource(String spDataSourceName) {
     	cachedTable = null;
     	this.dsName = spDataSourceName;
@@ -144,6 +156,7 @@ public class CachableTable extends AbstractMatchMakerObject{
      * from.
      * 
      */
+    @NonProperty
     public String getSPDataSourceName() {
     	if (cachedTable != null && cachedTable.getParentDatabase() != null && 
     			cachedTable.getParentDatabase().getDataSource() != null) {
@@ -155,6 +168,7 @@ public class CachableTable extends AbstractMatchMakerObject{
     /**
      * Returns the SPDataSource for the current table
      */
+    @NonProperty
     public JDBCDataSource getJDBCDataSource() {
     	if (cachedTable != null) {
     		return cachedTable.getParentDatabase().getDataSource();
@@ -196,6 +210,7 @@ public class CachableTable extends AbstractMatchMakerObject{
      *         up in the session's SQLDatabase, or created in the session's
      *         SQLDatabase if the lookup failed.
      */
+    @NonProperty
     public SQLTable getSourceTable() {
     	logger.debug("GetSourceTable(): "+this);
     	
@@ -241,6 +256,7 @@ public class CachableTable extends AbstractMatchMakerObject{
      * Sets the table to the given table, clears the simple string properties, and fires an event.
      * @param table
      */
+    @NonProperty
     public void setTable(SQLTable table) {
     	logger.debug("Set Table: " + table);
     	
@@ -256,7 +272,8 @@ public class CachableTable extends AbstractMatchMakerObject{
         //TODO: Choose the right property name
         firePropertyChange(propertyName, oldValue, newValue);
     }
-    
+
+    @NonProperty
     public String getPropertyName() {
     	return propertyName;
     }
@@ -287,11 +304,13 @@ public class CachableTable extends AbstractMatchMakerObject{
 	}
 
 	@Override
+	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}

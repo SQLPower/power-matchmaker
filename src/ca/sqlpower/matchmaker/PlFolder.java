@@ -25,6 +25,10 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 
 /**
  * A container class desigend to hold match maker objects (for now),
@@ -74,6 +78,7 @@ public class PlFolder extends AbstractMatchMakerObject {
      * Creates a new folder with a null name.  You'll have to call setName()
      * before expecting the folder to do much useful stuff.
      */
+    @Constructor
 	public PlFolder() {
 		this(null);
 	}
@@ -85,30 +90,36 @@ public class PlFolder extends AbstractMatchMakerObject {
 		setName(name);
 	}
 
+	@Accessor
 	public String getFolderDesc() {
 		return folderDesc;
 	}
 
+	@Mutator
 	public void setFolderDesc(String folderDesc) {
 		String oldValue = this.folderDesc;
 		this.folderDesc = folderDesc;
 		firePropertyChange("folderDesc", oldValue, folderDesc);
 	}
 
+	@Accessor
 	public String getFolderStatus() {
 		return folderStatus;
 	}
 
+	@Mutator
 	public void setFolderStatus(String folderStatus) {
 		String oldValue = this.folderStatus;
 		this.folderStatus = folderStatus;
 		firePropertyChange("folderStatus", oldValue, folderStatus);
 	}
 
+	@Accessor
 	public Long getLastBackupNo() {
 		return lastBackupNo;
 	}
 
+	@Mutator
 	public void setLastBackupNo(Long lastBackupNo) {
 		long oldValue = this.lastBackupNo;
 		this.lastBackupNo = lastBackupNo;
@@ -157,11 +168,13 @@ public class PlFolder extends AbstractMatchMakerObject {
 		return f;
 	}
 
+	@NonProperty
 	public Long getOid() {
 		return oid;
 	}
 
 	@Override
+	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		return Collections.unmodifiableList(projects);
 	}
@@ -185,10 +198,12 @@ public class PlFolder extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
 	
+	@NonProperty
 	public List<Project> getProjects() {
 		return Collections.unmodifiableList(projects);
 	}

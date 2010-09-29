@@ -26,6 +26,9 @@ import java.util.List;
 
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.NonProperty;
 
 
 /** 
@@ -48,7 +51,8 @@ public class FolderParent extends AbstractMatchMakerObject {
     
     private final MatchMakerSession session;
 
-    public FolderParent(MatchMakerSession session) {
+    @Constructor
+    public FolderParent(@ConstructorParameter(propertyName="session")MatchMakerSession session) {
         this.session = session;
     }
     
@@ -107,6 +111,7 @@ public class FolderParent extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@NonProperty
 	public List<SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(plFolders);
@@ -114,10 +119,12 @@ public class FolderParent extends AbstractMatchMakerObject {
 	}
 
 	@Override
+	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
-	
+
+	@NonProperty
 	public List<PlFolder> getPlFolders() {
 		return Collections.unmodifiableList(plFolders);
 	}
