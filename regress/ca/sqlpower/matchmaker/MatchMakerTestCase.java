@@ -136,6 +136,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("projects");
         propertiesToIgnoreForDuplication.add("JDBCDataSource");
         propertiesToIgnoreForDuplication.add("table");
+        propertiesToIgnoreForDuplication.add("tableIndex");
+        propertiesToIgnoreForDuplication.add("columnMergeRules");
+        propertiesToIgnoreForDuplication.add("inputs");
+        propertiesToIgnoreForDuplication.add("mungeStepOutputs");
+        propertiesToIgnoreForDuplication.add("parameterNames");
+        propertiesToIgnoreForDuplication.add("project");
         
         
         //this throws an exception if the DS does not exist
@@ -167,35 +173,54 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 			Object oldVal;
 			try {
 				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
-				Object copyVal = PropertyUtils.getSimpleProperty(duplicate, property.getName());
-				if(oldVal == null) {
-					throw new NullPointerException("We forgot to set "+property.getName());
-				} else {
-					if (oldVal instanceof MungeStep) {
-						MungeStep oldStep = (MungeStep) oldVal;
-						MungeStep copyStep = (MungeStep) copyVal;
-						assertNotSame("The two MungeStep's share the same instance.", oldVal, copyVal);
-
-						assertEquals("The two names are different.", oldStep.getName(), copyStep.getName());
-						assertEquals("The two visible properties are different.", oldStep.isVisible(), copyStep.isVisible());
-						assertEquals("The two lists of parameters are different.", oldStep.getParameterNames().size(), copyStep.getParameterNames().size());
-						for (String param : oldStep.getParameterNames()) {
-							assertEquals("The two values for parameter " + param + " are different",
-									oldStep.getParameter(param), copyStep.getParameter(param));
-						}
+				/*
+				 * If this value is an unmodifiable list, it is then going to be a property
+				 * we do not wish to test duplication for, like the children lists. This
+				 * is a way to catch them all at once.
+				 */
+				boolean listIsModifiable = true;
+				if(oldVal instanceof List) {
+					List l = (List) oldVal;
+					try {
+						l.add("test");
+						l.remove("test");
+					} catch (UnsupportedOperationException e) {
+						listIsModifiable = false;
+					}
+				}
+				if(listIsModifiable) {
+					Object copyVal = PropertyUtils.getSimpleProperty(duplicate, property.getName());
+					if(oldVal == null) {
+						throw new NullPointerException("We forgot to set "+property.getName());
 					} else {
-						assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be equal",oldVal,copyVal);
-
-						if (propertiesShareInstanceForDuplication.contains(property.getName())) return;
-
-						// Ok, the duplicate object's property value compared equal.
-						// Now we want to make sure if we modify that property on the original,
-						// it won't affect the copy.
-						Object newCopyVal = modifyObject(mmo, property, copyVal);
-
-						assertFalse(
-								"The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,
-								oldVal.equals(newCopyVal));
+						if (oldVal instanceof MungeStep) {
+							MungeStep oldStep = (MungeStep) oldVal;
+							MungeStep copyStep = (MungeStep) copyVal;
+							assertNotSame("The two MungeStep's share the same instance.", oldVal, copyVal);
+	
+							assertEquals("The two names are different.", oldStep.getName(), copyStep.getName());
+							assertEquals("The two visible properties are different.", oldStep.isVisible(), copyStep.isVisible());
+							assertEquals("The two lists of parameters are different.", oldStep.getParameterNames().size(), copyStep.getParameterNames().size());
+							for (String param : oldStep.getParameterNames()) {
+								assertEquals("The two values for parameter " + param + " are different",
+										oldStep.getParameter(param), copyStep.getParameter(param));
+							}
+						} else {
+							assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be equal",oldVal,copyVal);
+	
+							if (propertiesShareInstanceForDuplication.contains(property.getName())) return;
+	
+							/*
+							 * Ok, the duplicate object's property value compared equal.
+							 * Now we want to make sure if we modify that property on the original,
+							 * it won't affect the copy.
+							 */
+							Object newCopyVal = modifyObject(mmo, property, copyVal);
+	
+							assertFalse(
+									"The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,
+									oldVal.equals(newCopyVal)); 
+						}
 					}
 				}
 			} catch (NoSuchMethodException e) {
@@ -326,6 +351,22 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         	} else {
         		return AutoValidateSetting.SERP_CORRECTABLE;
         	}
+		} else if (property.getPropertyType() == TableIndex.class) {
+			CachableTable cachableTable = new CachableTable("newValue");
+			TableIndex tableIndex = new TableIndex(cachableTable, "newValueIndex");
+			try {
+				if(tableIndex.getTableIndex() == null) {
+					tableIndex.setTableIndex(new SQLIndex());
+				} else {
+					tableIndex.setTableIndex(null);
+				}
+			} catch (SQLObjectException e) {
+				e.printStackTrace();
+			}
+			return tableIndex;
+		} else if (property.getPropertyType() == CachableTable.class) {
+			CachableTable cachableTable = new CachableTable("newValue");
+			return cachableTable;
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
