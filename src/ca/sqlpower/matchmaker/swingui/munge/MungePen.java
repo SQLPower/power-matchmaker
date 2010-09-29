@@ -921,6 +921,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			//no-op
 		}
 
+		/**
+		 * This catches munge step input changes to its MungeStepOutput current field.
+		 * If we are making a new connection, we need to add a new IOConnector.
+		 * If we are removing an old connection, we need to remove the corresponding IOConnector
+		 */
 		@Override
 		public void propertyChanged(PropertyChangeEvent evt) {
 			if (evt.getPropertyName().equals("current") && evt.getSource() instanceof MungeStepInput && evt.getOldValue() == null) {
@@ -930,13 +935,13 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				MungeStep child = (MungeStep)((MungeStepInput)evt.getSource()).getParent();
 				
 				MungeStep parent = mso.getParent();
-				int parNum = parent.getMungeStepOutputs().indexOf(mso);
-				int childNum = child.getMungeStepInputs().indexOf((MungeStepInput)evt.getSource());
+				int parentIndex = parent.getMungeStepOutputs().indexOf(mso);
+				int childIndex = child.getMungeStepInputs().indexOf((MungeStepInput)evt.getSource());
 				
 				
-				IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
+				IOConnector ioc = new IOConnector(modelMap.get(parent),parentIndex,modelMap.get(child),childIndex);
 				add(ioc);
-				modelMap.get(parent).setConnectOutput(parNum, true);
+				modelMap.get(parent).setConnectOutput(parentIndex, true);
 			} else if (evt.getPropertyName().equals("current") && evt.getSource() instanceof MungeStepInput && evt.getNewValue() == null) {
 				logger.debug("connection caught");
 				//connected and input
@@ -944,16 +949,17 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				MungeStep child = (MungeStep)((MungeStepInput)evt.getSource()).getParent();
 				
 				MungeStep parent = mso.getParent();
-				int parNum = parent.getMungeStepOutputs().indexOf(mso);
-				int childNum = child.getMungeStepInputs().indexOf((MungeStepInput)evt.getSource());	
+				int parentIndex = parent.getMungeStepOutputs().indexOf(mso);
+				int childIndex = child.getMungeStepInputs().indexOf((MungeStepInput)evt.getSource());	
 				
 				//This stupid loop is needed because remove uses direct comparison
 				for (IOConnector con : getConnections()) {
 					if (con.getParentCom().equals(modelMap.get(parent)) 
 							&& con.getChildCom().equals(modelMap.get(child))
-							&& con.getParentNumber() == parNum && con.getChildNumber() == childNum) {
+							&& con.getParentNumber() == parentIndex && con.getChildNumber() == childIndex) {
 						remove(con);
 						con.getParentCom().setConnectOutput(con.getParentNumber(), false);
+						break;
 					}
 				}
 			}

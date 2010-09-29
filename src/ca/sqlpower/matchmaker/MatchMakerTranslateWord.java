@@ -25,6 +25,7 @@ import java.util.List;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -47,7 +48,7 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 	 * If the from value is null return "" if it dosn't 
 	 * Done this way to stop update storm in hibernate
 	 */
-	@NonProperty
+	@Accessor
 	public String getFrom() {
 		if (from == null) return "";
 		return from;
@@ -57,7 +58,7 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
      * Some databases will behave badly if you have nulls nested in subselects
      * so we change null to "" otherwise this is a normal setter.
      */
-	@NonProperty
+	@Mutator
 	public void setFrom(String from) {
 		String oldValue = this.from;
 		this.from = from;
@@ -69,7 +70,7 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 	 * If the from value is null return "" if it dosn't 
 	 * Done this way to stop update storm in hibernate
 	 */
-	@NonProperty
+	@Accessor
 	public String getTo() {
 		if (to == null) return "";
 		return to;
@@ -79,7 +80,7 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
      * Some databases will behave badly if you have nulls nested in subselects
      * so we change null to "" otherwise this is a normal setter.
      */
-	@NonProperty
+	@Mutator
 	public void setTo(String to) {
 		String oldValue = this.to;
 		this.to = to;

@@ -67,11 +67,6 @@ public class MMRootNode extends AbstractMatchMakerObject {
         tgp = new TranslateGroupParent(session);
         tgp.setName("Translation Groups");
     }
-    
-    @NonProperty
-	public boolean isRoot() {
-        return true;
-    }
 
     @Override
     public boolean equals(Object obj) {
