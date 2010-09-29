@@ -390,7 +390,7 @@ public class StubMungeStep implements MungeStep {
     /**
      * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input)
      */
-    public List<AbstractMungeStep.Input> getMungeStepInputs() {
+    public List<MungeStepInput> getMungeStepInputs() {
     	return null;
     }
 }

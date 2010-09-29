@@ -185,7 +185,7 @@ public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
     /**
      * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input)
      */
-    List<AbstractMungeStep.Input> getMungeStepInputs();
+    List<MungeStepInput> getMungeStepInputs();
 	
 	/**
 	 * Causes this munge step to evaluate its current input values and produce

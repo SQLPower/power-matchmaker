@@ -70,13 +70,13 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	}
 	
 	private void refreshInputs() throws SQLObjectException {
-        Set<Input> orphanInputs = new HashSet<Input>(getInputs());
+        Set<MungeStepInput> orphanInputs = new HashSet<MungeStepInput>(getInputs());
         for (SQLColumn c : table.getColumns()) {
             String colName = c.getName();
             int inputIdx = -1;
-            Input input = null;
+            MungeStepInput input = null;
             for (int i = 0; i < getInputCount(); i++) {
-                Input in = getInputs().get(i);
+                MungeStepInput in = getInputs().get(i);
                 if (c.getName().equals(in.getName())) {
                     inputIdx = i;
                     input = in;
@@ -101,7 +101,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
         }
         
         // clean up inputs whose columns no longer exist in the table
-        for (Input orphanInput : orphanInputs) {
+        for (MungeStepInput orphanInput : orphanInputs) {
             int index = getInputs().indexOf(orphanInput);
             removeInput(index);
         }

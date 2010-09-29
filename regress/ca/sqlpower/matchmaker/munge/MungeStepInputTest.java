@@ -17,20 +17,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker;
+package ca.sqlpower.matchmaker.munge;
 
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.object.SPObject;
 
-public class InputTest extends MatchMakerTestCase<AbstractMungeStep.Input> {
+public class MungeStepInputTest extends MatchMakerTestCase<MungeStepInput> {
 
 	UpperCaseMungeStep upperCaseMungeStep;
-	AbstractMungeStep.Input input;
+	MungeStepInput input;
 	final String appUserName = "test_user";
 	
-	public InputTest(String name) {
+	public MungeStepInputTest(String name) {
 		super(name);
 	}
 	
@@ -53,7 +55,7 @@ public class InputTest extends MatchMakerTestCase<AbstractMungeStep.Input> {
 	}
 
 	@Override
-	protected Input getTarget() {
+	protected MungeStepInput getTarget() {
 		return input;
 	}
 }

@@ -76,9 +76,9 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.LabelPane;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
@@ -407,7 +407,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		for (MungeStep ms : process.getChildren(MungeStep.class)) {
 			ms.addSPListener(mungeStepListener);
 			
-			for(AbstractMungeStep.Input in : ms.getMungeStepInputs()) {
+			for(MungeStepInput in : ms.getMungeStepInputs()) {
 				in.addSPListener(mungeStepListener);
 			}
 			
@@ -804,7 +804,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			MungeStep newMungeStep = ((MungeProcess)e.getSource()).getMungeSteps().get(x);
 			
 			newMungeStep.addSPListener(mungeStepListener);
-			for(AbstractMungeStep.Input in : newMungeStep.getMungeStepInputs()) {
+			for(MungeStepInput in : newMungeStep.getMungeStepInputs()) {
 				in.addSPListener(mungeStepListener);
 			}
 			SwingSessionContext ssc = (SwingSessionContext) process.getSession().getContext();
@@ -833,7 +833,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			MungeStep ms = (MungeStep)e.getChild();
 			AbstractMungeComponent mcom = modelMap.remove(ms);
 			ms.removeSPListener(mungeStepListener);
-			for(AbstractMungeStep.Input in : ms.getMungeStepInputs()) {
+			for(MungeStepInput in : ms.getMungeStepInputs()) {
 				in.removeSPListener(mungeStepListener);
 			}
 			removeAllListeners(mcom);
@@ -872,18 +872,18 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		@Override
 		public void childAdded(SPChildEvent e) { 
-			if(e.getSource() instanceof MungeStep && e.getChild() instanceof AbstractMungeStep.Input) {
+			if(e.getSource() instanceof MungeStep && e.getChild() instanceof MungeStepInput) {
 				((MungeStep)e.getSource()).getMungeStepInputs().get(e.getIndex()).addSPListener(mungeStepListener);
 			}
 		}
 
 		@Override
 		public void childRemoved(SPChildEvent e) {
-			if (e.getChild() instanceof AbstractMungeStep.Input &&
+			if (e.getChild() instanceof MungeStepInput &&
 					e.getSource() instanceof MungeStepOutput) {
 				logger.debug("connection removed");
 				//disconnect input
-				MungeStepOutput mso = (MungeStepOutput)((AbstractMungeStep.Input)e.getChild()).getCurrent();
+				MungeStepOutput mso = (MungeStepOutput)((MungeStepInput)e.getChild()).getCurrent();
 				MungeStep child = (MungeStep)e.getSource();
 				MungeStep parent = (MungeStep)mso.getParent();
 				int parNum = parent.getChildren().indexOf(mso);
@@ -923,29 +923,29 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		@Override
 		public void propertyChanged(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals("current") && evt.getSource() instanceof AbstractMungeStep.Input && evt.getOldValue() == null) {
+			if (evt.getPropertyName().equals("current") && evt.getSource() instanceof MungeStepInput && evt.getOldValue() == null) {
 				logger.debug("connection caught");
 				//connected and input
-				MungeStepOutput mso = ((AbstractMungeStep.Input)evt.getSource()).getCurrent();
-				MungeStep child = (MungeStep)((AbstractMungeStep.Input)evt.getSource()).getParent();
+				MungeStepOutput mso = ((MungeStepInput)evt.getSource()).getCurrent();
+				MungeStep child = (MungeStep)((MungeStepInput)evt.getSource()).getParent();
 				
 				MungeStep parent = mso.getParent();
 				int parNum = parent.getMungeStepOutputs().indexOf(mso);
-				int childNum = child.getMungeStepInputs().indexOf((AbstractMungeStep.Input)evt.getSource());
+				int childNum = child.getMungeStepInputs().indexOf((MungeStepInput)evt.getSource());
 				
 				
 				IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
 				add(ioc);
 				modelMap.get(parent).setConnectOutput(parNum, true);
-			} else if (evt.getPropertyName().equals("current") && evt.getSource() instanceof AbstractMungeStep.Input && evt.getNewValue() == null) {
+			} else if (evt.getPropertyName().equals("current") && evt.getSource() instanceof MungeStepInput && evt.getNewValue() == null) {
 				logger.debug("connection caught");
 				//connected and input
 				MungeStepOutput mso = (MungeStepOutput)evt.getOldValue();
-				MungeStep child = (MungeStep)((AbstractMungeStep.Input)evt.getSource()).getParent();
+				MungeStep child = (MungeStep)((MungeStepInput)evt.getSource()).getParent();
 				
 				MungeStep parent = mso.getParent();
 				int parNum = parent.getMungeStepOutputs().indexOf(mso);
-				int childNum = child.getMungeStepInputs().indexOf((AbstractMungeStep.Input)evt.getSource());	
+				int childNum = child.getMungeStepInputs().indexOf((MungeStepInput)evt.getSource());	
 				
 				//This stupid loop is needed because remove uses direct comparison
 				for (IOConnector con : getConnections()) {
