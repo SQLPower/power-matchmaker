@@ -232,6 +232,17 @@ public class SQLInputStep extends AbstractMungeStep {
     private void setupOutputs() throws SQLObjectException {
         Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren(MungeStepOutput.class));
         for (SQLColumn c : table.getColumns()) {
+        	
+        	/*
+			 * this next line is needed because we need to assign upstream types
+			 * to every type in columns otherwise stuff doesn't work right.
+			 * Unfortunately, we cannot do this at the source of the problem:
+			 * 		SQLTable.fetchColumnsForTable
+			 * since we have no session info there
+			 */
+			c.setType(c.getType());
+			c.setType(getSession().getSQLType(c.getType()));
+			
             String colName = c.getName();
             MungeStepOutput<?> output = getOutputByName(colName);
             if (output == null) {
