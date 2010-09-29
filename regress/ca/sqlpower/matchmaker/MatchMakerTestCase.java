@@ -40,6 +40,7 @@ import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.PersistedSPObjectTest;
@@ -120,6 +121,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("runnableDispatcher");
         propertiesToIgnoreForDuplication.add("workspaceContainer");
         propertiesToIgnoreForDuplication.add("tableMergeRules");
+        propertiesToIgnoreForDuplication.add("resultStep");
+        propertiesToIgnoreForDuplication.add("inputSteps");
+        propertiesToIgnoreForDuplication.add("mungeSteps");
+        propertiesToIgnoreForDuplication.add("projects");
+        
         
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");
@@ -434,7 +440,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         	} else {
         		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
         	}
-        } else if (property.getPropertyType() == DeDupeResultStep.class) {
+        } else if (property.getPropertyType() == MungeResultStep.class || 
+        		property.getPropertyType() == DeDupeResultStep.class) {
         	newVal = new DeDupeResultStep();
         } else if (property.getPropertyType() == TableMergeRules.class) {
         	if (oldVal == null){

@@ -20,11 +20,16 @@
 package ca.sqlpower.matchmaker.util;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -55,9 +60,22 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == Project.class) {
         	return new Project();
         } else if (valueType == MungeProcess.class) {
-        	return new MungeProcess();
+        	MungeProcess mp = new MungeProcess();
+        	MungeResultStep mrs = new DeDupeResultStep();
+        	mp.addChild(mrs);
+        	return mp;
         } else if (valueType == MatchMakerTranslateGroup.class) {
         	return new MatchMakerTranslateGroup();
+        } else if (valueType == ColumnMergeRules.MergeActionType.class) {
+        	return ColumnMergeRules.MergeActionType.MAX;
+        }  else if (valueType == PlFolder.class) {
+        	return new PlFolder("Generic PlFolder");
+        } else if (valueType == MungeStepOutput.class) {
+        	return new MungeStepOutput("output", String.class);
+        } else if (valueType == FolderParent.class) {
+        	return new FolderParent(null);
+        } else if (valueType == Long.class) {
+        	return (Long)oldVal + 1;
         } else {
             return super.makeNewValue(valueType, oldVal, propName);
         }

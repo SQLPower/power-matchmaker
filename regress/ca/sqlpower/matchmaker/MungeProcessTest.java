@@ -74,7 +74,7 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
 	}
 	@Override
 	public SPObject getSPObjectUnderTest() {
-		return target;
+		return getTarget();
 	}
 
 	@Override
