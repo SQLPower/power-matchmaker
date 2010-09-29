@@ -20,20 +20,16 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
-public class MatchMakerTranslateWordTest
-	extends MatchMakerTestCase<MatchMakerTranslateWord> {
+public class MatchMakerTranslateWordTest extends MatchMakerTestCase<MatchMakerTranslateWord> {
 
 	public MatchMakerTranslateWordTest(String name) {
 		super(name);
 	}
 
 	final String appUserName = "test_user";
+	MatchMakerTranslateGroup parent;
 	MatchMakerTranslateWord target;
 
 	@Override
@@ -42,7 +38,9 @@ public class MatchMakerTranslateWordTest
 		target = new MatchMakerTranslateWord();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		parent = new MatchMakerTranslateGroup();
 		target.setSession(session);
+		target.setParent(parent);
 		
 		// Ignoring because the getName() has been changed to enable
 		// naming the node on the tree.
@@ -80,16 +78,6 @@ public class MatchMakerTranslateWordTest
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return null;
-	}
-
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return target;
-	}
-
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 
 }

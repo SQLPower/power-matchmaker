@@ -33,12 +33,9 @@ import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -50,7 +47,6 @@ import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.testutil.MockJDBCDriver;
-import ca.sqlpower.testutil.NewValueMaker;
 
 public class ProjectTest extends MatchMakerTestCase<Project> {
 
@@ -58,6 +54,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		super(name);
 	}
 
+    PlFolder parentFolder;
 	Project project;
 	private TestingMatchMakerSession session;
 
@@ -110,6 +107,8 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         session = new TestingMatchMakerSession();
 		session.setDatabase(new SQLDatabase());
         project.setSession(session);
+        parentFolder = new PlFolder();
+        parentFolder.addChild(project);
     }
     @Override
     protected Project getTarget() {
@@ -685,18 +684,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         assertTrue(newTableInDatabase.getColumns().size() > 0);
         assertSame(newTable, newTableInDatabase);
     }
+    
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return MungeProcess.class;
-	}
-	
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return getTarget();
-	}
-	
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

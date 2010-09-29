@@ -25,11 +25,7 @@ import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
 
 public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
@@ -71,14 +67,5 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return SQLInputStep.class;
-	}
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return getTarget();
-	}
-
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

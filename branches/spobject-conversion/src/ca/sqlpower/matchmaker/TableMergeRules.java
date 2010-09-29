@@ -260,7 +260,7 @@ public class TableMergeRules
 	}
 
 	public SQLTable getSourceTable() {
-		return cachableTable.getSourceTable();
+		return cachableTable.getTable();
 	}
 	
 	public String getTableName() {
@@ -340,6 +340,11 @@ public class TableMergeRules
 
 	public TableMergeRules getParentMergeRule() {
 		return parentMergeRule;
+	}
+	
+	@Override
+	public Project getParent() {
+		return (Project)super.getParent();
 	}
 
 	public void setParentMergeRule(TableMergeRules parentTable) {
@@ -441,7 +446,7 @@ public class TableMergeRules
 	 * rule of its parent project.
 	 */
 	public boolean isSourceMergeRule() {
-		Project p = (Project)getParent();
+		Project p = getParent();
 		if (p != null && p.getSourceTable() != null 
 				&& getSourceTable() != null) {
 			SQLTable matchSourceTable = p.getSourceTable();

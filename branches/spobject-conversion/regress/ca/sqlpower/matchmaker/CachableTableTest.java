@@ -19,17 +19,13 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
-import ca.sqlpower.object.PersistedSPObjectTest;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
-public class CachableTableTest extends PersistedSPObjectTest {
+public class CachableTableTest extends MatchMakerTestCase<CachableTable> {
 	
 	final String appUserName = "test_user";
 	CachableTable ct;
+	Project parentProject;
 	
 	public CachableTableTest(String name) {
 		super(name);
@@ -39,7 +35,11 @@ public class CachableTableTest extends PersistedSPObjectTest {
 		super.setUp();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		parentProject = new Project();
 		ct = new CachableTable("sourceTable");
+		ct.setParent(parentProject);
+		ct.setName("CachableTableTestObject");
+		ct.setSession(session);
 	}
 	
 	@Override
@@ -48,12 +48,7 @@ public class CachableTableTest extends PersistedSPObjectTest {
 	}
 
 	@Override
-	public SPObject getSPObjectUnderTest() {
+	protected CachableTable getTarget() {
 		return ct;
-	}
-
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

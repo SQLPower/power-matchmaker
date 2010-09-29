@@ -20,14 +20,9 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
-public class MatchMakerTranslateGroupTest 
-	extends MatchMakerTestCase<MatchMakerTranslateGroup> {
+public class MatchMakerTranslateGroupTest extends MatchMakerTestCase<MatchMakerTranslateGroup> {
 
 	public MatchMakerTranslateGroupTest(String name) {
 		super(name);
@@ -51,15 +46,5 @@ public class MatchMakerTranslateGroupTest
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return MatchMakerTranslateWord.class;
-	}
-
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return target;
-	}
-	
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

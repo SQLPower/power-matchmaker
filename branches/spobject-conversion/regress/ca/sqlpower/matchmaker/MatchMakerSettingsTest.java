@@ -56,7 +56,7 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		mms.setSession(session);
 
-
+		getRootObject().addChild(mms,0);
 	}
 
 	@Override
@@ -76,6 +76,6 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 
 	@Override
 	public SPObject getSPObjectUnderTest() {
-		return mms;
+		return getTarget();
 	}
 }

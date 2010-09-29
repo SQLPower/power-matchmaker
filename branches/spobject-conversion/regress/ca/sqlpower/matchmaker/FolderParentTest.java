@@ -19,15 +19,11 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
-import ca.sqlpower.object.PersistedSPObjectTest;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
-public class FolderParentTest extends PersistedSPObjectTest {
+public class FolderParentTest extends MatchMakerTestCase<FolderParent> {
 	
+	MMRootNode rootNode;
 	FolderParent folderParent;
 	final String appUserName = "test_user";
 	
@@ -39,7 +35,14 @@ public class FolderParentTest extends PersistedSPObjectTest {
 		super.setUp();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		rootNode = new MMRootNode(session);
 		folderParent = new FolderParent(session);
+		rootNode.addChild(folderParent, 0);
+	}
+	
+	@Override
+	public void testDuplicate() throws Exception {
+		// FolderParent does not duplicate
 	}
 	
 	@Override
@@ -48,12 +51,7 @@ public class FolderParentTest extends PersistedSPObjectTest {
 	}
 
 	@Override
-	public SPObject getSPObjectUnderTest() {
+	protected FolderParent getTarget() {
 		return folderParent;
-	}
-
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

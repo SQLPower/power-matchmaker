@@ -20,15 +20,11 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.testutil.NewValueMaker;
 
 public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 
@@ -64,7 +60,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 	}
 	
 	@Override
-	protected ColumnMergeRules getTarget() throws SQLObjectException {
+	protected ColumnMergeRules getTarget() {
 		return m1;
 	}
 
@@ -130,18 +126,5 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return null;
-	}
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		try {
-			return getTarget();
-		} catch (SQLObjectException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }

@@ -20,15 +20,12 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.util.MatchMakerNewValueMaker;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.testutil.NewValueMaker;
 
 
 public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 
+	private FolderParent parentFolder;
 	private PlFolder plFolder;
 	final String appUserName = "THE_USER";
 	
@@ -42,6 +39,8 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		plFolder.setSession(session);
+		parentFolder = new FolderParent(session);
+		parentFolder.addChild(plFolder, 0);
 	}
 
 	@Override
@@ -52,15 +51,5 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
 		return Project.class;
-	}
-
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return getTarget();
-	}
-	
-	@Override
-	public NewValueMaker createNewValueMaker(SPObject root, DataSourceCollection<SPDataSource> dsCollection) {
-		return new MatchMakerNewValueMaker(root, dsCollection);
 	}
 }
