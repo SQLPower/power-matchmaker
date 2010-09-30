@@ -19,24 +19,33 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class TrimSpacesMungeStepTest extends TestCase {
-	MungeStep step;
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+
+public class TrimSpacesMungeStepTest extends MatchMakerTestCase<TrimSpacesMungeStep> {
+	
+	public TrimSpacesMungeStepTest(String name) {
+		super(name);
+	}
+
+	TrimSpacesMungeStep step;
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 	
 	@Override
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new TrimSpacesMungeStep();
-		step.open(Logger.getLogger(TrimSpacesMungeStepTest.class));
+		super.setUp();
 	}
 	
 	public void testEmptyString() throws Exception{
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("");
 		step.connectInput(0, mso);
+		step.open(logger);
 		step.call();
 		MungeStepOutput out = step.getOutputByName("trimSpacesOutput");
 		assertEquals("", out.getData());
@@ -46,6 +55,7 @@ public class TrimSpacesMungeStepTest extends TestCase {
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("abcde");
 		step.connectInput(0, mso);
+		step.open(logger);
 		step.call();
 		MungeStepOutput out = step.getOutputByName("trimSpacesOutput");
 		assertEquals("abcde", out.getData());
@@ -55,6 +65,7 @@ public class TrimSpacesMungeStepTest extends TestCase {
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("   abcde  \t");
 		step.connectInput(0, mso);
+		step.open(logger);
 		step.call();
 		MungeStepOutput out = step.getOutputByName("trimSpacesOutput");
 		assertEquals("abcde", out.getData());
@@ -64,9 +75,25 @@ public class TrimSpacesMungeStepTest extends TestCase {
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("   ab c\tde  \t");
 		step.connectInput(0, mso);
+		step.open(logger);
 		step.call();
 		MungeStepOutput out = step.getOutputByName("trimSpacesOutput");
 		assertEquals("ab c\tde", out.getData());
+	}
+
+	@Override
+	protected TrimSpacesMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
 	}
 	
 }
