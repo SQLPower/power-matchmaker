@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 /**
  * This munge step will convert a string to a number. If the conversion fails there are two options.
@@ -30,6 +32,7 @@ public class StringToNumberMungeStep extends AbstractMungeStep {
 	
 	public static final String CONTINUE_ON_MALFORMED_NUMBER = "continue on malformed number";
 
+	@Constructor
 	public StringToNumberMungeStep() {
 		super("String to Number",false);
 		setParameter(CONTINUE_ON_MALFORMED_NUMBER, "False");
