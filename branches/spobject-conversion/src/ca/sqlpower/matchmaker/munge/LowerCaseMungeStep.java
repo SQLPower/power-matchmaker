@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 /**
  * This munge step will convert a alphabetical string input
@@ -26,6 +28,7 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class LowerCaseMungeStep extends AbstractMungeStep {
 
+	@Constructor
 	public LowerCaseMungeStep() {
 		super("Lower Case",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("lowerCaseOutput", String.class);

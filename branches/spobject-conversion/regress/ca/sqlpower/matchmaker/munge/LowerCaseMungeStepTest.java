@@ -21,17 +21,22 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class LowerCaseMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class LowerCaseMungeStepTest extends MatchMakerTestCase<LowerCaseMungeStep> {
 
 	private LowerCaseMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
+
+	public LowerCaseMungeStepTest(String name) {
+		super(name);
+	}
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -103,5 +108,20 @@ public class LowerCaseMungeStepTest extends TestCase {
             // good
         }
     }
+
+	@Override
+	protected LowerCaseMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// already in AbstractMungeStep
+	}
 
 }
