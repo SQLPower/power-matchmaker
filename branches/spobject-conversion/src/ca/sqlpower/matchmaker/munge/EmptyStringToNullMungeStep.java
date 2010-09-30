@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 
 /**
@@ -32,6 +34,7 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class EmptyStringToNullMungeStep extends AbstractMungeStep {
 
+	@Constructor
     public EmptyStringToNullMungeStep() {
         super("Empty String to Null", false);
         

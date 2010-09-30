@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.NonProperty;
 
 
@@ -72,6 +73,7 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 	 */
 	private CSVWriter csvWriter;
 
+	@Constructor
 	public CSVWriterMungeStep() {
 		super("CSV Writer", true);
 		InputDescriptor desc = new InputDescriptor("csvWriter", String.class);

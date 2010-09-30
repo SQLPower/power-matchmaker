@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLIndex;
 
@@ -62,6 +63,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	 */
 	private MungeStepOutput[] indexValues;
 
+	@Constructor
 	public DeDupeResultStep() {
 		super("Transformation Results",true);
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
