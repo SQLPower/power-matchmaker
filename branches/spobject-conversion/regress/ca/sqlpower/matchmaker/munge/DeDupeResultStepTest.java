@@ -21,24 +21,27 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 
-public class DeDupeResultStepTest extends TestCase {
+public class DeDupeResultStepTest extends MatchMakerTestCase<DeDupeResultStep> {
+
+	public DeDupeResultStepTest(String name) {
+		super(name);
+	}
 
 	private DeDupeResultStep step;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		MungeStep inputStep = new SQLInputStep();
 		
         for (int i = 0; i < 3; i++) {
@@ -74,6 +77,8 @@ public class DeDupeResultStepTest extends TestCase {
 		mp.addChild(inputStep);
 		mp.addChild(step);
 		project.addChild(mp);
+		
+		super.setUp();
 	}
 
 	public void test() throws Exception {
@@ -105,5 +110,25 @@ public class DeDupeResultStepTest extends TestCase {
 		assertEquals(1, mungedData.length);
 		String output = (String)mungedData[0];
 		assertEquals("cow", output);
+	}
+
+	@Override
+	protected DeDupeResultStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepInput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Already in AbstractMungeStep
+	}
+	
+	@Override
+	public void testDuplicate() throws Exception {
+		// Do nothing
 	}
 }
