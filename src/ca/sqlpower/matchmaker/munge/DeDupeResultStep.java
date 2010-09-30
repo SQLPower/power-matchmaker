@@ -24,9 +24,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLIndex;
 
 /**
@@ -72,6 +73,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
      * Sets the input step associated with this result step.  This has to
      * be done before calling {@link #open(Logger)}.
      */
+	@NonProperty
     public void setInputStep(MungeStep step) {
         this.inputStep = step;
     }
@@ -147,6 +149,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		return Boolean.TRUE;
 	}
 	
+	@NonProperty
 	public List<MungeResult> getResults() {
 		return results;
 	}

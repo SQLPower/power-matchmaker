@@ -30,8 +30,10 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
+import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
@@ -84,7 +86,9 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return new UpperCaseMungeStep();
         } else if (valueType == MatchMakerObject.class) {
         	return new TestingAbstractMatchMakerObject();
-        }  else if (valueType == AddressDatabase.class) {
+        } else if (valueType == MungeStepInput.class) {
+        	return new MungeStepInput(null, new InputDescriptor("input", Object.class),new UpperCaseMungeStep());
+        } else if (valueType == AddressDatabase.class) {
         	/*
         	 * FIXME This needs to be fixed somehow not to return null
         	 * but it does not really do anything to harm the functionality
