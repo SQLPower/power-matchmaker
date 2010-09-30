@@ -19,12 +19,15 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 /**
  * This munge step will trim white space from the start and end of strings. 
  */
 public class TrimSpacesMungeStep extends AbstractMungeStep {
 
+	@Constructor
 	public TrimSpacesMungeStep() {
 		super("Trim Spaces",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("trimSpacesOutput", String.class);
