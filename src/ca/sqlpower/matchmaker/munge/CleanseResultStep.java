@@ -35,14 +35,16 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 /**
  * The Cleanse Result Step is the ultimate destination for munge data in a data
@@ -64,7 +66,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	private PreparedStatement ps = null;
 	private boolean usePS = false; 
 	
-	
+	@Constructor
 	public CleanseResultStep() throws SQLObjectException {
 		super("Table!", false);
 	}
@@ -274,6 +276,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		}
 	}
 	
+	@NonProperty
 	public List<MungeResult> getResults() {
 		return Collections.emptyList();
 	}
@@ -296,6 +299,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	
 	
 	@Override
+	@NonProperty
 	public Project getProject() {
 		Project p = super.getProject();
 		if (p == null && inputStep != null) {
