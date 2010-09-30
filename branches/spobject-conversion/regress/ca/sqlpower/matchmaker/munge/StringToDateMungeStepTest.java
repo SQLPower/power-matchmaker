@@ -24,17 +24,23 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
 
 /**
  * This tests the {@link StringToDateMungeStep} on hardcoded date strings.
  * It currently ignores the exact time in milliseconds and just compares 
  * on what's being tested.
  */
-public class StringToDateMungeStepTest extends TestCase {
-	MungeStep step;
+public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMungeStep> {
+	
+	public StringToDateMungeStepTest(String name) {
+		super(name);
+	}
+
+	StringToDateMungeStep step;
 	
 	private final Calendar c = Calendar.getInstance();
 	
@@ -138,6 +144,21 @@ public class StringToDateMungeStepTest extends TestCase {
 		step.call();
 		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals(null, (Date)out.getData());
+	}
+
+	@Override
+	protected StringToDateMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
 	}
 	
 	
