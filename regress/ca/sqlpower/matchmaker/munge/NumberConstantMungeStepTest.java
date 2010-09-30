@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.munge;
 
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.object.SPObject;
 
 
 public class NumberConstantMungeStepTest extends AbstractMungeStepTest<NumberConstantMungeStep> {
@@ -41,11 +40,6 @@ public class NumberConstantMungeStepTest extends AbstractMungeStepTest<NumberCon
 		@Override
 		protected NumberConstantMungeStep getTarget() {
 			return step;
-		}
-		
-		@Override
-		protected Class<? extends SPObject> getChildClassType() {
-			return MungeStepInput.class;
 		}
 		
 		@Override
