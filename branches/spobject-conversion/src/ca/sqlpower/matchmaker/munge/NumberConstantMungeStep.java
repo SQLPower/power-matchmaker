@@ -21,6 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
+
 
 /**
  * The Number Constant Step provides a user-specified Number value on its output
@@ -42,6 +45,7 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
      */
     public static final String RETURN_NULL = "return null";
     
+    @Constructor
     public NumberConstantMungeStep() {
         super("Number Constant", false);
         setParameter(RETURN_NULL, "False");
@@ -54,10 +58,12 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
         return Boolean.TRUE;
     }
     
+    @NonProperty
     public void setValue(BigDecimal newValue) {
         setParameter(VALUE_PARAMETER_NAME, newValue.toPlainString());
     }
     
+    @NonProperty
     public BigDecimal getValue() {
     	if (!isReturningNull()) {
     		return new BigDecimal(getParameter(VALUE_PARAMETER_NAME));
@@ -66,9 +72,11 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
     	}
     }
     
+    @NonProperty
     public boolean isReturningNull() {
     	return getBooleanParameter(RETURN_NULL).booleanValue();
     }
+    @NonProperty
     
     public void setReturningNull(boolean b) {
     	setParameter(RETURN_NULL, String.valueOf(b));
