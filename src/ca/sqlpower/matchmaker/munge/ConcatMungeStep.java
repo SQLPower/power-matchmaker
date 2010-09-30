@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.NonProperty;
 
 
@@ -44,6 +45,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
      */
     public static final String DELIMITER_PARAMETER_NAME = "delimiter";
     
+    @Constructor
 	public ConcatMungeStep() {
 		super("Concat", true);
 		//This might be overriden by hibernate when loading from database.

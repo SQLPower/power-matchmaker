@@ -21,17 +21,22 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 
-public class GoogleAddressLookupTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
 
-    private GoogleAddressLookup step;
+public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleAddressLookupMungeStep> {
+
+    public GoogleAddressLookupMungeStepTest(String name) {
+		super(name);
+	}
+
+	private GoogleAddressLookupMungeStep step;
 
     private MungeStepOutput<String> testInput;
 
@@ -41,8 +46,8 @@ public class GoogleAddressLookupTest extends TestCase {
         super.setUp();
         logger.addAppender(new ConsoleAppender());
         logger.setLevel(Level.ALL);
-        step = new GoogleAddressLookup();
-        step.setParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY, "ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
+        step = new GoogleAddressLookupMungeStep();
+        step.setParameter(GoogleAddressLookupMungeStep.GOOGLE_MAPS_API_KEY, "ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
         testInput = new MungeStepOutput<String>("Testing address values", String.class);
         step.connectInput(0, testInput);
     }
@@ -109,4 +114,24 @@ public class GoogleAddressLookupTest extends TestCase {
             logger.removeAppender(ec);
         }
     }
+
+	@Override
+	protected GoogleAddressLookupMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+    
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Already in AbstractMungeStep
+	}
+	
+	@Override
+	public void testDuplicate() throws Exception {
+		// do nothing
+	}
 }

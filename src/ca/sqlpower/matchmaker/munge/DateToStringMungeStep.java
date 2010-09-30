@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.NonProperty;
 
 /**
@@ -60,6 +61,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	public static final List<String> TIME_FORMATS = Arrays.asList("", "h:mm:ss a",
 			"hh:mm:ss a", "H:mm:ss", "HH:mm:ss");
 	
+	@Constructor
 	public DateToStringMungeStep() {
 		super("Date to String", false);
 		setDateFormat(DATE_FORMATS.get(1));

@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.NonProperty;
 
 
@@ -73,6 +74,7 @@ public class DateConstantMungeStep extends AbstractMungeStep {
      */
     public static final String FORMAT_PARAMETER_NAME = "format type";
     
+    @Constructor
     public DateConstantMungeStep() throws Exception {
         super("Date Constant", false);
         setParameter(RETURN_NULL, "False");

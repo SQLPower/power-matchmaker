@@ -34,8 +34,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
 
-public class GoogleAddressLookup extends AbstractMungeStep {
+public class GoogleAddressLookupMungeStep extends AbstractMungeStep {
 
     
     public static final String GOOGLE_MAPS_API_KEY = "GoogleMapsApiKey";
@@ -84,7 +86,8 @@ public class GoogleAddressLookup extends AbstractMungeStep {
      */
     private final MungeStepOutput<BigDecimal> accuracy;
     
-    public GoogleAddressLookup() {
+    @Constructor
+    public GoogleAddressLookupMungeStep() {
         super("Google Maps Address Lookup",false);
         
         super.addInput(new InputDescriptor("Address", String.class));
@@ -230,7 +233,8 @@ public class GoogleAddressLookup extends AbstractMungeStep {
 
         return sb.toString();
     }
-
+    
+    @NonProperty
     public double getRateLimit() {
         String rateLimitStr = getParameter(LOOKUP_RATE_LIMIT);
         if (rateLimitStr != null) {

@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.commons.codec.language.DoubleMetaphone;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 /**
  * This munge step will output the double metaphone code of the given input. This
  * supports using the alternate encoding as an option. 
@@ -35,6 +37,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	 */
 	public static final String USE_ALTERNATE_PARAMETER_NAME = "useAlternate";
 	
+	@Constructor
 	public DoubleMetaphoneMungeStep() {
 		super("Double Metaphone",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);

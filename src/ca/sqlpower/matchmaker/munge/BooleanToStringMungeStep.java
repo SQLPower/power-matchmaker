@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 
 /**
@@ -38,7 +40,7 @@ public class BooleanToStringMungeStep extends AbstractMungeStep {
 	 */
 	public static final String FALSE_STRING_PARAMETER_NAME = "false string";
 	
-	
+	@Constructor
 	public BooleanToStringMungeStep() {
 		super("Boolean to String",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("stringOutput", String.class);

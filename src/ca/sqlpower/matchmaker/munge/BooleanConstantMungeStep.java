@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 
 /**
@@ -31,7 +33,7 @@ public class BooleanConstantMungeStep extends AbstractMungeStep {
 	public static final String FALSE = "False";
 	public static final String NULL = "Null";
 	
-	
+	@Constructor
 	public BooleanConstantMungeStep() {
 		super("Boolean Constant", false);
 		setParameter(BOOLEAN_VALUE, TRUE);
