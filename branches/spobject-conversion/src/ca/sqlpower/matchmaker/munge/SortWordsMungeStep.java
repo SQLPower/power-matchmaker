@@ -22,6 +22,9 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
+
 public class SortWordsMungeStep extends AbstractMungeStep {
 
     /**
@@ -51,6 +54,7 @@ public class SortWordsMungeStep extends AbstractMungeStep {
      */
     public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
 
+    @Constructor
     public SortWordsMungeStep() {
         super("Sort Words", false);
         setParameter(DELIMITER_PARAMETER_NAME, "\\p{Space}+");
@@ -114,18 +118,22 @@ public class SortWordsMungeStep extends AbstractMungeStep {
         return true;
     }
 
+    @NonProperty
     public void setDelimiter(String delimiter) {
         setParameter(DELIMITER_PARAMETER_NAME, delimiter);
     }
     
+    @NonProperty
     public void setDelimiterCaseSensitive(boolean v) {
         setParameter(CASE_SENSITIVE_PARAMETER_NAME, v);
     }
     
+    @NonProperty
     public void setDelimiterRegex(boolean v) {
         setParameter(USE_REGEX_PARAMETER_NAME, v);
     }
     
+    @NonProperty
     public void setResultDelimiter(String resultDelimiter) {
         setParameter(RESULT_DELIM_PARAMETER_NAME, resultDelimiter);
     }

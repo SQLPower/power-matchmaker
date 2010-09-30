@@ -30,11 +30,12 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sql.CachedRowSet;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -325,10 +326,12 @@ public class SQLInputStep extends AbstractMungeStep {
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
+    @NonProperty
     public MungeResultStep getOutputStep() throws SQLObjectException {
         return getOutputStep(getProject());
     }
     
+    @NonProperty
     public MungeResultStep getOutputStep(Project project) throws SQLObjectException {
         if (outputStep != null) {
             return outputStep;
@@ -341,10 +344,12 @@ public class SQLInputStep extends AbstractMungeStep {
     }
     
     @Override
+    @NonProperty
     public boolean isInputStep() {
     	return true;
     }
     
+    @NonProperty
     public ResultSet getResultSet() {
     	return rs;
     }

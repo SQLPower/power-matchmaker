@@ -21,21 +21,28 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class SortWordsMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.object.SPObject;
+
+public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeStep> {
 
 	private SortWordsMungeStep step;
 	
 	private MungeStepOutput<String> testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-	
+
+	public SortWordsMungeStepTest(String name) {
+		super(name);
+	}
+
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new SortWordsMungeStep();
+		step.setSession(new TestingMatchMakerSession());
+		super.setUp();
 	}
 
 	public void testCallOnNull() throws Exception {
@@ -193,5 +200,19 @@ public class SortWordsMungeStepTest extends TestCase {
         String result = (String) output.getData();
         assertEquals("alpha\\bravo\\crix", result);
     }
-    
+
+	@Override
+	protected SortWordsMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// already in AbstractMungeStep
+	}
 }
