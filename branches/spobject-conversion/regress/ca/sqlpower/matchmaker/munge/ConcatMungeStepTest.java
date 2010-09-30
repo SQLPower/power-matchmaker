@@ -21,21 +21,29 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class ConcatMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
+public class ConcatMungeStepTest extends AbstractMungeStepTest<ConcatMungeStep> {
+
+	MatchMakerSession session;
 	private ConcatMungeStep step;
+
+	public ConcatMungeStepTest(String name) {
+		super(name);
+	}
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new ConcatMungeStep();
+		session = new TestingMatchMakerSession();
+		step.setSession(session);
+		super.setUp();
 	}
 
 	public void testCallConcatTwoStrings() throws Exception {
@@ -196,7 +204,7 @@ public class ConcatMungeStepTest extends TestCase {
         assertEquals(null, result);
     }
 
-    public void testConnectInput() throws Exception {
+    public void testConnectInput() {
     	testInput = new MungeStepOutput<String>("test1", String.class);
         step.connectInput(0, testInput);
         testInput = new MungeStepOutput<String>("test2", String.class);
@@ -205,4 +213,14 @@ public class ConcatMungeStepTest extends TestCase {
         assertEquals(3, step.getMSOInputs().size());
         assertEquals(String.class, step.getInputDescriptor(2).getType());
     }
+
+	@Override
+	protected ConcatMungeStep getTarget() {
+		return step;
+	}
+	
+	@Override
+	public void testHasConnectedInputs() {
+		// Do nothing
+	}
 }

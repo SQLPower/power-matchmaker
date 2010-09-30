@@ -33,6 +33,8 @@ public class BooleanToStringMungeStepTest extends AbstractMungeStepTest<BooleanT
 	
 	protected void setUp() throws Exception {
 		step = new BooleanToStringMungeStep();
+		MungeStepOutput mso = new MungeStepOutput("in",Boolean.class);
+		mungeStep.connectInput(0, mso);
 		super.setUp();
 	}
 	
