@@ -21,12 +21,16 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class SubstringByWordMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
 
+public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringByWordMungeStep> {
+
+	public SubstringByWordMungeStepTest(String name) {
+		super(name);
+	}
 	private SubstringByWordMungeStep step;
 	
 	private MungeStepOutput testInput;
@@ -140,5 +144,20 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("b c d e f", result);
+	}
+	@Override
+	protected SubstringByWordMungeStep getTarget() {
+		return step;
+	}
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: PersistedSPObjectTest.getChildClassType()");
+		return null;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no=op
 	}
 }
