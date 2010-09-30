@@ -262,13 +262,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			throw new IndexOutOfBoundsException(
 					"Cannot add at position: " + index);
 		}
-		if(canAddInput()) {
-			MungeStepInput in = new MungeStepInput(null, desc, this);
-			inputs.add(index, in);
-			fireChildAdded(MungeStepInput.class, in, index);
-		} else {
-			throw new RuntimeException("You cannot add an input to " + this);
-		}
+		MungeStepInput in = new MungeStepInput(null, desc, this);
+		inputs.add(index, in);
+		fireChildAdded(MungeStepInput.class, in, index);
 	}
 
 	public boolean removeInput(int index) {
