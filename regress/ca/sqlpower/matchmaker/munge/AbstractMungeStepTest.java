@@ -202,9 +202,7 @@ public abstract class AbstractMungeStepTest<T extends MatchMakerObject> extends 
     }
 
     public void testCallAfterRollback() throws Exception {
-		MungeStepOutput<Boolean> mso = new MungeStepOutput<Boolean>("in",Boolean.class);
-		mungeStep.connectInput(0, mso);
-        mungeStep.open(Logger.getLogger(getClass()));
+    	mungeStep.open(Logger.getLogger(getClass()));
         mungeStep.call();
         mungeStep.mungeRollback();
         assertTrue(mungeStep.isRolledBack());
@@ -217,8 +215,6 @@ public abstract class AbstractMungeStepTest<T extends MatchMakerObject> extends 
     }
     
     public void testCallAfterCommit() throws Exception {
-		MungeStepOutput<Boolean> mso = new MungeStepOutput<Boolean>("in",Boolean.class);
-		mungeStep.connectInput(0, mso);
         mungeStep.open(Logger.getLogger(getClass()));
         mungeStep.call();
         mungeStep.mungeCommit();
