@@ -21,11 +21,12 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class UpperCaseMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeStep> {
 
 	private UpperCaseMungeStep step;
 	
@@ -33,9 +34,18 @@ public class UpperCaseMungeStepTest extends TestCase {
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
+	public UpperCaseMungeStepTest(String name) {
+		super(name);
+	}
+	
+	@Override
+	protected UpperCaseMungeStep getTarget() {
+		return step;
+	}
+	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new UpperCaseMungeStep();
+		super.setUp();
 	}
 
 	public void testCallonLowerCaseString() throws Exception {
@@ -84,5 +94,15 @@ public class UpperCaseMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
 	}
 }
