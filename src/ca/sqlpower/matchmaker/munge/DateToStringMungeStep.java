@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import ca.sqlpower.object.annotation.NonProperty;
+
 /**
  * This munge step will return a string representation of the given date.
  * It uses a format parameter that specifies the date format pattern.
@@ -105,10 +107,12 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 		return true;
 	}
 	
+	@NonProperty
 	public void setFormat(String format) {
 		setParameter(FORMAT_PARAM, format);
 	}
 	
+	@NonProperty
 	public String getFormat() {
 		return getParameter(FORMAT_PARAM);
 	}
@@ -116,6 +120,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	/**
 	 * Sets the date portion of the pattern and updates the format pattern.
 	 */
+	@NonProperty
 	public void setDateFormat(String format) {
 		setParameter(DATE_FORMAT_PARAM, format);
 		updateFormat();
@@ -124,6 +129,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	/**
 	 * Returns the date portion of the format pattern. 
 	 */
+	@NonProperty
 	public String getDateFormat() {
 		return getParameter(DATE_FORMAT_PARAM);
 	}
@@ -131,6 +137,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	/**
 	 * Sets the time portion of the pattern and updates the format pattern.
 	 */
+	@NonProperty
 	public void setTimeFormat(String format) {
 		setParameter(TIME_FORMAT_PARAM, format);
 		updateFormat();
@@ -139,6 +146,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	/**
 	 * Returns the time portion of the format pattern. 
 	 */
+	@NonProperty
 	public String getTimeFormat() {
 		return getParameter(TIME_FORMAT_PARAM);
 	}
@@ -147,6 +155,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	 * Updates the format parameter to the concatenation of the date format
 	 * and the time format.
 	 */
+	@NonProperty
 	private void updateFormat() {
 		String format = getDateFormat() + " " + getTimeFormat();
 		setParameter(FORMAT_PARAM, format.trim());
