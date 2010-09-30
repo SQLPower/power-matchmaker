@@ -22,21 +22,31 @@ package ca.sqlpower.matchmaker.munge;
 import java.math.BigDecimal;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class WordCountMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
 
-	private WordCountMungeStep step;
+public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeStep> {
+
+	WordCountMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new WordCountMungeStep();
+		super.setUp();
+	}
+	
+	public WordCountMungeStepTest(String name) {
+		super(name);
+	}
+	
+	@Override
+	protected WordCountMungeStep getTarget() {
+		return step;
 	}
 
 	public void testCallonNoOccurrence() throws Exception {
@@ -131,5 +141,15 @@ public class WordCountMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
 	}
 }
