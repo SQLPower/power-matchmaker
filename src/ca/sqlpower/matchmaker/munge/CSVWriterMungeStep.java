@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import ca.sqlpower.object.annotation.NonProperty;
 
 
 /**
@@ -114,42 +115,52 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 		csvWriter.close();
 	}
 	
+	@NonProperty
 	public void setFilePath(String filePath) {
 		setParameter(FILE_PATH_PARAM, new File(filePath).getAbsolutePath());
 	}
 
+	@NonProperty
 	public String getFilePath() {
 		return getParameter(FILE_PATH_PARAM);
 	}
 
+	@NonProperty
 	public void setSeparator(char separator) {
 		setParameter(SEPARATOR_PARAM, separator + "");
 	}
 
+	@NonProperty
 	public char getSeparator() {
 		return getParameter(SEPARATOR_PARAM).charAt(0);
 	}
 	
+	@NonProperty
 	public void setQuoteChar(char quote) {
 		setParameter(QUOTE_PARAM, quote + "");
 	}
 	
+	@NonProperty
 	public char getQuoteChar() {
 		return getParameter(QUOTE_PARAM).charAt(0);
 	}
 	
+	@NonProperty
 	public void setEscapeChar(char escape) {
 		setParameter(ESCAPE_PARAM, escape + "");
 	}
 	
+	@NonProperty
 	public char getEscapeChar() {
 		return getParameter(ESCAPE_PARAM).charAt(0);
 	}
 	
+	@NonProperty
 	public void setDoClearFile(boolean doClear) {
 		setParameter(CLEAR_FILE, doClear);
 	}
 	
+	@NonProperty
 	public boolean getDoClearFile() {
 		return getBooleanParameter(CLEAR_FILE);
 	}

@@ -22,19 +22,25 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.Calendar;
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class DateConstantMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class DateConstantMungeStepTest extends MatchMakerTestCase<DateConstantMungeStep> {
 
 	private static final Logger logger = Logger.getLogger(DateConstantMungeStep.class);
 
     DateConstantMungeStep step;
-    
+
+	public DateConstantMungeStepTest(String name) {
+		super(name);
+	}
+	
     @Override
     protected void setUp() throws Exception {
         step = new DateConstantMungeStep();
+        super.setUp();
     }
     
     private void setFormat(int x){
@@ -111,5 +117,15 @@ public class DateConstantMungeStepTest extends TestCase {
     	Date d = cal.getTime();
     	assert(runWith(d) instanceof java.sql.Time);
     }
+
+	@Override
+	protected DateConstantMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
     
 }
