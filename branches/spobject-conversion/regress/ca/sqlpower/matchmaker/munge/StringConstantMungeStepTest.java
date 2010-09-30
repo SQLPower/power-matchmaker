@@ -19,13 +19,18 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class StringConstantMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
 
-    StringConstantMungeStep step;
+public class StringConstantMungeStepTest extends MatchMakerTestCase<StringConstantMungeStep> {
+
+    public StringConstantMungeStepTest(String name) {
+		super(name);
+	}
+
+	StringConstantMungeStep step;
     
     @Override
     protected void setUp() throws Exception {
@@ -75,5 +80,20 @@ public class StringConstantMungeStepTest extends TestCase {
         step.call();
         assertEquals("moocow2", step.getOut().getData());
     }
+
+	@Override
+	protected StringConstantMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
+	}
    
 }

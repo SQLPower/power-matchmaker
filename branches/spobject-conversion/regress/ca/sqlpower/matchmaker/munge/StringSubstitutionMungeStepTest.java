@@ -21,11 +21,16 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class StringSubstitutionMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSubstitutionMungeStep> {
+
+	public StringSubstitutionMungeStepTest(String name) {
+		super(name);
+	}
 
 	private StringSubstitutionMungeStep step;
 	
@@ -182,4 +187,19 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 			// UnexpectedDataTypeException was thrown as expected
 		}
 	}
+
+	@Override
+	protected StringSubstitutionMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
+	}		
 }
