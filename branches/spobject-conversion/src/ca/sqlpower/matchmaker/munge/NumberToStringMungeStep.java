@@ -21,12 +21,15 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 /**
  * This munge step will convert a number to a string.
  */
 public class NumberToStringMungeStep extends AbstractMungeStep {
 
+	@Constructor
 	public NumberToStringMungeStep() {
 		super("Number to String",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("NumberToStringOutput", String.class);

@@ -21,18 +21,26 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class NumberToStringMungeStepTest extends TestCase {
-	MungeStep step;
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.object.SPObject;
+
+public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStringMungeStep> {
+
+	NumberToStringMungeStep step;
 	
+	public NumberToStringMungeStepTest(String name) {
+		super(name);
+	}
+
 	@Override
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new NumberToStringMungeStep();
+		step.setSession(new TestingMatchMakerSession());
 		step.open(Logger.getLogger(NumberToStringMungeStepTest.class));
+		super.setUp();
 	}
 	
 	public void testNull() throws Exception{
@@ -78,5 +86,25 @@ public class NumberToStringMungeStepTest extends TestCase {
 		step.call();
 		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
 		assertEquals("-1234567890", out.getData());
+	}
+
+	@Override
+	protected NumberToStringMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Do nothing
+	}
+	
+	@Override
+	public void testDuplicate() throws Exception {
+		// Do nothing
 	}
 }
