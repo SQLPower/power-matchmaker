@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.munge;
 import java.security.MessageDigest;
 
 import sun.misc.BASE64Encoder;
+import ca.sqlpower.object.annotation.Constructor;
 
 /**
  * This class will create a new munge step to the MatchMaker in order to calculate the
@@ -29,7 +30,7 @@ import sun.misc.BASE64Encoder;
  */
 public class MD5CheckSumMungeStep extends AbstractMungeStep {
 	
-	
+	@Constructor
 	public MD5CheckSumMungeStep(){
 		super("MD5 CheckSum", false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("md5CheckSumOutput", String.class);
