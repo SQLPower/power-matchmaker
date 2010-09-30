@@ -21,20 +21,27 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class RetainCharactersMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.object.SPObject;
+
+public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainCharactersMungeStep> {
 
 	private RetainCharactersMungeStep step;
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-	
+
+	public RetainCharactersMungeStepTest(String name) {
+		super(name);
+	}
+
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new RetainCharactersMungeStep();
+		step.setSession(new TestingMatchMakerSession());
+		super.setUp();
 	}
 
 	/**
@@ -142,5 +149,20 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected RetainCharactersMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Do nothing
 	}
 }
