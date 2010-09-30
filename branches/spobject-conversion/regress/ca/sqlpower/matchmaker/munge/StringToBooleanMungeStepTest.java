@@ -22,19 +22,24 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class StringToBooleanMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBooleanMungeStep> {
+
+	public StringToBooleanMungeStepTest(String name) {
+		super(name);
+	}
 
 	private StringToBooleanMungeStep step;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new StringToBooleanMungeStep();
+		super.setUp();
 	}
 	
 	private void setCaseSensitive(boolean cs) {
@@ -248,5 +253,21 @@ public class StringToBooleanMungeStepTest extends TestCase {
 		out.add(true);
 		
 		run(in,out);
+	}
+
+	@Override
+	protected StringToBooleanMungeStep getTarget() {
+		logger.debug("Stub call: MatchMakerTestCase<StringToBooleanMungeStep>.getTarget()");
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
 	}
 }

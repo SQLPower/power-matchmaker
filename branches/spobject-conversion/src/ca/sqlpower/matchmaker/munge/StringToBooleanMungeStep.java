@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 
 /**
@@ -76,6 +78,7 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 	 * Case sensitive is set to true and use regex is set to false for this
 	 * munge step as defaults.
 	 */
+	@Constructor
 	public StringToBooleanMungeStep() {
 		super("String to Boolean",false);
 		MungeStepOutput<Boolean> out = new MungeStepOutput<Boolean>("StringToBooleanOutput", Boolean.class);
