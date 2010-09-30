@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 
 /**
@@ -70,6 +72,7 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 */
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
+	@Constructor
 	public SubstringByWordMungeStep() {
 		super("Substring by Word",false);
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
