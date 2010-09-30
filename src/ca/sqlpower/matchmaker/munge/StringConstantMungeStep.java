@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
+
 
 /**
  * The String Constant Step provides a user-specified String value on its output
@@ -40,6 +43,7 @@ public class StringConstantMungeStep extends AbstractMungeStep {
      */
     public static final String RETURN_NULL = "return null";
     
+    @Constructor
     public StringConstantMungeStep() {
         super("String constant", false);
         setParameter(RETURN_NULL, "False");
@@ -52,10 +56,12 @@ public class StringConstantMungeStep extends AbstractMungeStep {
         return Boolean.TRUE;
     }
     
+    @NonProperty
     public void setValue(String newValue) {
         setParameter(VALUE_PARAMETER_NAME, newValue);
     }
     
+    @NonProperty
     public String getValue() {
     	if (!isReturningNull()) {
     		return getParameter(VALUE_PARAMETER_NAME);
@@ -64,10 +70,12 @@ public class StringConstantMungeStep extends AbstractMungeStep {
     	}
     }
     
+    @NonProperty
     public boolean isReturningNull() {
     	return getBooleanParameter(RETURN_NULL).booleanValue();
     }
     
+    @NonProperty
     public void setReturningNull(boolean b) {
     	setParameter(RETURN_NULL, String.valueOf(b));
     }
