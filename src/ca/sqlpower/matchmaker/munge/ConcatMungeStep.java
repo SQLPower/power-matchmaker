@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.NonProperty;
+
 
 /**
  * A munge step that concatenates all string input values into a single output value.
@@ -92,10 +94,12 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		return true;
 	}
     
+	@NonProperty
     public void setDelimiter(String delimiter) {
         setParameter(DELIMITER_PARAMETER_NAME, delimiter);
     }
 
+    @NonProperty
     public String getDelimiter() {
         return getParameter(DELIMITER_PARAMETER_NAME);
     }
