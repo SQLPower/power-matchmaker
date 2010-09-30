@@ -128,4 +128,8 @@ public class DateConstantMungeStepTest extends MatchMakerTestCase<DateConstantMu
 		return MungeStepOutput.class;
 	}
     
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Already in AbstractMungeStep
+	}
 }

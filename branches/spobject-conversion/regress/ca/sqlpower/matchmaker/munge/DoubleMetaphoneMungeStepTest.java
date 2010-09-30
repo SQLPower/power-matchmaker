@@ -21,21 +21,26 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class DoubleMetaphoneMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetaphoneMungeStep> {
 
 	private DoubleMetaphoneMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-	
+
+	public DoubleMetaphoneMungeStepTest(String name) {
+		super(name);
+	}
+
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new DoubleMetaphoneMungeStep();
+		super.setUp();
 	}
 
 	public void testCallonNormalString() throws Exception {
@@ -84,5 +89,20 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected DoubleMetaphoneMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Already in AbstractMungeStep
 	}
 }
