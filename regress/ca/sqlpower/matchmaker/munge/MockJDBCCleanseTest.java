@@ -28,11 +28,12 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
-
-
-
 public class MockJDBCCleanseTest extends SQLInputStepTest {
 	
+	public MockJDBCCleanseTest(String name) {
+		super(name);
+	}
+
 	private final Logger logger = Logger.getLogger("testLogger");
 
     @Override

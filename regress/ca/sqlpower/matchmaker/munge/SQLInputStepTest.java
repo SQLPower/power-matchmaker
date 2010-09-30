@@ -23,19 +23,20 @@ import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 import ca.sqlpower.util.FakeSQLDatabase;
 
-public class SQLInputStepTest extends TestCase {
+public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
 
 	private final Logger logger = Logger.getLogger("testLogger");
 	
@@ -44,7 +45,11 @@ public class SQLInputStepTest extends TestCase {
     FakeSQLDatabase db;
     Project project;
     MungeProcess process;
-    
+
+	public SQLInputStepTest(String name) {
+		super(name);
+	}
+ 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -70,6 +75,7 @@ public class SQLInputStepTest extends TestCase {
         project = new Project();
         project.setType(getProjectType());
         project.setSourceTable(table);
+        project.setSession(new TestingMatchMakerSession());
         
         process = new MungeProcess();
         project.addChild(process);
@@ -165,4 +171,24 @@ public class SQLInputStepTest extends TestCase {
         step.mungeCommit();
         step.mungeClose();
     }
+
+	@Override
+	protected SQLInputStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// already in AbstractMungeStep
+	}
+	
+	@Override
+	public void testDuplicate() throws Exception {
+		// Do nothing
+	}
 }
