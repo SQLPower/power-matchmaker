@@ -22,13 +22,13 @@ package ca.sqlpower.matchmaker.munge;
 import java.io.File;
 import java.util.Scanner;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.object.SPObject;
 
-public class CSVWriterMungeStepTest extends TestCase {
+public class CSVWriterMungeStepTest extends MatchMakerTestCase<CSVWriterMungeStep> {
 
 	private CSVWriterMungeStep step;
 	
@@ -37,12 +37,16 @@ public class CSVWriterMungeStepTest extends TestCase {
 	private String fileName = "test.csv";
 	
 	private final Logger logger = Logger.getLogger("testLogger");
+
+	public CSVWriterMungeStepTest(String name) {
+		super(name);
+	}
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new CSVWriterMungeStep();
 		step.setSession(new TestingMatchMakerSession());
 		step.setFilePath(fileName);
+		super.setUp();
 	}
 	
 	public void testCallOnStringAndNull() throws Exception {
@@ -167,5 +171,25 @@ public class CSVWriterMungeStepTest extends TestCase {
 	protected void tearDown() throws Exception {
 		File f = new File(fileName);
 		f.delete();
+	}
+
+	@Override
+	protected CSVWriterMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testDuplicate() throws Exception {
+		// Do nothing.
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// do nothing
 	}
 }

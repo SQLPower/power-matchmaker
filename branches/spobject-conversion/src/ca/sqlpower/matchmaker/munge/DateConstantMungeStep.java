@@ -30,6 +30,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.annotation.NonProperty;
+
 
 /**
  * The Date Constant Step provides a user-specified Date value on its output
@@ -86,12 +88,14 @@ public class DateConstantMungeStep extends AbstractMungeStep {
         return Boolean.TRUE;
     }
     
+    @NonProperty
     public void setValue(Date newValue) {
     	SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     	String date = df.format(newValue);
 	    setParameter(VALUE_PARAMETER_NAME, date); // FIXME this causes a property change event with a String value -- need reflective tests for every setter and getter of every munge component
     }
     
+    @NonProperty
     public Date getValue() throws ParseException {
     	if (getUseCurrentTime()) {
     		return Calendar.getInstance().getTime();
@@ -110,19 +114,23 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     		return null;
     	}
     }
-    
+
+    @NonProperty
     public boolean isReturningNull() {
     	return getBooleanParameter(RETURN_NULL).booleanValue();
     }
     
+    @NonProperty
     public void setReturningNull(boolean b) {
     	setParameter(RETURN_NULL, String.valueOf(b));
     }
     
+    @NonProperty
     public void setUseCurrentTime(boolean b) {
     	setParameter(USE_CURRENT_TIME, String.valueOf(b));
     }
     
+    @NonProperty
     public boolean getUseCurrentTime() {
     	return getBooleanParameter(USE_CURRENT_TIME).booleanValue();
     }

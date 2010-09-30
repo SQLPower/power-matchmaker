@@ -53,7 +53,7 @@ public class CleanseResultStepTest extends MatchMakerTestCase<CleanseResultStep>
 
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
-		return null;
+		return MungeStepInput.class;
 	}
 	@Override
 	public void testAllowedChildTypesField() throws Exception {
