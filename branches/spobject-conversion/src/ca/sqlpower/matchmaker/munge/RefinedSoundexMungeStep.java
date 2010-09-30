@@ -21,11 +21,14 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.commons.codec.language.RefinedSoundex;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 /**
  * This munge step will output the refined soundex code of the given input.
  */
 public class RefinedSoundexMungeStep extends AbstractMungeStep {
 
+	@Constructor
 	public RefinedSoundexMungeStep() {
 		super("Refined Soundex",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("refinedSoundexOutput", String.class);

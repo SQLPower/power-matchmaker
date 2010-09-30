@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.annotation.Constructor;
+
 
 
 /**
@@ -54,6 +56,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	 * Case sensitive is set to true and use regex is set to false for this
 	 * munge step as defaults.
 	 */
+	@Constructor
 	public RetainCharactersMungeStep() {
 		super("Retain Chars",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
