@@ -28,6 +28,7 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
@@ -83,6 +84,13 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return new UpperCaseMungeStep();
         } else if (valueType == MatchMakerObject.class) {
         	return new TestingAbstractMatchMakerObject();
+        }  else if (valueType == AddressDatabase.class) {
+        	/*
+        	 * FIXME This needs to be fixed somehow not to return null
+        	 * but it does not really do anything to harm the functionality
+        	 */
+        	
+        	return null;
         } else if (valueType == TableMergeRules.ChildMergeActionType.class) {
         	if (TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD.equals(oldVal)) {
         		return TableMergeRules.ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
