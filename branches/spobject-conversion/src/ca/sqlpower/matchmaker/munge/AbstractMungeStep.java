@@ -382,34 +382,59 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 	}
 	
+	/**
+	 * Needed only for the XML stuff. Don't use it anywhere else.
+	 */
+	@NonProperty
+	public void setMSO(List<MungeStepOutput> newOutputs) {
+		mungeStepOutputs.clear();
+		mungeStepOutputs.addAll(newOutputs);
+	}
+	
+	/**
+	 * Needed only for the XML stuff. Don't use it anywhere else.
+	 */
+	@NonProperty
+	public void setMSI(List<MungeStepInput> newInputs) {
+		inputs.clear();
+		inputs.addAll(newInputs);
+	}
+	
 	@NonProperty
 	public void setParameter(String name, String newValue) {
+		String oldValue = parameters.get(name);
 		Map<String, String> newParameters = new HashMap<String,String>();
 		newParameters.putAll(parameters);
-		parameters.put(name, newValue);
+		newParameters.put(name, newValue);
 		setParameters(newParameters);
+		firePropertyChange(name, oldValue, newValue + "");
 	}
 	
 	@NonProperty
 	public void setParameter(String name, boolean newValue) {
-		Map<String, String> newParameters = new HashMap<String,String>();
-		newParameters.putAll(parameters);
-		parameters.put(name, newValue + "");
-		setParameters(newParameters);
-	}
-	
-	@NonProperty
-	public void setParameter(String name, int newValue) {
+		String oldValue = parameters.get(name);
 		Map<String, String> newParameters = new HashMap<String,String>();
 		newParameters.putAll(parameters);
 		newParameters.put(name, newValue + "");
 		setParameters(newParameters);
+		firePropertyChange(name, oldValue, newValue + "");
+	}
+	
+	@NonProperty
+	public void setParameter(String name, int newValue) {
+		String oldValue = parameters.get(name);
+		Map<String, String> newParameters = new HashMap<String,String>();
+		newParameters.putAll(parameters);
+		newParameters.put(name, newValue + "");
+		setParameters(newParameters);
+		firePropertyChange(name, oldValue, newValue + "");
 	}
 	
 	@Mutator
 	public void setParameters(Map<String,String> parameters) {
 		Map<String, String> oldParameters = this.parameters;
-		this.parameters = parameters;
+		this.parameters.clear();
+		this.parameters.putAll(parameters);
 		firePropertyChange("parameters", oldParameters, parameters);
 	}
 	
