@@ -182,4 +182,13 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
+	
+	public MatchMakerTranslateGroup getChildByUUID(String UU) {
+		for (MatchMakerTranslateGroup c: matchMakerTranslateGroups) {
+			if (c.getUUID().equals(UU)) {
+				return c;
+			}
+		}
+		return null;
+	}
 }
