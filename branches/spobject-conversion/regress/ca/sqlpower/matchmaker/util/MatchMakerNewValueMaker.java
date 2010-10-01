@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
@@ -85,6 +88,14 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return new FolderParent(null);
         } else if (valueType == Long.class) {
         	return (Long)oldVal + 1;
+        } else if (valueType == Class.class) {
+        	if (oldVal == String.class) {
+        		return Boolean.class;
+        	} else {
+        		return String.class;
+        	}
+        } else if (valueType == Map.class) {
+        	return new HashMap<String, String>();
         } else if (valueType == UpperCaseMungeStep.class) {
         	return new UpperCaseMungeStep();
         } else if (valueType == MatchMakerObject.class) {
