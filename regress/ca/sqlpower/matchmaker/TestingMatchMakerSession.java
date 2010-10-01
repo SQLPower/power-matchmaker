@@ -72,7 +72,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
-        translateGroupParent= new TranslateGroupParent(this);
+        translateGroupParent= new TestingMatchMakerTranslateGroupParent(this);
         context = new TestingMatchMakerContext();
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         rootNode = new MMRootNode(this);

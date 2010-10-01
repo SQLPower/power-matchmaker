@@ -57,9 +57,9 @@ public class MatchMakerTranslateGroupDAOStub implements
     }
 
     /**
-     * Returns a default translate group, ignoring the given oid.
+     * Returns a default translate group, ignoring the given uuid.
      */
-	public MatchMakerTranslateGroup findByOID(long oid) {
+	public MatchMakerTranslateGroup findByUUID(String uuid) {
 		MatchMakerTranslateGroup translateGroup = new MatchMakerTranslateGroup();
 		MatchMakerTranslateWord test = new MatchMakerTranslateWord();
 		test.setFrom("ab");
@@ -74,6 +74,11 @@ public class MatchMakerTranslateGroupDAOStub implements
 		test3.setTo("-");
 		translateGroup.addChild(test3);
 		return translateGroup;
+	}
+
+	@Override
+	public MatchMakerTranslateGroup findByOID(long oid) {
+		return null;
 	}
 
 }

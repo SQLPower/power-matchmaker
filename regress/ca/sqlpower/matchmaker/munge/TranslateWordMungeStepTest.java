@@ -21,14 +21,16 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroupDAOStub;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
-public class TranslateWordMungeStepTest extends TestCase {
+public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateWordMungeStep> {
+
+	public TranslateWordMungeStepTest(String name) {
+		super(name);
+	}
 
 	private TranslateWordMungeStep step;
 	
@@ -43,9 +45,9 @@ public class TranslateWordMungeStepTest extends TestCase {
 	 * despite any given oid. Check the method for translate words.
 	 */
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new TranslateWordMungeStep();
 		step.setSession(new TestingMatchMakerSession());
+		super.setUp();
 	}
 
 	/**
@@ -190,5 +192,31 @@ public class TranslateWordMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected TranslateWordMungeStep getTarget() {
+		return step;
+	}
+	
+	@Override
+	public void testDuplicate() {
+		// do nothing
+	}
+	
+	@Override
+	public void testCallAfterRollback() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData(null);
+		step.connectInput(0, testInput);
+		super.testCallAfterRollback();
+	}
+	
+	@Override
+	public void testCallAfterCommit() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData(null);
+		step.connectInput(0, testInput);
+		super.testCallAfterCommit();
 	}
 }
