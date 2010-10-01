@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.NonProperty;
 
 /**
@@ -55,8 +57,8 @@ public class MMRootNode extends AbstractMatchMakerObject {
      */
     private final TranslateGroupParent tgp;
     
-    
-    public MMRootNode(MatchMakerSession session) {
+    @Constructor
+    public MMRootNode(@ConstructorParameter(propertyName="session") MatchMakerSession session) {
         setName("Root Node");
         currentFolderParent = new FolderParent(session);
         currentFolderParent.setName("Current Projects");

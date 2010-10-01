@@ -46,7 +46,7 @@ public class TableIndex extends AbstractMatchMakerObject{
     
     
     private CachableTable table;
-	private String property;
+	private String indexRole;
 
 	/**
 	 * Manages a sqlindex on cachableTable table. 
@@ -56,19 +56,19 @@ public class TableIndex extends AbstractMatchMakerObject{
 	 */
 	@Constructor
 	public TableIndex(@ConstructorParameter(propertyName="table") CachableTable table, 
-					@ConstructorParameter(propertyName="property") String property) {
+					@ConstructorParameter(propertyName="indexRole") String indexRole) {
 		this.table = table;
-		this.property = property;
+		this.indexRole = indexRole;
 	}
 	
 	@Accessor
-	public CachableTable getCachableTable() {
+	public CachableTable getTable() {
 		return table;
 	}
 	
 	@Accessor
-	public String getPropertyName() {
-		return property;
+	public String getIndexRole() {
+		return indexRole;
 	}
 	
     /**
@@ -77,13 +77,17 @@ public class TableIndex extends AbstractMatchMakerObject{
      * and then returns it!
      */
 	@Accessor
-    public SQLIndex getTableIndex() throws SQLObjectException {
-    	if (tableIndex != null && !tableIndex.isPopulated()) tableIndex.populate();
-    	
-    	if (table.getTable() != null && tableIndex != null) {
-    		tableIndex.setParent(table.getTable());
-    		resolveTableIndexColumns(tableIndex);
-    	}
+    public SQLIndex getTableIndex() {
+		try {
+	    	if (tableIndex != null && !tableIndex.isPopulated()) tableIndex.populate();
+	    	
+	    	if (table.getTable() != null && tableIndex != null) {
+	    		tableIndex.setParent(table.getTable());
+					resolveTableIndexColumns(tableIndex);
+	    	}
+		} catch (SQLObjectException e) {
+			throw new RuntimeException(e);
+		}
     	return tableIndex;
     }
 
@@ -106,7 +110,7 @@ public class TableIndex extends AbstractMatchMakerObject{
     	final SQLIndex oldIndex = tableIndex;
     	tableIndex = index;
     	//TODO: Find the right propertyName
-    	firePropertyChange(property, oldIndex, index);
+    	firePropertyChange(indexRole, oldIndex, index);
     }
 
 	/**
@@ -138,7 +142,7 @@ public class TableIndex extends AbstractMatchMakerObject{
 	@Override
 	public MatchMakerObject duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
-		TableIndex t = new TableIndex(getCachableTable(), getPropertyName());
+		TableIndex t = new TableIndex(getTable(), getIndexRole());
 		t.setTableIndex(tableIndex);
 		t.setParent(parent);
 		t.setName(getName());

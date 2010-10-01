@@ -57,7 +57,7 @@ public class CachableTable extends AbstractMatchMakerObject {
      * The name of the Project property we're maintaining (for example,
      * sourceTable, xrefTable, or resultTable).
      */
-    private final String propertyName;
+    private final String tableRole;
     private String catalogName;
     private String schemaName;
     private String tableName;
@@ -74,9 +74,9 @@ public class CachableTable extends AbstractMatchMakerObject {
      * on behalf of mmo will report.
      */
     @Constructor
-    public CachableTable(@ConstructorParameter(propertyName="property") String propertyName) {
-    	if (propertyName == null) throw new NullPointerException("Can't make a cachable table for a null property name");
-		this.propertyName = propertyName;
+    public CachableTable(@ConstructorParameter(propertyName="tableRole") String tableRole) {
+    	if (tableRole == null) throw new NullPointerException("Can't make a cachable table for a null property name");
+		this.tableRole = tableRole;
     }
 
     @NonProperty
@@ -147,7 +147,7 @@ public class CachableTable extends AbstractMatchMakerObject {
      * 
      * @param spDataSourceName The name of the datasource.
      */
-    @Mutator
+    @NonProperty
     public void setSPDataSourceName(String spDataSourceName) {
     	table = null;
         String oldSPDataSourceName = dsName;
@@ -160,7 +160,7 @@ public class CachableTable extends AbstractMatchMakerObject {
      * from.
      * 
      */
-    @Accessor
+    @NonProperty
     public String getSPDataSourceName() {
     	if (table != null && table.getParentDatabase() != null && 
     			table.getParentDatabase().getDataSource() != null) {
@@ -172,7 +172,7 @@ public class CachableTable extends AbstractMatchMakerObject {
     /**
      * Returns the SPDataSource for the current table
      */
-    @Accessor
+    @NonProperty
     public JDBCDataSource getJDBCDataSource() {
     	if (table != null) {
     		return table.getParentDatabase().getDataSource();
@@ -246,7 +246,7 @@ public class CachableTable extends AbstractMatchMakerObject {
 				this.table = table;
 				return table;
 			} else {
-				getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
+				getSession().handleWarning("The location of "+tableRole+" "+catalogName+"."+schemaName+"."+tableName +
 						" in Project "+getParent().getName()+ " is not compatible with the "+db.getName() +" database. " +
 				"The table selection has been reset to nothing");
 				return null;
@@ -278,8 +278,8 @@ public class CachableTable extends AbstractMatchMakerObject {
     }
 
     @Accessor
-    public String getPropertyName() {
-    	return propertyName;
+    public String getTableRole() {
+    	return tableRole;
     }
 
     @Override
@@ -291,13 +291,13 @@ public class CachableTable extends AbstractMatchMakerObject {
     			" schemaName="+schemaName+
     			" tableName="+tableName+
     			" table="+(table == null ? "null" : table.getName()) +
-    			" propertyName="+propertyName;
+    			" propertyName="+tableRole;
     }
 
 	@Override
 	public MatchMakerObject duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
-		CachableTable t = new CachableTable(getPropertyName());
+		CachableTable t = new CachableTable(getTableRole());
 		t.setParent(parent);
 		t.setSession(session);
 		t.setName(getName());

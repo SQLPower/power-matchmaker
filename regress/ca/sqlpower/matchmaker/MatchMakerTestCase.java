@@ -356,14 +356,10 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 		} else if (property.getPropertyType() == TableIndex.class) {
 			CachableTable cachableTable = new CachableTable("newValue");
 			TableIndex tableIndex = new TableIndex(cachableTable, "newValueIndex");
-			try {
-				if(tableIndex.getTableIndex() == null) {
-					tableIndex.setTableIndex(new SQLIndex());
-				} else {
-					tableIndex.setTableIndex(null);
-				}
-			} catch (SQLObjectException e) {
-				e.printStackTrace();
+			if(tableIndex.getTableIndex() == null) {
+				tableIndex.setTableIndex(new SQLIndex());
+			} else {
+				tableIndex.setTableIndex(null);
 			}
 			return tableIndex;
 		} else if (property.getPropertyType() == CachableTable.class) {
