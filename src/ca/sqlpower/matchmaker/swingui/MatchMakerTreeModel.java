@@ -44,6 +44,7 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.SPObject;
@@ -296,7 +297,13 @@ public class MatchMakerTreeModel implements TreeModel {
 	public int getIndexOfChild(Object parent, Object child) {
         final SPObject mmoParent = (SPObject) parent;
         final SPObject mmoChild = (SPObject) child;
-        final int index = mmoParent.getChildren().indexOf(mmoChild);
+        int index;
+        if(parent instanceof Project) {
+        	if(foldersInTables.get((Project)parent) == null) return -1;
+        	return foldersInTables.get((Project)parent).indexOf(child);
+        }
+        
+        index = mmoParent.getChildren().indexOf(mmoChild);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Index of child \""+mmoChild.getName()+"\" of \""+mmoParent.getName()+"\" is "+index);
@@ -318,7 +325,11 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 		
         final MatchMakerObject mmoNode = (MatchMakerObject) node;
-        final boolean isLeaf = !mmoNode.allowsChildren();
+        boolean isLeaf = !mmoNode.allowsChildren();
+        
+        if (!isLeaf) {
+    		if (mmoNode instanceof MungeResultStep) isLeaf = true;
+        }
 
         if (logger.isDebugEnabled()) {
             logger.debug("Is "+
@@ -410,16 +421,17 @@ public class MatchMakerTreeModel implements TreeModel {
         if (foldersInTables.get(p) == null) {
             List<FolderNode> folderList = new ArrayList<FolderNode>();
             foldersInTables.put(p, folderList);
-            if(p.getType() == ProjectMode.FIND_DUPES)      
-            {
-            	FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class);
-                MungeProcessFolder.setName("Transformations");
-                folderList.add(MungeProcessFolder);
-            }
             
-            FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class);
-            TableMergeRuleFolder.setName("Merge Rules");
-            folderList.add(TableMergeRuleFolder);
+        	FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class);
+            MungeProcessFolder.setName("Transformations");
+            folderList.add(MungeProcessFolder);
+
+	        if(p.getType() == ProjectMode.FIND_DUPES)      
+	        {
+	            FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class);
+	            TableMergeRuleFolder.setName("Merge Rules");
+	            folderList.add(TableMergeRuleFolder);
+	        }
         }
     }
 

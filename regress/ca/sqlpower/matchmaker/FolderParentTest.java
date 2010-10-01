@@ -32,12 +32,12 @@ public class FolderParentTest extends MatchMakerTestCase<FolderParent> {
 	}
 
 	protected void setUp() throws Exception {
-		super.setUp();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		rootNode = new MMRootNode(session);
 		folderParent = new FolderParent(session);
-		rootNode.addChild(folderParent, 0);
+		folderParent.setParent(rootNode);
+		super.setUp();
 	}
 	
 	@Override

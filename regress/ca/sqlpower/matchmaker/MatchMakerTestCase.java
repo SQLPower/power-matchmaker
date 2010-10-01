@@ -86,6 +86,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 
 	protected void setUp() throws Exception {
 		super.setUp();
+		getTarget().setSession(new TestingMatchMakerSession());
 	}
 
 	protected void tearDown() throws Exception {
