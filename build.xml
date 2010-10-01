@@ -6,9 +6,14 @@
 	<property file="build.properties"/>
 	<property name="src" value="src"/>
 	<property name="build" value="build"/>
+	<property name="build_tmp" value="build_tmp"/>
 	<property name="build.tests" value="${build}"/>
 	<property name="lib" value="lib"/>
 	<property name="buildlib" value="buildlib"/>
+	<property name="generated" value="generated"/>
+	<property name="resources" value="src/main/icons"/>
+	<property name="src.apt" value="src/apt/java"/>
+	<property name="build.apt" value="build_apt"/>
 	
 	<!-- The staging directory is a temp dir that is used as a base for all
 	     the OS-dependant distributions -->
@@ -127,6 +132,18 @@
 		<fileset dir="${buildlib}">
 			<include name="*.jar"/>
 		</fileset>
+		<path refid="runtime.classpath"/>
+	</path>
+	
+	<path id="runtime.classpath"
+			description="All the runtime dependencies of the MatchMaker code">
+		<fileset dir="${lib}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${sqlpower.library.home}/lib/main">
+			<include name="*.jar"/>
+		</fileset>
+		<pathelement location="${generated}"/>
 	</path>
 	
 	<path id="test.classpath">
@@ -137,17 +154,45 @@
 		<fileset dir="buildlib">
 			<include name="*.jar"/>
 		</fileset>
+	</path>	
+	
+	<path id="apt.classpath"
+			description="All the APT generation dependencies of the Architect">
+		<path refid="compile.classpath"/>
+		<pathelement location="${build}"/>
+		<fileset dir="${lib}">
+			<include name="*.jar"/>
+		</fileset>
 	</path>
 	
-	<!-- Compiles the MatchMaker and places the .class files into build-->
-	<target name="compile" depends="build.sqlpower.library, copy.sqlpower.library, copyfiles">
+	<!-- Compiles the MatchMaker src and places the .class files into build and creates
+	the generated classes needed for the persistence layer-->
+	<target name="compile" depends="clean, build.sqlpower.library, copy.sqlpower.library, copyfiles">
+		
 		<mkdir dir="${build}"/>
+		<mkdir dir="${build_tmp}"/>
+		
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
 				classpathref="compile.classpath"
-			    source="1.6"
 				debug="true"
 		/>
+		
+		<apt srcdir="${src}"
+		            destdir="${build_tmp}"
+		            classpathref="apt.classpath"
+		            debug="true"
+		            compile="true"
+		            factory="ca.sqlpower.object.annotation.SPAnnotationProcessorFactory"
+		            preprocessdir="${generated}">
+		        </apt>
+		
+		<delete dir="${build}"/>
+		        
+		<move todir="${build}">
+            <fileset dir="${build_tmp}"/>
+        </move>
+		
 	</target>
 
 	<!-- Compiles the MatchMaker and places the .class files into build-->
@@ -938,6 +983,8 @@
 	
 	<target name="clean">
 		<delete dir="${build}"/>
+		<delete dir="${build_tmp}"/>
+		<delete dir="${generated}/ca"/>
 		<delete dir="${staging.dir}"/>
 	</target>
 
