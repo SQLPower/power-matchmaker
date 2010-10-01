@@ -85,10 +85,9 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			
 			// Sets the combo box to select the translate group in the parameter
 			if (temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME) != null) {
-			    String oid = temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
-			    long searchForOid = Long.valueOf(oid);
+			    String uuid = temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
 			    for (MatchMakerTranslateGroup group : translateGroups) {
-			        if (group.getOid().longValue() == searchForOid) {
+			        if (group.getUUID().equals(uuid)) {
 			            translateGroup.setSelectedItem(group);
 			        }
 			    }
@@ -99,7 +98,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 					MatchMakerTranslateGroup group = 
 						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
 					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
-						group.getOid().toString());
+						group.getUUID().toString());
 			}
 			
 		} else {
@@ -113,7 +112,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 					MatchMakerTranslateGroup group = 
 						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
 					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
-						group.getOid().toString());
+						group.getUUID().toString());
 				}
 			}
 			

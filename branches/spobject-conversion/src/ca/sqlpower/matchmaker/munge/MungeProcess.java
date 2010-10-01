@@ -311,8 +311,10 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			addChild(spo, inputSteps.size());
 		} else if(spo instanceof MungeResultStep) {
 			addChild(spo, 0);
-		} else {
+		} else if(spo instanceof MungeStep){
 			addChild(spo, mungeSteps.size());
+		} else {
+			throw new RuntimeException("Trying to add a child of incorrect type: " + spo.getClass());
 		}
 	}
 	

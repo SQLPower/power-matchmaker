@@ -26,6 +26,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.dao.xml.ProjectDAOXML;
 
 
@@ -121,6 +122,14 @@ public class TimedGeneralDAO implements MatchMakerDAO {
 			String catalogName, String schemaName, String tableName) {
 		// TODO Auto-generated method stub
 		return Collections.emptySet();
+	}
+
+	public MatchMakerTranslateGroup findByOID(Long valueOf) {
+		return null;
+	}
+	
+	public MatchMakerTranslateGroup findByUUID(Long valueOf) {
+		return null;
 	}
 	
 }
