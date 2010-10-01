@@ -30,13 +30,13 @@ import org.apache.log4j.spi.LoggingEvent;
 import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.object.SPObject;
 
-public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleAddressLookupMungeStep> {
+public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleAddressLookup> {
 
     public GoogleAddressLookupMungeStepTest(String name) {
 		super(name);
 	}
 
-	private GoogleAddressLookupMungeStep step;
+	private GoogleAddressLookup step;
 
     private MungeStepOutput<String> testInput;
 
@@ -46,8 +46,8 @@ public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleA
         super.setUp();
         logger.addAppender(new ConsoleAppender());
         logger.setLevel(Level.ALL);
-        step = new GoogleAddressLookupMungeStep();
-        step.setParameter(GoogleAddressLookupMungeStep.GOOGLE_MAPS_API_KEY, "ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
+        step = new GoogleAddressLookup();
+        step.setParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY, "ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
         testInput = new MungeStepOutput<String>("Testing address values", String.class);
         step.connectInput(0, testInput);
     }
@@ -116,7 +116,7 @@ public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleA
     }
 
 	@Override
-	protected GoogleAddressLookupMungeStep getTarget() {
+	protected GoogleAddressLookup getTarget() {
 		return step;
 	}
 
