@@ -89,6 +89,11 @@ public class ProjectActionNode {
     public String getName() {
     	return name;
     }
+    
+    @Override
+    public String toString() {
+    	return name;
+    }
 
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
@@ -100,5 +105,9 @@ public class ProjectActionNode {
 	
 	public boolean isVisible() {
 		return visible;
+	}
+	
+	public void setVisible(boolean v) {
+		visible = v;
 	}
 }

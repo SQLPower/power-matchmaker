@@ -21,13 +21,16 @@ package ca.sqlpower.matchmaker.util;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
@@ -88,6 +91,9 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return new TestingAbstractMatchMakerObject();
         } else if (valueType == MungeStepInput.class) {
         	return new MungeStepInput(null, new InputDescriptor("input", Object.class),new UpperCaseMungeStep());
+        }  else if (valueType == MMRootNode.class) {
+        	MatchMakerSession session = new TestingMatchMakerSession();
+        	return session.getRootNode();
         } else if (valueType == AddressDatabase.class) {
         	/*
         	 * FIXME This needs to be fixed somehow not to return null

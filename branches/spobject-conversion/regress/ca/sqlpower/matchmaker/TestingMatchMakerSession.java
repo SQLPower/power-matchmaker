@@ -50,6 +50,8 @@ import ca.sqlpower.util.Version;
 public class TestingMatchMakerSession implements MatchMakerSession {
 	
 	private static Logger logger = Logger.getLogger(TestingMatchMakerSession.class);
+
+	MMRootNode rootNode;
 	
 	Date date = new Date();
 	String appUser = "App User";
@@ -73,6 +75,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         translateGroupParent= new TranslateGroupParent(this);
         context = new TestingMatchMakerContext();
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
+        rootNode = new MMRootNode(this);
 	}
 
 	public String getAppUser() {
@@ -201,7 +204,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
     
 	public MMRootNode getRootNode() {
-    	return null;
+    	return rootNode;
     }
 
     public TranslateGroupParent getTranslations() {
