@@ -253,16 +253,23 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 	 */
 	private class MungeProcessTableModel extends AbstractMatchMakerTableModel <Project>{
 
+		Project project;
+		
 		public MungeProcessTableModel(Project project) {
 			super(project);
+			this.project = project;
 		}
 
 		public int getColumnCount() {
 			return 4;
 		}
+		
+		public int getRowCount() {
+			return project.getMungeProcesses().size();
+		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			MungeProcess mungeProcess = mmo.getChildren(MungeProcess.class).get(rowIndex);
+			MungeProcess mungeProcess = mmo.getMungeProcesses().get(rowIndex);
 			switch (columnIndex) {
 			case 0:  return mungeProcess.getName();
 			case 1:  return mungeProcess.getDesc();

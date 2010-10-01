@@ -72,6 +72,7 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.address.AddressPoolLoadingWorker;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.swingui.FolderNode;
 import ca.sqlpower.swingui.ProgressWatcher;
 
 /**
@@ -148,6 +149,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					addFolderMenuItems(m, (PlFolder) o);
 				} else if (o instanceof Project) {
 					addProjectMenuItems(m, (Project) o);
+				} else if (o instanceof FolderNode) {
+					FolderNode folder = (FolderNode) o;
+					if (folder.getName().equals(Project.MUNGE_PROCESSES_FOLDER_NAME)) {
+						addMungeProcessesFolderMenuItems(m, folder);
+					} else if (folder.getName().equals(
+							Project.MERGE_RULES_FOLDER_NAME)) {
+						addMergeRulesFolderMenuItems(m, folder);
+					}
 				} else if (o instanceof MungeProcess) {
 					addMungeProcessMenuItems(m, (MungeProcess) o);
 				} else if (o instanceof MungeStep) {
@@ -167,6 +176,20 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 			}
 			m.show(t, e.getX(), e.getY());
 		}
+	}
+
+	/**
+	 * Attaches a menu item for the actions of a merge rules folder.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addMergeRulesFolderMenuItems(JPopupMenu m,
+			FolderNode folder) {
+		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, (Project) folder
+				.getParent())));
 	}
 
 	/**
@@ -196,6 +219,20 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		if (!(step instanceof SQLInputStep || step instanceof MungeResultStep)) {
 			m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
 		}
+	}
+
+	/**
+	 * Attaches a menu item for the actions of a munge process.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addMungeProcessesFolderMenuItems(JPopupMenu m,
+			FolderNode folder) {
+		m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
+				(Project) folder.getParent())));
 	}
 
 	/**
@@ -441,6 +478,21 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					logger.debug("Created new munge process editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 					editor.setSelectedStepOutput((MungeStepOutput) o);
+				} else if (o instanceof FolderNode) {
+					FolderNode f = (FolderNode) o;
+					Project m = (Project) f.getParent();
+
+					if (f.getName().equals(Project.MERGE_RULES_FOLDER_NAME)) {
+						MergeTableRuleEditor editor = new MergeTableRuleEditor(swingSession, m);
+						logger.debug("Created new merge table rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					} else if (f.getName().equals(Project.MUNGE_PROCESSES_FOLDER_NAME)) {
+						MungeProcessGroupEditor editor = new MungeProcessGroupEditor(swingSession, m);
+						logger.debug("Created new munge process group editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					}
 				} else if (o instanceof TableMergeRules) {
 					// Checks if the original pane is the same as the new one
 					if (swingSession.getOldPane() instanceof MergeColumnRuleEditor) {
