@@ -38,7 +38,6 @@ import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -191,8 +190,7 @@ public class FolderEditor implements DataEntryPanel {
 
         if ( !swingSession.getCurrentFolderParent().getChildren().contains(folder) ) {
             TreeModel treeModel = swingSession.getTree().getModel();
-            MatchMakerObject root = (MatchMakerObject) treeModel.getRoot();
-            if (treeModel.getIndexOfChild(root, folder) == -1){
+            if (treeModel.getIndexOfChild(swingSession.getCurrentFolderParent(), folder) == -1){
                 swingSession.getCurrentFolderParent().addNewChild(folder);
             }
         }

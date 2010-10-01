@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.awt.Color;
+import java.sql.SQLInput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -435,6 +436,19 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		}
 		return Collections.unmodifiableList(children);
 	}
+	
+	@Override
+	public int childPositionOffset(Class<? extends SPObject> childType) {
+        if(childType == SQLInput.class) return 0;
+        if(MungeResultStep.class.isAssignableFrom(childType)) {
+        	return getInputSteps().size() + getMungeSteps().size();
+        }
+        if(AbstractMungeStep.class.isAssignableFrom(childType)) {
+        	return getInputSteps().size();
+        }
+        throw new IllegalArgumentException(childType.getName() + 
+                " is not a valid child type of " + getClass().getName());
+    }
 
 	/**
 	 * Gets the input munge steps in the process, i.e. those with only

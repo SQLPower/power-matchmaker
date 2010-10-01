@@ -43,12 +43,14 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.FolderNode;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.TransactionEvent;
@@ -249,6 +251,14 @@ public class MatchMakerTreeModel implements TreeModel {
         		}
         	}
             return lob.get(index);
+        } else if (mmoParent instanceof MungeProcess) {
+        	int real = index;
+        	for (int i = 0; i < index; i++) {
+        		if (!((AbstractMungeStep)mmoParent.getChildren().get(i)).isVisible()) {
+        			real++;
+        		}
+        	}
+            mmoChild = mmoParent.getChildren(MatchMakerObject.class).get(real);
         } else {
         	int real = index;
         	for (int i = 0; i < index; i++) {
@@ -277,6 +287,8 @@ public class MatchMakerTreeModel implements TreeModel {
         int count;
         if (mmo instanceof Project) {
             return foldersInTables.get((Project) mmo).size() + getActionNodes((Project) mmo).size();
+        } else if (mmo instanceof MungeProcess) {
+        	count = mmo.getChildren().size();
         } else {
             count = mmo.getChildren().size();
         }
@@ -302,9 +314,9 @@ public class MatchMakerTreeModel implements TreeModel {
         	if(foldersInTables.get((Project)parent) == null) return -1;
         	return foldersInTables.get((Project)parent).indexOf(child);
         }
+        int offset = mmoParent.childPositionOffset(mmoChild.getClass());
+        index = mmoParent.getChildren(mmoChild.getClass()).indexOf(mmoChild) + offset;
         
-        index = mmoParent.getChildren().indexOf(mmoChild);
-
         if (logger.isDebugEnabled()) {
             logger.debug("Index of child \""+mmoChild.getName()+"\" of \""+mmoParent.getName()+"\" is "+index);
         }
@@ -329,6 +341,7 @@ public class MatchMakerTreeModel implements TreeModel {
         
         if (!isLeaf) {
     		if (mmoNode instanceof MungeResultStep) isLeaf = true;
+    		if (MungeStep.class.isAssignableFrom(mmoNode.getClass()) && !(mmoNode instanceof SQLInputStep)) isLeaf = true;
         }
 
         if (logger.isDebugEnabled()) {
@@ -402,7 +415,7 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	/**
 	 * Recursively walks the tree doing any necessary setup for each node.
-	 * At current this just adds folders for {@link SQLTable} objects.
+	 * At current this just adds folders for Project objects.
 	 */
 	private void setupTreeForNode(SPObject node) {
 	    if (node instanceof Project) {
@@ -456,7 +469,7 @@ public class MatchMakerTreeModel implements TreeModel {
                 }
             }
 			TreeModelEvent evt = new TreeModelEvent(parent, getPathForNode(parent), 
-					new int[]{e.getIndex()}, new MatchMakerObject[]{child});
+					new int[]{e.getIndex() + parent.childPositionOffset(child.getClass())}, new MatchMakerObject[]{child});
 			
 			fireTreeNodesInserted(evt);
 			
@@ -499,6 +512,8 @@ public class MatchMakerTreeModel implements TreeModel {
 
 		@Override
 		public void childRemoved(SPChildEvent e) {
+			SPObject parent = (SPObject)e.getSource();
+			MatchMakerObject child = (MatchMakerObject) e.getChild();
 			TreePath path = getPathForNode((MatchMakerObject) e.getSource());
             if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children removed event!");
@@ -519,7 +534,7 @@ public class MatchMakerTreeModel implements TreeModel {
                 logger.debug("Traceback:", new Exception());
             }
             MatchMakerObject children[] = {(MatchMakerObject) e.getSource()};
-            int indices[] = {e.getIndex()};
+            int indices[] = {e.getIndex() + parent.childPositionOffset(child.getClass())};
 			TreeModelEvent evt = new TreeModelEvent((MatchMakerObject) e.getSource(), path,
 					indices ,children);
             logger.debug("About to fire tree model event: "+e);

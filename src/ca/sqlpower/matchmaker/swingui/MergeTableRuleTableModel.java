@@ -41,13 +41,20 @@ import ca.sqlpower.sqlobject.SQLTable;
  * </dl>
  */
 public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Project> {
+	
+	Project project;
 
 	public MergeTableRuleTableModel(Project project) {
 		super(project);
+		this.project = project;
 	}
 	
 	public int getColumnCount() {
 		return 4;
+	}
+	
+	public int getRowCount() {
+		return project.getTableMergeRules().size();
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
