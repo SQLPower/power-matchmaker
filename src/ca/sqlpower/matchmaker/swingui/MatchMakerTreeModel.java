@@ -230,6 +230,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	public Object getChild(Object parent, int index) {
 		if (parent instanceof FolderNode) {
 			return ((FolderNode)parent).getChildren().get(index);
+        }
+		
+		if (parent instanceof ProjectActionNode) {
+			return null;
         } 
 		
         final MatchMakerObject mmoParent = (MatchMakerObject) parent;
@@ -264,6 +268,9 @@ public class MatchMakerTreeModel implements TreeModel {
 	public int getChildCount(Object parent) {
 		if (parent instanceof FolderNode) {
 			return ((FolderNode)parent).getChildren().size();
+		}
+		if (parent instanceof ProjectActionNode) {
+			return 0;
 		}
 		final MatchMakerObject mmo = (MatchMakerObject) parent;
         int count;
@@ -304,6 +311,7 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	public boolean isLeaf(Object node) {
 		if (node instanceof FolderNode) return false;
+		if (node instanceof ProjectActionNode) return true;
 		
 		if (node instanceof ColumnMergeRules) {
 			return true;

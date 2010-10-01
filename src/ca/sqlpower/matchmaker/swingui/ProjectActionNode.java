@@ -36,7 +36,7 @@ import ca.sqlpower.object.SPObject;
      * need to be persisted since it has nothing to do with the core, only with
      * the UI.
      */
-public class ProjectActionNode{
+public class ProjectActionNode {
 
 	/**
      * List of allowable child types
@@ -84,6 +84,10 @@ public class ProjectActionNode{
     
     public Project getParent() {
     	return project;
+    }
+    
+    public String getName() {
+    	return name;
     }
 
 	public List<? extends SPObject> getChildren() {
