@@ -24,6 +24,8 @@ import org.apache.log4j.Logger;
 public class BooleanConstantMungeStepTest extends AbstractMungeStepTest<BooleanConstantMungeStep> {
 
 	BooleanConstantMungeStep step;
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 
 	public BooleanConstantMungeStepTest(String name) {
 		super(name);
