@@ -135,16 +135,8 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 			SQLObjectException, MatchMakerConfigurationException,
 			RepositoryVersionException {
 
-        // We create a copy of the data source and change the userID and
-		// password
-        //and use that for the login attempt.  We do not want to change the
-        //default userID and password for the connection in here.
-        JDBCDataSource tempDbSource = new JDBCDataSource(ds);
-        tempDbSource.setUser(username);
-        tempDbSource.setPass(password);
-
         try {
-            MatchMakerSession session = new MatchMakerHibernateSessionImpl(this, tempDbSource);
+            MatchMakerSession session = new MatchMakerHibernateSessionImpl(this, ds);
             sessions.add(session);
             session.addSessionLifecycleListener(sessionLifecycleListener);
             return session;
