@@ -31,7 +31,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.munge.GoogleAddressLookupMungeStep;
+import ca.sqlpower.matchmaker.munge.GoogleAddressLookup;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
@@ -55,9 +55,9 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
 
     @Override
     protected JPanel buildUI() {
-        GoogleAddressLookupMungeStep temp = (GoogleAddressLookupMungeStep) getStep();
+        GoogleAddressLookup temp = (GoogleAddressLookup) getStep();
         
-        url = new JTextField(temp.getParameter(GoogleAddressLookupMungeStep.GOOGLE_GEOCODER_URL));
+        url = new JTextField(temp.getParameter(GoogleAddressLookup.GOOGLE_GEOCODER_URL));
         url.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -69,12 +69,12 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-                GoogleAddressLookupMungeStep step = (GoogleAddressLookupMungeStep) getStep();
-                step.setParameter(GoogleAddressLookupMungeStep.GOOGLE_GEOCODER_URL, url.getText());
+                GoogleAddressLookup step = (GoogleAddressLookup) getStep();
+                step.setParameter(GoogleAddressLookup.GOOGLE_GEOCODER_URL, url.getText());
             }
         });
         
-        key = new JTextField(temp.getParameter(GoogleAddressLookupMungeStep.GOOGLE_MAPS_API_KEY));
+        key = new JTextField(temp.getParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY));
         key.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -86,8 +86,8 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-                GoogleAddressLookupMungeStep step = (GoogleAddressLookupMungeStep) getStep();
-                step.setParameter(GoogleAddressLookupMungeStep.GOOGLE_MAPS_API_KEY, key.getText());
+                GoogleAddressLookup step = (GoogleAddressLookup) getStep();
+                step.setParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY, key.getText());
             }
         });
 

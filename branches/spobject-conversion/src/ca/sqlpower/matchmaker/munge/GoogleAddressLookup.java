@@ -37,7 +37,7 @@ import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.NonProperty;
 
-public class GoogleAddressLookupMungeStep extends AbstractMungeStep {
+public class GoogleAddressLookup extends AbstractMungeStep {
 
     
     public static final String GOOGLE_MAPS_API_KEY = "GoogleMapsApiKey";
@@ -87,7 +87,7 @@ public class GoogleAddressLookupMungeStep extends AbstractMungeStep {
     private final MungeStepOutput<BigDecimal> accuracy;
     
     @Constructor
-    public GoogleAddressLookupMungeStep() {
+    public GoogleAddressLookup() {
         super("Google Maps Address Lookup",false);
         
         super.addInput(new InputDescriptor("Address", String.class));
