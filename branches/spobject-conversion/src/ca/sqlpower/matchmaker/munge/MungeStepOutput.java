@@ -35,6 +35,7 @@ import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 
 /**
  * MungeStepOutput instances represent an output connection point of a MungeStep
@@ -94,10 +95,13 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	public Class<T> getType() {
 		return type;
 	}
+	
+	//XXX does this need to be persisted?
 
 	/**
 	 * Returns the current data in this output.
 	 */
+	@Transient
 	@Accessor
 	public T getData() {
 		return data;
@@ -107,6 +111,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	 * Sets the 
 	 * @param data
 	 */
+	@Transient
 	@Mutator
 	public void setData(T data) {
 		T oldData = data;

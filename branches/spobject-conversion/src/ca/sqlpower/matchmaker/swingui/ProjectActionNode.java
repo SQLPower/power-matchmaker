@@ -20,7 +20,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.util.Collections;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
@@ -37,7 +36,7 @@ import ca.sqlpower.object.SPObject;
      * need to be persisted since it has nothing to do with the core, only with
      * the UI.
      */
-public class ProjectActionNode extends AbstractMatchMakerObject {
+public class ProjectActionNode{
 
 	/**
      * List of allowable child types
@@ -47,14 +46,16 @@ public class ProjectActionNode extends AbstractMatchMakerObject {
 	
     private final ProjectActionType projectActionType;
     private final Project project;
+    String name;
+    boolean visible;
     
     public ProjectActionNode(ProjectActionType projectActionType, Project project) {
         this.projectActionType = projectActionType;
         this.project = project;
         setName(projectActionType.toString());
+        visible = true;
     }
     
-    @Override
     public boolean allowsChildren() {
         return false;
     }
@@ -85,13 +86,15 @@ public class ProjectActionNode extends AbstractMatchMakerObject {
     	return project;
     }
 
-	@Override
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
 	}
-
-	@Override
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public boolean isVisible() {
+		return visible;
 	}
 }

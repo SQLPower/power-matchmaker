@@ -316,11 +316,7 @@ public class TableMergeRules
 
 	@NonProperty
 	public SQLIndex getTableIndex() {
-		try {
-			return tableIndex.getTableIndex();
-		} catch (SQLObjectException e) {
-			throw new RuntimeException("Error getting index from table.", e);
-		}
+		return tableIndex.getTableIndex();
 	}
 
 	@NonProperty

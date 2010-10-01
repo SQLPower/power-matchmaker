@@ -479,12 +479,12 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	 * data it received that last time the {@link #doCall()} method was called.
 	 */
 	@NonProperty
-	boolean isAddressCorrected() {
+	public boolean isAddressCorrected() {
 		return addressCorrected;
 	}
 	
 	@Accessor
-	MungeStep getInputStep() {
+	public MungeStep getInputStep() {
 		return inputStep;
 	}
 	
@@ -505,7 +505,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	}
 	
 	@NonProperty
-	void setAddressPool(AddressPool pool, Logger logger) {
+	public void setAddressPool(AddressPool pool, Logger logger) {
 		this.pool = pool;
 	}
 	

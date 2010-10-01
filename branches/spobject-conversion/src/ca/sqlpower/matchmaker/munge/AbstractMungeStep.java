@@ -41,6 +41,8 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.object.annotation.Transient;
@@ -119,7 +121,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	
 	protected EngineMode mode;
 	
-	public AbstractMungeStep(String name, boolean canAddInputs) {
+	@Constructor
+	public AbstractMungeStep(@ConstructorParameter(propertyName="name") String name, 
+			@ConstructorParameter(propertyName="canAddInputs") boolean canAddInputs) {
 		setName(name);
 		this.canAddInputs = canAddInputs;
 	}
@@ -247,7 +251,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	}
 
     @Accessor
-	Class getDefaultInputClass(Class defaultInputClass) {
+	public Class getDefaultInputClass() {
     	return defaultInputClass;
 	}
 	
@@ -340,12 +344,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
         return Collections.unmodifiableSet(parameters.keySet());
     }
     
-	@Accessor
+	@NonProperty
 	public String getParameter(String name) {
 		return parameters.get(name);
 	}
 	
-	@Accessor
+	@NonProperty
 	public Boolean getBooleanParameter(String name) {
 		String param = parameters.get(name);
 		if (param != null) {
@@ -365,7 +369,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 	}
 	
-	@Mutator
+	@NonProperty
 	public void setPosition(int x, int y) {
 		try {
 			begin("Setting position");
@@ -378,25 +382,40 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 	}
 	
-	@Mutator
+	@NonProperty
 	public void setParameter(String name, String newValue) {
-		String oldValue = parameters.get(name);
+		Map<String, String> newParameters = new HashMap<String,String>();
+		newParameters.putAll(parameters);
 		parameters.put(name, newValue);
-		firePropertyChange(name, oldValue, newValue);
+		setParameters(newParameters);
 	}
 	
-	@Mutator
+	@NonProperty
 	public void setParameter(String name, boolean newValue) {
-		String oldValue = parameters.get(name);
+		Map<String, String> newParameters = new HashMap<String,String>();
+		newParameters.putAll(parameters);
 		parameters.put(name, newValue + "");
-		firePropertyChange(name, oldValue, newValue + "");
+		setParameters(newParameters);
+	}
+	
+	@NonProperty
+	public void setParameter(String name, int newValue) {
+		Map<String, String> newParameters = new HashMap<String,String>();
+		newParameters.putAll(parameters);
+		newParameters.put(name, newValue + "");
+		setParameters(newParameters);
 	}
 	
 	@Mutator
-	public void setParameter(String name, int newValue) {
-		String oldValue = parameters.get(name);
-		parameters.put(name, newValue + "");
-		firePropertyChange(name, oldValue, newValue + "");
+	public void setParameters(Map<String,String> parameters) {
+		Map<String, String> oldParameters = this.parameters;
+		this.parameters = parameters;
+		firePropertyChange("parameters", oldParameters, parameters);
+	}
+	
+	@Accessor
+	public Map<String,String> getParameters() {
+		return parameters;
 	}
 	
 	public MungeStep duplicate(MatchMakerObject parent,
@@ -725,7 +744,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	 * Munge Steps are placed in the ca.sqlpower.matchmaker.munge package anyway. 
 	 */
     @Mutator
-	void setDefaultInputClass(Class defaultInputClass) {
+	public void setDefaultInputClass(Class defaultInputClass) {
     	Class oldDefaultInputClass = this.defaultInputClass;
 		this.defaultInputClass = defaultInputClass;
 		firePropertyChange("defaultInputClass", oldDefaultInputClass, this.defaultInputClass);
