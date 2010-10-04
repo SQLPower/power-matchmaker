@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sqlpower.matchmaker.CachableTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
@@ -29,8 +30,11 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.MergeSettings;
+import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TableIndex;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
@@ -69,6 +73,20 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
 				"translate word parent"));
         	parent.addChild(translateWord);
 			return translateWord;
+        } else if (valueType == CachableTable.class) {
+        	Project project = (Project) makeNewValue(Project.class, null, "old parent");
+        	return project.getSourceTablePropertiesDelegate();
+        } else if (valueType == MungeSettings.class) {
+        	Project project = (Project) makeNewValue(Project.class, null, "old parent");
+        	return project.getMungeSettings();
+        } else if (valueType == MergeSettings.class) {
+        	Project project = (Project) makeNewValue(Project.class, null, "old parent");
+        	return project.getMergeSettings();
+        } else if (valueType == TableIndex.class) {
+        	Project project = (Project) makeNewValue(Project.class, null, "old parent");
+        	TableIndex index = new TableIndex(project.getSourceTablePropertiesDelegate(), "Role");
+        	project.addChild(index);
+        	return index;
     	} else if (valueType == TableMergeRules.class) {
         	return new TableMergeRules();
         } else if (valueType == ColumnMergeRules.class) {
