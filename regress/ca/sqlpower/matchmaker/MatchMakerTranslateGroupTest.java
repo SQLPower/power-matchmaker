@@ -35,7 +35,10 @@ public class MatchMakerTranslateGroupTest extends MatchMakerTestCase<MatchMakerT
 		target = new MatchMakerTranslateGroup();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
-		target.setSession(session);
+		TranslateGroupParent parent = new TranslateGroupParent();
+		parent.addChild(target);
+		parent.setSession(session);
+		getRootObject().addChild(parent, 0);
 	}
 
 	@Override
