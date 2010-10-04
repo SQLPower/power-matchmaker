@@ -113,7 +113,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 	@Override
 	@NonProperty
 	public List<MatchMakerTranslateWord> getChildren() {
-		return children;
+		return Collections.unmodifiableList(children);
 	}
 
 	@Override
@@ -134,8 +134,8 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 	protected boolean removeChildImpl(SPObject spo) {
 		int index = children.indexOf(spo);
 		boolean removed = children.remove(spo);
-		spo.setParent(null);
 		fireChildRemoved(MatchMakerTranslateWord.class, spo, index);
+		spo.setParent(null);
 		return removed;
 	}
 

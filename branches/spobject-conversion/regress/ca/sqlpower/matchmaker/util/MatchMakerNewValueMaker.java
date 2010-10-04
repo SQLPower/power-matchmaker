@@ -105,6 +105,7 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == TranslateGroupParent.class) {
         	TranslateGroupParent parent = new TranslateGroupParent();
         	getRootObject().addChild(parent, 0);
+        	parent.setSession(new TestingMatchMakerSession());
         	return parent;
         } else if (valueType == Class.class) {
         	if (oldVal == String.class) {

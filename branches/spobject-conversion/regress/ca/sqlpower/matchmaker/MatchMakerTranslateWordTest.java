@@ -41,6 +41,7 @@ public class MatchMakerTranslateWordTest extends MatchMakerTestCase<MatchMakerTr
 		parent = new MatchMakerTranslateGroup();
 		target.setSession(session);
 		target.setParent(parent);
+		getRootObject().addChild(parent, 0);
 		
 		// Ignoring because the getName() has been changed to enable
 		// naming the node on the tree.

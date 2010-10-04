@@ -38,6 +38,8 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 	private Long oid;
 	private String from = "";
 	private String to = "";
+	
+	private String name = "";
 
 	@Constructor
 	public MatchMakerTranslateWord() {
@@ -90,7 +92,19 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 	@Override
 	@Accessor
 	public String getName() {
-		return from + " \u2192 " + to;
+		if (name == null) {
+			return from + " \u2192 " + to;
+		} else {
+			return name;
+		}
+	}
+	
+	@Override
+	@Mutator
+	public void setName(String name) {
+		String oldName = getName();
+		this.name = name;
+		firePropertyChange("name", oldName, name);
 	}
 	
     @Override
