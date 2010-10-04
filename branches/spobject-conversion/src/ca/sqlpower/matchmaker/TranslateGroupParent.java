@@ -173,6 +173,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 		return allowedChildTypes;
 	}
 	
+	@NonProperty
 	public MatchMakerTranslateGroup getChildByUUID(String UU) {
 		for (MatchMakerTranslateGroup c: matchMakerTranslateGroups) {
 			if (c.getUUID().equals(UU)) {
