@@ -64,7 +64,11 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
     @Override
     public Object makeNewValue(Class<?> valueType, Object oldVal, String propName) {
         if(valueType == MatchMakerTranslateWord.class) {
-        	return new MatchMakerTranslateWord();
+        	MatchMakerTranslateWord translateWord = new MatchMakerTranslateWord();
+        	MatchMakerTranslateGroup parent = ((MatchMakerTranslateGroup) makeNewValue(MatchMakerTranslateGroup.class, null, 
+				"translate word parent"));
+        	parent.addChild(translateWord);
+			return translateWord;
     	} else if (valueType == TableMergeRules.class) {
         	return new TableMergeRules();
         } else if (valueType == ColumnMergeRules.class) {
@@ -86,7 +90,11 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	parent.addMungeProcess(mp, 0);
         	return mp;
         } else if (valueType == MatchMakerTranslateGroup.class) {
-        	return new MatchMakerTranslateGroup();
+        	MatchMakerTranslateGroup group = new MatchMakerTranslateGroup();
+        	TranslateGroupParent parent = ((TranslateGroupParent) makeNewValue(TranslateGroupParent.class, null, 
+				"translate group parent"));
+        	parent.addChild(group);
+			return group;
         } else if (valueType == ColumnMergeRules.MergeActionType.class) {
         	return ColumnMergeRules.MergeActionType.MAX;
         }  else if (valueType == PlFolder.class) {
