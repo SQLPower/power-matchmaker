@@ -156,12 +156,6 @@ public abstract class AbstractMatchMakerObject extends AbstractSPObject implemen
 		return createDate;
 	}
 	
-	@Accessor
-	public MatchMakerObject getParent() {
-		return (MatchMakerObject) super.getParent();
-	}
-
-
 	/////// Event stuff ///////
 	@Mutator
 	public void setVisible(boolean visible) {

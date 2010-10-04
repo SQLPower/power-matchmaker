@@ -35,9 +35,9 @@ public class FolderParentTest extends MatchMakerTestCase<FolderParent> {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		rootNode = new MMRootNode(session);
-		folderParent = new FolderParent(session);
-		folderParent.setParent(rootNode);
+		folderParent = rootNode.getCurrentFolderParent();
 		super.setUp();
+		getRootObject().addChild(rootNode, 0);
 	}
 	
 	@Override
