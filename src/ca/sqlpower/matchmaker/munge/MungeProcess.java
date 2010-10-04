@@ -319,23 +319,33 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	
 	@Override
 	protected void addChildImpl(SPObject spo, int index) {
-		if (spo instanceof SQLInputStep) {
-			inputSteps.add(index, (SQLInputStep)spo);
-			for(AddressCorrectionMungeStep s : getChildren(AddressCorrectionMungeStep.class)) {
-				s.setInputStep((SQLInputStep)spo);
-			}
-			fireChildAdded(SQLInputStep.class, spo, index);
-		} else if (spo instanceof AddressCorrectionMungeStep) {
-			for (SQLInputStep input : inputSteps) {
-				((AddressCorrectionMungeStep)spo).setInputStep(input);
-			}
-			mungeSteps.add(index, (MungeStep)spo);
-			fireChildAdded(MungeStep.class, spo, index);
-		} else if (spo instanceof MungeResultStep) {
+		if (spo instanceof MungeResultStep) {
 			setResultStep((MungeResultStep) spo);
 		} else {
-			mungeSteps.add(index, (MungeStep)spo);
-			fireChildAdded(MungeStep.class, spo, index);
+			addMungeStep((MungeStep) spo, index);
+		}
+
+	}
+	
+	public void addMungeStep(MungeStep step, int index) {
+		if (step instanceof SQLInputStep) {
+			inputSteps.add(index, (SQLInputStep)step);
+			for(AddressCorrectionMungeStep s : getChildren(AddressCorrectionMungeStep.class)) {
+				s.setInputStep((SQLInputStep)step);
+			}
+			step.setParent(this);
+			fireChildAdded(SQLInputStep.class, step, index);
+		} else if (step instanceof AddressCorrectionMungeStep) {
+			for (SQLInputStep input : inputSteps) {
+				((AddressCorrectionMungeStep)step).setInputStep(input);
+			}
+			mungeSteps.add(index, (MungeStep)step);
+			step.setParent(this);
+			fireChildAdded(MungeStep.class, step, index);
+		} else {
+			mungeSteps.add(index, (MungeStep)step);
+			step.setParent(this);
+			fireChildAdded(MungeStep.class, step, index);
 		}
 	}
 
@@ -360,21 +370,23 @@ public class MungeProcess extends AbstractMatchMakerObject {
 
 	@Override
 	protected boolean removeChildImpl(SPObject spo) {
-		if (spo instanceof MungeStep)
-		{
-			int index = mungeSteps.indexOf(spo);
-			boolean removed = mungeSteps.remove(spo);
-			fireChildRemoved(MungeStep.class, spo, index);
+		return removeMungeStep((MungeStep) spo);
+	}
+	
+	public boolean removeMungeStep(MungeStep step) {
+		if (step instanceof SQLInputStep) {
+			int index = inputSteps.indexOf(step);
+			boolean removed = inputSteps.remove(step);
+			if (removed) {
+				fireChildRemoved(SQLInputStep.class, step, index);
+			}
 			return removed;
-		} else if (spo instanceof SQLInputStep) {
-			int index = inputSteps.indexOf(spo);
-			boolean removed = inputSteps.remove(spo);
-			fireChildRemoved(SQLInputStep.class, spo, index);
-			return removed;
-		} else if (spo instanceof AddressCorrectionMungeStep) {
-			int index = mungeSteps.indexOf(spo);
-			boolean removed = mungeSteps.remove(spo);
-			fireChildRemoved(AddressCorrectionMungeStep.class, spo, index);
+		} else if (step instanceof MungeStep) {
+			int index = mungeSteps.indexOf(step);
+			boolean removed = mungeSteps.remove(step);
+			if (removed) {
+				fireChildRemoved(MungeStep.class, step, index);
+			}
 			return removed;
 		}
 		return false;
