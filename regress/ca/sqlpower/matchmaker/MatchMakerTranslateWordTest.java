@@ -40,7 +40,7 @@ public class MatchMakerTranslateWordTest extends MatchMakerTestCase<MatchMakerTr
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		parent = new MatchMakerTranslateGroup();
 		target.setSession(session);
-		target.setParent(parent);
+		parent.addChild(target);
 		getRootObject().addChild(parent, 0);
 		
 		// Ignoring because the getName() has been changed to enable
