@@ -35,6 +35,10 @@ public class BooleanConstantMungeStepTest extends AbstractMungeStepTest<BooleanC
     protected void setUp() throws Exception {
         step = new BooleanConstantMungeStep();
         super.setUp();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
     
     public void testNull() throws Exception {
