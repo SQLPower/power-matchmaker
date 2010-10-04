@@ -46,6 +46,10 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
+		Project parent = (Project) createNewValueMaker(
+				getRootObject(), null).makeNewValue(
+						Project.class, null, "Parent project");
+		parent.addMungeProcess(target, 0);
 	}
 
 	@Override
