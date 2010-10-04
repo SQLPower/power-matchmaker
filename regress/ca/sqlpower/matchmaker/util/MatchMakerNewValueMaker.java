@@ -99,6 +99,7 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == FolderParent.class) {
         	FolderParent folderParent = new FolderParent();
         	getRootObject().addChild(folderParent, 0);
+        	folderParent.setSession(new TestingMatchMakerSession());
         	return folderParent;
         } else if (valueType == TranslateGroupParent.class) {
         	TranslateGroupParent parent = new TranslateGroupParent();
