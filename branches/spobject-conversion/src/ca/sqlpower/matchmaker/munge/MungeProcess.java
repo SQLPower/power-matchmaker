@@ -439,11 +439,11 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	
 	@Override
 	public int childPositionOffset(Class<? extends SPObject> childType) {
-        if(childType == SQLInput.class) return 0;
-        if(MungeResultStep.class.isAssignableFrom(childType)) {
+        if (SQLInput.class.isAssignableFrom(childType)) return 0;
+        if (MungeResultStep.class.isAssignableFrom(childType)) {
         	return getInputSteps().size() + getMungeSteps().size();
         }
-        if(AbstractMungeStep.class.isAssignableFrom(childType)) {
+        if (AbstractMungeStep.class.isAssignableFrom(childType)) {
         	return getInputSteps().size();
         }
         throw new IllegalArgumentException(childType.getName() + 

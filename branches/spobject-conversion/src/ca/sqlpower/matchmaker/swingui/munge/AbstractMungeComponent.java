@@ -820,7 +820,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	protected void remove() {
 		MungeStep step = getStep();
-		MatchMakerObject mmo = step.getParent();
+		MatchMakerObject mmo = (MatchMakerObject) step.getParent();
 		if (mmo instanceof MungeProcess) {
 			((MungeProcess)mmo).removeChildAndInputs(getStep());
 		}

@@ -34,6 +34,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
@@ -70,22 +71,39 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == SQLInputStep.class) {
         	return new SQLInputStep();
         } else if (valueType == Project.class) {
-        	return new Project();
+        	Project project = new Project();
+        	PlFolder parent = ((PlFolder) makeNewValue(PlFolder.class, null, 
+        			"project parent"));
+        	parent.addChild(project);
+			return project;
         } else if (valueType == MungeProcess.class) {
         	MungeProcess mp = new MungeProcess();
         	MungeResultStep mrs = new DeDupeResultStep();
         	mp.addChild(mrs);
+        	Project parent = ((Project) makeNewValue(Project.class, null, 
+				"munge process parent"));
+        	parent.addMungeProcess(mp, 0);
         	return mp;
         } else if (valueType == MatchMakerTranslateGroup.class) {
         	return new MatchMakerTranslateGroup();
         } else if (valueType == ColumnMergeRules.MergeActionType.class) {
         	return ColumnMergeRules.MergeActionType.MAX;
         }  else if (valueType == PlFolder.class) {
-        	return new PlFolder("Generic PlFolder");
+        	PlFolder plFolder = new PlFolder("Generic PlFolder");
+        	FolderParent parentFolder = ((FolderParent) makeNewValue(FolderParent.class, null,
+        			"pl folder parent"));
+        	parentFolder.addChild(plFolder);
+			return plFolder;
         } else if (valueType == MungeStepOutput.class) {
-        	return new MungeStepOutput("output", String.class);
+        	return new MungeStepOutput<String>("output", String.class);
         } else if (valueType == FolderParent.class) {
-        	return new FolderParent(null);
+        	FolderParent folderParent = new FolderParent(null);
+        	getRootObject().addChild(folderParent, 0);
+        	return folderParent;
+        } else if (valueType == TranslateGroupParent.class) {
+        	TranslateGroupParent parent = new TranslateGroupParent(null);
+        	getRootObject().addChild(parent, 0);
+        	return parent;
         } else if (valueType == Long.class) {
         	return (Long)oldVal + 1;
         } else if (valueType == Class.class) {
@@ -104,6 +122,7 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return new MungeStepInput(null, new InputDescriptor("input", Object.class),new UpperCaseMungeStep());
         }  else if (valueType == MMRootNode.class) {
         	MatchMakerSession session = new TestingMatchMakerSession();
+        	getRootObject().addChild(session.getRootNode(), 0);
         	return session.getRootNode();
         } else if (valueType == AddressDatabase.class) {
         	/*

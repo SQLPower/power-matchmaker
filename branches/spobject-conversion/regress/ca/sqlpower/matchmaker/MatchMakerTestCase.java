@@ -170,7 +170,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 		// Second pass get a copy make sure all of 
 		// the original mutable objects returned from getters are different
 		// between the two objects, but have the same values. 
-		MatchMakerObject duplicate = mmo.duplicate(mmo.getParent(),session);
+		MatchMakerObject duplicate = mmo.duplicate((MatchMakerObject) mmo.getParent(), session);
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForDuplication.contains(property.getName())) continue;
 			Object oldVal;
