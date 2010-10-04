@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
@@ -146,7 +145,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	/**
 	 * Not implemented because we're pretty sure we don't want a duplicate system like this.
 	 */
-	public MungeStepOutput<T> duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public MungeStepOutput<T> duplicate(MatchMakerObject parent) {
 		throw new UnsupportedOperationException("Duplicate is not supported");
 	}
 	

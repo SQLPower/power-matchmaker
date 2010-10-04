@@ -72,7 +72,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
-        translateGroupParent= new TestingMatchMakerTranslateGroupParent(this);
+        translateGroupParent= new TestingMatchMakerTranslateGroupParent();
         context = new TestingMatchMakerContext();
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         rootNode = new MMRootNode(this);
@@ -209,7 +209,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 
     public TranslateGroupParent getTranslations() {
     	if (translateGroupParent == null){
-    		translateGroupParent = new TranslateGroupParent(this);
+    		translateGroupParent = new TranslateGroupParent();
     	}
     	return translateGroupParent;
     }
@@ -219,7 +219,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
     public FolderParent getCurrentFolderParent() {
-    	FolderParent current = new FolderParent(this);
+    	FolderParent current = new FolderParent();
     	for(PlFolder child : folders) {
     		current.addChild(child);
     	}

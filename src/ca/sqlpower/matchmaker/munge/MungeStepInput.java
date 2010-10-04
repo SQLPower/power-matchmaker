@@ -5,7 +5,6 @@ import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
@@ -131,8 +130,7 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	}
 
 	@Override
-	public MatchMakerObject duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		return null;
 	}
 

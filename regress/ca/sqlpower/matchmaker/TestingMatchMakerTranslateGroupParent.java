@@ -21,8 +21,8 @@ package ca.sqlpower.matchmaker;
 
 public class TestingMatchMakerTranslateGroupParent extends TranslateGroupParent {
 
-	public TestingMatchMakerTranslateGroupParent(MatchMakerSession session) {
-		super(session);
+	public TestingMatchMakerTranslateGroupParent() {
+		super();
 		// TODO Auto-generated constructor stub
 	}
 	

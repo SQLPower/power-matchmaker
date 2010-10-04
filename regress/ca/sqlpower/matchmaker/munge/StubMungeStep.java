@@ -123,7 +123,7 @@ public class StubMungeStep implements MungeStep {
         return false;
     }
 
-    @Override public MungeStep duplicate(MatchMakerObject parent, MatchMakerSession session) {
+    @Override public MungeStep duplicate(MatchMakerObject parent) {
         logger.debug("Stub call: StubMungeStep.duplicate()");
         return null;
     }

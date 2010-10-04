@@ -117,7 +117,7 @@ public class StubMatchMakerObject extends AbstractSPObject implements MatchMaker
         this.allowChildren = allowChildren;
     }
 
-	public MatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession s) {
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		logger.debug("Stub call: StubMatchMakerObject.duplicate()");
 		return null;
 	}

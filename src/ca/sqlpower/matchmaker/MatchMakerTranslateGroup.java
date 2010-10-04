@@ -92,15 +92,14 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 		return getName();
 	}
 
-	public MatchMakerTranslateGroup duplicate(MatchMakerObject parent, MatchMakerSession s) {
+	public MatchMakerTranslateGroup duplicate(MatchMakerObject parent) {
 		MatchMakerTranslateGroup g = new MatchMakerTranslateGroup();
-		g.setSession(s);
 		g.setParent(parent);
 		g.setName(this.getName());
 		g.setVisible(isVisible());
 		int i = 0;
 		for (MatchMakerTranslateWord w: getChildren(MatchMakerTranslateWord.class)){
-			MatchMakerTranslateWord duplicate = w.duplicate(g,s);
+			MatchMakerTranslateWord duplicate = w.duplicate(g);
 			g.addChild(duplicate, i);
 			i++;
 		}

@@ -34,25 +34,27 @@ import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.diff.DiffChunk;
 import ca.sqlpower.diff.DiffType;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.address.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.object.annotation.Transient;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -196,19 +198,31 @@ public class Project extends AbstractMatchMakerObject {
      */
     private final AtomicReference<Monitorable> runningEngine = new AtomicReference<Monitorable>();
     
-    @Constructor
 	public Project() {
-	    sourceTablePropertiesDelegate = new CachableTable("sourceTable");
-	    sourceTablePropertiesDelegate.setParent(this);
-	    resultTablePropertiesDelegate = new CachableTable("resultTable");
+	    this(new CachableTable("sourceTable"), 
+	    		new CachableTable("resultTable"), 
+	    		new CachableTable("xrefTable"));
+	}
+    
+	@Constructor
+    public Project(
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    				propertyName="sourceTable") CachableTable sourceTablePropertiesDelegate, 
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    				propertyName="resultTable") CachableTable resultTablePropertiesDelegate, 
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    				propertyName="xrefTable") CachableTable xrefTablePropertiesDelegate) {
+	    this.sourceTablePropertiesDelegate = sourceTablePropertiesDelegate;
+		this.resultTablePropertiesDelegate = resultTablePropertiesDelegate;
+		this.xrefTablePropertiesDelegate = xrefTablePropertiesDelegate;
+		sourceTablePropertiesDelegate.setParent(this);
 	    resultTablePropertiesDelegate.setParent(this);
-	    xrefTablePropertiesDelegate = new CachableTable("xrefTable");
 	    xrefTablePropertiesDelegate.setParent(this);
-        
+	    
         setType(ProjectMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(sourceTablePropertiesDelegate,"sourceTableIndex");
         sourceTableIndex.setParent(this);
-	}
+    }
 	
 	public void addChild(SPObject spo) {
 		int size = 0;
@@ -780,13 +794,13 @@ public class Project extends AbstractMatchMakerObject {
      * objects under different id and oid 
      * @return true if nothing wrong.
      */
-	public Project duplicate(MatchMakerObject parent,MatchMakerSession s) {
+	public Project duplicate(MatchMakerObject parent) {
 		Project newProject = new Project();
 		newProject.setParent(getParent());
 		newProject.setName(getName());
 		newProject.setFilter(getFilter());
-		newProject.setMergeSettings(getMergeSettings().duplicate(newProject,s));
-		newProject.setMungeSettings(getMungeSettings().duplicate(newProject,s));
+		newProject.setMergeSettings(getMergeSettings().duplicate(newProject));
+		newProject.setMungeSettings(getMungeSettings().duplicate(newProject));
 		
 		newProject.setSourceTable(getSourceTable());
 		newProject.setResultTable(getResultTable());
@@ -794,16 +808,15 @@ public class Project extends AbstractMatchMakerObject {
 		newProject.setXrefTable(getXrefTable());
 		newProject.setType(getType());
 		newProject.setView(getView()==null?null:getView().duplicate());
-		newProject.setSession(s);
 		newProject.setVisible(isVisible());
 		
 		for (MungeProcess g : getMungeProcesses()) {
-			MungeProcess newGroup = g.duplicate(this,s);
+			MungeProcess newGroup = g.duplicate(this);
 			newProject.addChild(newGroup);
 		}
 
 		for (TableMergeRules g : getTableMergeRules()) {
-			TableMergeRules newMergeRule = g.duplicate(this,s);
+			TableMergeRules newMergeRule = g.duplicate(this);
 			newProject.addChild(newMergeRule);
 		}
 		
@@ -854,6 +867,11 @@ public class Project extends AbstractMatchMakerObject {
     public String getSourceTableSPDatasource() {
     	return sourceTablePropertiesDelegate.getSPDataSourceName();
     }
+    
+    @NonProperty
+    public CachableTable getSourceTablePropertiesDelegate() {
+		return sourceTablePropertiesDelegate;
+	}
 
     /////// The result table delegate methods //////
     @NonProperty
@@ -898,6 +916,11 @@ public class Project extends AbstractMatchMakerObject {
     public String getResultTableSPDatasource() {
     	return resultTablePropertiesDelegate.getSPDataSourceName();
     }
+    
+    @NonProperty
+    public CachableTable getResultTablePropertiesDelegate() {
+		return resultTablePropertiesDelegate;
+	}
 
     /////// The xref table delegate methods //////
     @NonProperty
@@ -942,6 +965,11 @@ public class Project extends AbstractMatchMakerObject {
     public String getXrefTableSPDatasource() {
     	return xrefTablePropertiesDelegate.getSPDataSourceName();
     }
+    
+    @NonProperty
+    public CachableTable getXrefTablePropertiesDelegate() {
+		return xrefTablePropertiesDelegate;
+	}
     
     /**
      * Returns a SQLIndex object which is the set of columns the user

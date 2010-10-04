@@ -28,8 +28,6 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.NonProperty;
 
 
@@ -51,14 +49,6 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	
 	List<MatchMakerTranslateGroup> matchMakerTranslateGroups = new ArrayList<MatchMakerTranslateGroup>();
 	
-    private final MatchMakerSession session;
-
-    @Constructor
-    public TranslateGroupParent(@ConstructorParameter(propertyName="session") MatchMakerSession session) {
-        this.session = session;
-        
-    }
-
     /**
      * Deletes the translate group as well as adding it to the child list and 
      * firing the proper events.  If the group is in use, it will not be deleted
@@ -71,7 +61,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
         if(isInUseInBusinessModel(child)) {
         	throw new IllegalStateException("The translate group \""+child.getName()+"\" is in use and can't be deleted");
         }
-        this.session.getDAO(MatchMakerTranslateGroup.class).delete(child);
+        getSession().getDAO(MatchMakerTranslateGroup.class).delete(child);
         try {
         	super.removeChild(child);
         } catch (ObjectDependentException e) {
@@ -87,7 +77,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
      */
     @NonProperty
     public boolean isInUseInBusinessModel(MatchMakerTranslateGroup tg) {
-        for (SPObject spo : session.getCurrentFolderParent().getChildren()) {
+        for (SPObject spo : getSession().getCurrentFolderParent().getChildren()) {
         	MatchMakerObject mmo = (MatchMakerObject)spo;
             if (checkMMOContainsTranslateGroup(mmo,tg)) {
             	return true;
@@ -139,14 +129,14 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
         return System.identityHashCode(this);
     }
 
-	public TranslateGroupParent duplicate(MatchMakerObject parent, MatchMakerSession session) {
-		TranslateGroupParent g = new TranslateGroupParent(session);
+	public TranslateGroupParent duplicate(MatchMakerObject parent) {
+		TranslateGroupParent g = new TranslateGroupParent();
 		g.setParent(parent);
 		g.setName(this.getName());
 		g.setVisible(isVisible());
 		int i = 0;
 		for (MatchMakerTranslateGroup w: getChildren(MatchMakerTranslateGroup.class)){
-			MatchMakerTranslateGroup duplicate = w.duplicate(g,session);
+			MatchMakerTranslateGroup duplicate = w.duplicate(g);
 			g.addChild(duplicate, i);
 			i++;
 		}

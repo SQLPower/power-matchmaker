@@ -28,7 +28,6 @@ import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
@@ -265,7 +264,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 * @return new MungeProcess object with the same properties
 	 * and children
 	 */
-	public MungeProcess duplicate(MatchMakerObject parent, MatchMakerSession s){
+	public MungeProcess duplicate(MatchMakerObject parent){
 		MungeProcess mungeProcess = new MungeProcess();
 		mungeProcess.setActive(getActive());
 		mungeProcess.setValidate(isValidate());
@@ -274,11 +273,10 @@ public class MungeProcess extends AbstractMatchMakerObject {
         mungeProcess.setColour(getColour() == null ? null : new Color(getColour().getRGB()));
 		mungeProcess.setMatchPriority(getMatchPriority()==null?null:new Integer(getMatchPriority()));
 		mungeProcess.setName(getName()==null?null:new String(getName()));
-		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());
 		
 		for (MungeStep step : getChildren(MungeStep.class)) {
-            MungeStep newStep = (MungeStep)step.duplicate(mungeProcess,s);
+            MungeStep newStep = (MungeStep)step.duplicate(mungeProcess);
 			mungeProcess.addChild(newStep);
 		}
 		

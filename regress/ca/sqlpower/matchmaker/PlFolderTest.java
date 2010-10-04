@@ -39,8 +39,10 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		plFolder.setSession(session);
-		parentFolder = new FolderParent(session);
+		parentFolder = session.getCurrentFolderParent();
 		parentFolder.addChild(plFolder, 0);
+		getRootObject().addChild(parentFolder, 0);
+		parentFolder.setSession(session);
 	}
 
 	@Override

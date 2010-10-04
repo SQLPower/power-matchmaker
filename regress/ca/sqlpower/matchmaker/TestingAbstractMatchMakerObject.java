@@ -73,7 +73,7 @@ public class TestingAbstractMatchMakerObject extends AbstractMatchMakerObject{
 		return listeners.contains(listener);
 	}
 
-	public TestingAbstractMatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public TestingAbstractMatchMakerObject duplicate(MatchMakerObject parent) {
 		TestingAbstractMatchMakerObject dup = new TestingAbstractMatchMakerObject();
 		dup.setHashCode(hashCode());
 		dup.setParent(parent);
