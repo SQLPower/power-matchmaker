@@ -772,7 +772,9 @@ public class Project extends AbstractMatchMakerObject {
 	
 	@Mutator
 	public void setOid(Long oid) {
+		Long oldOid = this.oid;
 		this.oid = oid;
+		firePropertyChange("oid", oldOid, oid);
 	}
 
     @Override

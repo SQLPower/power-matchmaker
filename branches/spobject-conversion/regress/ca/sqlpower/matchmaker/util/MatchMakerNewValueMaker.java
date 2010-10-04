@@ -35,6 +35,7 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
@@ -105,8 +106,6 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	TranslateGroupParent parent = new TranslateGroupParent();
         	getRootObject().addChild(parent, 0);
         	return parent;
-        } else if (valueType == Long.class) {
-        	return (Long)oldVal + 1;
         } else if (valueType == Class.class) {
         	if (oldVal == String.class) {
         		return Boolean.class;
@@ -125,6 +124,12 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	MatchMakerSession session = new TestingMatchMakerSession();
         	getRootObject().addChild(session.getRootNode(), 0);
         	return session.getRootNode();
+        } else if (valueType == ProjectMode.class) {
+        	if (oldVal != ProjectMode.FIND_DUPES) {
+        		return ProjectMode.FIND_DUPES;
+        	} else {
+        		return ProjectMode.CLEANSE;
+        	}
         } else if (valueType == AddressDatabase.class) {
         	/*
         	 * FIXME This needs to be fixed somehow not to return null
