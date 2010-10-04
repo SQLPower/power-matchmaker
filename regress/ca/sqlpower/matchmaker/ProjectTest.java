@@ -109,6 +109,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         project.setSession(session);
         parentFolder = new PlFolder();
         parentFolder.addChild(project);
+        getRootObject().addChild(parentFolder, 0);
     }
     @Override
     protected Project getTarget() {
