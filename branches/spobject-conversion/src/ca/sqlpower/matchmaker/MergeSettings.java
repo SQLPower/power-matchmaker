@@ -99,6 +99,16 @@ public class MergeSettings extends MatchMakerSettings {
 	
 	public MergeSettings duplicate(MatchMakerObject parent) {
 		MergeSettings settings = new MergeSettings();
+		copyPropertiesToTarget(settings);
+		
+		return settings;
+	}
+	
+	/**
+	 * Copies all of the properties from this object to the settings object
+	 * passed in.
+	 */
+	public void copyPropertiesToTarget(MergeSettings settings) {
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAugmentNull(getAugmentNull());
 		settings.setBackUp(getBackUp());
@@ -110,10 +120,7 @@ public class MergeSettings extends MatchMakerSettings {
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setSendEmail(getSendEmail());
 		settings.setVisible(isVisible());
-		
-		return settings;
 	}
-
 	
 	@Override
 	public String toString() {

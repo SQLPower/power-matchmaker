@@ -100,7 +100,7 @@ public class MatchEngineImplTest extends TestCase {
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("matchTest", "log");
 		settings.setLog(file);
-		project.setMungeSettings(settings);
+		settings.copyPropertiesToTarget(project.getMungeSettings());
 		
 		MungeProcess mungeProcessOne = new MungeProcess();
 		mungeProcessOne.setName("Munge_Process_One");

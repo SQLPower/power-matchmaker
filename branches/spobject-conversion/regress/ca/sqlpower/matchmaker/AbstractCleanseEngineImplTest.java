@@ -92,7 +92,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("cleanseTest", "log");
 		settings.setLog(file);
-		project.setMungeSettings(settings);
+		settings.copyPropertiesToTarget(project.getMungeSettings());
 		engine = new CleanseEngineImpl(session, project);
    	}
 	

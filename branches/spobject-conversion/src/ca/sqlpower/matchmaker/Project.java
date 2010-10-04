@@ -71,7 +71,8 @@ public class Project extends AbstractMatchMakerObject {
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
 				Arrays.asList(MungeProcess.class, TableMergeRules.class,
-						CachableTable.class, TableIndex.class)));
+						CachableTable.class, TableIndex.class, 
+						MungeSettings.class, MergeSettings.class)));
     
     List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
     List<TableMergeRules> tableMergeRules = new ArrayList<TableMergeRules>();
@@ -126,10 +127,10 @@ public class Project extends AbstractMatchMakerObject {
 	 * The settings for the munging engine. This applies to Match, Cleanse, and
 	 * Address Correction Projects
 	 */
-    private MungeSettings mungeSettings = new MungeSettings();
+    private final MungeSettings mungeSettings;
 
 	/** the settings for the merge engine */
-    private MergeSettings mergeSettings = new MergeSettings();
+    private final MergeSettings mergeSettings;
 
 	/** Optional SQL WHERE clause for the source table. If no filer is desired, this value is null. */
     private String filter;
@@ -160,6 +161,11 @@ public class Project extends AbstractMatchMakerObject {
 	 * The unique index of the source table that we're using. Not necessarily
 	 * one of the unique indices defined in the database; the user can pick an
 	 * arbitrary set of columns.
+	 * <p>
+	 * XXX This table should be final but it currently takes in a table that is
+	 * a sibling of this object in its constructor. Since there is no annotation
+	 * pattern for this yet this will be passed for the less favorable implementation
+	 * of being non-final until MatchMaker works again.
 	 */
     private TableIndex sourceTableIndex;
     
@@ -201,7 +207,9 @@ public class Project extends AbstractMatchMakerObject {
 	public Project() {
 	    this(new CachableTable("sourceTable"), 
 	    		new CachableTable("resultTable"), 
-	    		new CachableTable("xrefTable"));
+	    		new CachableTable("xrefTable"),
+	    		new MungeSettings(),
+	    		new MergeSettings());
 	}
     
 	@Constructor
@@ -211,7 +219,11 @@ public class Project extends AbstractMatchMakerObject {
     		@ConstructorParameter(parameterType=ParameterType.CHILD, 
     				propertyName="resultTable") CachableTable resultTablePropertiesDelegate, 
     		@ConstructorParameter(parameterType=ParameterType.CHILD, 
-    				propertyName="xrefTable") CachableTable xrefTablePropertiesDelegate) {
+    				propertyName="xrefTable") CachableTable xrefTablePropertiesDelegate,
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    	    		propertyName="mungeSettings") MungeSettings mungeSettings,
+    	    @ConstructorParameter(parameterType=ParameterType.CHILD, 
+    	       		propertyName="mungeSettings") MergeSettings mergeSettings) {
 	    this.sourceTablePropertiesDelegate = sourceTablePropertiesDelegate;
 		this.resultTablePropertiesDelegate = resultTablePropertiesDelegate;
 		this.xrefTablePropertiesDelegate = xrefTablePropertiesDelegate;
@@ -220,8 +232,13 @@ public class Project extends AbstractMatchMakerObject {
 	    xrefTablePropertiesDelegate.setParent(this);
 	    
         setType(ProjectMode.FIND_DUPES);
-        sourceTableIndex = new TableIndex(sourceTablePropertiesDelegate,"sourceTableIndex");
+        sourceTableIndex = new TableIndex(sourceTablePropertiesDelegate, "sourceTableIndex");
         sourceTableIndex.setParent(this);
+        
+        this.mungeSettings = mungeSettings;
+        mungeSettings.setParent(this);
+        this.mergeSettings = mergeSettings;
+        mergeSettings.setParent(this);
     }
 	
 	public void addChild(SPObject spo) {
@@ -235,10 +252,15 @@ public class Project extends AbstractMatchMakerObject {
 	}
 	
 	protected void addChildImpl(SPObject spo, int index) {
-		if(spo instanceof MungeProcess) {
+		if (spo instanceof MungeProcess) {
 			addMungeProcess((MungeProcess)spo, index);
-		} else if(spo instanceof TableMergeRules) {
+		} else if (spo instanceof TableMergeRules) {
 			addTableMergeRules((TableMergeRules)spo, index);
+		} else if (spo instanceof TableIndex) {
+			TableIndex oldIndex = sourceTableIndex;
+			fireChildRemoved(TableIndex.class, oldIndex, 0);
+			sourceTableIndex = (TableIndex) spo;
+			fireChildAdded(TableIndex.class, sourceTableIndex, 0);
 		} else {
 			throw new RuntimeException("Cannot add " + spo.getName() + " as a child to " + getName() + " as it is of type " + spo.getClass() + " which this class " + getClass() + " does not support.");
 		}
@@ -642,30 +664,14 @@ public class Project extends AbstractMatchMakerObject {
 		firePropertyChange("filter", oldValue, this.filter);
 	}
 
-	@Accessor
+	@NonProperty
 	public MungeSettings getMungeSettings() {
 		return mungeSettings;
 	}
 
-	@Mutator
-	public void setMungeSettings(MungeSettings mungeSettings) {
-		if (mungeSettings==null) throw new NullPointerException("You should not try to set the settings to null");
-		MungeSettings oldValue = this.mungeSettings;
-		this.mungeSettings = mungeSettings;
-		firePropertyChange("mungeSettings", oldValue,
-				this.mungeSettings);
-	}
-
-	@Accessor
+	@NonProperty
 	public MergeSettings getMergeSettings() {
 		return mergeSettings;
-	}
-
-	@Mutator
-	public void setMergeSettings(MergeSettings mergeSettings) {
-		MergeSettings oldValue = this.mergeSettings;
-		this.mergeSettings = mergeSettings;
-		firePropertyChange("mergeSettings", oldValue, this.mergeSettings);
 	}
 
     @Accessor
@@ -799,8 +805,8 @@ public class Project extends AbstractMatchMakerObject {
 		newProject.setParent(getParent());
 		newProject.setName(getName());
 		newProject.setFilter(getFilter());
-		newProject.setMergeSettings(getMergeSettings().duplicate(newProject));
-		newProject.setMungeSettings(getMungeSettings().duplicate(newProject));
+		getMergeSettings().copyPropertiesToTarget(newProject.getMergeSettings());
+		getMungeSettings().copyPropertiesToTarget(newProject.getMungeSettings());
 		
 		newProject.setSourceTable(getSourceTable());
 		newProject.setResultTable(getResultTable());
@@ -1177,6 +1183,8 @@ public class Project extends AbstractMatchMakerObject {
 		children.add(resultTablePropertiesDelegate);
 		children.add(xrefTablePropertiesDelegate);
 		children.add(sourceTableIndex);
+		children.add(mungeSettings);
+		children.add(mergeSettings);
 		return Collections.unmodifiableList(children);
 	}
 
