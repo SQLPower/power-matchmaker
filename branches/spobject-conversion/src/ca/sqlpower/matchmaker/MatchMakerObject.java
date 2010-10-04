@@ -29,7 +29,7 @@ public interface MatchMakerObject extends Auditable, SPObject {
 	/**
 	 * copy the match maker object 
 	 */
-	MatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession session);
+	MatchMakerObject duplicate(MatchMakerObject parent);
 	
     /**
      * Returns the current session that this object is associated with.

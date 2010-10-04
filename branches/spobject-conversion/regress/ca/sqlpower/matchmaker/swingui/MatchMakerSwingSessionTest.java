@@ -67,7 +67,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
         	
             @Override
             public FolderParent getCurrentFolderParent() {
-            	folders = new FolderParent(this);
+            	folders = new FolderParent();
                 folders.addChild(folder1);
                 folders.addChild(folder2);
                 return folders;
@@ -91,7 +91,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
             
             @Override
             public TranslateGroupParent getTranslations() {
-                TranslateGroupParent tgp = new TranslateGroupParent(this);
+                TranslateGroupParent tgp = new TranslateGroupParent();
                 return tgp;
             }
             

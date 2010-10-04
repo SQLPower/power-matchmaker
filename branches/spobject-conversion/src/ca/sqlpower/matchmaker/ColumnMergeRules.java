@@ -217,13 +217,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	/**
 	 * Creates a copy of this instance.
 	 */
-	public ColumnMergeRules duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public ColumnMergeRules duplicate(MatchMakerObject parent) {
 		logger.debug("Duplicating...");
 		ColumnMergeRules columnRule = new ColumnMergeRules();
 		columnRule.setColumn(getColumn());
 		columnRule.setParent(parent);
-		columnRule.setSession(session);
 		columnRule.setName(getName());
 		columnRule.setActionType(actionType);
 		columnRule.setInPrimaryKey(inPrimaryKey);

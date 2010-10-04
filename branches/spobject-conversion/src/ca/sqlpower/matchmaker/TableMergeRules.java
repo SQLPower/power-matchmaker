@@ -225,11 +225,10 @@ public class TableMergeRules
 	 * It makes a copy of all non mutable objects.  Except the index when the
 	 * index is the default index on the table.
 	 */
-	public TableMergeRules duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public TableMergeRules duplicate(MatchMakerObject parent) {
 		TableMergeRules newMergeStrategy = new TableMergeRules();
 		newMergeStrategy.setParent(parent);
 		newMergeStrategy.setName(getName());
-		newMergeStrategy.setSession(session);
 		newMergeStrategy.setTableName(getTableName());
 		newMergeStrategy.setSpDataSource(getSpDataSourceName());
 		newMergeStrategy.setCatalogName(getCatalogName());
@@ -248,7 +247,7 @@ public class TableMergeRules
 		}
 
 		for (ColumnMergeRules c : (getChildren(ColumnMergeRules.class))) {
-			ColumnMergeRules newColumnMergeRules = c.duplicate(newMergeStrategy,session);
+			ColumnMergeRules newColumnMergeRules = c.duplicate(newMergeStrategy);
 			newMergeStrategy.addChild(newColumnMergeRules);
 		}
 		return newMergeStrategy;

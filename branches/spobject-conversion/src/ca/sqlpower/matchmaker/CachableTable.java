@@ -295,11 +295,9 @@ public class CachableTable extends AbstractMatchMakerObject {
     }
 
 	@Override
-	public MatchMakerObject duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		CachableTable t = new CachableTable(getTableRole());
 		t.setParent(parent);
-		t.setSession(session);
 		t.setName(getName());
 		t.setVisible(isVisible());
 		t.setSchemaName(getSchemaName());

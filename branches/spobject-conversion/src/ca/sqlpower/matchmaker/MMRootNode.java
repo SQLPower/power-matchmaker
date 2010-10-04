@@ -60,13 +60,14 @@ public class MMRootNode extends AbstractMatchMakerObject {
     @Constructor
     public MMRootNode(@ConstructorParameter(propertyName="session") MatchMakerSession session) {
         setName("Root Node");
-        currentFolderParent = new FolderParent(session);
+        setSession(session);
+        currentFolderParent = new FolderParent();
         currentFolderParent.setName("Current Projects");
         currentFolderParent.setParent(this);
-        backupFolderParent = new FolderParent(session);
+        backupFolderParent = new FolderParent();
         backupFolderParent.setName("Backup Projects");
         backupFolderParent.setParent(this);
-        tgp = new TranslateGroupParent(session);
+        tgp = new TranslateGroupParent();
         tgp.setName("Translation Groups");
     }
 
@@ -80,7 +81,7 @@ public class MMRootNode extends AbstractMatchMakerObject {
         return System.identityHashCode(this);
     }
 
-    public MMRootNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
+    public MMRootNode duplicate(MatchMakerObject parent) {
         throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
     }
 

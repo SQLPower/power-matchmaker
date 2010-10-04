@@ -39,7 +39,7 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 		super.setUp();
 		mms = new MatchMakerSettings() {
 
-			public MatchMakerSettings duplicate(MatchMakerObject parent, MatchMakerSession s) {
+			public MatchMakerSettings duplicate(MatchMakerObject parent) {
 				return null;
 			}
 

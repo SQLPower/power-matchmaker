@@ -308,7 +308,7 @@ public class MungeSettings extends MatchMakerSettings {
      * @return new MungeSettings instance with the same properties
      * except parent
      */
-	public MungeSettings duplicate(MatchMakerObject parent,MatchMakerSession s) {
+	public MungeSettings duplicate(MatchMakerObject parent) {
 		MungeSettings settings = new MungeSettings();
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAutoMatchThreshold(getAutoMatchThreshold()==null?null:new Short(getAutoMatchThreshold()));
@@ -320,7 +320,6 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setName(getName()==null?null:new String(getName()));
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setSendEmail(getSendEmail());
-		settings.setSession(s);
 		settings.setClearMatchPool(isClearMatchPool());
 		settings.setVisible(isVisible());
 		settings.setUseBatchExecution(isUseBatchExecution());

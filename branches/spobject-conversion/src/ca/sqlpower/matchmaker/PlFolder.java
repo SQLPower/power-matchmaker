@@ -152,7 +152,7 @@ public class PlFolder extends AbstractMatchMakerObject {
 		return true;
 	}
 
-	public PlFolder duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public PlFolder duplicate(MatchMakerObject parent) {
 		PlFolder f = new PlFolder();
 		f.setName(getName());
 		f.setFolderDesc(getFolderDesc());
@@ -160,10 +160,9 @@ public class PlFolder extends AbstractMatchMakerObject {
 		f.setFolderStatus(getFolderStatus());
 		f.setParent(parent);
 		f.setVisible(isVisible());
-		f.setSession(session);
 		for (SPObject spo: getChildren()) {
 			Project pr = (Project)spo;
-			f.addChild(pr.duplicate(parent, session));
+			f.addChild(pr.duplicate(parent));
 		}
 		return f;
 	}

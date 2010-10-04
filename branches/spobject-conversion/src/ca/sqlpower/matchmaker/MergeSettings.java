@@ -97,7 +97,7 @@ public class MergeSettings extends MatchMakerSettings {
 				this.augmentNull);
 	}
 	
-	public MergeSettings duplicate(MatchMakerObject parent,MatchMakerSession s) {
+	public MergeSettings duplicate(MatchMakerObject parent) {
 		MergeSettings settings = new MergeSettings();
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAugmentNull(getAugmentNull());
@@ -109,7 +109,6 @@ public class MergeSettings extends MatchMakerSettings {
 		settings.setName(getName()==null?null:new String(getName()));
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setSendEmail(getSendEmail());
-		settings.setSession(s);
 		settings.setVisible(isVisible());
 		
 		return settings;

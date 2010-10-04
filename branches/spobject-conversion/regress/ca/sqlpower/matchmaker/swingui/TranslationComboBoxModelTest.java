@@ -138,7 +138,7 @@ public class TranslationComboBoxModelTest extends TestCase {
 
     public void testChildRemovedPassedOnCorrectly(){
 
-        tgp = new TranslateGroupParent(session);
+        tgp = new TranslateGroupParent();
         
     	MatchMakerTranslateGroup tg2 = new MatchMakerTranslateGroup();
         tg2.setName("Translate Group 2");

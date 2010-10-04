@@ -50,7 +50,7 @@ public class TranslateGroupParentTest extends MatchMakerTestCase {
         List<PlFolder> folders = new ArrayList<PlFolder>();
         folders.add(folder);
         session.setFolders(folders);
-        tgp = new TranslateGroupParent(session);
+        tgp = new TranslateGroupParent();
     }
 
     protected void tearDown() throws Exception {

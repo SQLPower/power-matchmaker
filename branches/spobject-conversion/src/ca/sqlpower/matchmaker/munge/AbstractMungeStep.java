@@ -35,10 +35,9 @@ import java.util.Queue;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
@@ -443,15 +442,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		return parameters;
 	}
 	
-	public MungeStep duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public MungeStep duplicate(MatchMakerObject parent) {
 		Class stepClass = getClass();
 		AbstractMungeStep step = null;
 		try {
 			step = (AbstractMungeStep) stepClass.newInstance();
 			step.parameters = new HashMap<String, String>(this.parameters);
 			step.setParent(parent);
-			step.setSession(session);
 			step.setVisible(this.isVisible());
 			step.setName(getName());
 			step.setPreviewMode(isPreviewMode());

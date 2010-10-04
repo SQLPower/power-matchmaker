@@ -143,13 +143,12 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
     	return buf.toString();
     }
     
-    public MatchMakerTranslateWord duplicate(MatchMakerObject parent, MatchMakerSession session) {
+    public MatchMakerTranslateWord duplicate(MatchMakerObject parent) {
     	MatchMakerTranslateWord w = new MatchMakerTranslateWord();
     	w.setName(getName());
     	w.setFrom(getFrom());
     	w.setTo(getTo());
     	w.setParent(parent);
-    	w.setSession(session);
     	w.setVisible(isVisible());
     	return w;
     }

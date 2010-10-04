@@ -26,8 +26,6 @@ import java.util.List;
 
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.NonProperty;
 
 
@@ -48,14 +46,7 @@ public class FolderParent extends AbstractMatchMakerObject {
 				Arrays.asList(PlFolder.class)));
     
     List<PlFolder> plFolders = new ArrayList<PlFolder>();
-    
-    private final MatchMakerSession session;
 
-    @Constructor
-    public FolderParent(@ConstructorParameter(propertyName="session")MatchMakerSession session) {
-        this.session = session;
-    }
-    
     public void addChild(SPObject spo) {
     	addChild(spo, plFolders.size());
     }
@@ -80,7 +71,7 @@ public class FolderParent extends AbstractMatchMakerObject {
      * firing the proper events 
      */
     public void addNewChild(PlFolder child) {
-        this.session.getDAO(PlFolder.class).save(child);
+        this.getSession().getDAO(PlFolder.class).save(child);
         addChild(child);
     }
 
@@ -88,7 +79,7 @@ public class FolderParent extends AbstractMatchMakerObject {
      * Removes from the parent list and deletes the object from the database
      */
     public void deleteAndRemoveChild(PlFolder child) {
-    	this.session.getDAO(PlFolder.class).delete(child);
+    	this.getSession().getDAO(PlFolder.class).delete(child);
 		try {
 			removeChild(child);
 		} catch (ObjectDependentException e) {
@@ -106,7 +97,7 @@ public class FolderParent extends AbstractMatchMakerObject {
         return System.identityHashCode(this);
     }
 
-	public FolderParent duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public FolderParent duplicate(MatchMakerObject parent) {
 		throw new IllegalAccessError("Folder parent not duplicatable");
 	}
 

@@ -32,12 +32,13 @@ public class FolderParentTest extends MatchMakerTestCase<FolderParent> {
 	}
 
 	protected void setUp() throws Exception {
+		super.setUp();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		rootNode = new MMRootNode(session);
 		folderParent = rootNode.getCurrentFolderParent();
-		super.setUp();
 		getRootObject().addChild(rootNode, 0);
+		rootNode.setSession(new TestingMatchMakerSession());
 	}
 	
 	@Override
@@ -53,5 +54,11 @@ public class FolderParentTest extends MatchMakerTestCase<FolderParent> {
 	@Override
 	protected FolderParent getTarget() {
 		return folderParent;
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		//stubbing out this test as folders are final children of the only
+		//object (MMRootNode) that allows folders as children.
 	}
 }

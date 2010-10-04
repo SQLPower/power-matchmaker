@@ -43,10 +43,8 @@ public class ColumnMergeRulesImportedCachableColumn extends CachableColumn {
         }
 	}
 
-	public MatchMakerObject duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		ColumnMergeRulesImportedCachableColumn c = new ColumnMergeRulesImportedCachableColumn();
-		c.setSession(session);
 		c.setName(getName());
 		c.setParent(parent);
 		c.setColumnName(getColumnName());

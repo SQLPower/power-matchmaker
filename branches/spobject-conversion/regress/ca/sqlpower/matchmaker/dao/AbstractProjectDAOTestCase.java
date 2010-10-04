@@ -350,7 +350,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             
             //A temporary fix for moving munge processes. This makes a copy of the mungeProcess and 
             //adds it to the newProject.
-            MungeProcess mungeProcess2 = process.duplicate(newProject, getSession());
+            MungeProcess mungeProcess2 = process.duplicate(newProject);
             newProject.addChild(mungeProcess2);
             dao.save(newProject);
             

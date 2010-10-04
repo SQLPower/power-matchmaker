@@ -65,7 +65,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private final TestingConnection con;
     private SQLDatabase db;
     private List<String> warnings = new ArrayList<String>();
-    private TranslateGroupParent tgp = new TranslateGroupParent(this);
+    private TranslateGroupParent tgp = new TranslateGroupParent();
 	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 
 	private Session hSession;

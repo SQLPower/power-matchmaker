@@ -97,11 +97,11 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == MungeStepOutput.class) {
         	return new MungeStepOutput<String>("output", String.class);
         } else if (valueType == FolderParent.class) {
-        	FolderParent folderParent = new FolderParent(null);
+        	FolderParent folderParent = new FolderParent();
         	getRootObject().addChild(folderParent, 0);
         	return folderParent;
         } else if (valueType == TranslateGroupParent.class) {
-        	TranslateGroupParent parent = new TranslateGroupParent(null);
+        	TranslateGroupParent parent = new TranslateGroupParent();
         	getRootObject().addChild(parent, 0);
         	return parent;
         } else if (valueType == Long.class) {

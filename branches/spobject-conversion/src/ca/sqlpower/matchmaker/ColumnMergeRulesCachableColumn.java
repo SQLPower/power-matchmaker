@@ -40,10 +40,8 @@ public class ColumnMergeRulesCachableColumn extends CachableColumn {
 		return st;
 	}
 
-	public MatchMakerObject duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		ColumnMergeRulesCachableColumn c = new ColumnMergeRulesCachableColumn();
-		c.setSession(session);
 		c.setName(getName());
 		c.setParent(parent);
 		c.setColumnName(getColumnName());

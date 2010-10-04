@@ -140,8 +140,7 @@ public class TableIndex extends AbstractMatchMakerObject{
 	}
 
 	@Override
-	public MatchMakerObject duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		TableIndex t = new TableIndex(getTable(), getIndexRole());
 		t.setTableIndex(tableIndex);
 		t.setParent(parent);
