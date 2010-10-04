@@ -51,6 +51,8 @@ public class TranslateGroupParentTest extends MatchMakerTestCase {
         folders.add(folder);
         session.setFolders(folders);
         tgp = new TranslateGroupParent();
+        getRootObject().addChild(tgp, 0);
+        tgp.setSession(session);
     }
 
     protected void tearDown() throws Exception {
