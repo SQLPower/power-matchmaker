@@ -19,6 +19,12 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Constructor;
 
 
@@ -29,6 +35,11 @@ import ca.sqlpower.object.annotation.Constructor;
  * to upper case.
  */
 public class UpperCaseMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
 	@Constructor
 	public UpperCaseMungeStep() {
