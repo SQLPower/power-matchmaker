@@ -31,6 +31,10 @@ public class MD5CheckSumMungeStepTest extends AbstractMungeStepTest<MD5CheckSumM
 	protected void setUp() throws Exception {
 		step = new MD5CheckSumMungeStep();
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	@Override
