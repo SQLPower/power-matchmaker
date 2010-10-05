@@ -43,6 +43,10 @@ public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeSte
 		step = new SortWordsMungeStep();
 		step.setSession(new TestingMatchMakerSession());
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallOnNull() throws Exception {
@@ -96,7 +100,7 @@ public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeSte
     public void testLiteralDelimiter() throws Exception {
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("abc+def+aab+aba+ab+z");
-        step.setDelimiterRegex(false);
+        step.setRegex(false);
         step.setDelimiter("b+");
         step.connectInput(0, testInput);
         step.open(logger);
@@ -110,7 +114,7 @@ public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeSte
     public void testRegexDelimiter() throws Exception {
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("abc+def+aab+aba+ab+z");
-        step.setDelimiterRegex(true);
+        step.setRegex(true);
         step.setDelimiter("b+");
         step.connectInput(0, testInput);
         step.open(logger);
@@ -162,7 +166,7 @@ public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeSte
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("AalphaAAAAcrixAAbravo");
         step.setDelimiter("A");
-        step.setDelimiterCaseSensitive(true);
+        step.setCaseSensitive(true);
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
@@ -176,7 +180,7 @@ public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeSte
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("AalphaAAAAcrixAAbravo");
         step.setDelimiter("A");
-        step.setDelimiterCaseSensitive(false);
+        step.setCaseSensitive(false);
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
@@ -190,8 +194,8 @@ public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeSte
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("AalphaAAAAcrixAAbravo");
         step.setDelimiter("A");
-        step.setDelimiterCaseSensitive(true);
-        step.setResultDelimiter("\\");
+        step.setCaseSensitive(true);
+        step.setResultDelim("\\");
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
