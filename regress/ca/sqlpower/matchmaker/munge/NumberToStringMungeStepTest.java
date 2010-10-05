@@ -41,6 +41,10 @@ public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStri
 		step.setSession(new TestingMatchMakerSession());
 		step.open(Logger.getLogger(NumberToStringMungeStepTest.class));
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public void testNull() throws Exception{
