@@ -41,6 +41,10 @@ public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetap
 	protected void setUp() throws Exception {
 		step = new DoubleMetaphoneMungeStep();
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonNormalString() throws Exception {
@@ -59,7 +63,7 @@ public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetap
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("Smith");
 		step.connectInput(0, testInput);
-		step.setParameter(step.USE_ALTERNATE_PARAMETER_NAME, true);
+		step.setUseAlternate(true);
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
