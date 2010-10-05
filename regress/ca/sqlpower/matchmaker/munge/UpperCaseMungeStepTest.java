@@ -46,6 +46,10 @@ public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeSte
 	protected void setUp() throws Exception {
 		step = new UpperCaseMungeStep();
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonLowerCaseString() throws Exception {

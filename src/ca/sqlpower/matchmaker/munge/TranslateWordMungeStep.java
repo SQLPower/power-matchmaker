@@ -19,6 +19,10 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +31,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Mutator;
 
@@ -37,6 +42,11 @@ import ca.sqlpower.object.annotation.Mutator;
  *  This step supports using regular expressions as an option for the target string.
  */
 public class TranslateWordMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
 	/**
 	 * This is the translate group that holds all the target and replacement strings.
@@ -174,7 +184,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	public void setTranslateGroupUuid(String translateGroupUuid) {
 			String old = this.translateGroupUuid;
 			this.translateGroupUuid = translateGroupUuid;
-			firePropertyChange("groupuuid", old, translateGroupUuid);
+			firePropertyChange("translateGroupUuid", old, translateGroupUuid);
 	}
 
 	@Accessor

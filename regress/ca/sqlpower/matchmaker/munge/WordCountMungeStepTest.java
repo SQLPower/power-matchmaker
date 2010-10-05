@@ -38,6 +38,10 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 	protected void setUp() throws Exception {
 		step = new WordCountMungeStep();
 		super.setUp();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public WordCountMungeStepTest(String name) {

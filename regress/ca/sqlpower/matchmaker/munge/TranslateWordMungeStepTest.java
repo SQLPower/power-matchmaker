@@ -49,16 +49,17 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		step = new TranslateWordMungeStep();
 		super.setUp();
 		step.setSession(new TestingMatchMakerSession());
-		MungeProcess mp = new MungeProcess();
-		mp.addChild(step);
+		MungeProcess mp = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+		mp.addMungeStep(step, mp.getMungeSteps().size());
+		
 		Project p = new Project();
 		p.addChild(mp);
 		mp.setParent(p);
 		p.setParent(getRootObject());
 		getRootObject().addChild(p, getRootObject().getChildren().size());
 
-
-		
 	}
 
 	/**
