@@ -55,23 +55,23 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 		TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setSelected(temp.getBooleanParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME));
+		useRegex.setSelected(temp.isRegex());
 		useRegex.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
-				temp.setParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+				temp.setRegex(useRegex.isSelected());
 			}
 			
 		});
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(temp.getBooleanParameter(temp.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.setSelected(temp.isCaseSensitive());
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
-				temp.setParameter(temp.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+				temp.setCaseSensitive(caseSensitive.isSelected());
 			}
 			
 		});
@@ -84,8 +84,8 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			translateGroup = new JComboBox(translateGroups);
 			
 			// Sets the combo box to select the translate group in the parameter
-			if (temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME) != null) {
-			    String uuid = temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
+			if (temp.getTranslateGroupUuid() != null) {
+			    String uuid = temp.getTranslateGroupUuid();
 			    for (MatchMakerTranslateGroup group : translateGroups) {
 			        if (group.getUUID().equals(uuid)) {
 			            translateGroup.setSelectedItem(group);
@@ -97,8 +97,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			} else if (translateGroup.getSelectedItem() != null) {
 					MatchMakerTranslateGroup group = 
 						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
-						group.getUUID().toString());
+					temp.setTranslateGroupUuid(group.getUUID().toString());
 			}
 			
 		} else {
@@ -111,8 +110,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 				if (translateGroup.getSelectedItem() != null) {
 					MatchMakerTranslateGroup group = 
 						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
-						group.getUUID().toString());
+					temp.setTranslateGroupUuid(group.getUUID().toString());
 				}
 			}
 			

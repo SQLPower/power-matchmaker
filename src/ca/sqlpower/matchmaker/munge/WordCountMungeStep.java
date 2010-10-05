@@ -22,7 +22,9 @@ package ca.sqlpower.matchmaker.munge;
 import java.math.BigDecimal;
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 /**
  * This munge step will return the number of words in a given string based
@@ -43,6 +45,10 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	 * what is used to divide the String into words
 	 */
 	public static final String DELIMITER_PARAMETER_NAME = "delimiter";
+	/**
+	 * The string that will be used as the delimiter for this munge step.
+	 */
+	private String delimiter;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will use
@@ -50,6 +56,10 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	 * the parameter are "true" and "false".
 	 */
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
+	/**
+	 * Whether to use regular expressions in this munge step.
+	 */
+	private boolean regex;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will be
@@ -57,6 +67,10 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	 *  "false".
 	 */
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	/**
+	 * Whether the effects of this munge step should be case sensitive.
+	 */
+	private boolean caseSensitive;
 	
 	@Constructor
 	public WordCountMungeStep() {
@@ -124,5 +138,35 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		
 		out.setData(new BigDecimal(wordCount));
 		return true;
+	}
+
+	@Mutator
+	public void setDelimiter(String delimiter) {
+			this.delimiter = delimiter;
+	}
+
+	@Accessor
+	public String getDelimiter() {
+		return delimiter;
+	}
+
+	@Mutator
+	public void setRegex(boolean regex) {
+			this.regex = regex;
+	}
+
+	@Accessor
+	public boolean isRegex() {
+		return regex;
+	}
+
+	@Mutator
+	public void setCaseSensitive(boolean caseSensitive) {
+			this.caseSensitive = caseSensitive;
+	}
+
+	@Accessor
+	public boolean isCaseSensitive() {
+		return caseSensitive;
 	}
 }
