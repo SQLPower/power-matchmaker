@@ -295,14 +295,18 @@ public class Project extends AbstractMatchMakerObject {
 	public boolean removeMungeProcess(MungeProcess spo) {
 		int index = mungeProcesses.indexOf(spo);
 		boolean removed = mungeProcesses.remove(spo);
-		fireChildRemoved(MungeProcess.class, spo, index);
+		if(removed) {
+			fireChildRemoved(MungeProcess.class, spo, index);
+		}
 		return removed;
 	}
 	
 	public boolean removeTableMergeRules(TableMergeRules spo) {
 		int index = tableMergeRules.indexOf(spo);
 		boolean removed = tableMergeRules.remove(spo);
-		fireChildRemoved(TableMergeRules.class, spo, index);
+		if(removed) {
+			fireChildRemoved(TableMergeRules.class, spo, index);
+		}
 		return removed;
 	}
 	

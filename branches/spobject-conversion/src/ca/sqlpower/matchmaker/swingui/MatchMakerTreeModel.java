@@ -287,8 +287,8 @@ public class MatchMakerTreeModel implements TreeModel {
         int count;
         if (mmo instanceof Project) {
             return foldersInTables.get((Project) mmo).size() + getActionNodes((Project) mmo).size();
-        } else if (mmo instanceof MungeProcess) {
-        	count = mmo.getChildren().size();
+        } else if (mmo instanceof TableMergeRules) {
+        	count = ((TableMergeRules)mmo).getColumnMergeRules().size();
         } else {
             count = mmo.getChildren().size();
         }
@@ -314,7 +314,12 @@ public class MatchMakerTreeModel implements TreeModel {
         	if(foldersInTables.get((Project)parent) == null) return -1;
         	return foldersInTables.get((Project)parent).indexOf(child);
         }
-        int offset = mmoParent.childPositionOffset(mmoChild.getClass());
+        int offset;
+        if(mmoParent instanceof MungeProcess) {
+        	offset = ((MungeProcess)mmoParent).mungeProcessChildPositionOffset(mmoChild.getClass());
+        } else {
+        	offset = mmoParent.childPositionOffset(mmoChild.getClass());
+        }
         index = mmoParent.getChildren(mmoChild.getClass()).indexOf(mmoChild) + offset;
         
         if (logger.isDebugEnabled()) {
@@ -468,8 +473,15 @@ public class MatchMakerTreeModel implements TreeModel {
                     }
                 }
             }
+            int offset;
+            if(parent instanceof MungeProcess) {
+            	offset = ((MungeProcess)parent).mungeProcessChildPositionOffset(child.getClass());
+            } else {
+            	offset = parent.childPositionOffset(child.getClass());
+            }
+            
 			TreeModelEvent evt = new TreeModelEvent(parent, getPathForNode(parent), 
-					new int[]{e.getIndex() + parent.childPositionOffset(child.getClass())}, new MatchMakerObject[]{child});
+					new int[]{e.getIndex() + offset}, new MatchMakerObject[]{child});
 			
 			fireTreeNodesInserted(evt);
 			
@@ -533,8 +545,16 @@ public class MatchMakerTreeModel implements TreeModel {
                 logger.debug("     removed child index: "+sb);
                 logger.debug("Traceback:", new Exception());
             }
+            
+            int offset;
+            if(parent instanceof MungeProcess) {
+            	offset = ((MungeProcess)parent).mungeProcessChildPositionOffset(child.getClass());
+            } else {
+            	offset = parent.childPositionOffset(child.getClass());
+            }
+            
             MatchMakerObject children[] = {(MatchMakerObject) e.getSource()};
-            int indices[] = {e.getIndex() + parent.childPositionOffset(child.getClass())};
+            int indices[] = {e.getIndex() + offset};
 			TreeModelEvent evt = new TreeModelEvent((MatchMakerObject) e.getSource(), path,
 					indices ,children);
             logger.debug("About to fire tree model event: "+e);
