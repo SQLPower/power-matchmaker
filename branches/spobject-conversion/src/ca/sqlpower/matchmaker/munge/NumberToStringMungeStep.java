@@ -20,7 +20,12 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Constructor;
 
 
@@ -28,6 +33,11 @@ import ca.sqlpower.object.annotation.Constructor;
  * This munge step will convert a number to a string.
  */
 public class NumberToStringMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
 	@Constructor
 	public NumberToStringMungeStep() {
