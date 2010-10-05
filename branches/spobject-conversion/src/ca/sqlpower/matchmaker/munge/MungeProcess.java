@@ -236,27 +236,6 @@ public class MungeProcess extends AbstractMatchMakerObject {
         firePropertyChange("colour", oldValue, mungeProcessColor);
     }
     
-	@Override
-	public int hashCode() {
-        int result = ((getName() == null) ? 0 : getName().hashCode());
-        return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!(obj instanceof MungeProcess))
-			return false;
-		final MungeProcess other = (MungeProcess) obj;
-		if (getName() == null) {
-			if (other.getName() != null)
-				return false;
-		} else if (!getName().equals(other.getName()))
-			return false;
-		return true;
-	}
-
 	/**
 	 * duplicate all the properties of the MungeProcess 
 	 * and it's children, except oid and parent
