@@ -1057,15 +1057,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      */
 	public void delete(MatchMakerObject mmo) {
 		if (mmo.getParent() != null) {
-		    MatchMakerDAO dao = getDAO(mmo.getClass());
+		    /*MatchMakerDAO dao = getDAO(mmo.getClass());
 		    logger.debug("dao is:"+ dao+ "mmo is"+ mmo);
-		    dao.delete(mmo);
+		    dao.delete(mmo);*/
+			try {
+				mmo.getParent().removeChild(mmo);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException(e);
+			}
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
 		
 		// If mmo is a project, clean up and remove its engine panels
-		if (mmo instanceof Project) {
+		/*if (mmo instanceof Project) {
 			EngineSettingsPanel panel;
 			
 			panel = matchEnginePanels.remove(((Project) mmo).getMatchingEngine());
@@ -1090,7 +1095,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			if (panel != null) {
 				panel.cleanup();
 			};
-		}
+		}*/
 	}
 	
 	/**

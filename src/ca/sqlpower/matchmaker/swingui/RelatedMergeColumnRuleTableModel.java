@@ -35,12 +35,18 @@ import ca.sqlpower.sqlobject.SQLColumn;
 public class RelatedMergeColumnRuleTableModel extends 
 	AbstractMatchMakerTableModel <TableMergeRules> {
 	
+	TableMergeRules mergeRule;
 	public RelatedMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);
+		this.mergeRule = mergeRule;
 	}
 	
 	public int getColumnCount() {
 		return 5;
+	}
+	
+	public int getRowCount() {
+		return mergeRule.getColumnMergeRules().size();
 	}
 
 	@Override
