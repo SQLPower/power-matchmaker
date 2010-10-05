@@ -62,7 +62,9 @@ public class FolderParent extends AbstractMatchMakerObject {
     protected boolean removeChildImpl(SPObject spo) {
     	int index = plFolders.indexOf(spo);
     	boolean removed = plFolders.remove(spo);
-    	fireChildRemoved(PlFolder.class, spo, index);
+    	if (removed) {
+    		fireChildRemoved(PlFolder.class, spo, index);
+    	}
     	return removed;
     }
     
