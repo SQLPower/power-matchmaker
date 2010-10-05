@@ -127,22 +127,6 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	}
 	
 	/**
-	 * Determines if this step output is equal to the other based on reference
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		return this == obj;
-	}
-
-	/**
-	 * @return The identity hash code
-	 */
-	@Override
-	public int hashCode() {
-		return System.identityHashCode(this);
-	}
-
-	/**
 	 * Not implemented because we're pretty sure we don't want a duplicate system like this.
 	 */
 	public MungeStepOutput<T> duplicate(MatchMakerObject parent) {
