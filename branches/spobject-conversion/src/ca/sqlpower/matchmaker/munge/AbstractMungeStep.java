@@ -229,11 +229,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	
 	@Override
 	protected void addChildImpl(SPObject ob, int index) {
-		if(ob instanceof MungeStepInput) {
-			MungeStepInput in = (MungeStepInput)ob;
-			addInput(in.getDescriptor());
-		} else if(ob instanceof MungeStepOutput){
-			mungeStepOutputs.add((MungeStepOutput) ob);
+		if (ob instanceof MungeStepInput) {
+			MungeStepInput in = (MungeStepInput) ob;
+			inputs.add(index, in);
+			fireChildAdded(MungeStepInput.class, in, index);
+		} else if(ob instanceof MungeStepOutput) {
+			mungeStepOutputs.add(index, (MungeStepOutput) ob);
 			fireChildAdded(SQLInputStep.class, ob, mungeStepOutputs.size());
 		} else {
 			throw new RuntimeException("You should never arrive here. You are adding " +
@@ -267,6 +268,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 		MungeStepInput in = new MungeStepInput(null, desc, this);
 		inputs.add(index, in);
+		in.setParent(this);
 		fireChildAdded(MungeStepInput.class, in, index);
 	}
 
