@@ -41,6 +41,10 @@ public class DateConstantMungeStepTest extends MatchMakerTestCase<DateConstantMu
     protected void setUp() throws Exception {
         step = new DateConstantMungeStep();
         super.setUp();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
     
     private void setFormat(int x){
@@ -48,15 +52,15 @@ public class DateConstantMungeStepTest extends MatchMakerTestCase<DateConstantMu
     }
     
     private void setRetNull(boolean b) {
-    	step.setParameter(DateConstantMungeStep.RETURN_NULL, String.valueOf(b));
+    	step.setReturnNull(b);
     }
     
     private void setUseCurrent(boolean b) {
-    	step.setParameter(DateConstantMungeStep.USE_CURRENT_TIME, String.valueOf(b));
+    	step.setUseCurrentTime(b);
     }
     
     private Date runWith(Date d) throws Exception {
-    	step.setValue(d);
+    	step.setValueAsDate(d);
     	step.open(logger);
     	step.call();
     	Date out = (Date) step.getOut().getData();

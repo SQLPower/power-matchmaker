@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.munge;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -30,8 +31,11 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.Transient;
 
 
 /**
@@ -41,12 +45,17 @@ import ca.sqlpower.object.annotation.NonProperty;
  */
 public class DateConstantMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	public static final Logger mungeStepLogger = Logger.getLogger(DateConstantMungeStep.class);
 	
     /**
      * The value this step should provide on its output.
      */
-    public static final String VALUE_PARAMETER_NAME = "value";
+	private String value;
     
     /**
      * The format the date will be stored in memory
@@ -56,13 +65,13 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     /**
      * The value to set if the step is to return null
      */
-    public static final String RETURN_NULL = "return null";
+    private boolean returnNull;
     
     /**
      * The value to set to "true" if you want the current time the engine is 
      * run.
      */
-    public static final String USE_CURRENT_TIME = "use current time";
+    private boolean useCurrentTime;
     
     /**
      * The possible options for formating this date
@@ -72,42 +81,49 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     /**
      * The parameter name for the storage of the format type
      */
-    public static final String FORMAT_PARAMETER_NAME = "format type";
+    private String dateFormat;
     
     @Constructor
     public DateConstantMungeStep() throws Exception {
         super("Date Constant", false);
-        setParameter(RETURN_NULL, "False");
-        setParameter(USE_CURRENT_TIME, "False");
-        setParameter(FORMAT_PARAMETER_NAME, FORMAT.get(0));
-        setValue(Calendar.getInstance().getTime());
+        returnNull = false;
+        useCurrentTime = false;
+        dateFormat = FORMAT.get(0);
+        setValueAsDate(Calendar.getInstance().getTime());
         addChild(new MungeStepOutput<Date>("Value", Date.class));
     }
     
     @Override
     public Boolean doCall() throws Exception {
-    	getOut().setData(getValue());
+    	getOut().setData(getValueAsDate());
         return Boolean.TRUE;
     }
     
-    @NonProperty
-    public void setValue(Date newValue) {
+    @Transient @Mutator
+    public void setValueAsDate(Date newValue) {
     	SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     	String date = df.format(newValue);
-	    setParameter(VALUE_PARAMETER_NAME, date); // FIXME this causes a property change event with a String value -- need reflective tests for every setter and getter of every munge component
+    	setValue(date);
     }
     
-    @NonProperty
-    public Date getValue() throws ParseException {
+    @Mutator
+    public void setValue(String value) {
+    	String oldVal = this.value;
+    	this.value = value;
+    	firePropertyChange("value", oldVal, value);
+    }
+    
+    @Transient @Accessor
+    public Date getValueAsDate() throws ParseException {
     	if (getUseCurrentTime()) {
     		return Calendar.getInstance().getTime();
     	} else if (!isReturningNull()) {
     		SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
-    		Date date = df.parse(getParameter(VALUE_PARAMETER_NAME));
+    		Date date = df.parse(value);
 
-    		if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT.get(1))) {
+    		if (dateFormat.equals(FORMAT.get(1))) {
     			return new java.sql.Date(date.getTime());
-    		} else if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT.get(2))) {
+    		} else if (dateFormat.equals(FORMAT.get(2))) {
     			return new Time(date.getTime());
     		} else {
     			return date;
@@ -117,23 +133,49 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     	}
     }
 
-    @NonProperty
+    @Accessor
     public boolean isReturningNull() {
-    	return getBooleanParameter(RETURN_NULL).booleanValue();
+    	return returnNull;
     }
     
-    @NonProperty
-    public void setReturningNull(boolean b) {
-    	setParameter(RETURN_NULL, String.valueOf(b));
-    }
-    
-    @NonProperty
+    @Mutator
     public void setUseCurrentTime(boolean b) {
-    	setParameter(USE_CURRENT_TIME, String.valueOf(b));
+    	boolean oldVal = this.useCurrentTime;
+    	this.useCurrentTime = b;
+    	firePropertyChange("useCurrentTime", oldVal, b);
     }
     
-    @NonProperty
+    @Accessor
     public boolean getUseCurrentTime() {
-    	return getBooleanParameter(USE_CURRENT_TIME).booleanValue();
+    	return useCurrentTime;
     }
+
+    @Accessor
+	public boolean isReturnNull() {
+		return returnNull;
+	}
+
+    @Mutator
+	public void setReturnNull(boolean returnNull) {
+    	boolean oldVal = this.returnNull;
+		this.returnNull = returnNull;
+		firePropertyChange("returnNull", oldVal, returnNull);
+	}
+
+    @Accessor
+	public String getDateFormat() {
+		return dateFormat;
+	}
+
+    @Mutator
+	public void setDateFormat(String dateFormat) {
+    	String oldFormat = this.dateFormat;
+		this.dateFormat = dateFormat;
+		firePropertyChange("dateFormat", oldFormat, dateFormat);
+	}
+
+    @Accessor
+	public String getValue() {
+		return value;
+	}
 }
