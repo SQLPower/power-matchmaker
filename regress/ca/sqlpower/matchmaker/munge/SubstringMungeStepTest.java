@@ -41,6 +41,10 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 	protected void setUp() throws Exception {
 		step = new SubstringMungeStep();
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonNormalString() throws Exception {

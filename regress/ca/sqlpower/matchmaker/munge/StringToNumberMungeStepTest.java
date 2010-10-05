@@ -40,6 +40,10 @@ public class StringToNumberMungeStepTest extends MatchMakerTestCase<StringToNumb
 		step = new StringToNumberMungeStep();
 		step.setAllowMalformed(false);
 		step.open(Logger.getLogger(StringToNumberMungeStepTest.class));
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public void test0() throws Exception{
