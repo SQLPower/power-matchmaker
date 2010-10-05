@@ -43,10 +43,12 @@ import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
+import ca.sqlpower.matchmaker.munge.BooleanConstantMungeStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
@@ -158,8 +160,22 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return new UpperCaseMungeStep();
         } else if (valueType == MatchMakerObject.class) {
         	return new TestingAbstractMatchMakerObject();
+        } else if (valueType == MungeStep.class) {
+        	MungeProcess process = ((MungeProcess) makeNewValue(MungeProcess.class, null,
+				"process parent"));
+        	MungeStep ms = new BooleanConstantMungeStep();
+        	process.addChild(ms);
+        	return ms;
         } else if (valueType == MungeStepInput.class) {
-        	return new MungeStepInput(null, new InputDescriptor("input", Object.class),new UpperCaseMungeStep());
+        	MungeStep ms = ((MungeStep) makeNewValue(MungeStep.class, null,
+				"parent step"));
+        	MungeStepInput msi = new MungeStepInput(null, new InputDescriptor("input", Object.class), ms);
+        	ms.addChild(msi, 0);
+        	return msi;
+        } else if (valueType == InputDescriptor.class) {
+        	MungeStepInput step = ((MungeStepInput) makeNewValue(MungeStepInput.class, null,
+				"step parent"));
+        	return step.getDescriptor();
         }  else if (valueType == MMRootNode.class) {
         	MatchMakerSession session = new TestingMatchMakerSession();
         	getRootObject().addChild(session.getRootNode(), 0);
