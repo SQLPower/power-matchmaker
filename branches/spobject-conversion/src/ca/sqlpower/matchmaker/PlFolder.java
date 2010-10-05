@@ -192,7 +192,9 @@ public class PlFolder extends AbstractMatchMakerObject {
 	protected boolean removeChildImpl(SPObject spo) {
 		int index = projects.indexOf(spo);
 		boolean removed = projects.remove(spo);
-		fireChildRemoved(Project.class, spo, index);
+		if(removed) {
+			fireChildRemoved(Project.class, spo, index);
+		}
 		return removed;
 	}
 
