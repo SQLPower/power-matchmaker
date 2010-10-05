@@ -26,7 +26,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.StringToNumberMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -47,14 +46,13 @@ public class StringToNumberMungeComponent extends AbstractMungeComponent {
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();
 		contOnError = new JCheckBox("Continue on Error");
-		contOnError.setSelected(((AbstractMungeStep)getStep()).getBooleanParameter(
-				StringToNumberMungeStep.CONTINUE_ON_MALFORMED_NUMBER));
+		contOnError.setSelected(((StringToNumberMungeStep)getStep()).isAllowMalformed());
 		
 		contOnError.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				AbstractMungeStep temp = (AbstractMungeStep) getStep();
-				temp.setParameter(StringToNumberMungeStep.CONTINUE_ON_MALFORMED_NUMBER, contOnError.isSelected());
+				StringToNumberMungeStep temp = (StringToNumberMungeStep) getStep();
+				temp.setAllowMalformed(contOnError.isSelected());
 			}
 			
 		});
