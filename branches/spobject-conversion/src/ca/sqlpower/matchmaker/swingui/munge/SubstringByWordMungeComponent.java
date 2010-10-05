@@ -70,23 +70,23 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
-				step.setParameter(step.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+				step.setRegex(useRegex.isSelected());
 			}	
 		});
-		useRegex.setSelected(step.getBooleanParameter(step.USE_REGEX_PARAMETER_NAME));
+		useRegex.setSelected(step.isRegex());
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(step.getBooleanParameter(step.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.setSelected(step.isCaseSensitive());
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
-				step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+				step.setCaseSensitive(caseSensitive.isSelected());
 			}
 			
 		});
 		
-		delimiter = new JTextField(step.getParameter(step.DELIMITER_PARAMETER_NAME));
+		delimiter = new JTextField(step.getDelimiter());
 		delimiter.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -99,13 +99,13 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
             	SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
-				step.setParameter(step.DELIMITER_PARAMETER_NAME, delimiter.getText());
+				step.setDelimiter(delimiter.getText());
             }
         });
 		RegexValidator validator = new RegexValidator();
 		getHandler().addValidateObject(delimiter, useRegex, validator);
 		
-		resultDelimiter = new JTextField(step.getParameter(step.RESULT_DELIM_PARAMETER_NAME));
+		resultDelimiter = new JTextField(step.getResultDelim());
 		resultDelimiter.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -118,28 +118,28 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
             	SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
-				step.setParameter(step.RESULT_DELIM_PARAMETER_NAME, resultDelimiter.getText());
+				step.setResultDelim(resultDelimiter.getText());
             }
         });
 		
-		int beginIndex = step.getIntegerParameter(step.BEGIN_PARAMETER_NAME);
+		int beginIndex = step.getBegIndex();
 		SpinnerNumberModel beginNumberModel = new SpinnerNumberModel(beginIndex, 0, Integer.MAX_VALUE, 1);
 		begin = new JSpinner(beginNumberModel);
 		begin.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
-				step.setParameter(step.BEGIN_PARAMETER_NAME, begin.getValue().toString());
+				step.setBegIndex((Integer) begin.getValue());
 			}
 		
 		});
 		
-		int endIndex = step.getIntegerParameter(step.END_PARAMETER_NAME);
+		int endIndex = step.getEndIndex();
 		SpinnerNumberModel endNumberModel = new SpinnerNumberModel(endIndex, 0, Integer.MAX_VALUE, 1);
 		end = new JSpinner(endNumberModel);
 		end.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
-				step.setParameter(step.END_PARAMETER_NAME, end.getValue().toString());
+				step.setEndIndex((Integer) end.getValue());
 			}
 		
 		});

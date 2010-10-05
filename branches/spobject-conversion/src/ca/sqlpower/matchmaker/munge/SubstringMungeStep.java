@@ -19,7 +19,9 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 
@@ -34,11 +36,19 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	 * This is the name of the parameter with the value of the beginIndex.
 	 */
 	public static final String BEGIN_PARAMETER_NAME = "beginIndex";
+	/**
+	 * The begin index for the output substring of this munge step.
+	 */
+	private int begIndex;
 
 	/**
 	 * This is the name of the parameter with the value of the endIndex.
 	 */
 	public static final String END_PARAMETER_NAME = "endIndex";
+	/**
+	 * The end index for the output substring of this munge stepl
+	 */
+	private int endIndex;
 	
 	@Constructor
 	public SubstringMungeStep() {
@@ -99,5 +109,25 @@ public class SubstringMungeStep extends AbstractMungeStep {
 		}
 		
 		return true;
+	}
+
+	@Mutator
+	public void setBegIndex(int begIndex) {
+			this.begIndex = begIndex;
+	}
+
+	@Accessor
+	public int getBegIndex() {
+		return begIndex;
+	}
+
+	@Mutator
+	public void setEndIndex(int endIndex) {
+			this.endIndex = endIndex;
+	}
+
+	@Accessor
+	public int getEndIndex() {
+		return endIndex;
 	}
 }

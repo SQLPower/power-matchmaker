@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 
@@ -40,11 +42,19 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 * This is the name of the parameter with the value of the beginIndex.
 	 */
 	public static final String BEGIN_PARAMETER_NAME = "beginIndex";
+	/**
+	 * The begin index for the output substring of this munge step.
+	 */
+	private int begIndex;
 
 	/**
 	 * This is the name of the parameter with the value of the endIndex.
 	 */
 	public static final String END_PARAMETER_NAME = "endIndex";
+	/**
+	 * The end index for the output substring of this munge step.
+	 */
+	private int endIndex;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will use
@@ -52,18 +62,30 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 * the parameter are "true" and "false".
 	 */
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
+	/**
+	 * Whether to use regular expressions in this munge step.
+	 */
+	private boolean regex;
 	
 	/**
 	 * The value of the String that will be used as the delimiter to determine
 	 * what is used to divide the String into words
 	 */
 	public static final String DELIMITER_PARAMETER_NAME = "delimiter";
+	/**
+	 * The string that will be used as the delimiter for this munge step.
+	 */
+	private String delimiter;
 	
 	/**
 	 * This is the name of the parameter with the value of the delimiter to use
 	 * to separate words in the output.
 	 */
 	public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
+	/**
+	 * The delimiter for the result of this munge step.
+	 */
+	private String resultDelim;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will be
@@ -71,6 +93,10 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 *  "false".
 	 */
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	/**
+	 * Whether the effects of this munge step should be case sensitive.
+	 */
+	private boolean caseSensitive;
 	
 	@Constructor
 	public SubstringByWordMungeStep() {
@@ -173,5 +199,65 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 		}
 		
 		return true;
+	}
+
+	@Mutator
+	public void setBegIndex(int begIndex) {
+			this.begIndex = begIndex;
+	}
+
+	@Accessor
+	public int getBegIndex() {
+		return begIndex;
+	}
+
+	@Mutator
+	public void setEndIndex(int endIndex) {
+			this.endIndex = endIndex;
+	}
+
+	@Accessor
+	public int getEndIndex() {
+		return endIndex;
+	}
+
+	@Mutator
+	public void setRegex(boolean regex) {
+			this.regex = regex;
+	}
+
+	@Accessor
+	public boolean isRegex() {
+		return regex;
+	}
+
+	@Mutator
+	public void setDelimiter(String delimiter) {
+			this.delimiter = delimiter;
+	}
+
+	@Accessor
+	public String getDelimiter() {
+		return delimiter;
+	}
+
+	@Mutator
+	public void setResultDelim(String resultDelim) {
+			this.resultDelim = resultDelim;
+	}
+
+	@Accessor
+	public String getResultDelim() {
+		return resultDelim;
+	}
+
+	@Mutator
+	public void setCaseSensitive(boolean caseSensitive) {
+			this.caseSensitive = caseSensitive;
+	}
+
+	@Accessor
+	public boolean isCaseSensitive() {
+		return caseSensitive;
 	}
 }

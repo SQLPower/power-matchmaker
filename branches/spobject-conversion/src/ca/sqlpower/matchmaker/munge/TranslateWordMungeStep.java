@@ -27,6 +27,8 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -46,6 +48,10 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
      * by this step.
      */
 	public static final String TRANSLATE_GROUP_PARAMETER_NAME = "translateGroupOid";
+	/**
+	 * The UUID of the translate group for this munge step.
+	 */
+	private String translateGroupUuid;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will use
@@ -53,6 +59,10 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 * are "true" and "false".
 	 */
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
+	/**
+	 * Whether to use regular expressions in this munge step.
+	 */
+	private boolean regex;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will be
@@ -60,6 +70,10 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 *  "false".
 	 */
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	/**
+	 * Whether the effects of this munge step should be case sensitive.
+	 */
+	private boolean caseSensitive;
 	
 	
 	public TranslateWordMungeStep() {
@@ -159,5 +173,35 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		String uuid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
 		
 		translateGroup = getSession().getTranslations().getChildByUUID(uuid);
+	}
+
+	@Mutator
+	public void setRegex(boolean useRegex) {
+			this.regex = useRegex;
+	}
+
+	@Accessor
+	public boolean isRegex() {
+		return regex;
+	}
+
+	@Mutator
+	public void setTranslateGroupUuid(String translateGroupUuid) {
+			this.translateGroupUuid = translateGroupUuid;
+	}
+
+	@Accessor
+	public String getTranslateGroupUuid() {
+		return translateGroupUuid;
+	}
+
+	@Mutator
+	public void setCaseSensitive(boolean caseSensitive) {
+			this.caseSensitive = caseSensitive;
+	}
+	
+	@Accessor
+	public boolean isCaseSensitive() {
+		return caseSensitive;
 	}
 }
