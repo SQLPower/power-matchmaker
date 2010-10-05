@@ -33,28 +33,20 @@ import ca.sqlpower.object.annotation.Mutator;
 public class SubstringMungeStep extends AbstractMungeStep {
 
 	/**
-	 * This is the name of the parameter with the value of the beginIndex.
-	 */
-	public static final String BEGIN_PARAMETER_NAME = "beginIndex";
-	/**
 	 * The begin index for the output substring of this munge step.
 	 */
 	private int begIndex;
 
 	/**
-	 * This is the name of the parameter with the value of the endIndex.
-	 */
-	public static final String END_PARAMETER_NAME = "endIndex";
-	/**
-	 * The end index for the output substring of this munge stepl
+	 * The end index for the output substring of this munge step.
 	 */
 	private int endIndex;
 	
 	@Constructor
 	public SubstringMungeStep() {
 		super("Substring",false);
-		setParameter(BEGIN_PARAMETER_NAME, 0);
-		setParameter(END_PARAMETER_NAME, 0);
+		setBegIndex(0);
+		setEndIndex(0);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
@@ -86,8 +78,8 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	 */
 	public Boolean doCall() throws Exception {
 
-		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
-		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
+		int beginIndex = getBegIndex();
+		int endIndex = getEndIndex();
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
@@ -113,7 +105,9 @@ public class SubstringMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setBegIndex(int begIndex) {
+			int old = this.begIndex;
 			this.begIndex = begIndex;
+			firePropertyChange("begIndex", old, begIndex);
 	}
 
 	@Accessor
@@ -123,7 +117,9 @@ public class SubstringMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setEndIndex(int endIndex) {
+			int old = this.endIndex;
 			this.endIndex = endIndex;
+			firePropertyChange("endIndex", old, endIndex);
 	}
 
 	@Accessor

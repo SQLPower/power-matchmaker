@@ -39,60 +39,30 @@ import ca.sqlpower.object.annotation.Mutator;
 public class SubstringByWordMungeStep extends AbstractMungeStep {
 
 	/**
-	 * This is the name of the parameter with the value of the beginIndex.
-	 */
-	public static final String BEGIN_PARAMETER_NAME = "beginIndex";
-	/**
 	 * The begin index for the output substring of this munge step.
 	 */
 	private int begIndex;
 
-	/**
-	 * This is the name of the parameter with the value of the endIndex.
-	 */
-	public static final String END_PARAMETER_NAME = "endIndex";
 	/**
 	 * The end index for the output substring of this munge step.
 	 */
 	private int endIndex;
 	
 	/**
-	 * This is the name of the parameter that decides whether this step will use
-	 * regular expression to interpret the delimiter. The only values accepted by 
-	 * the parameter are "true" and "false".
-	 */
-	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
-	/**
 	 * Whether to use regular expressions in this munge step.
 	 */
 	private boolean regex;
 	
-	/**
-	 * The value of the String that will be used as the delimiter to determine
-	 * what is used to divide the String into words
-	 */
-	public static final String DELIMITER_PARAMETER_NAME = "delimiter";
 	/**
 	 * The string that will be used as the delimiter for this munge step.
 	 */
 	private String delimiter;
 	
 	/**
-	 * This is the name of the parameter with the value of the delimiter to use
-	 * to separate words in the output.
-	 */
-	public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
-	/**
 	 * The delimiter for the result of this munge step.
 	 */
 	private String resultDelim;
 	
-	/**
-	 * This is the name of the parameter that decides whether this step will be
-	 * case sensitive. The only values accepted by the parameter are "true" and
-	 *  "false".
-	 */
-	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	/**
 	 * Whether the effects of this munge step should be case sensitive.
 	 */
@@ -101,12 +71,12 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	@Constructor
 	public SubstringByWordMungeStep() {
 		super("Substring by Word",false);
-		setParameter(DELIMITER_PARAMETER_NAME, " ");
-		setParameter(RESULT_DELIM_PARAMETER_NAME, " ");
-		setParameter(USE_REGEX_PARAMETER_NAME, false);
-		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
-		setParameter(BEGIN_PARAMETER_NAME, 0);
-		setParameter(END_PARAMETER_NAME, 0);
+		setDelimiter(" ");
+		setResultDelim(" ");
+		setRegex(false);
+		setCaseSensitive(true);
+		setBegIndex(0);
+		setEndIndex(0);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
@@ -137,13 +107,13 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 * indices were not in the range of the input
 	 */
 	public Boolean doCall() throws Exception {
-		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
-		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
+		int beginIndex = getBegIndex();
+		int endIndex = getEndIndex();
 		
-		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
-		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
-		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
-		String resultDelim = getParameter(RESULT_DELIM_PARAMETER_NAME);
+		String delimiter = getDelimiter();
+		boolean useRegex = isRegex();
+		boolean caseSensitive = isCaseSensitive();
+		String resultDelim = getResultDelim();
 		
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
@@ -203,7 +173,9 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setBegIndex(int begIndex) {
+			int old = this.begIndex;
 			this.begIndex = begIndex;
+			firePropertyChange("begIndex", old, begIndex);
 	}
 
 	@Accessor
@@ -213,7 +185,9 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setEndIndex(int endIndex) {
+			int old = this.endIndex;
 			this.endIndex = endIndex;
+			firePropertyChange("endIndex", old, endIndex);
 	}
 
 	@Accessor
@@ -222,8 +196,10 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	}
 
 	@Mutator
-	public void setRegex(boolean regex) {
-			this.regex = regex;
+	public void setRegex(boolean useRegex) {
+			boolean old = this.regex;
+			this.regex = useRegex;
+			firePropertyChange("regex", old, regex);
 	}
 
 	@Accessor
@@ -232,8 +208,10 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	}
 
 	@Mutator
-	public void setDelimiter(String delimiter) {
-			this.delimiter = delimiter;
+	public void setDelimiter(String delim) {
+			String old = delimiter;
+			delimiter = delim;
+			firePropertyChange("delimiter", old, delim);
 	}
 
 	@Accessor
@@ -243,7 +221,9 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setResultDelim(String resultDelim) {
+			String old = this.resultDelim;
 			this.resultDelim = resultDelim;
+			firePropertyChange("resultDelim", old, resultDelim);
 	}
 
 	@Accessor
@@ -253,7 +233,9 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setCaseSensitive(boolean caseSensitive) {
+			boolean old = this.caseSensitive;
 			this.caseSensitive = caseSensitive;
+			firePropertyChange("caseSensitive", old, caseSensitive);
 	}
 
 	@Accessor
