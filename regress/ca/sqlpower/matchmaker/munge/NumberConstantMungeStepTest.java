@@ -35,6 +35,10 @@ public class NumberConstantMungeStepTest extends AbstractMungeStepTest<NumberCon
 			step = new NumberConstantMungeStep();
 			step.setSession(new TestingMatchMakerSession());
 			super.setUp();
+			MungeProcess process = (MungeProcess) createNewValueMaker(
+	        		getRootObject(), null).makeNewValue(
+	        				MungeProcess.class, null, "parent process");
+	        process.addMungeStep(step, process.getMungeSteps().size());
 		}
 		
 		@Override
