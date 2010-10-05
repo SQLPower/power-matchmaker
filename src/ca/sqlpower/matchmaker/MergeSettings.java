@@ -25,6 +25,10 @@ import java.util.Date;
 import java.util.List;
 
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 
 /**
  * Settings specific to the Merge engine
@@ -76,20 +80,24 @@ public class MergeSettings extends MatchMakerSettings {
 		return true;
 	}
 
+	@Accessor
 	public boolean getBackUp() {
 		return backUp;
 	}
 
+	@Mutator
 	public void setBackUp(boolean backUp) {
 		boolean oldValue = this.backUp;
 		this.backUp = backUp;
 		firePropertyChange("backUp", oldValue, backUp);
 	}
 
+	@Accessor
 	public boolean getAugmentNull() {
 		return augmentNull;
 	}
 
+	@Mutator
 	public void setAugmentNull(boolean augmentNull) {
 		boolean oldValue = this.augmentNull;
 		this.augmentNull = augmentNull;
@@ -134,11 +142,13 @@ public class MergeSettings extends MatchMakerSettings {
 	}
 
 	@Override
+	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
 	}
 
 	@Override
+	@Transient @Accessor
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
 	}
