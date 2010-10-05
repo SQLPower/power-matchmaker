@@ -19,8 +19,13 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
@@ -45,6 +50,11 @@ import ca.sqlpower.object.annotation.Mutator;
  * Note: The list of trues will be checked first.
  */
 public class StringToBooleanMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
 	/**
 	 * Whether this step is case sensitive.
@@ -99,7 +109,9 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setCaseSensitive(boolean caseSensitive) {
+		boolean old = this.caseSensitive;
 		this.caseSensitive = caseSensitive;
+		firePropertyChange("caseSensitive", old, caseSensitive);
 	}
 
 	@Accessor
@@ -109,7 +121,9 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setUseRegex(boolean useRegex) {
+		boolean old = this.useRegex;
 		this.useRegex = useRegex;
+		firePropertyChange("useRegex", old, useRegex);
 	}
 
 	@Accessor
@@ -119,7 +133,9 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setTrueList(String trueList) {
+		String old = this.trueList;
 		this.trueList = trueList;
+		firePropertyChange("trueList", old, trueList);
 	}
 
 	@Accessor
@@ -129,7 +145,9 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setFalseList(String falseList) {
+		String old = this.falseList;
 		this.falseList = falseList;
+		firePropertyChange("falseList", old, falseList);
 	}
 
 	@Accessor
@@ -139,7 +157,9 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setNeither(Boolean neither) {
+		Boolean old = this.neither;
 		this.neither = neither;
+		firePropertyChange("neither", old, neither);
 	}
 
 	public Boolean doCall() throws Exception {

@@ -20,7 +20,12 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
@@ -31,6 +36,11 @@ import ca.sqlpower.object.annotation.Mutator;
  * If continue on error has been selected it returns null. If not it throws a Numberformat error.
  */
 public class StringToNumberMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 	
 	/**
 	 * Whether the munge step should continue in the face of evil, malformed numbers.

@@ -60,6 +60,10 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 		date = c.getTime();
 		timeOnly = new Time(date.getTime());
 		dateOnly  = new java.sql.Date(date.getTime());
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public void testDate() throws Exception {

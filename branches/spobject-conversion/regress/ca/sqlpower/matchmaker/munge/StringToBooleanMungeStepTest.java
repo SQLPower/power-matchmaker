@@ -40,6 +40,10 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 	protected void setUp() throws Exception {
 		step = new StringToBooleanMungeStep();
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	private void setCaseSensitive(boolean cs) {

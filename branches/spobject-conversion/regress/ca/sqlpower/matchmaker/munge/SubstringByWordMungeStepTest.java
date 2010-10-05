@@ -40,6 +40,10 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new SubstringByWordMungeStep();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
