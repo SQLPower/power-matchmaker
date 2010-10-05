@@ -553,7 +553,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	// precision can not be other value since the sql server does not 
     	// support column width for int, and the column size from jdbc will
     	// be 10.
-    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", session.getSQLType(Types.DECIMAL), 10, 0, false);
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", session.getSQLType(Types.INTEGER), 0, 0, false);
     	pk2.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk2);
     	
