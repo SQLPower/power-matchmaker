@@ -47,8 +47,8 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
-		step.setParameter(step.END_PARAMETER_NAME, 9);
+		step.setBegIndex(3);
+		step.setEndIndex(9);
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -62,8 +62,8 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
 		
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
-		step.setParameter(step.END_PARAMETER_NAME, 100);
+		step.setBegIndex(3);
+		step.setEndIndex(100);
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -73,8 +73,8 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
         step.mungeCommit();
         step.mungeClose();
 		
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 90);
-		step.setParameter(step.END_PARAMETER_NAME, 100);
+		step.setBegIndex(90);
+		step.setEndIndex(100);
 		step.open(logger);
 		step.call();
 		results = step.getMungeStepOutputs(); 
@@ -84,8 +84,8 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
         step.mungeCommit();
         step.mungeClose();
 		
-		step.setParameter(step.BEGIN_PARAMETER_NAME, -100);
-		step.setParameter(step.END_PARAMETER_NAME, 100);
+		step.setBegIndex(-100);
+		step.setEndIndex(100);
 		step.open(logger);
 		try {
 			step.call();
@@ -100,8 +100,8 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
-		step.setParameter(step.END_PARAMETER_NAME, 9);
+		step.setBegIndex(3);
+		step.setEndIndex(9);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();

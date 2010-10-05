@@ -86,6 +86,16 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 	 */
 	public static final List<String> OUTPUT_FORMATS = Arrays.asList("Date Only", "Time Only", "Date and Time");
 	
+	private void updateInputFormat() {
+		String old = inputFormat;
+		String format = getDateFormat() + (
+				((getDateFormat() == null || getDateFormat().equals("")) ||
+						((getTimeFormat() == null) || getTimeFormat().equals(""))) ?
+						"" : " ") + getTimeFormat();
+		inputFormat = format;
+		firePropertyChange("inputFormat", old, inputFormat);
+	}
+	
 	@Override
 	public int addInput(InputDescriptor desc) {
 		throw new UnsupportedOperationException("String to Date munge step does not support addInput()");
@@ -126,6 +136,8 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		Date ret = null;
 		if (in.getData() != null) {
 			try {
+				System.out.println(getInputFormat());
+				System.out.println(data);
 				SimpleDateFormat sdf = new SimpleDateFormat(getInputFormat());
 				ret = sdf.parse(data);
 				if (OUTPUT_FORMATS.get(0).equals(getOutputFormat())) {
@@ -181,6 +193,7 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		String old = this.dateFormat;
 		this.dateFormat = dateFormat;
 		firePropertyChange("dateFormat", old, dateFormat);
+		updateInputFormat();
 	}
 
 	@Accessor
@@ -193,6 +206,7 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		String old = this.timeFormat;
 		this.timeFormat = timeFormat;
 		firePropertyChange("timeFormat", old, timeFormat);
+		updateInputFormat();
 	}
 
 	@Accessor

@@ -51,8 +51,8 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.connectInput(0, testInput);
-		step.setParameter(step.FROM_PARAMETER_NAME, "h");
-		step.setParameter(step.TO_PARAMETER_NAME, "123");
+		step.setFrom("h");
+		step.setTo("123");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -65,8 +65,8 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
-		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
-		step.setParameter(step.TO_PARAMETER_NAME, "123");
+		step.setFrom("abc");
+		step.setTo("123");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -83,8 +83,8 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcabc");
 		step.connectInput(0, testInput);
-		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
-		step.setParameter(step.TO_PARAMETER_NAME, "123");
+		step.setFrom("abc");
+		step.setTo("123");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -102,8 +102,8 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abccba");
 		step.connectInput(0, testInput);
-		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
-		step.setParameter(step.TO_PARAMETER_NAME, "123");
+		step.setFrom("abc");
+		step.setTo("123");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -120,8 +120,8 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a\\-+*?()[]{}|$^<=z");
 		step.connectInput(0, testInput);
-		step.setParameter(step.FROM_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
-		step.setParameter(step.TO_PARAMETER_NAME, "!");
+		step.setFrom("\\-+*?()[]{}|$^<=");
+		step.setTo("!");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -137,9 +137,9 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("aabfooaabfooabfoob");
 		step.connectInput(0, testInput);
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
-		step.setParameter(step.FROM_PARAMETER_NAME, "a*b");
-		step.setParameter(step.TO_PARAMETER_NAME, "-");
+		step.setRegex(true);
+		step.setFrom("a*b");
+		step.setTo("-");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
@@ -152,9 +152,9 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 	public void testCallonCaseInsensitive() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCdabcdABC");
-		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
-		step.setParameter(step.TO_PARAMETER_NAME, "-");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
+		step.setFrom("abc");
+		step.setTo("-");
+		step.setCaseSensitive(false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);

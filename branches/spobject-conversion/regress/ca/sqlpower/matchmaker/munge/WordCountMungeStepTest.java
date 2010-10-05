@@ -76,7 +76,7 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 	public void testCallonMixedDelimiters() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a   b \nc d\n e f\n\ng");
-		step.setParameter(step.DELIMITER_PARAMETER_NAME, " \n");
+		step.setDelimiter(" \n");
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -93,7 +93,7 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 	public void testCallonRegexInput() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a()[]{}|$^<=b()\\-+*?c");
-		step.setParameter(step.DELIMITER_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
+		step.setDelimiter("\\-+*?()[]{}|$^<=");
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -109,8 +109,8 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 	public void testCallonUsingRegex() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("aaaaab");
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
-		step.setParameter(step.DELIMITER_PARAMETER_NAME, "a+");
+		step.setRegex(true);
+		step.setDelimiter("a+");
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();

@@ -19,8 +19,9 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -36,47 +37,47 @@ public class StringConstantMungeStep extends AbstractMungeStep {
     /**
      * The value this step should provide on its output.
      */
-    public static final String VALUE_PARAMETER_NAME = "value";
+    private String outValue;
     
     /**
-     * The value to set if the step is to return null
+     * Whether the step is to return null
      */
-    public static final String RETURN_NULL = "return null";
+    private boolean returnNull;
     
-    @Constructor
+    @Accessor
+    public String getOutValue() {
+		return outValue;
+	}
+
+    @Mutator
+	public void setOutValue(String outValue) {
+    	String old = this.outValue;
+		this.outValue = outValue;
+		firePropertyChange("outValue", old, outValue);
+	}
+
+    @Accessor
+	public boolean isReturnNull() {
+		return returnNull;
+	}
+
+    @Mutator
+	public void setReturnNull(boolean returnNull) {
+    	boolean old = this.returnNull;
+		this.returnNull = returnNull;
+		firePropertyChange("returnNull", old, returnNull);
+	}
+
+	@Constructor
     public StringConstantMungeStep() {
         super("String constant", false);
-        setParameter(RETURN_NULL, "False");
+        setReturnNull(false);
         addChild(new MungeStepOutput<String>("Value", String.class));
     }
     
     @Override
     public Boolean doCall() throws Exception {
-    	getOut().setData(getValue());
+    	getOut().setData(getOutValue());
         return Boolean.TRUE;
-    }
-    
-    @NonProperty
-    public void setValue(String newValue) {
-        setParameter(VALUE_PARAMETER_NAME, newValue);
-    }
-    
-    @NonProperty
-    public String getValue() {
-    	if (!isReturningNull()) {
-    		return getParameter(VALUE_PARAMETER_NAME);
-    	} else {
-    		return null;
-    	}
-    }
-    
-    @NonProperty
-    public boolean isReturningNull() {
-    	return getBooleanParameter(RETURN_NULL).booleanValue();
-    }
-    
-    @NonProperty
-    public void setReturningNull(boolean b) {
-    	setParameter(RETURN_NULL, String.valueOf(b));
     }
 }

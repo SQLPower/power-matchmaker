@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroupDAOStub;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateWordMungeStep> {
@@ -46,8 +47,18 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	 */
 	protected void setUp() throws Exception {
 		step = new TranslateWordMungeStep();
-		step.setSession(new TestingMatchMakerSession());
 		super.setUp();
+		step.setSession(new TestingMatchMakerSession());
+		MungeProcess mp = new MungeProcess();
+		mp.addChild(step);
+		Project p = new Project();
+		p.addChild(mp);
+		mp.setParent(p);
+		p.setParent(getRootObject());
+		getRootObject().addChild(p, getRootObject().getChildren().size());
+
+
+		
 	}
 
 	/**
@@ -57,7 +68,7 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("efg");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroupUuid("123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -71,7 +82,7 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroupUuid("123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -89,7 +100,7 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonConsecutiveOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ababcdcd");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroupUuid("123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -108,7 +119,7 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonWrongOrder() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdbadc");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroupUuid("123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -126,7 +137,7 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonRegexInput() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ab\\-+*?()[]{}|$^<=cd");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroupUuid("123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -144,8 +155,8 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("xxyfooxxyfooxyfooy");
 		step.connectInput(0, testInput);
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
+		step.setTranslateGroupUuid("123");
+		step.setRegex(true);
 		
 		step.open(logger);
 		step.call();
@@ -159,8 +170,8 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCD");
 		step.connectInput(0, testInput);
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
+		step.setTranslateGroupUuid("123");
+		step.setCaseSensitive(false);
 		
 		step.open(logger);
 		step.call();
@@ -174,7 +185,7 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroupUuid("123");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 

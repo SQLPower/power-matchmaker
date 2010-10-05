@@ -44,8 +44,8 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
-		step.setParameter(step.END_PARAMETER_NAME, 3);
+		step.setBegIndex(1);
+		step.setEndIndex(3);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -58,8 +58,8 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abc bcd cde def efg fgh ghi");
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
-		step.setParameter(step.END_PARAMETER_NAME, 2);
+		step.setBegIndex(1);
+		step.setEndIndex(2);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -72,10 +72,10 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	public void testCallonMixedDelimiters() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abc   bcd \ncde def\n efg fgh\n\nghi");
-		step.setParameter(step.DELIMITER_PARAMETER_NAME, " \n");
-		step.setParameter(step.RESULT_DELIM_PARAMETER_NAME, ":");
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
-		step.setParameter(step.END_PARAMETER_NAME, 2);
+		step.setDelimiter(" \n");
+		step.setResultDelim(":");
+		step.setBegIndex(1);
+		step.setEndIndex(2);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -92,9 +92,9 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	public void testCallonRegexInput() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ab\\-+*?()cd[]{}|$^<=de");
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
-		step.setParameter(step.END_PARAMETER_NAME, 2);
-		step.setParameter(step.DELIMITER_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
+		step.setBegIndex(1);
+		step.setEndIndex(2);
+		step.setDelimiter("\\-+*?()[]{}|$^<=");
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -107,8 +107,8 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
-		step.setParameter(step.END_PARAMETER_NAME, 9);
+		step.setBegIndex(3);
+		step.setEndIndex(9);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -132,10 +132,10 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	public void testCallonCaseInsensitive() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abczbcdZcdezdefZefg");
-		step.setParameter(step.DELIMITER_PARAMETER_NAME, "z");
-		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
-		step.setParameter(step.END_PARAMETER_NAME, 2);
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
+		step.setDelimiter("z");
+		step.setBegIndex(1);
+		step.setEndIndex(2);
+		step.setCaseSensitive(false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
