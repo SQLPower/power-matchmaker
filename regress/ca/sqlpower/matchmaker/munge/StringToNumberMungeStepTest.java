@@ -38,7 +38,7 @@ public class StringToNumberMungeStepTest extends MatchMakerTestCase<StringToNumb
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new StringToNumberMungeStep();
-		step.setParameter(StringToNumberMungeStep.CONTINUE_ON_MALFORMED_NUMBER, "False");
+		step.setAllowMalformed(false);
 		step.open(Logger.getLogger(StringToNumberMungeStepTest.class));
 	}
 	
@@ -91,7 +91,7 @@ public class StringToNumberMungeStepTest extends MatchMakerTestCase<StringToNumb
 	}
 	
 	public void testContinueOnError() throws Exception {
-		step.setParameter(StringToNumberMungeStep.CONTINUE_ON_MALFORMED_NUMBER, "true");		
+		step.setAllowMalformed(true);		
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("One Billion Dollars!!!!!");
 		step.connectInput(0, mso);

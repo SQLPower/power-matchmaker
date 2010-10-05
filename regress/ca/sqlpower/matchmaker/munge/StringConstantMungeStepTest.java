@@ -39,14 +39,14 @@ public class StringConstantMungeStepTest extends MatchMakerTestCase<StringConsta
     }
     
     public void testNullValue() throws Exception {
-        step.setValue(null);
+        step.setOutValue(null);
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertNull(step.getOut().getData());
     }
 
     public void testNonNullValue() throws Exception {
-        step.setValue("moocow");
+        step.setOutValue("moocow");
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertEquals("moocow", step.getOut().getData());
@@ -56,27 +56,27 @@ public class StringConstantMungeStepTest extends MatchMakerTestCase<StringConsta
      * Ensures the step doesn't update its output value at runtime until after the call().
      */
     public void testChangeValueDuringRun() throws Exception {
-        step.setValue("moocow");
+        step.setOutValue("moocow");
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertEquals("moocow", step.getOut().getData());
-        step.setValue("woofdog");
+        step.setOutValue("woofdog");
         step.call();
         assertEquals("woofdog", step.getOut().getData());
-        step.setValue("meowcat");
+        step.setOutValue("meowcat");
         assertEquals("woofdog", step.getOut().getData());
         step.call();
         assertEquals("meowcat", step.getOut().getData());
     }
     
     public void testReturnNull() throws Exception {
-    	step.setReturningNull(true);
-    	step.setValue("moocow");
+    	step.setReturnNull(true);
+    	step.setOutValue("moocow");
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertNull(step.getOut().getData());
-    	step.setReturningNull(false);
-        step.setValue("moocow2");
+    	step.setReturnNull(false);
+        step.setOutValue("moocow2");
         step.call();
         assertEquals("moocow2", step.getOut().getData());
     }

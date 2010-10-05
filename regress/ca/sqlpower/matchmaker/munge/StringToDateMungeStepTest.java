@@ -53,7 +53,7 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new StringToDateMungeStep();
-		step.setParameter(StringToDateMungeStep.IGNORE_ERROR_PARAM, false);
+		step.setIgnoreError(false);
 		step.open(Logger.getLogger(StringToDateMungeStepTest.class));
 		
 		c.set(2007, 1, 1, 13, 1, 1);
@@ -137,7 +137,7 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 	}
 	
 	public void testIgnoreError() throws Exception {
-		step.setParameter(StringToDateMungeStep.IGNORE_ERROR_PARAM, true);		
+		step.setIgnoreError(true);		
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("One Billion Yen!!!!!");
 		step.connectInput(0, mso);
