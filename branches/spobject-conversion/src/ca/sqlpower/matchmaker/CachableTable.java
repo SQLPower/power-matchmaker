@@ -30,6 +30,7 @@ import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -214,7 +215,7 @@ public class CachableTable extends AbstractMatchMakerObject {
      *         up in the session's SQLDatabase, or created in the session's
      *         SQLDatabase if the lookup failed.
      */
-    @Accessor
+    @Transient @Accessor
     public SQLTable getTable() {
     	logger.debug("GetTable(): "+this);
     	
@@ -260,7 +261,7 @@ public class CachableTable extends AbstractMatchMakerObject {
      * Sets the table to the given table, clears the simple string properties, and fires an event.
      * @param table
      */
-    @Mutator
+    @Transient @Mutator
     public void setTable(SQLTable table) {
     	logger.debug("Set Table: " + table);
     	

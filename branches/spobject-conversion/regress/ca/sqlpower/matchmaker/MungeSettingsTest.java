@@ -24,7 +24,7 @@ import java.util.Date;
 
 import ca.sqlpower.object.SPObject;
 
-public class MungeSettingsTest extends MatchMakerTestCase {
+public class MungeSettingsTest extends MatchMakerTestCase<MungeSettings> {
 
 	public MungeSettingsTest(String name) {
 		super(name);
@@ -33,11 +33,13 @@ public class MungeSettingsTest extends MatchMakerTestCase {
 	MungeSettings ms;
 	protected void setUp() throws Exception {
 		super.setUp();
-		ms = new MungeSettings();
+		Project project = (Project) createNewValueMaker(
+				getRootObject(), null).makeNewValue(Project.class, null, "Parent project");
+		ms = project.getMungeSettings();
 	}
 
 	@Override
-	protected MatchMakerObject getTarget() {
+	protected MungeSettings getTarget() {
 		return ms;
 	}
 
@@ -56,5 +58,12 @@ public class MungeSettingsTest extends MatchMakerTestCase {
 	@Override
 	public SPObject getSPObjectUnderTest() {
 		return getTarget();
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		//Since this class is only ever added as a final object to a project
+		//we cannot test if it is correctly added through an add child method
+		//as it is not allowed.
 	}
 }
