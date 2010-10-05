@@ -20,12 +20,17 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.Transient;
 
 /**
  * This munge step will return a string representation of the given date.
@@ -33,20 +38,25 @@ import ca.sqlpower.object.annotation.NonProperty;
 */
 public class DateToStringMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	/**
 	 * The pattern used to format the Date.
 	 */
-	public static final String FORMAT_PARAM = "format";
+	private String format;
 	
 	/**
 	 * The date portion of the pattern that helps to build the format.
 	 */
-	public static final String DATE_FORMAT_PARAM = "dateFormat";
+	private String dateFormat;
 	
 	/**
 	 * The time portion of the pattern that helps to build the format.
 	 */
-	public static final String TIME_FORMAT_PARAM = "timeFormat";
+	private String timeFormat;
 	
 	/**
 	 * List of default date formats.
@@ -97,7 +107,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 		MungeStepOutput<Date> in = getMSOInputs().get(0);
 		Date data = in.getData();
 		String result = null;
-		String format = getParameter(FORMAT_PARAM);
+		String format = this.format;
 		
 		if (data != null) {
 			SimpleDateFormat sdf = new SimpleDateFormat(format);
@@ -109,57 +119,61 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 		return true;
 	}
 	
-	@NonProperty
+	@Transient @Mutator
 	public void setFormat(String format) {
-		setParameter(FORMAT_PARAM, format);
+		String oldFormat = this.format;
+		this.format = format;
+		firePropertyChange("format", oldFormat, format);
 	}
 	
-	@NonProperty
+	@Transient @Accessor
 	public String getFormat() {
-		return getParameter(FORMAT_PARAM);
+		return format;
 	}
 	
 	/**
 	 * Sets the date portion of the pattern and updates the format pattern.
 	 */
-	@NonProperty
+	@Mutator
 	public void setDateFormat(String format) {
-		setParameter(DATE_FORMAT_PARAM, format);
+		String oldFormat = dateFormat;
+		dateFormat = format;
+		firePropertyChange("dateFormat", oldFormat, format);
 		updateFormat();
 	}
 	
 	/**
 	 * Returns the date portion of the format pattern. 
 	 */
-	@NonProperty
+	@Accessor
 	public String getDateFormat() {
-		return getParameter(DATE_FORMAT_PARAM);
+		return dateFormat;
 	}
 	
 	/**
 	 * Sets the time portion of the pattern and updates the format pattern.
 	 */
-	@NonProperty
+	@Mutator
 	public void setTimeFormat(String format) {
-		setParameter(TIME_FORMAT_PARAM, format);
+		String oldFormat = timeFormat;
+		timeFormat = format;
+		firePropertyChange("timeFormat", oldFormat, format);
 		updateFormat();
 	}
 	
 	/**
 	 * Returns the time portion of the format pattern. 
 	 */
-	@NonProperty
+	@Accessor
 	public String getTimeFormat() {
-		return getParameter(TIME_FORMAT_PARAM);
+		return timeFormat;
 	}
 	
 	/**
 	 * Updates the format parameter to the concatenation of the date format
 	 * and the time format.
 	 */
-	@NonProperty
 	private void updateFormat() {
-		String format = getDateFormat() + " " + getTimeFormat();
-		setParameter(FORMAT_PARAM, format.trim());
+		format = getDateFormat() + " " + getTimeFormat();
 	}
 }
