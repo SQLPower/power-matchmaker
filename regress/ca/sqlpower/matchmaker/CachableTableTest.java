@@ -35,9 +35,11 @@ public class CachableTableTest extends MatchMakerTestCase<CachableTable> {
 		super.setUp();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
-		parentProject = new Project();
-		ct = new CachableTable("sourceTable");
-		ct.setParent(parentProject);
+		
+		parentProject = (Project) createNewValueMaker(getRootObject(), 
+				null).makeNewValue(Project.class, null, "Parent project");
+		ct = parentProject.getSourceTablePropertiesDelegate();
+		parentProject.setSession(session);
 		ct.setName("CachableTableTestObject");
 		ct.setSession(session);
 	}
@@ -50,5 +52,12 @@ public class CachableTableTest extends MatchMakerTestCase<CachableTable> {
 	@Override
 	protected CachableTable getTarget() {
 		return ct;
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		//Since this class is only ever added as a final object to a project
+		//we cannot test if it is correctly added through an add child method
+		//as it is not allowed.
 	}
 }

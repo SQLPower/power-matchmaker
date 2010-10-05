@@ -39,6 +39,8 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
@@ -159,6 +161,18 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         		return ProjectMode.FIND_DUPES;
         	} else {
         		return ProjectMode.CLEANSE;
+        	}
+        } else if (valueType == AutoValidateSetting.class) {
+        	if (oldVal != AutoValidateSetting.EVERYTHING_WITH_SUGGESTION) {
+        		return AutoValidateSetting.EVERYTHING_WITH_SUGGESTION;
+        	} else {
+        		return AutoValidateSetting.SERP_CORRECTABLE;
+        	}
+        } else if (valueType == PoolFilterSetting.class) {
+        	if (oldVal != PoolFilterSetting.EVERYTHING) {
+        		return PoolFilterSetting.EVERYTHING;
+        	} else {
+        		return PoolFilterSetting.VALID_OR_INVALID;
         	}
         } else if (valueType == AddressDatabase.class) {
         	/*
