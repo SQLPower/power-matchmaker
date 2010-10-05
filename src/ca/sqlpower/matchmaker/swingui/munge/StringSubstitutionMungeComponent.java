@@ -62,23 +62,23 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) getStep();
-				step.setParameter(step.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+				step.setRegex(useRegex.isSelected());
 			}	
 		});
-		useRegex.setSelected(step.getBooleanParameter(step.USE_REGEX_PARAMETER_NAME));
+		useRegex.setSelected(step.isRegex());
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(step.getBooleanParameter(step.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.setSelected(step.isCaseSensitive());
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				StringSubstitutionMungeStep temp = (StringSubstitutionMungeStep) getStep();
-				temp.setParameter(temp.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+				temp.setCaseSensitive(caseSensitive.isSelected());
 			}
 			
 		});
 		
-		from = new JTextField(step.getParameter(step.FROM_PARAMETER_NAME));
+		from = new JTextField(step.getFrom());
 		from.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -91,11 +91,11 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
 				StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) getStep();
-				step.setParameter(step.FROM_PARAMETER_NAME, from.getText());
+				step.setFrom(from.getText());
             }
         });
 		
-		to = new JTextField(step.getParameter(step.TO_PARAMETER_NAME));
+		to = new JTextField(step.getTo());
 		to.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -108,7 +108,7 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
 				StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) getStep();
-				step.setParameter(step.TO_PARAMETER_NAME, to.getText());
+				step.setTo(to.getText());
             }
         });
 		RegexValidator validator = new RegexValidator();
