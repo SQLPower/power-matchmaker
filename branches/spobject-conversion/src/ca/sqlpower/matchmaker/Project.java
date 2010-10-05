@@ -53,6 +53,8 @@ import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLTypePhysicalPropertiesProvider.PropertyType;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.util.Monitorable;
@@ -568,16 +570,24 @@ public class Project extends AbstractMatchMakerObject {
 			throw new IllegalStateException(
 					"The result table does not exist in the SQL Database");
 		}
-
-		List<SQLTable> inMemory = new ArrayList<SQLTable>();
+		
+		SQLTable builtResultTable;
 		if (type == ProjectMode.FIND_DUPES) {
-			inMemory.add(buildDedupeResultTable(resultTable, si));
+			builtResultTable = buildDedupeResultTable(resultTable, si);
 		} else if (type == ProjectMode.ADDRESS_CORRECTION){
-			inMemory.add(AddressPool.buildAddressCorrectionResultTable(resultTable, si));
+			builtResultTable = AddressPool.buildAddressCorrectionResultTable(resultTable, si);
 		} else {
 			throw new IllegalStateException("Checking result table on a project type that does not use result tables! " +
 					"Project Name: " + this.getName() + " Project Type: " + this.getType());
 		}
+
+		table = checkForwarding(builtResultTable, table, resultTable.getParentDatabase().getDataSource().getPropertiesMap().get("Connection Type"));
+		if(table == null) {
+			return false;
+		}
+
+		List<SQLTable> inMemory = new ArrayList<SQLTable>();
+		inMemory.add(builtResultTable);
 		List<SQLTable> physical = new ArrayList<SQLTable>();
 		physical.add(table);
 		CompareSQL compare = new CompareSQL(inMemory,physical,true);
@@ -633,9 +643,15 @@ public class Project extends AbstractMatchMakerObject {
 				sourceTable.getCatalogName(),
 				sourceTable.getSchemaName(),
 				sourceTable.getName());
+		
 		if (table == null) {
 			throw new IllegalStateException(
 					"The source table does not exist in the SQL Database");
+		}
+		
+		table = checkForwarding(sourceTable, table,  sourceTable.getParentDatabase().getDataSource().getPropertiesMap().get("Connection Type"));
+		if(table == null) {
+			return false;
 		}
 
 		List<SQLTable> inMemory = new ArrayList<SQLTable>();
@@ -648,12 +664,90 @@ public class Project extends AbstractMatchMakerObject {
 		int diffCount = 0;
 		for ( DiffChunk<SQLObject> diff : tableDiffs) {
 			logger.debug(diff.toString());
-			if (diff.getType() != DiffType.SAME) {
+			if (diff.getType() != DiffType.SAME && diff.getType() != DiffType.MODIFIED) {
 				diffCount++;
 			}
 		}
 		
 		return diffCount == 0;
+	}
+	
+	/**
+	 * Here we are checking if the UDSQLTypes from the current table and the UDSQLTypes we get from
+	 * the database can be forward engineered to the same. If so, we set the database table's
+	 * types to the current table's types. Otherwise, the tables are not the same so we return
+	 * false.
+	 * @param compareTo The source table that the project builds.
+	 * @param table The table we got from the database.
+	 * @throws SQLObjectException 
+	 */
+	private SQLTable checkForwarding(SQLTable compareTo, SQLTable table, String platformName)
+																	throws SQLObjectException {
+		SQLTable returnTable = table;
+		boolean same = false;
+		if(compareTo.getColumnsWithoutPopulating().size() == returnTable.getColumnsWithoutPopulating().size()) {
+			same = true;
+			for (int i = 0; i < compareTo.getColumns().size(); i++) {
+				SQLColumn compareToColumn = compareTo.getColumns().get(i);
+				SQLColumn column = returnTable.getColumns().get(i);
+				UserDefinedSQLType compareToType = compareToColumn.getUserDefinedSQLType();
+				UserDefinedSQLType type = column.getUserDefinedSQLType();
+				String forwardedName;
+				String typeName;
+				
+				if (compareToType.getUpstreamType() != null) {
+					forwardedName = compareToType.getUpstreamType().getPhysicalName(platformName);
+		        } else {
+		        	forwardedName = type.getPhysicalName(platformName);
+		        }
+				
+				if (type.getUpstreamType() != null) {
+					typeName = type.getUpstreamType().getPhysicalName(platformName);
+		        } else {
+		        	typeName = type.getPhysicalName(platformName);
+		        }
+				
+				if (forwardedName.equals(typeName)) {
+					type.setScaleType(platformName, compareToType.getScaleType(platformName));
+	            	type.setPrecisionType(platformName, compareToType.getPrecisionType(platformName));
+	            	
+	            	if (compareToType.getScale(platformName) == type.getScale(platformName) || compareToType.getScaleType(platformName) == PropertyType.NOT_APPLICABLE) {
+	            		type.setScale(platformName, null);
+	            	}
+
+	            	if (compareToType.getPrecision(platformName) == type.getPrecision(platformName) || compareToType.getPrecisionType(platformName) == PropertyType.NOT_APPLICABLE) {
+	            		type.setPrecision(platformName, null);
+	            	}
+
+	            	if (compareToType.getNullability() != null
+	            			&& compareToType.getNullability().equals(type.getNullability())) {
+	            		type.setMyNullability(null);
+	            	}
+
+	            	if (compareToType.getDefaultValue(platformName) != null
+	            			&& compareToType.getDefaultValue(platformName).equals(type.getDefaultValue(platformName))) {
+	            		type.setDefaultValue(platformName, null);
+	            	}
+
+	            	if (compareToType.getAutoIncrement() != null
+	            			&& compareToType.getAutoIncrement().equals(type.getAutoIncrement())) {
+	            		type.setMyAutoIncrement(null);
+	            	}
+	            	
+	            	table.getColumnsWithoutPopulating().get(i).setType(type);
+	            	type.setUpstreamType(compareToType);
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("The column " + compareToColumn.getName() + " of " + 
+								compareTo.getName() + " does not have the correct UserDefinedSQLType." +
+								"Expected \"" + typeName + "\" but got \"" + forwardedName + " when " +
+								"forward engineered in " + platformName + ".");
+					}
+					same = false;
+				}
+			}
+		}
+		return same ? returnTable : null;
 	}
 
 	@Accessor
