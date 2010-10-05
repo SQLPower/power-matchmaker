@@ -429,7 +429,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		firePropertyChange(name, oldValue, newValue + "");
 	}
 	
-	@Mutator
+	@Transient @Mutator
 	public void setParameters(Map<String,String> parameters) {
 		Map<String, String> oldParameters = this.parameters;
 		this.parameters.clear();
@@ -437,7 +437,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		firePropertyChange("parameters", oldParameters, parameters);
 	}
 	
-	@Accessor
+	@Transient @Accessor
 	public Map<String,String> getParameters() {
 		return parameters;
 	}
@@ -456,28 +456,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			throw new RuntimeException(e);
 		}
 		return step;
-	}
-	
-	/**
-	 * Warning: One should never mix instances--that is, one
-	 * should never put detached instances from different 
-	 * sessions into the same set because it will break this
-	 * implementation of equals and hashCode.
-	 */  
-	@Override
-	public boolean equals(Object obj) {
-		return this == obj;
-	}
-	
-	/**
-	 * Warning: One should never mix instances--that is, one
-	 * should never put detached instances from different 
-	 * sessions into the same set because it will break this
-	 * implementation of equals and hashCode.
-	 */  
-	@Override
-	public int hashCode() {
-		return System.identityHashCode(this);
 	}
 	
 	@NonProperty
