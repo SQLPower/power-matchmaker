@@ -325,11 +325,7 @@ public class MatchMakerTreeModel implements TreeModel {
         }
         final SPObject mmoChild = (SPObject) child;
         int offset;
-        if(mmoParent instanceof MungeProcess) {
-        	offset = ((MungeProcess)mmoParent).mungeProcessChildPositionOffset(mmoChild.getClass());
-        } else {
-        	offset = mmoParent.childPositionOffset(mmoChild.getClass());
-        }
+        offset = mmoParent.childPositionOffset(mmoChild.getClass());
         index = mmoParent.getChildren(mmoChild.getClass()).indexOf(mmoChild) + offset;
         
         if (logger.isDebugEnabled()) {
@@ -484,11 +480,7 @@ public class MatchMakerTreeModel implements TreeModel {
                 }
             }
             int offset;
-            if(parent instanceof MungeProcess) {
-            	offset = ((MungeProcess)parent).mungeProcessChildPositionOffset(child.getClass());
-            } else {
-            	offset = parent.childPositionOffset(child.getClass());
-            }
+            offset = parent.childPositionOffset(child.getClass());
             
 			TreeModelEvent evt = new TreeModelEvent(parent, getPathForNode(parent), 
 					new int[]{e.getIndex() + offset}, new MatchMakerObject[]{child});
@@ -548,11 +540,7 @@ public class MatchMakerTreeModel implements TreeModel {
 			TreePath path = getPathForNode(parent);
             
             int offset = 0;
-            if(parent instanceof MungeProcess) {
-            	offset = ((MungeProcess)parent).mungeProcessChildPositionOffset(child.getClass());
-            } else {
-            	offset = parent.childPositionOffset(child.getClass());
-            }
+            offset = parent.childPositionOffset(child.getClass());
             
             if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children removed event!");
@@ -572,6 +560,8 @@ public class MatchMakerTreeModel implements TreeModel {
                 logger.debug("     removed child index: "+sb);
                 logger.debug("Traceback:", new Exception());
             }
+            
+            offset = parent.childPositionOffset(child.getClass());
             
             MatchMakerObject children[] = {(MatchMakerObject) e.getChild()};
             int indices[] = {e.getIndex() + offset};
