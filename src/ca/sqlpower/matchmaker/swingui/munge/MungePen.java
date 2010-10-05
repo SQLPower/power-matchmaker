@@ -799,7 +799,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
     	@Override
 		public void childAdded(SPChildEvent e) {
     		
-			int x = e.getIndex();
+			int x = e.getIndex() - process.mungeProcessChildPositionOffset(e.getChildType());
 			
 			MungeStep newMungeStep = ((MungeProcess)e.getSource()).getMungeSteps().get(x);
 			
@@ -814,7 +814,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			logger.debug("Generating positions from properites");
 			
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
-			int y = e.getIndex();
+			int y = e.getIndex() - process.mungeProcessChildPositionOffset(e.getChildType());
 			MungeStep ms = ((MungeProcess)e.getSource()).getMungeSteps().get(y);
 			for (MungeStepOutput link : ms.getMSOInputs()) {
 				if (link != null) {
