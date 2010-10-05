@@ -38,6 +38,9 @@ public class TableIndexTest extends MatchMakerTestCase<TableIndex>{
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		cachableTable = new CachableTable("sourceTable");
 		tableIndex = new TableIndex(cachableTable, "sourceTableIndex");
+		Project project = (Project) createNewValueMaker(
+				getRootObject(), null).makeNewValue(Project.class, null, "Project parent");
+		project.addChild(tableIndex);
 	}
 
 	@Override
