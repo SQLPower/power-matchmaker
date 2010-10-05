@@ -19,7 +19,15 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 
@@ -27,30 +35,46 @@ import ca.sqlpower.object.annotation.Constructor;
  * This step returns a constant boolean or null.
  */
 public class BooleanConstantMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
-	public static final String BOOLEAN_VALUE = "value";
-	public static final String TRUE = "True";
-	public static final String FALSE = "False";
-	public static final String NULL = "Null";
+	/**
+	 * The constant passed to the output of this step.
+	 */
+	private Boolean constant;
 	
 	@Constructor
 	public BooleanConstantMungeStep() {
 		super("Boolean Constant", false);
-		setParameter(BOOLEAN_VALUE, TRUE);
+		setConstant(true);
 		addChild(new MungeStepOutput<Boolean>("boolean out",Boolean.class));
 	}
 	
 	
 	public Boolean doCall() throws Exception {
 		MungeStepOutput<Boolean> out = getOut();
-		String val = getParameter(BOOLEAN_VALUE);
-		if (val.equals(TRUE)) {
-			out.setData(true);
-		} else if (val.equals(FALSE)) {
-			out.setData(false);
-		} else {
+		if (getConstant() == null) {
 			out.setData(null);
+		} else if (getConstant()) {
+			out.setData(true);
+		} else {
+			out.setData(false);
 		}
 		return true;
+	}
+
+	@Mutator
+	public void setConstant(Boolean constant) {
+		Boolean oldConstant = this.constant;
+		this.constant = constant;
+		firePropertyChange("constant", oldConstant, constant);
+	}
+
+	@Accessor
+	public Boolean getConstant() {
+		return constant;
 	}
 }

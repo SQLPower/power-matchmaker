@@ -44,6 +44,10 @@ public class ConcatMungeStepTest extends AbstractMungeStepTest<ConcatMungeStep> 
 		session = new TestingMatchMakerSession();
 		step.setSession(session);
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallConcatTwoStrings() throws Exception {

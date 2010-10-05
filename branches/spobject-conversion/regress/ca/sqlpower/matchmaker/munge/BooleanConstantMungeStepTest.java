@@ -42,14 +42,14 @@ public class BooleanConstantMungeStepTest extends AbstractMungeStepTest<BooleanC
     }
     
     public void testNull() throws Exception {
-    	step.setParameter(BooleanConstantMungeStep.BOOLEAN_VALUE, BooleanConstantMungeStep.NULL);
+    	step.setConstant(null);
     	step.open(Logger.getLogger(getClass()));
         step.call();
         assertNull(step.getOut().getData());
     }
     
     public void testTrue() throws Exception {
-    	step.setParameter(BooleanConstantMungeStep.BOOLEAN_VALUE, BooleanConstantMungeStep.TRUE);
+    	step.setConstant(true);
     	step.open(Logger.getLogger(getClass()));
         step.call();
         MungeStepOutput<Boolean> out = step.getOut();
@@ -57,7 +57,7 @@ public class BooleanConstantMungeStepTest extends AbstractMungeStepTest<BooleanC
     }
 
     public void testFalse() throws Exception {
-    	step.setParameter(BooleanConstantMungeStep.BOOLEAN_VALUE, BooleanConstantMungeStep.FALSE);
+    	step.setConstant(false);
     	step.open(Logger.getLogger(getClass()));
         step.call();
         MungeStepOutput<Boolean> out = step.getOut();

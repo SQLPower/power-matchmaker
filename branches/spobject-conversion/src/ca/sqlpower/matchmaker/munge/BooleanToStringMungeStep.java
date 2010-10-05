@@ -19,7 +19,15 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 
@@ -30,15 +38,20 @@ import ca.sqlpower.object.annotation.Constructor;
  */
 public class BooleanToStringMungeStep extends AbstractMungeStep {
 	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	/**
 	 * The string to return if the boolean taken in is true.
 	 */
-	public static final String TRUE_STRING_PARAMETER_NAME = "true string";
+	private String trueString;
 	
 	/**
 	 * The string to return if the boolean taken in is false.
 	 */
-	public static final String FALSE_STRING_PARAMETER_NAME = "false string";
+	private String falseString;
 	
 	@Constructor
 	public BooleanToStringMungeStep() {
@@ -47,21 +60,46 @@ public class BooleanToStringMungeStep extends AbstractMungeStep {
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("booleanInput", Boolean.class);
 		super.addInput(desc);
-		setParameter(TRUE_STRING_PARAMETER_NAME, "True");
-		setParameter(FALSE_STRING_PARAMETER_NAME, "False");
+		setTrueString("True");
+		setFalseString("False");
 	}
 	
 
 	public Boolean doCall() throws Exception {
 		Boolean in = (Boolean) getMSOInputs().get(0).getData();
+		MungeStepOutput<String> out = getOut();
 		if (in == null) {
-			getOut().setData(null);
+			out.setData(null);
 		} else if (in.booleanValue()) {
-			getOut().setData(getParameter(TRUE_STRING_PARAMETER_NAME));
+			out.setData(getTrueString());
 		} else {
-			getOut().setData(getParameter(FALSE_STRING_PARAMETER_NAME));
+			out.setData(getFalseString());
 		}
 		return true;
+	}
+
+	@Mutator
+	public void setTrueString(String trueString) {
+		String oldTrueString = this.trueString;
+		this.trueString = trueString;
+		firePropertyChange("trueString", oldTrueString, trueString);
+	}
+
+	@Accessor
+	public String getTrueString() {
+		return trueString;
+	}
+
+	@Mutator
+	public void setFalseString(String falseString) {
+		String oldFalseString = this.falseString;
+		this.falseString = falseString;
+		firePropertyChange("falseString", oldFalseString, falseString);
+	}
+
+	@Accessor
+	public String getFalseString() {
+		return falseString;
 	}
 
 }

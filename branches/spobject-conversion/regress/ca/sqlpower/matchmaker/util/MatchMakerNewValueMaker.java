@@ -112,6 +112,14 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
 				"munge process parent"));
         	parent.addMungeProcess(mp, 0);
         	return mp;
+        } else if (valueType == DeDupeResultStep.class) {
+        	MungeProcess mp = new MungeProcess();
+        	DeDupeResultStep mrs = new DeDupeResultStep();
+        	mp.addChild(mrs);
+        	Project parent = ((Project) makeNewValue(Project.class, null, 
+				"munge process parent"));
+        	parent.addMungeProcess(mp, 0);
+        	return mrs;
         } else if (valueType == MatchMakerTranslateGroup.class) {
         	MatchMakerTranslateGroup group = new MatchMakerTranslateGroup();
         	TranslateGroupParent parent = ((TranslateGroupParent) makeNewValue(TranslateGroupParent.class, null, 
