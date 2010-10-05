@@ -54,31 +54,29 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 	@Override
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();
-		RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
+		final RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
 
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setSelected(temp.getBooleanParameter(temp.USE_REGEX_PARAMETER_NAME));
+		useRegex.setSelected(temp.isUseRegex());
 		useRegex.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
-				temp.setParameter(temp.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+				temp.setUseRegex(useRegex.isSelected());
 			}
 			
 		});
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(temp.getBooleanParameter(temp.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.setSelected(temp.isCaseSensitive());
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
-				temp.setParameter(temp.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+				temp.setCaseSensitive(caseSensitive.isSelected());
 			}
 			
 		});
 		
-		delimiters = new JTextField(temp.getParameter(temp.RETAIN_CHARACTERS_PARAMETER_NAME));
+		delimiters = new JTextField(temp.getRetainChars());
 		delimiters.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -90,8 +88,7 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-            	RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
-				temp.setParameter(temp.RETAIN_CHARACTERS_PARAMETER_NAME, delimiters.getText());
+            	temp.setRetainChars(delimiters.getText());
             }
         });
 		RegexValidator validator = new RegexValidator();
