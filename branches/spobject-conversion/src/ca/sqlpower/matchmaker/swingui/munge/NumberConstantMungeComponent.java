@@ -32,7 +32,6 @@ import javax.swing.event.DocumentListener;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.NumberConstantMungeStep;
-import ca.sqlpower.matchmaker.munge.StringConstantMungeStep;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -70,11 +69,11 @@ public class NumberConstantMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				boolean b = retNull.isSelected();
 				valueField.setEnabled(!b);
-				getStep().setParameter(StringConstantMungeStep.RETURN_NULL, String.valueOf(b));
+				((NumberConstantMungeStep)getStep()).setReturningNull(b);
 			}
         });
         
-        retNull.setSelected(Boolean.valueOf(getStep().getParameter(StringConstantMungeStep.RETURN_NULL)).booleanValue());
+        retNull.setSelected(Boolean.valueOf(((NumberConstantMungeStep)getStep()).isReturningNull()));
         valueField.setEnabled(!retNull.isSelected());
         
         FormLayout layout = new FormLayout("pref,4dlu,pref:grow");
