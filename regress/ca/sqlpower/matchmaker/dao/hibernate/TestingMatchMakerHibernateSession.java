@@ -47,6 +47,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
@@ -292,7 +293,9 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    				catalog,
 	    				schema,
 	    				tableName);
-	    		table.getColumns();
+	    		for(SQLColumn c : table.getColumns()) {
+	    			c.setType(getSQLType(c.getSourceDataTypeName()));
+	    		}
 	    		table.getImportedKeys();
 	    		return table;
 	    	} finally {
@@ -424,7 +427,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     }
     
     /** 
-     * Gets the basic SQL type from the PL.INI file.
+     * Gets the basic SQL type from the PL.INI file by copmaring jdbc codes.
      */
     public UserDefinedSQLType getSQLType(int sqlType)
     {
@@ -435,5 +438,19 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     		}
     	}
     	throw new IllegalArgumentException(sqlType + " is not a sql datatype.");
+    }
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file by comparing names.
+     */
+    public UserDefinedSQLType getSQLType(String name)
+    {
+    	List<UserDefinedSQLType> types = getSQLTypes();
+    	for(UserDefinedSQLType us : types) {
+    		if(us.getName().equalsIgnoreCase(name)) {
+    			return us;
+    		}
+    	}
+    	throw new IllegalArgumentException(name + " is not a sql datatype.");
     }
 }

@@ -496,7 +496,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     				schema,
     				tableName);
     		if (table == null) return null;
-    		table.getColumns().size();
+    		table.getColumns();
     		table.getImportedKeys();
     		return table;
     	} finally {
@@ -685,7 +685,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
     
     /** 
-     * Gets the basic SQL type from the PL.INI file.
+     * Gets the basic SQL type from the PL.INI file by comparing jdbc codes.
      */
     public UserDefinedSQLType getSQLType(int sqlType)
     {
