@@ -711,7 +711,7 @@ public class Project extends AbstractMatchMakerObject {
 		        	typeName = type.getPhysicalName(platformName);
 		        }
 				
-				if (forwardedName.equals(typeName)) {
+				if (forwardedName.equalsIgnoreCase(typeName)) {
 					type.setScaleType(platformName, compareToType.getScaleType(platformName));
 	            	type.setPrecisionType(platformName, compareToType.getPrecisionType(platformName));
 	            	
