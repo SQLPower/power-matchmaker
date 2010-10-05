@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,6 +13,8 @@ import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 
 /**
  * This is the pairing between a MungeStepOutput value and its InputDescriptor.
@@ -23,8 +27,10 @@ import ca.sqlpower.object.annotation.NonProperty;
  */
 public class MungeStepInput extends AbstractMatchMakerObject {
 	
+	@SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.emptyList();
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(InputDescriptor.class)));
 	
 	/**
 	 * used by hibernate
@@ -32,7 +38,10 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	@SuppressWarnings("unused")
 	private Long oid;
 	
-	private AbstractMungeStep parentStep;
+	/**
+	 * TODO This is the same as the parent variable and should be removed.
+	 */
+	private MungeStep parentStep;
 	
 	/**
 	 * The MungeStepOutput containing the value of this input.
@@ -42,7 +51,7 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	/**
 	 * The attributes of this input.
 	 */
-	private InputDescriptor descriptor;
+	private final InputDescriptor descriptor;
 	
 	/**
 	 * only used by hibernate
@@ -50,6 +59,7 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	@SuppressWarnings("unused")
 	private MungeStepInput() {
 		descriptor = new InputDescriptor(null, null);
+		descriptor.setParent(this);
 	}
 	
 	public void disconnect() {
@@ -60,10 +70,11 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	
 	@Constructor
 	public MungeStepInput(@ConstructorParameter(propertyName="current") MungeStepOutput current,
-			@ConstructorParameter(propertyName="descriptor") InputDescriptor descriptor, 
-			@ConstructorParameter(propertyName="parent") AbstractMungeStep step) {
+			@ConstructorParameter(parameterType=ParameterType.CHILD, propertyName="descriptor") InputDescriptor descriptor, 
+			@ConstructorParameter(propertyName="parent") MungeStep step) {
 		this.current = current;
 		this.descriptor = descriptor;
+		descriptor.setParent(this);
 		this.parentStep = step;
 		setParent(step);
 	}
@@ -72,7 +83,7 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	 * only used by hibernate
 	 */
 	@SuppressWarnings("unused")
-	private AbstractMungeStep getParentStep() {
+	private MungeStep getParentStep() {
 		return parentStep;
 	}
 
@@ -106,29 +117,19 @@ public class MungeStepInput extends AbstractMatchMakerObject {
     	descriptor.setName(name);
     }
     
-    @Accessor
+    @NonProperty
     public InputDescriptor getDescriptor() {
     	return descriptor;
     }
 
-    @Mutator
-    public void setDescriptor(InputDescriptor id) {
-    	this.descriptor = id;
-    }
-    
 	/**
      * Returns the data type expected by this input.
      */
-    @Accessor
+    @Transient @Accessor
     public Class<?> getType() {
 		return descriptor.getType();
 	}
     
-    @Mutator
-    public void setType(Class<?> type) {
-		descriptor.setType(type);
-	}
-
 	@Override
 	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		return null;
@@ -137,12 +138,12 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	@Override
 	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return Collections.emptyList();
+		return allowedChildTypes;
 	}
 
 	@Override
 	@NonProperty
 	public List<? extends SPObject> getChildren() {
-		return Collections.emptyList();
+		return Collections.singletonList(descriptor);
 	}
 }
