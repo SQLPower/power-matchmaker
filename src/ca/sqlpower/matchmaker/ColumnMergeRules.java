@@ -29,8 +29,10 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.sqlobject.SQLColumn;
 
 
@@ -154,11 +156,20 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	
 	private final ColumnMergeRulesImportedCachableColumn importedCachedColumn;
 	
-	@Constructor
 	public ColumnMergeRules() {
-		cachedColumn = new ColumnMergeRulesCachableColumn();
+		this(new ColumnMergeRulesCachableColumn(), new ColumnMergeRulesImportedCachableColumn());
+	}
+
+	@Constructor
+	public ColumnMergeRules(
+			@ConstructorParameter(parameterType=ParameterType.CHILD, 
+					propertyName="cachedColumn") ColumnMergeRulesCachableColumn cachedColumn, 
+			@ConstructorParameter(parameterType=ParameterType.CHILD, 
+					propertyName="importedCachedColumn") 
+					ColumnMergeRulesImportedCachableColumn importedCachedColumn) {
+		this.cachedColumn = cachedColumn;
+		this.importedCachedColumn = importedCachedColumn;
 		cachedColumn.setParent(this);
-		importedCachedColumn = new ColumnMergeRulesImportedCachableColumn();
 		importedCachedColumn.setParent(this);
 	}
 	
@@ -266,12 +277,14 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 
 	@Override
 	protected void addChildImpl(SPObject child, int index) {
-		throw new RuntimeException("Cannot add this child to the class.");
+		throw new RuntimeException("Cannot add child " + child + " of type " + 
+				child.getClass() + " to this object " + getName() + " of type " + getClass());
 	}
 
 	@Override
 	protected boolean removeChildImpl(SPObject child) {
-		throw new RuntimeException("Cannot remove this child to the class.");
+		throw new RuntimeException("Cannot remove child " + child + " of type " + 
+				child.getClass() + " to this object " + getName() + " of type " + getClass());
 	}
 
 	@NonProperty
@@ -380,5 +393,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		String oldValue = this.getUpdateStatement();
 		this.updateStatement = updateStatement;
 		firePropertyChange("updateStatement", oldValue, this.updateStatement);
+	}
+	
+	public ColumnMergeRulesCachableColumn getCachedColumn() {
+		return cachedColumn;
+	}
+	
+	public ColumnMergeRulesImportedCachableColumn getImportedCachedColumn() {
+		return importedCachedColumn;
 	}
 }
