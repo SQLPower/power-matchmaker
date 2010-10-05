@@ -33,9 +33,13 @@ public class BooleanToStringMungeStepTest extends AbstractMungeStepTest<BooleanT
 	
 	protected void setUp() throws Exception {
 		step = new BooleanToStringMungeStep();
-		MungeStepOutput mso = new MungeStepOutput("in",Boolean.class);
-		mungeStep.connectInput(0, mso);
+		MungeStepOutput mso = new MungeStepOutput<Boolean>("in",Boolean.class);
+		step.connectInput(0, mso);
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public void testDefault() throws Exception {
@@ -63,8 +67,8 @@ public class BooleanToStringMungeStepTest extends AbstractMungeStepTest<BooleanT
 	
 	public void testCustom() throws Exception {
 		step.open(logger);
-		step.setParameter(BooleanToStringMungeStep.FALSE_STRING_PARAMETER_NAME, "F");
-		step.setParameter(BooleanToStringMungeStep.TRUE_STRING_PARAMETER_NAME, "T");
+		step.setFalseString("F");
+		step.setTrueString("T");
 		MungeStepOutput<Boolean> mso = new MungeStepOutput<Boolean>("in",Boolean.class);
 		step.connectInput(0, mso);
 		String ret;

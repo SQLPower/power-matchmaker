@@ -22,11 +22,15 @@ package ca.sqlpower.matchmaker.munge;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -36,31 +40,36 @@ import ca.sqlpower.object.annotation.NonProperty;
  */
 public class CSVWriterMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	/**
 	 * The absolute path of the file to be stored
 	 */
-	public static final String FILE_PATH_PARAM = "fileName";
+	private String filePath;
 
 	/**
 	 * This tells the munge step to delete the contents of the file
-	 * if it already exists. This can be "true" or "false"
+	 * if it already exists.
 	 */
-	public static final String CLEAR_FILE = "clearFile";
+	private boolean clearFile;
 	
 	/**
 	 * The character used for quoted elements. 
 	 */
-	public static final String QUOTE_PARAM = "quote";
+	private char quoteChar;
 	
 	/**
 	 * The character used for escaping quoted characters or escape characters.
 	 */
-	public static final String ESCAPE_PARAM = "escape";
+	private char escapeChar;
 	
 	/**
 	 * The value of this parameter will be placed between each concatenated value.
 	 */
-	public static final String SEPARATOR_PARAM = "separator";
+	private char separator; 
 	
 	/**
 	 * The contents to be written to the file.
@@ -82,7 +91,7 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 		
 		setSeparator(CSVWriter.DEFAULT_SEPARATOR);
 		setFilePath("csvwriter.csv");
-		setDoClearFile(true);
+		setClearFile(true);
 		setQuoteChar(CSVWriter.DEFAULT_QUOTE_CHARACTER);
 		setEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER);
 	}
@@ -109,7 +118,7 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 	@Override
 	public void doCommit() throws Exception {
 		FileWriter writer = new FileWriter(new File(getFilePath()),
-				!getDoClearFile());
+				!getClearFile());
 		
 		csvWriter = new CSVWriter(writer, getSeparator(), getQuoteChar(),
 				getEscapeChar());
@@ -117,53 +126,63 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 		csvWriter.close();
 	}
 	
-	@NonProperty
-	public void setFilePath(String filePath) {
-		setParameter(FILE_PATH_PARAM, new File(filePath).getAbsolutePath());
-	}
-
-	@NonProperty
+	@Accessor
 	public String getFilePath() {
-		return getParameter(FILE_PATH_PARAM);
+		return filePath;
 	}
 
-	@NonProperty
-	public void setSeparator(char separator) {
-		setParameter(SEPARATOR_PARAM, separator + "");
+	@Mutator
+	public void setFilePath(String filePath) {
+		String oldPath = this.filePath;
+		this.filePath = filePath;
+		firePropertyChange("filePath", oldPath, filePath);
 	}
 
-	@NonProperty
-	public char getSeparator() {
-		return getParameter(SEPARATOR_PARAM).charAt(0);
+	@Accessor
+	public boolean getClearFile() {
+		return clearFile;
 	}
-	
-	@NonProperty
-	public void setQuoteChar(char quote) {
-		setParameter(QUOTE_PARAM, quote + "");
+
+	@Mutator
+	public void setClearFile(boolean clearFile) {
+		boolean oldVal = this.clearFile;
+		this.clearFile = clearFile;
+		firePropertyChange("clearFile", oldVal, clearFile);
 	}
-	
-	@NonProperty
+
+	@Accessor
 	public char getQuoteChar() {
-		return getParameter(QUOTE_PARAM).charAt(0);
+		return quoteChar;
 	}
-	
-	@NonProperty
-	public void setEscapeChar(char escape) {
-		setParameter(ESCAPE_PARAM, escape + "");
+
+	@Mutator
+	public void setQuoteChar(char quoteChar) {
+		char oldQuote = this.quoteChar;
+		this.quoteChar = quoteChar;
+		firePropertyChange("quoteChar", oldQuote, quoteChar);
 	}
-	
-	@NonProperty
+
+	@Accessor
 	public char getEscapeChar() {
-		return getParameter(ESCAPE_PARAM).charAt(0);
+		return escapeChar;
 	}
-	
-	@NonProperty
-	public void setDoClearFile(boolean doClear) {
-		setParameter(CLEAR_FILE, doClear);
+
+	@Mutator
+	public void setEscapeChar(char escapeChar) {
+		char oldEscape = this.escapeChar;
+		this.escapeChar = escapeChar;
+		firePropertyChange("escapeChar", oldEscape, escapeChar);
 	}
-	
-	@NonProperty
-	public boolean getDoClearFile() {
-		return getBooleanParameter(CLEAR_FILE);
+
+	@Accessor
+	public char getSeparator() {
+		return separator;
+	}
+
+	@Mutator
+	public void setSeparator(char separator) {
+		char oldSeparator = this.separator;
+		this.separator = separator;
+		firePropertyChange("separator", oldSeparator, separator);
 	}
 }

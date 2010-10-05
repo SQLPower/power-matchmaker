@@ -168,10 +168,10 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
         });
         
         clrFileCheckBox = new JCheckBox();
-        clrFileCheckBox.setSelected(step.getDoClearFile());
+        clrFileCheckBox.setSelected(step.getClearFile());
         clrFileCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				step.setDoClearFile(clrFileCheckBox.isSelected());
+				step.setClearFile(clrFileCheckBox.isSelected());
 			}
         });
         

@@ -41,14 +41,19 @@ public class BooleanConstantMungeComponent extends AbstractMungeComponent {
 
 	@Override
 	protected JPanel buildUI() {
+		final BooleanConstantMungeStep step = (BooleanConstantMungeStep) getStep();
 		JPanel content = new JPanel();
 		
-		String[] vals = new String[]{BooleanConstantMungeStep.TRUE, BooleanConstantMungeStep.FALSE, BooleanConstantMungeStep.NULL};
+		Boolean[] vals = new Boolean[]{Boolean.TRUE, Boolean.FALSE, null};
 		
 		final JComboBox box = new JComboBox(vals);
 		box.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {
-				getStep().setParameter(BooleanConstantMungeStep.BOOLEAN_VALUE, (String)box.getSelectedItem());
+				if (box.getSelectedItem() == null) {
+					step.setConstant(null);
+				} else {
+					step.setConstant((Boolean) box.getSelectedItem());
+				}
 			}
 		});
 		content.add(box);

@@ -47,6 +47,10 @@ public class CSVWriterMungeStepTest extends MatchMakerTestCase<CSVWriterMungeSte
 		step.setSession(new TestingMatchMakerSession());
 		step.setFilePath(fileName);
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public void testCallOnStringAndNull() throws Exception {
@@ -93,7 +97,7 @@ public class CSVWriterMungeStepTest extends MatchMakerTestCase<CSVWriterMungeSte
 	}
 	
 	public void testCallOnAppend() throws Exception {
-		step.setDoClearFile(false);
+		step.setClearFile(false);
 		
 		int i = 0;
 		testInput = new MungeStepOutput<String>("test", String.class);
