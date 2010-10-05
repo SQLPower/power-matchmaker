@@ -48,6 +48,10 @@ public class DateToStringMungeStepTest extends MatchMakerTestCase<DateToStringMu
 		c.set(2007, 1, 1, 13, 1, 1);
 		date = c.getTime();
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonDateOnly() throws Exception {
