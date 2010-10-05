@@ -43,33 +43,16 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 */
 	private MatchMakerTranslateGroup translateGroup;
 	
-    /**
-     * The name of the parameter that specifies the OID of the translate group used
-     * by this step.
-     */
-	public static final String TRANSLATE_GROUP_PARAMETER_NAME = "translateGroupOid";
 	/**
 	 * The UUID of the translate group for this munge step.
 	 */
 	private String translateGroupUuid;
 	
 	/**
-	 * This is the name of the parameter that decides whether this step will use
-	 * regular expression to replace words. The only values accepted by the parameter
-	 * are "true" and "false".
-	 */
-	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
-	/**
 	 * Whether to use regular expressions in this munge step.
 	 */
 	private boolean regex;
 	
-	/**
-	 * This is the name of the parameter that decides whether this step will be
-	 * case sensitive. The only values accepted by the parameter are "true" and
-	 *  "false".
-	 */
-	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	/**
 	 * Whether the effects of this munge step should be case sensitive.
 	 */
@@ -82,8 +65,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
 		super.addInput(desc);
-		setParameter(USE_REGEX_PARAMETER_NAME, false);
-		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
+		setRegex(false);
+		setCaseSensitive(true);
 	}
 	
 	@Override
@@ -113,8 +96,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 
 		String from;
 		String to;
-		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
-		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
+		boolean useRegex = isRegex();
+		boolean caseSensitive = isCaseSensitive();
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
@@ -170,14 +153,16 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public void refresh(Logger logger) throws Exception {
-		String uuid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
+		String uuid = getTranslateGroupUuid();
 		
 		translateGroup = getSession().getTranslations().getChildByUUID(uuid);
 	}
 
 	@Mutator
 	public void setRegex(boolean useRegex) {
+			boolean old = this.regex;
 			this.regex = useRegex;
+			firePropertyChange("regex", old, regex);
 	}
 
 	@Accessor
@@ -187,7 +172,9 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setTranslateGroupUuid(String translateGroupUuid) {
+			String old = this.translateGroupUuid;
 			this.translateGroupUuid = translateGroupUuid;
+			firePropertyChange("groupuuid", old, translateGroupUuid);
 	}
 
 	@Accessor
@@ -197,7 +184,9 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 
 	@Mutator
 	public void setCaseSensitive(boolean caseSensitive) {
+			boolean old = this.caseSensitive;
 			this.caseSensitive = caseSensitive;
+			firePropertyChange("caseSensitive", old, caseSensitive);
 	}
 	
 	@Accessor
