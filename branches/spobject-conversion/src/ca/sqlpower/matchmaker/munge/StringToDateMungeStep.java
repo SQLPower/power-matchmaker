@@ -26,8 +26,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -43,29 +44,29 @@ import ca.sqlpower.object.annotation.NonProperty;
 public class StringToDateMungeStep extends AbstractMungeStep {
 	
 	/**
-	 * Determines whether to ignore conversion errors.
+	 * Whether to ignore conversion errors.
 	 */
-	public static final String IGNORE_ERROR_PARAM = "ignoreError";
+	private boolean ignoreError;
 
 	/**
 	 * The pattern used to format the input Date.
 	 */
-	public static final String INPUT_FORMAT_PARAM = "inputFormat";
+	private String inputFormat;
 	
 	/**
 	 * The date portion of the pattern that helps to build the format.
 	 */
-	public static final String DATE_FORMAT_PARAM = "dateFormat";
+	private String dateFormat;
 	
 	/**
 	 * The time portion of the pattern that helps to build the format.
 	 */
-	public static final String TIME_FORMAT_PARAM = "timeFormat";
+	private String timeFormat;
 	
 	/**
 	 * The format to output as.
 	 */
-	public static final String OUTPUT_FORMAT_PARAM = "outputFormat";
+	private String outputFormat;
 	
 	/**
 	 * List of default date formats.
@@ -107,7 +108,7 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 	@Constructor
 	public StringToDateMungeStep() {
 		super("String to Date",false);
-		setParameter(IGNORE_ERROR_PARAM, false);
+		setIgnoreError(false);
 		setDateFormat(DATE_FORMATS.get(1));
 		setTimeFormat(TIME_FORMATS.get(1));
 		setOutputFormat(OUTPUT_FORMATS.get(0));
@@ -133,7 +134,7 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 					ret = new Time(ret.getTime());
 				}
 			} catch (ParseException e) {
-				if (getBooleanParameter(IGNORE_ERROR_PARAM)) {
+				if (isIgnoreError()) {
 					logger.error("Problem occured when trying to convert \"" + data + "\" to a date!");
 				} else {
 					throw new ParseException("Error trying to convert \"" + data + "\" to a date!",
@@ -145,72 +146,64 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		out.setData(ret);
 		return true;
 	}
-	
-	@NonProperty
-	public void setInputFormat(String format) {
-		setParameter(INPUT_FORMAT_PARAM, format);
+
+	@Accessor
+	public boolean isIgnoreError() {
+		return ignoreError;
 	}
-	
-	@NonProperty
+
+	@Mutator
+	public void setIgnoreError(boolean ignoreError) {
+		boolean old = this.ignoreError;
+		this.ignoreError = ignoreError;
+		firePropertyChange("ignoreError", old, ignoreError);
+	}
+
+	@Accessor
 	public String getInputFormat() {
-		return getParameter(INPUT_FORMAT_PARAM);
+		return inputFormat;
 	}
-	
-	/**
-	 * Sets the date portion of the pattern and updates the format pattern.
-	 */
-	@NonProperty
-	public void setDateFormat(String format) {
-		setParameter(DATE_FORMAT_PARAM, format);
-		updateInputFormat();
+
+	@Mutator
+	public void setInputFormat(String inputFormat) {
+		String old = this.inputFormat;
+		this.inputFormat = inputFormat;
+		firePropertyChange("inputFormat", old, inputFormat);
 	}
-	
-	/**
-	 * Returns the date portion of the format pattern. 
-	 */
-	@NonProperty
+
+	@Accessor
 	public String getDateFormat() {
-		return getParameter(DATE_FORMAT_PARAM);
+		return dateFormat;
 	}
-	
-	/**
-	 * Sets the time portion of the pattern and updates the format pattern.
-	 */
-	@NonProperty
-	public void setTimeFormat(String format) {
-		setParameter(TIME_FORMAT_PARAM, format);
-		updateInputFormat();
+
+	@Mutator
+	public void setDateFormat(String dateFormat) {
+		String old = this.dateFormat;
+		this.dateFormat = dateFormat;
+		firePropertyChange("dateFormat", old, dateFormat);
 	}
-	
-	/**
-	 * Returns the time portion of the format pattern.
-	 */
-	@NonProperty
+
+	@Accessor
 	public String getTimeFormat() {
-		return getParameter(TIME_FORMAT_PARAM);
+		return timeFormat;
 	}
-	
-	/**
-	 * Updates the input format parameter to the concatenation of the date format
-	 * and the time format.
-	 */
-	private void updateInputFormat() {
-		String format = getDateFormat() + " " + getTimeFormat();
-		setParameter(INPUT_FORMAT_PARAM, format.trim());
+
+	@Mutator
+	public void setTimeFormat(String timeFormat) {
+		String old = this.timeFormat;
+		this.timeFormat = timeFormat;
+		firePropertyChange("timeFormat", old, timeFormat);
 	}
-	
-	@NonProperty
-	public void setOutputFormat(String format) {
-		if (OUTPUT_FORMATS.contains(format)) {
-			setParameter(OUTPUT_FORMAT_PARAM, format);
-		}
-	}
-	
-	@NonProperty
+
+	@Accessor
 	public String getOutputFormat() {
-		return getParameter(OUTPUT_FORMAT_PARAM);
+		return outputFormat;
+	}
+
+	@Mutator
+	public void setOutputFormat(String outputFormat) {
+		String old = this.outputFormat;
+		this.outputFormat = outputFormat;
+		firePropertyChange("outputFormat", old, outputFormat);
 	}
 }
-
-
-

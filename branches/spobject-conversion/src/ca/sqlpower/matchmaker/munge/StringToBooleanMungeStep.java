@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.regex.Pattern;
 
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 
@@ -29,11 +31,11 @@ import ca.sqlpower.object.annotation.Constructor;
  * This munge step will take in a string and return a boolean. The options 
  * of true list and false list are a comma separated list of Strings, or 
  * a regular expression that if passed in will set the output to true or 
- * false respectivly. Use regular expression can be set to "true" or "false"
+ * false respectively. Use regular expression can be set to "true" or "false"
  * and indicates if the true and false lists are regular expressions. The 
  * neither option gives a default value to those that were not matched, options
- * for the default are "true", "false", "null", "halt" where halt stops the 
- * operation.
+ * for the default are "true", "false", "null".
+ * TODO Implement "halt" as an allowed value.
  * 
  * In either of the comma separated lists a \, can be use to indicate 
  * that this comma is part of the string you are looking for.
@@ -45,34 +47,30 @@ import ca.sqlpower.object.annotation.Constructor;
 public class StringToBooleanMungeStep extends AbstractMungeStep {
 
 	/**
-	 * This is the name of the parameter that decides whether this step will be
-	 * case sensitive. The only values accepted by the parameter are "true" and
-	 *  "false".
+	 * Whether this step is case sensitive.
 	 */
-	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	private boolean caseSensitive;
 
 	/**
-	 * This is the name of the parameter that decides whether this step will use
-	 * regular expression to replace words. The only values accepted by the parameter
-	 * are "true" and "false".
+	 * Whether this step uses regular expressions.
 	 */
-	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
+	private boolean useRegex;
 
 	/**
-	 * This is the name of the parameter containing the list of values to keep as true
+	 * The values to convert to true
 	 */
-	public static final String TRUE_LIST_PARAMETER_NAME = "true list";
+	private String trueList;
 
 	/**
-	 * This is the name of the parameter containing the list of values to keep as false
+	 * The values to convert to false
 	 */
-	public static final String FALSE_LIST_PARAMETER_NAME = "false list";
+	private String falseList;
 
 	/**
 	 * The value to set to a string that does not get matched. Options for this are 
 	 * "true", "false", "null" 
 	 */
-	public static final String NEITHER_PARAMETER_NAME = "neighter true or false";
+	private Boolean neither;
 
 	/**
 	 * Case sensitive is set to true and use regex is set to false for this
@@ -85,22 +83,73 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 		addChild(out);
 
 		InputDescriptor desc = new InputDescriptor("retainCharacters", String.class);
-		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
-		setParameter(USE_REGEX_PARAMETER_NAME, false);
-		setParameter(TRUE_LIST_PARAMETER_NAME, "");
-		setParameter(FALSE_LIST_PARAMETER_NAME, "");
-		setParameter(NEITHER_PARAMETER_NAME, "null");
+		setCaseSensitive(true);
+		setUseRegex(false);
+		setTrueList("");
+		setFalseList("");
+		setNeither(null);
+		
 		super.addInput(desc);
+	}
+
+	@Accessor
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+
+	@Mutator
+	public void setCaseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
+	}
+
+	@Accessor
+	public boolean isUseRegex() {
+		return useRegex;
+	}
+
+	@Mutator
+	public void setUseRegex(boolean useRegex) {
+		this.useRegex = useRegex;
+	}
+
+	@Accessor
+	public String getTrueList() {
+		return trueList;
+	}
+
+	@Mutator
+	public void setTrueList(String trueList) {
+		this.trueList = trueList;
+	}
+
+	@Accessor
+	public String getFalseList() {
+		return falseList;
+	}
+
+	@Mutator
+	public void setFalseList(String falseList) {
+		this.falseList = falseList;
+	}
+
+	@Accessor
+	public Boolean getNeither() {
+		return neither;
+	}
+
+	@Mutator
+	public void setNeither(Boolean neither) {
+		this.neither = neither;
 	}
 
 	public Boolean doCall() throws Exception {
 		MungeStepOutput<Boolean> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
-		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
-		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
-		String trueList = getParameter(TRUE_LIST_PARAMETER_NAME);
-		String falseList = getParameter(FALSE_LIST_PARAMETER_NAME);
-		String neither = getParameter(NEITHER_PARAMETER_NAME);
+		boolean caseSensitive = isCaseSensitive();
+		boolean useRegex = isUseRegex();
+		String trueList = getTrueList();
+		String falseList = getFalseList();
+		Boolean neither = getNeither();
 
 		if (in.getData() != null) {
 			String data = in.getData();
@@ -112,16 +161,7 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 			} else if (f.matcher(data).matches()) {
 				out.setData(false);
 			} else {
-				if (neither.equalsIgnoreCase("true")) {
-					out.setData(true);
-				} else if (neither.equalsIgnoreCase("false")) {
-					out.setData(false);
-				} else if (neither.equalsIgnoreCase("null")) {
-					out.setData(null);
-				} else {
-					throw new IllegalArgumentException("Error converting \"" + data + 
-							"\" to boolean, it did not match any of the given options");
-				}
+				out.setData(neither);
 			}
 		} else {
 			out.setData(null);

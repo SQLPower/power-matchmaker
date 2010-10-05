@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -30,12 +32,15 @@ import ca.sqlpower.object.annotation.Constructor;
  */
 public class StringToNumberMungeStep extends AbstractMungeStep {
 	
-	public static final String CONTINUE_ON_MALFORMED_NUMBER = "continue on malformed number";
+	/**
+	 * Whether the munge step should continue in the face of evil, malformed numbers.
+	 */
+	private boolean allowMalformed;
 
 	@Constructor
 	public StringToNumberMungeStep() {
 		super("String to Number",false);
-		setParameter(CONTINUE_ON_MALFORMED_NUMBER, "False");
+		allowMalformed = false;
 		MungeStepOutput<BigDecimal> out = new MungeStepOutput<BigDecimal>("StringToNumberOutput", BigDecimal.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("String", String.class);
@@ -51,7 +56,7 @@ public class StringToNumberMungeStep extends AbstractMungeStep {
 			try {
 			ret = new BigDecimal(data);
 			} catch (NumberFormatException e) {
-				if (getBooleanParameter(CONTINUE_ON_MALFORMED_NUMBER)) {
+				if (isAllowMalformed()) {
 					logger.error("Problem occured when trying to convert \"" + data + "\" to a number!");
 					ret = null;
 				} else {
@@ -62,6 +67,18 @@ public class StringToNumberMungeStep extends AbstractMungeStep {
 		
 		out.setData(ret);
 		return true;
+	}
+
+	@Mutator
+	public void setAllowMalformed(boolean allowMalformed) {
+			boolean old = this.allowMalformed;
+			this.allowMalformed = allowMalformed;
+			firePropertyChange("allowMalformed", old, allowMalformed);
+	}
+
+	@Accessor
+	public boolean isAllowMalformed() {
+		return allowMalformed;
 	}
 }
 
