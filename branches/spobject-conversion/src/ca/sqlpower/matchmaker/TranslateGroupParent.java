@@ -96,7 +96,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
         if (mmo instanceof TranslateWordMungeStep) {
             TranslateWordMungeStep step = (TranslateWordMungeStep) mmo;
-            String oidStr = step.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
+            String oidStr = step.getTranslateGroupUuid();
             if (oidStr != null) {
                 Long oid = new Long(oidStr);
                 if (tg.getOid().equals(oid)) {

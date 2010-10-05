@@ -64,7 +64,7 @@ public class TranslateGroupParentTest extends MatchMakerTestCase {
         tg.setName("tg");
         TranslateWordMungeStep twMungeStep;
         twMungeStep = new TranslateWordMungeStep();
-        twMungeStep.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME, String.valueOf(tg.getOid()));
+        twMungeStep.setTranslateGroupUuid(String.valueOf(tg.getOid()));
         cg.addChild(twMungeStep);
         assertTrue("Couldn't find the translate group in the business model",tgp.isInUseInBusinessModel(tg));
     }
