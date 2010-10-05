@@ -42,6 +42,10 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 		step = new RetainCharactersMungeStep();
 		step.setSession(new TestingMatchMakerSession());
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	/**
@@ -51,7 +55,7 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
-		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "123");
+		step.setRetainChars("123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -65,7 +69,7 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
-		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "abc");
+		step.setRetainChars("abc");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -79,8 +83,8 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	public void testCallonCaseInsensitive() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
-		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "abc");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
+		step.setRetainChars("abc");
+		step.setCaseSensitive(false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -98,8 +102,8 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("xxy123xxy!@#xyABC");
 		step.connectInput(0, testInput);
-		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "[a-zA-z]");
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
+		step.setRetainChars("[a-zA-z]");
+		step.setUseRegex(true);
 		
 		step.open(logger);
 		step.call();
@@ -117,7 +121,7 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a\\-+*?()[]{}|$^<=z");
 		step.connectInput(0, testInput);
-		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
+		step.setRetainChars("\\-+*?()[]{}|$^<=");
 		
 		step.open(logger);
 		step.call();
@@ -131,7 +135,7 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "123");
+		step.setRetainChars("123");
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
