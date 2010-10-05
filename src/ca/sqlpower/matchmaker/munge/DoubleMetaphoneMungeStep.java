@@ -19,9 +19,17 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.codec.language.DoubleMetaphone;
 
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 /**
  * This munge step will output the double metaphone code of the given input. This
@@ -29,13 +37,16 @@ import ca.sqlpower.object.annotation.Constructor;
  */
 public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will use
-	 * the alternate encoding. The only values accepted by the parameter
-	 * are "true" and "false". It is defaulted as false.
+	 * the alternate encoding. It is defaulted to false;
 	 */
-	public static final String USE_ALTERNATE_PARAMETER_NAME = "useAlternate";
+	private boolean useAlternate = false;
 	
 	@Constructor
 	public DoubleMetaphoneMungeStep() {
@@ -43,7 +54,6 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 		MungeStepOutput<String> out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("doubleMetaphone", String.class);
-		setParameter(USE_ALTERNATE_PARAMETER_NAME, false);
 		super.addInput(desc);
 	}
 	
@@ -68,14 +78,25 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	
 	public Boolean doCall() throws Exception {		
 		MungeStepOutput<String> out = getOut();
-		boolean useAlternate = getBooleanParameter(USE_ALTERNATE_PARAMETER_NAME);
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (data != null) {
-			out.setData(new DoubleMetaphone().doubleMetaphone(data, useAlternate));
+			out.setData(new DoubleMetaphone().doubleMetaphone(data, isUseAlternate()));
 		} else {
 			out.setData(null);
 		}
 		return true;
+	}
+
+	@Mutator
+	public void setUseAlternate(boolean useAlternate) {
+		boolean oldAltVal = this.useAlternate;
+		this.useAlternate = useAlternate;
+		firePropertyChange("useAlternate", oldAltVal, useAlternate);
+	}
+
+	@Accessor
+	public boolean isUseAlternate() {
+		return useAlternate;
 	}
 }
