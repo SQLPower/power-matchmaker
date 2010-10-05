@@ -52,11 +52,12 @@ public class NumberConstantMungeComponent extends AbstractMungeComponent {
 
     @Override
     protected JPanel buildUI() {
-    	valueField = new JTextField(getStepParameter(NumberConstantMungeStep.VALUE_PARAMETER_NAME, ""));
+    	final NumberConstantMungeStep step = (NumberConstantMungeStep) getStep();
+    	valueField = new JTextField(step.getValue() == null?"":step.getValue().toString());
     	
         valueField.getDocument().addDocumentListener(new DocumentListener() {     
             void change() {
-                getStep().setParameter(NumberConstantMungeStep.VALUE_PARAMETER_NAME, valueField.getText());
+            	step.setValue(new BigDecimal(valueField.getText()));
             }
             
             public void changedUpdate(DocumentEvent e) { change(); }
@@ -69,11 +70,11 @@ public class NumberConstantMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				boolean b = retNull.isSelected();
 				valueField.setEnabled(!b);
-				((NumberConstantMungeStep)getStep()).setReturningNull(b);
+				step.setReturnNull(b);
 			}
         });
         
-        retNull.setSelected(Boolean.valueOf(((NumberConstantMungeStep)getStep()).isReturningNull()));
+        retNull.setSelected(step.isReturnNull());
         valueField.setEnabled(!retNull.isSelected());
         
         FormLayout layout = new FormLayout("pref,4dlu,pref:grow");
