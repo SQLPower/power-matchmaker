@@ -47,9 +47,13 @@ public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleA
         logger.addAppender(new ConsoleAppender());
         logger.setLevel(Level.ALL);
         step = new GoogleAddressLookup();
-        step.setParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY, "ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
+        step.setGoogleMapsApiKey("ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
         testInput = new MungeStepOutput<String>("Testing address values", String.class);
         step.connectInput(0, testInput);
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
 
     public void testSimpleLookupCanada() throws Exception {

@@ -27,6 +27,10 @@ import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -34,14 +38,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Mutator;
 
 public class GoogleAddressLookup extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
     
-    public static final String GOOGLE_MAPS_API_KEY = "GoogleMapsApiKey";
-    public static final String GOOGLE_GEOCODER_URL = "GoogleGeocoderUrl";
+	private String googleMapsApiKey;
+	private String googleGeocoderURL;
     
     /**
      * Minimum number of seconds between lookup requests. Google throttles access
@@ -49,11 +59,11 @@ public class GoogleAddressLookup extends AbstractMungeStep {
      * be sure to set this value high enough to avoid being flagged as an abuser.
      * Presently (August 2008), 2.0 is a reasonable lower limit.
      */
-    public static final String LOOKUP_RATE_LIMIT = "LookupRateLimit";
+	private double rateLimit;
 
     /**
      * The last time a lookup request was issued. This step will block so as to
-     * respect the {@link #LOOKUP_RATE_LIMIT} if it is called too frequently.
+     * respect the {@link #rateLimit} if it is called too frequently.
      */
     private long lastLookupTime;
     
@@ -103,14 +113,14 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         addChild(longitude = new MungeStepOutput<BigDecimal>("Longitude", BigDecimal.class));
         addChild(accuracy = new MungeStepOutput<BigDecimal>("Accuracy Code", BigDecimal.class));
         
-        setParameter(GOOGLE_MAPS_API_KEY, "");
-        setParameter(GOOGLE_GEOCODER_URL, "http://maps.google.com/maps/geo");
-        setParameter(LOOKUP_RATE_LIMIT, "2.0");
+        googleMapsApiKey = "";
+        googleGeocoderURL = "http://maps.google.com/maps/geo";
+        rateLimit = 2.0;
     }
      
     @Override
     public void doOpen(EngineMode mode, Logger logger) throws Exception {
-        String key = getParameter(GOOGLE_MAPS_API_KEY);
+        String key = googleMapsApiKey;
         if (key == null || key.length() == 0) {
         	throw new IllegalStateException("Google Address Lookup transformer was " +
         			"called without a Google Maps API Key. " +
@@ -125,8 +135,8 @@ public class GoogleAddressLookup extends AbstractMungeStep {
             output.setData(null);
         }
         
-        String key = getParameter(GOOGLE_MAPS_API_KEY);
-        String url = getParameter(GOOGLE_GEOCODER_URL);
+        String key = googleMapsApiKey;
+        String url = googleGeocoderURL;
         String address = (String) getMSOInputs().get(0).getData();
         url += "?output=json&key="+key+"&q="+URLEncoder.encode(address, "utf-8");
         
@@ -233,14 +243,40 @@ public class GoogleAddressLookup extends AbstractMungeStep {
 
         return sb.toString();
     }
-    
-    @NonProperty
-    public double getRateLimit() {
-        String rateLimitStr = getParameter(LOOKUP_RATE_LIMIT);
-        if (rateLimitStr != null) {
-            return Double.parseDouble(rateLimitStr);
-        } else {
-            return 2.0;
-        }
-    }
+
+    @Accessor
+	public String getGoogleMapsApiKey() {
+		return googleMapsApiKey;
+	}
+
+    @Mutator
+	public void setGoogleMapsApiKey(String googleMapsApiKey) {
+    	String oldKey = this.googleMapsApiKey;
+		this.googleMapsApiKey = googleMapsApiKey;
+		firePropertyChange("googleMapsApiKey", oldKey, googleMapsApiKey);
+	}
+
+    @Accessor
+	public String getGoogleGeocoderURL() {
+		return googleGeocoderURL;
+	}
+
+    @Mutator
+	public void setGoogleGeocoderURL(String googleGeocoderURL) {
+    	String oldURL = this.googleGeocoderURL;
+		this.googleGeocoderURL = googleGeocoderURL;
+		firePropertyChange("googleGeocoderURL", oldURL, googleGeocoderURL);
+	}
+	
+	@Accessor
+	public double getRateLimit() {
+		return rateLimit;
+	}
+
+	@Mutator
+	public void setRateLimit(double rateLimit) {
+		double oldLimit = this.rateLimit;
+		this.rateLimit = rateLimit;
+		firePropertyChange("rateLimit", oldLimit, rateLimit);
+	}
 }
