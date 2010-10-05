@@ -47,6 +47,10 @@ public class EmptyStringToNullMungeStepTest extends MatchMakerTestCase<EmptyStri
     protected void setUp() throws Exception {
         step = new EmptyStringToNullMungeStep();
         super.setUp();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
 
     public void testCallOnNonEmptyString() throws Exception {
