@@ -40,7 +40,7 @@ import ca.sqlpower.object.annotation.Transient;
 
 /**
  * The Date Constant Step provides a user-specified Date value on its output
- * every time it is called, if the RETURN_NULL parameter is set it will always 
+ * every time it is called, if the {@link #returnNull} parameter is set it will always 
  * return null. If use current is set it will use the time that the engine calls it.
  */
 public class DateConstantMungeStep extends AbstractMungeStep {
