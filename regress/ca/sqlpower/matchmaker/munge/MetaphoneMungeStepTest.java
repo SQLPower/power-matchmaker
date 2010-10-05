@@ -41,6 +41,10 @@ public class MetaphoneMungeStepTest extends MatchMakerTestCase<MetaphoneMungeSte
 	protected void setUp() throws Exception {
 		step = new MetaphoneMungeStep();
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonNormalString() throws Exception {
