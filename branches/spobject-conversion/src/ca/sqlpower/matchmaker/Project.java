@@ -258,9 +258,13 @@ public class Project extends AbstractMatchMakerObject {
 			addTableMergeRules((TableMergeRules)spo, index);
 		} else if (spo instanceof TableIndex) {
 			TableIndex oldIndex = sourceTableIndex;
-			fireChildRemoved(TableIndex.class, oldIndex, 0);
+			if (oldIndex != null) {
+				fireChildRemoved(TableIndex.class, oldIndex, 0);
+			}
 			sourceTableIndex = (TableIndex) spo;
-			fireChildAdded(TableIndex.class, sourceTableIndex, 0);
+			if (sourceTableIndex != null) {
+				fireChildAdded(TableIndex.class, sourceTableIndex, 0);
+			}
 		} else {
 			throw new RuntimeException("Cannot add " + spo.getName() + " as a child to " + getName() + " as it is of type " + spo.getClass() + " which this class " + getClass() + " does not support.");
 		}

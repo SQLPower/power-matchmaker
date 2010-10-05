@@ -109,6 +109,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("parentProject");
         propertiesToIgnoreForDuplication.add("session");
         propertiesToIgnoreForDuplication.add("allowedChildTypes");
+        propertiesToIgnoreForDuplication.add("cachableTable");
         propertiesToIgnoreForDuplication.add("class");
         propertiesToIgnoreForDuplication.add("createDate");
         propertiesToIgnoreForDuplication.add("createAppUser");

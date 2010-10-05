@@ -31,8 +31,11 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -146,11 +149,13 @@ public class TableMergeRules
 	/**
 	 * The table on which we're merging
 	 */
-	private CachableTable cachableTable = new CachableTable("table");
-	
-	
+	private final CachableTable cachableTable;
+
 	/**
-	 * The index for table 
+	 * The index for table.
+	 * <p>
+	 * XXX This should be final but it takes a final sibling as an argument
+	 * which is not currently allowed in the annotation implementation.
 	 */
 	private TableIndex tableIndex;
 	
@@ -161,8 +166,17 @@ public class TableMergeRules
 	
 	public TableMergeRules() {
 		//set defaults
-		tableIndex = new TableIndex(cachableTable,"tableIndex");
+		this(new CachableTable("table"));
+	}
+	
+	@Constructor
+	public TableMergeRules(
+			@ConstructorParameter(parameterType=ParameterType.CHILD, 
+					propertyName="cachableTable") CachableTable cachableTable) {
+		this.cachableTable = cachableTable;
+		//set defaults
 		cachableTable.setParent(this);
+		tableIndex = new TableIndex(cachableTable,"tableIndex");
 		tableIndex.setParent(this);
 		setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
 	}
@@ -340,14 +354,16 @@ public class TableMergeRules
 		}
     }
 
-    @NonProperty
+    @Accessor
 	public Long getOid() {
 		return oid;
 	}
 
-    @NonProperty
+    @Mutator
 	public void setOid(Long oid) {
+    	Long oldOid = this.oid;
 		this.oid = oid;
+		firePropertyChange("oid", oldOid, oid);
 	}
 
 	@Accessor
@@ -369,7 +385,7 @@ public class TableMergeRules
 		firePropertyChange("parentMergeRule", oldValue, this.parentMergeRule);
 	}
 	
-	@Mutator
+	@NonProperty
 	public void setParentMergeRuleAndImportedKeys(TableMergeRules parentTable) {
 		if (this.parentMergeRule == parentTable) return;
 		try {
@@ -423,6 +439,8 @@ public class TableMergeRules
 	public List<SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(columnMergeRules);
+		children.add(cachableTable);
+		children.add(tableIndex);
 		return Collections.unmodifiableList(children);
 	}
 	
@@ -431,8 +449,17 @@ public class TableMergeRules
 	}
 	
 	protected void addChildImpl(SPObject cmr, int index) {
-		if(cmr instanceof ColumnMergeRules) {
+		if (cmr instanceof ColumnMergeRules) {
 			addColumnMergeRules((ColumnMergeRules)cmr, index);
+		} else if (cmr instanceof TableIndex) {
+			TableIndex oldIndex = tableIndex;
+			if (oldIndex != null) {
+				fireChildRemoved(TableIndex.class, oldIndex, 0);
+			}
+			tableIndex = (TableIndex) cmr;
+			if (tableIndex != null) {
+				fireChildAdded(TableIndex.class, tableIndex, 0);
+			}
 		} else {
 			throw new RuntimeException("Cannot add this child to TableMergeRules");
 		}
@@ -569,5 +596,10 @@ public class TableMergeRules
 		//TODO: make a method that fixes the column 
 		//merge rules actions when the index changes...
 		
+	}
+	
+	@NonProperty
+	public CachableTable getCachableTable() {
+		return cachableTable;
 	}
 }

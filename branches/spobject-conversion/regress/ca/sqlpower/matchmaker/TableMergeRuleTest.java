@@ -56,6 +56,10 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		super.setUp();
 		m1 = new TableMergeRules();
 		m1.setSession(testingMatchMakerSession);
+		Project project = (Project) createNewValueMaker(
+				getRootObject(), null).makeNewValue(
+						Project.class, null, "parent project");
+		project.addTableMergeRules(m1, 0);
 	}
 	
 	@Override

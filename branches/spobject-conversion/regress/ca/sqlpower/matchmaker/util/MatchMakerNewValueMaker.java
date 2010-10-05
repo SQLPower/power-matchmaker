@@ -88,7 +88,10 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	project.addChild(index);
         	return index;
     	} else if (valueType == TableMergeRules.class) {
-        	return new TableMergeRules();
+        	TableMergeRules mergeRule = new TableMergeRules();
+        	Project project = (Project) makeNewValue(Project.class, null, "old parent");
+        	project.addChild(mergeRule);
+			return mergeRule;
         } else if (valueType == ColumnMergeRules.class) {
         	return new ColumnMergeRules();
         } else if (valueType == SQLInputStep.class) {
