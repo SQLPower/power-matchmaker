@@ -1080,7 +1080,7 @@ public class MergeProcessor extends AbstractProcessor {
 		boolean first = true;
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ");
-		for (ColumnMergeRules cmr : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+		for (ColumnMergeRules cmr : tableMergeRule.getColumnMergeRules()) {
 			if (!first) sql.append(", ");
 			first = false;
 			sql.append(cmr.getColumnName());
@@ -1312,7 +1312,7 @@ public class MergeProcessor extends AbstractProcessor {
 		public ResultRow(TableMergeRules tmr) throws SQLException {
 			tableMergeRule = tmr;
 			values = new ArrayList<Object>();
-			for (int i = 0; i < tableMergeRule.getChildren().size(); i++) {
+			for (int i = 0; i < tableMergeRule.getColumnMergeRules().size(); i++) {
 				values.add(null);
 			}
 		}
@@ -1417,7 +1417,7 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 		
 		public String getColumnName(int index) {
-			return tableMergeRule.getChildren(ColumnMergeRules.class).get(index).getColumnName();
+			return tableMergeRule.getColumnMergeRules().get(index).getColumnName();
 		}
 		
 		/**

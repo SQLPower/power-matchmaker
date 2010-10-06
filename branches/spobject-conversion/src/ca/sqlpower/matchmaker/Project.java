@@ -34,8 +34,8 @@ import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.diff.DiffChunk;
 import ca.sqlpower.diff.DiffType;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
-import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
+import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.ObjectDependentException;
@@ -43,20 +43,19 @@ import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.object.annotation.Transient;
-import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLTypePhysicalPropertiesProvider.PropertyType;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -698,7 +697,7 @@ public class Project extends AbstractMatchMakerObject {
 				UserDefinedSQLType type = column.getUserDefinedSQLType();
 				
 				if(compareToType.equals(type)) {
-					return returnTable;
+					continue;
 				}
 				
 				String forwardedName;
@@ -720,17 +719,12 @@ public class Project extends AbstractMatchMakerObject {
 					type.setScaleType(platformName, compareToType.getScaleType(platformName));
 	            	type.setPrecisionType(platformName, compareToType.getPrecisionType(platformName));
 	            	
-	            	if (compareToType.getScale(platformName) == type.getScale(platformName) || compareToType.getScaleType(platformName) == PropertyType.NOT_APPLICABLE) {
-	            		type.setScale(platformName, null);
-	            	}
-
-	            	if (compareToType.getPrecision(platformName) == type.getPrecision(platformName) || compareToType.getPrecisionType(platformName) == PropertyType.NOT_APPLICABLE) {
-	            		type.setPrecision(platformName, null);
-	            	}
+	            	type.setScale(platformName, null);
+	            	type.setPrecision(platformName, null);
 
 	            	if (compareToType.getNullability() != null
-	            			&& compareToType.getNullability().equals(type.getNullability())) {
-	            		type.setMyNullability(null);
+	            			&& !compareToType.getNullability().equals(type.getMyNullability())) {
+	            		type.setMyNullability(compareToType.getNullability());
 	            	}
 
 	            	if (compareToType.getDefaultValue(platformName) != null

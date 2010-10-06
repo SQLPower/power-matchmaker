@@ -80,6 +80,7 @@ public class MatchEngineImplTest extends TestCase {
 		stmt.close();
 		
 		resultTable = db.getTableByName(null, "pl", "match_results");
+		resultTable.getColumns();
 		session = new TestingMatchMakerSession() {
 			@Override
 			public Connection getConnection() {
