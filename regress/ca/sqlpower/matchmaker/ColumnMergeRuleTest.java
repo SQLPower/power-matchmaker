@@ -39,6 +39,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 		propertiesToIgnoreForEventGeneration.add("importedKeyColumnName");
 		propertiesToIgnoreForDuplication.add("columnName");
 		propertiesToIgnoreForDuplication.add("importedKeyColumnName");
+		propertiesToIgnoreForDuplication.add("cachedColumn");
 		
 		propertiesShareInstanceForDuplication.add("column");
 		
