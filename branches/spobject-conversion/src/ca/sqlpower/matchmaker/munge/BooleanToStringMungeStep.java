@@ -101,5 +101,12 @@ public class BooleanToStringMungeStep extends AbstractMungeStep {
 	public String getFalseString() {
 		return falseString;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		BooleanToStringMungeStep step = (BooleanToStringMungeStep) copy;
+		step.setFalseString(getFalseString());
+		step.setTrueString(getTrueString());
+	}
 
 }

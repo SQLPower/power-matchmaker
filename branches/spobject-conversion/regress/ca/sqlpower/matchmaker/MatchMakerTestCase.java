@@ -103,6 +103,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 
 		List<PropertyDescriptor> settableProperties;
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
+		propertiesToIgnoreForDuplication.add("defaultInputClass");
+		propertiesToIgnoreForDuplication.add("parameters");
+		propertiesToIgnoreForDuplication.add("MSOInputs");
         propertiesToIgnoreForDuplication.add("UUID");
         propertiesToIgnoreForDuplication.add("oid");
         propertiesToIgnoreForDuplication.add("parent");

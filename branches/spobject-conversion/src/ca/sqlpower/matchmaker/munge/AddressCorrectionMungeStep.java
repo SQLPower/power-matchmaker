@@ -546,4 +546,9 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public String getAddressCorrectionDataPath() {
 		return addressCorrectionDataPath;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		((AddressCorrectionMungeStep) copy).setAddressCorrectionDataPath(getAddressCorrectionDataPath());
+	}
 }

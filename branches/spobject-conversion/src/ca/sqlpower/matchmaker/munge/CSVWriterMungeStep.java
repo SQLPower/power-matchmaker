@@ -185,4 +185,14 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 		this.separator = separator;
 		firePropertyChange("separator", oldSeparator, separator);
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		CSVWriterMungeStep step = (CSVWriterMungeStep) copy;
+		step.setClearFile(getClearFile());
+		step.setEscapeChar(getEscapeChar());
+		step.setFilePath(getFilePath());
+		step.setQuoteChar(getQuoteChar());
+		step.setSeparator(getSeparator());
+	}
 }

@@ -172,4 +172,13 @@ public class SortWordsMungeStep extends AbstractMungeStep {
         return true;
     }
 
+    @Override
+    protected void copyPropertiesForDuplicate(MungeStep copy) {
+    	SortWordsMungeStep step = (SortWordsMungeStep) copy;
+    	step.setCaseSensitive(isCaseSensitive());
+    	step.setDelimiter(getDelimiter());
+    	step.setRegex(isRegex());
+    	step.setResultDelim(getResultDelim());
+    }
+    
 }

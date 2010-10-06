@@ -90,6 +90,11 @@ public class StringToNumberMungeStep extends AbstractMungeStep {
 	public boolean isAllowMalformed() {
 		return allowMalformed;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		((StringToNumberMungeStep) copy).setAllowMalformed(isAllowMalformed());
+	}
 }
 
 

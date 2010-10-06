@@ -91,4 +91,11 @@ public class StringConstantMungeStep extends AbstractMungeStep {
     	getOut().setData((returnNull? null : getOutValue()));
         return Boolean.TRUE;
     }
+    
+    @Override
+    protected void copyPropertiesForDuplicate(MungeStep copy) {
+    	StringConstantMungeStep step = (StringConstantMungeStep) copy;
+    	step.setOutValue(getOutValue());
+    	step.setReturnNull(isReturnNull());
+    }
 }

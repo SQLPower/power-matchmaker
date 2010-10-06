@@ -137,4 +137,11 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	public int getEndIndex() {
 		return endIndex;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		SubstringMungeStep step = (SubstringMungeStep) copy;
+		step.setBegIndex(getBegIndex());
+		step.setEndIndex(getEndIndex());
+	}
 }

@@ -117,7 +117,7 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     public Date getValueAsDate() throws ParseException {
     	if (getUseCurrentTime()) {
     		return Calendar.getInstance().getTime();
-    	} else if (!isReturningNull()) {
+    	} else if (!isReturnNull()) {
     		SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     		Date date = df.parse(value);
 
@@ -133,11 +133,6 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     	}
     }
 
-    @Accessor
-    public boolean isReturningNull() {
-    	return returnNull;
-    }
-    
     @Mutator
     public void setUseCurrentTime(boolean b) {
     	boolean oldVal = this.useCurrentTime;
@@ -178,4 +173,13 @@ public class DateConstantMungeStep extends AbstractMungeStep {
 	public String getValue() {
 		return value;
 	}
+    
+    @Override
+    protected void copyPropertiesForDuplicate(MungeStep copy) {
+    	DateConstantMungeStep step = (DateConstantMungeStep) copy;
+    	step.setDateFormat(getDateFormat());
+    	step.setReturnNull(isReturnNull());
+    	step.setUseCurrentTime(getUseCurrentTime());
+    	step.setValue(getValue());
+    }
 }

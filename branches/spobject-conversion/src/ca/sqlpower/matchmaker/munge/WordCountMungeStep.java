@@ -168,4 +168,13 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	public boolean isCaseSensitive() {
 		return caseSensitive;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		WordCountMungeStep step = (WordCountMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setDelimiter(getDelimiter());
+		step.setRegex(isRegex());
+	}
+	
 }

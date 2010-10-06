@@ -449,7 +449,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		AbstractMungeStep step = null;
 		try {
 			step = (AbstractMungeStep) stepClass.newInstance();
-			step.parameters = new HashMap<String, String>(this.parameters);
+			copyPropertiesForDuplicate(step);
 			step.setParent(parent);
 			step.setVisible(this.isVisible());
 			step.setName(getName());
@@ -458,6 +458,20 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			throw new RuntimeException(e);
 		}
 		return step;
+	}
+
+	/**
+	 * Classes extending this abstract class can implement this method to define
+	 * how properties specific to each step should be copied over to a new munge
+	 * step. All properties that are not transient should be copied over to the
+	 * new step.
+	 * 
+	 * @param copy
+	 *            The step copy that we need to duplicate this class's
+	 *            parameters to.
+	 */
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		//do nothing by default.
 	}
 	
 	@NonProperty
