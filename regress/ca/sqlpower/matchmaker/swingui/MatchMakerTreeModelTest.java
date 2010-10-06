@@ -120,7 +120,7 @@ public class MatchMakerTreeModelTest extends TestCase {
 		assertEquals(1, evt.getChildIndices().length);
 		assertEquals(1, evt.getChildren().length);
 		assertEquals(0, evt.getChildIndices()[0]);
-		assertSame(folder, (evt.getChildren()[0]));
+		assertSame(mmo, (evt.getChildren()[0]));
 	}
 
 	/**
