@@ -41,6 +41,10 @@ public class MungeStepOutputTest extends MatchMakerTestCase<MungeStepOutput> {
 		output = new MungeStepOutput<String>("output",String.class);
 		output.setData("mungeData");
 		output.setParent(parentStep);
+		MungeStep ms = (MungeStep) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeStep.class, null, "parent process");
+		ms.addChild(output, ms.getMungeStepOutputs().size());
 	}
 	
 	@Override

@@ -282,7 +282,8 @@ public class Project extends AbstractMatchMakerObject {
 		fireChildAdded(TableMergeRules.class, spo, index);
 	}
 	
-	protected boolean removeChildImpl(SPObject spo, int index) {
+	@Override
+	protected boolean removeChildImpl(SPObject spo) {
 		if(spo instanceof MungeProcess) {
 			return removeMungeProcess((MungeProcess)spo);
 		} else if(spo instanceof TableMergeRules) {
@@ -291,6 +292,7 @@ public class Project extends AbstractMatchMakerObject {
 			throw new RuntimeException("Cannot remove a child of this type to proejct.");
 		}
 	}
+	
 	public boolean removeMungeProcess(MungeProcess spo) {
 		int index = mungeProcesses.indexOf(spo);
 		boolean removed = mungeProcesses.remove(spo);
