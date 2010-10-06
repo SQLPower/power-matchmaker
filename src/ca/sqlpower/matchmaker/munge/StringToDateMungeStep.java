@@ -32,6 +32,7 @@ import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.Transient;
 
 
 /**
@@ -179,6 +180,7 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		firePropertyChange("ignoreError", old, ignoreError);
 	}
 
+	@Transient
 	@Accessor
 	public String getInputFormat() {
 		return inputFormat;
