@@ -32,16 +32,16 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableIndex;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
-import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.BooleanConstantMungeStep;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
@@ -152,7 +152,10 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	parentFolder.addChild(plFolder);
 			return plFolder;
         } else if (valueType == MungeStepOutput.class) {
-        	return new MungeStepOutput<String>("output", String.class);
+        	MungeStepOutput mso = new MungeStepOutput<Boolean>("output", Boolean.class);
+        	MungeStep ms = (MungeStep)makeNewValue(MungeStep.class, null, "parent process");
+        	ms.addChild(mso, ms.getMungeStepOutputs().size());
+        	return mso;
         } else if (valueType == FolderParent.class) {
         	FolderParent folderParent = new FolderParent();
         	getRootObject().addChild(folderParent, 0);

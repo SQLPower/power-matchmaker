@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.munge;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,14 +8,16 @@ import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.object.AbstractSPListener;
+import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.object.annotation.Transient;
-import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 
 /**
  * This is the pairing between a MungeStepOutput value and its InputDescriptor.
@@ -53,14 +56,18 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	 */
 	private final InputDescriptor descriptor;
 	
-	/**
-	 * only used by hibernate
-	 */
-	@SuppressWarnings("unused")
-	private MungeStepInput() {
-		descriptor = new InputDescriptor(null, null);
-		descriptor.setParent(this);
-	}
+	private String name;
+	
+	private SPListener nameSetterListener = new AbstractSPListener() {
+		@Override
+		public void propertyChanged(PropertyChangeEvent e) {
+			if(e.getPropertyName().equals("name")) {
+				if(name != (String)e.getNewValue()) {
+					setName((String)e.getNewValue());
+				}
+			}
+		}
+	};
 	
 	public void disconnect() {
 		MungeStepOutput old = current;
@@ -74,7 +81,8 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 			@ConstructorParameter(propertyName="parent") MungeStep step) {
 		this.current = current;
 		this.descriptor = descriptor;
-		descriptor.setParent(this);
+		this.descriptor.addSPListener(nameSetterListener);
+		this.descriptor.setParent(this);
 		this.parentStep = step;
 		setParent(step);
 	}
@@ -104,16 +112,19 @@ public class MungeStepInput extends AbstractMatchMakerObject {
     public void setCurrent(MungeStepOutput current) {
     	MungeStepOutput former = this.current;
 		this.current = current;
-		firePropertyChange("current", former, current);
+		firePropertyChange("current", former, this.current);
 	}
-    
-    @Accessor
+
+	@Accessor
     public String getName() {
-		return descriptor.getName();
+		return name;
 	}
     
     @Mutator
     public void setName(String name) {
+    	String oldName = this.name;
+    	this.name = name;
+    	firePropertyChange("name", oldName, this.name);
     	descriptor.setName(name);
     }
     

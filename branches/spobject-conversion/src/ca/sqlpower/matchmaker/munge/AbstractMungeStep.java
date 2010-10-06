@@ -235,7 +235,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			fireChildAdded(MungeStepInput.class, in, index);
 		} else if(ob instanceof MungeStepOutput) {
 			mungeStepOutputs.add(index, (MungeStepOutput) ob);
-			fireChildAdded(SQLInputStep.class, ob, mungeStepOutputs.size());
+			fireChildAdded(MungeStepOutput.class, ob, index);
 		} else {
 			throw new RuntimeException("You should never arrive here. You are adding " +
 					ob.toString() + " to " + this.toString() + "."); 
@@ -268,7 +268,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		}
 		MungeStepInput in = new MungeStepInput(null, desc, this);
 		inputs.add(index, in);
-		in.setParent(this);
 		fireChildAdded(MungeStepInput.class, in, index);
 	}
 
