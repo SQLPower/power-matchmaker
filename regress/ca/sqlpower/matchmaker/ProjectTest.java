@@ -84,6 +84,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         propertiesToIgnoreForDuplication.add("xrefTableSPDatasource");
 
         // These set other properties to null that describe the same object
+        propertiesToIgnoreForDuplication.add("resultTablePropertiesDelegate");
+        propertiesToIgnoreForDuplication.add("sourceTablePropertiesDelegate");
+        propertiesToIgnoreForDuplication.add("xrefTablePropertiesDelegate");
         propertiesToIgnoreForDuplication.add("resultTable");
         propertiesToIgnoreForDuplication.add("sourceTable");
         propertiesToIgnoreForDuplication.add("xrefTable");

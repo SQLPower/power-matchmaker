@@ -151,7 +151,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
     @Override
     @Mutator
     public void setParent(SPObject parent) {
-    	if (!(parent instanceof Project)) {
+    	if (!(parent instanceof Project) && !(parent == null)) {
     		throw new IllegalArgumentException("The parent " + parent + 
     				" cannot be the parent of a munge process because it is not a project.");
     	}

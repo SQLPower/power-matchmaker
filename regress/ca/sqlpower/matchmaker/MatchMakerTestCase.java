@@ -272,11 +272,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 			return new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
 		} else if (property.getPropertyType() == MungeSettings.class) {
 		    Integer processCount = ((MatchMakerSettings) oldVal).getProcessCount();
-		    ((MatchMakerSettings) oldVal).setProcessCount(new Integer(processCount +1));
+		    processCount = new Integer((processCount == null) ? new Integer(0) : processCount + 1);
+		    ((MatchMakerSettings) oldVal).setProcessCount(processCount);
 		    return oldVal;
 		} else if (property.getPropertyType() == MergeSettings.class) {
 		    Integer processCount = ((MatchMakerSettings) oldVal).getProcessCount();
-		    processCount = new Integer(processCount +1);
+		    processCount = new Integer((processCount == null) ? new Integer(0) : processCount + 1);
 		    ((MatchMakerSettings) oldVal).setProcessCount(processCount);
 		    return oldVal;
 		} else if (property.getPropertyType() == SQLTable.class) {

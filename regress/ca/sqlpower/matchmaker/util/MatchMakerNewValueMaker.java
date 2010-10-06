@@ -43,7 +43,6 @@ import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
-import ca.sqlpower.matchmaker.munge.BooleanConstantMungeStep;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
@@ -114,7 +113,7 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	mp.addChild(mrs);
         	Project parent = ((Project) makeNewValue(Project.class, null, 
 				"munge process parent"));
-        	parent.addMungeProcess(mp, 0);
+        	parent.addChild(mp);
         	return mp;
         } else if (valueType == DeDupeResultStep.class) {
         	MungeProcess mp = new MungeProcess();
@@ -152,7 +151,7 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	parentFolder.addChild(plFolder);
 			return plFolder;
         } else if (valueType == MungeStepOutput.class) {
-        	MungeStepOutput mso = new MungeStepOutput<Boolean>("output", Boolean.class);
+        	MungeStepOutput mso = new MungeStepOutput<String>("output", String.class);
         	MungeStep ms = (MungeStep)makeNewValue(MungeStep.class, null, "parent process");
         	ms.addChild(mso, ms.getMungeStepOutputs().size());
         	return mso;
@@ -178,10 +177,10 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	return new UpperCaseMungeStep();
         } else if (valueType == MatchMakerObject.class) {
         	return new TestingAbstractMatchMakerObject();
-        } else if (valueType == MungeStep.class) {
+        } else if (MungeStep.class.isAssignableFrom(valueType)) {
         	MungeProcess process = ((MungeProcess) makeNewValue(MungeProcess.class, null,
 				"process parent"));
-        	MungeStep ms = new BooleanConstantMungeStep();
+        	MungeStep ms = new UpperCaseMungeStep();
         	process.addChild(ms);
         	return ms;
         } else if (valueType == MungeStepInput.class) {
