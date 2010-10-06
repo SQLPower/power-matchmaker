@@ -20,9 +20,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.Collections;
-import java.util.List;
-
 import ca.sqlpower.object.SPObject;
 
 
@@ -37,21 +34,7 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		mms = new MatchMakerSettings() {
-
-			public MatchMakerSettings duplicate(MatchMakerObject parent) {
-				return null;
-			}
-
-			@Override
-			public List<? extends SPObject> getChildren() {
-				return Collections.emptyList();
-			}
-
-			@Override
-			public List<Class<? extends SPObject>> getAllowedChildTypes() {
-				return Collections.emptyList();
-			}};
+		mms = new TestingMatchMakerSettingsStub();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		mms.setSession(session);
@@ -77,5 +60,25 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 	@Override
 	public SPObject getSPObjectUnderTest() {
 		return getTarget();
+	}
+	
+	@Override
+	public void testSPPersisterPersistsProperties() throws Exception {
+		// don't test this
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		// don't test this
+	}
+	
+	@Override
+	public void testSPListenerPersistsNewObjects() throws Exception {
+		// don't test this
+	}
+	
+	@Override
+	public void testSessionPersisterRollsBackProperties() throws Exception {
+		// don't test this
 	}
 }

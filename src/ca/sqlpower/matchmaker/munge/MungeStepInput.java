@@ -85,6 +85,7 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 		this.descriptor.setParent(this);
 		this.parentStep = step;
 		setParent(step);
+		setName(descriptor.getName());
 	}
 
 	/**
