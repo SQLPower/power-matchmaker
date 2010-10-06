@@ -35,6 +35,7 @@ public class MMRootNodeTest extends MatchMakerTestCase<MMRootNode> {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		rootNode = new MMRootNode(session);
+		getRootObject().addChild(rootNode, 0);
 	}
 	
 	@Override
@@ -50,5 +51,15 @@ public class MMRootNodeTest extends MatchMakerTestCase<MMRootNode> {
 	@Override
 	public void testDuplicate() throws Exception {
 		// this object does not duplicate
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		//The root is a special final object that cannot be created in the model.
+	}
+	
+	@Override
+	public void testSPListenerPersistsNewObjects() throws Exception {
+		//the root is a special final object that cannot be created in the model.
 	}
 }
