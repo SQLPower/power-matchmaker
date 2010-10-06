@@ -1321,8 +1321,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		content = buildUI();
 		if (content != null) {
 			content.setOpaque(false);
+			deOpaquify(content);
 		}
-		deOpaquify(content);
 		if (isExpanded()) {
 			setExpanded(true);
 		}

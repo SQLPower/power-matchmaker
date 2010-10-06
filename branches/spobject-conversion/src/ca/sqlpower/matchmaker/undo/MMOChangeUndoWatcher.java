@@ -40,8 +40,7 @@ import ca.sqlpower.util.TransactionEvent;
  * by flipping its hasChanged flag to true. Mainly intended to support the
  * hasUnsavedChanges feature of DataEntryPanel.
  */
-public class MMOChangeUndoWatcher
-implements SPListener {
+public class MMOChangeUndoWatcher implements SPListener {
 
 	private static final Logger logger = Logger.getLogger(MMOChangeUndoWatcher.class);
 	
@@ -84,6 +83,78 @@ implements SPListener {
         ce = null;
         hasChanged = false;
     }
+    
+    private void addEdit(UndoableEdit undoEdit) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Adding new edit: " + undoEdit);
+        }
+
+        // if we are not in a compound edit
+        if (undoCount == 0) {
+            undo.addEdit(undoEdit);
+        } else {
+            ce.addEdit(undoEdit);
+        }
+    }
+    
+    /**
+     * Begins a compound edit. Compound edits can be nested, so every call
+     * to this method has to be balanced with a call to
+     * {@link #compoundGroupEnd()}.
+     * 
+     * fires a state changed event when a new compound edit is created
+     */
+    private void compoundGroupStart() {
+        undoCount++;
+        if (undoCount == 1) {
+            ce = new CompoundEdit();
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("compoundGroupStart: edit stack =" + undoCount);
+        }
+    }
+
+    /**
+     * Ends a compound edit. Compound edits can be nested, so every call to
+     * this method has to be preceeded by a call to
+     * {@link #compoundGroupStart()}.
+     * 
+     * @throws IllegalStateException
+     *             if there wasn't already a compound edit in progress.
+     */
+    private void compoundGroupEnd() {
+        if (undoCount <= 0) {
+            throw new IllegalStateException("No compound edit in progress");
+        }
+        undoCount--;
+        if (undoCount == 0)
+            returnToEditState();
+        if (logger.isDebugEnabled()) {
+            logger.debug("compoundGroupEnd: edit stack =" + undoCount + " ce=" + ce);
+        }
+    }
+
+    /**
+     * Return to a single edit state from a compound edit state
+     */
+    private void returnToEditState() {
+        if (undoCount != 0) {
+            throw new IllegalStateException("The compound edit stack (" + undoCount + ") should be 0");
+        }
+        if (ce != null) {
+            ce.end();
+            if (ce.canUndo()) {
+                if (logger.isDebugEnabled())
+                    logger.debug("Adding compound edit " + ce + " to undo manager");
+                undo.addEdit(ce);
+            } else {
+                if (logger.isDebugEnabled())
+                    logger.debug("Compound edit " + ce + " is not undoable so we are not adding it");
+            }
+            ce = null;
+        }
+        logger.debug("Returning to regular state");
+    }
 
 	@Override
 	public void childAdded(SPChildEvent e) {
@@ -92,18 +163,12 @@ implements SPListener {
     	
     	logger.debug("Child: " + e.getChild() + " is inserted into: " + e.getSource().toString());
     	if (e.getSource().isMagicEnabled()) {
-    		UndoableEdit ue = new MMOChildrenInsertUndoableEdit(e, null);
-
-    		if (undoCount > 0) {
-    			ce.addEdit(ue);
-    		} else {
-    			undo.addEdit(ue);
-    		}
-    	} else {
-    		if (!undo.canUndo()) {
-    			hasChanged = false;
-    		}
+    		UndoableEdit ue = new MMOChildrenInsertUndoableEdit(e);
+    		addEdit(ue);
     	}
+    	if (!undo.canUndo()) {
+			hasChanged = false;
+		}
     	swingSession.refreshUndoAction();
 	}
 
@@ -114,41 +179,30 @@ implements SPListener {
     	
     	logger.debug("Child: " + e.getChild() + " is removed from: " + e.getSource().toString());
     	if (e.getSource().isMagicEnabled()) {
-    		UndoableEdit ue = new MMOChildrenRemoveUndoableEdit(e, null);
-
-    		if (undoCount > 0) {
-    			ce.addEdit(ue);
-    		} else {
-    			undo.addEdit(ue);
-    		}
-    	} else {
-    		if (!undo.canUndo()) {
-    			hasChanged = false;
-    		}
+    		UndoableEdit ue = new MMOChildrenRemoveUndoableEdit(e);
+    		addEdit(ue);
     	}
+    	if (!undo.canUndo()) {
+			hasChanged = false;
+		}
     	swingSession.refreshUndoAction();
 		
 	}
 
 	@Override
 	public void transactionStarted(TransactionEvent e) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: SPListener.transactionStarted()");
-		
+		compoundGroupStart();	
 	}
 
 	@Override
 	public void transactionEnded(TransactionEvent e) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: SPListener.transactionEnded()");
-		
+		compoundGroupEnd();
+    	swingSession.refreshUndoAction();
 	}
 
 	@Override
 	public void transactionRollback(TransactionEvent e) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: SPListener.transactionRollback()");
-		
+		//Do nothing
 	}
 
 	@Override
