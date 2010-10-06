@@ -148,6 +148,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("project");
         propertiesToIgnoreForDuplication.add("addressStatus");
         propertiesToIgnoreForDuplication.add("addressDB");
+        propertiesToIgnoreForDuplication.add("open");
         
         
         //this throws an exception if the DS does not exist
