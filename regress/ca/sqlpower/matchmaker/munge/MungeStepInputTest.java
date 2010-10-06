@@ -42,6 +42,10 @@ public class MungeStepInputTest extends MatchMakerTestCase<MungeStepInput> {
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		upperCaseMungeStep = new UpperCaseMungeStep();
 		input = upperCaseMungeStep.getMungeStepInputs().get(0);
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+		process.addChild(upperCaseMungeStep);
 	}
 	
 	@Override
