@@ -19,6 +19,12 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
@@ -33,6 +39,11 @@ import ca.sqlpower.object.annotation.Mutator;
  * the cleansing process has been completed on that row).
  */
 public class StringConstantMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
     /**
      * The value this step should provide on its output.
@@ -77,7 +88,7 @@ public class StringConstantMungeStep extends AbstractMungeStep {
     
     @Override
     public Boolean doCall() throws Exception {
-    	getOut().setData(getOutValue());
+    	getOut().setData((returnNull? null : getOutValue()));
         return Boolean.TRUE;
     }
 }

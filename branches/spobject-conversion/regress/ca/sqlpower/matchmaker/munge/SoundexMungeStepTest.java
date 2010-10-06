@@ -43,6 +43,10 @@ public class SoundexMungeStepTest extends MatchMakerTestCase<SoundexMungeStep> {
 		step = new SoundexMungeStep();
 		step.setSession(new TestingMatchMakerSession());
 		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonNormalString() throws Exception {
