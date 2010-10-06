@@ -36,6 +36,10 @@ public class StringConstantMungeStepTest extends MatchMakerTestCase<StringConsta
     protected void setUp() throws Exception {
         super.setUp();
         step = new StringConstantMungeStep();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
     
     public void testNullValue() throws Exception {
