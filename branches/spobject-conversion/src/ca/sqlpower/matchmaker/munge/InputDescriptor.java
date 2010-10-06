@@ -45,6 +45,7 @@ public class InputDescriptor extends AbstractSPObject {
 	public InputDescriptor(@ConstructorParameter(propertyName="name") String name, 
 			@ConstructorParameter(propertyName="type") Class type) {
 		this.type = type;
+		setName(name);
 	}
 	
 	@Accessor

@@ -35,7 +35,6 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -135,8 +134,8 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		mrs.open(logger);
         mrs.mungeRollback();
 		mrs.mungeClose();
-		mrs.connectInput(1, ucms.getChildren(MungeStepOutput.class).get(0));
-		ucms.connectInput(0, step.getChildren(MungeStepOutput.class).get(1));
+		mrs.connectInput(1, ucms.getMungeStepOutputs().get(0));
+		ucms.connectInput(0, step.getMungeStepOutputs().get(1));
 		
 		engine.call();
 
