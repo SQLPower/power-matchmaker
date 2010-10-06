@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -38,6 +40,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -61,6 +64,12 @@ import ca.sqlpower.sqlobject.SQLTable;
  * affected.
  */
 public class CleanseResultStep extends AbstractMungeStep implements MungeResultStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	private SQLTable table;
 	private SQLInputStep inputStep;
 	private PreparedStatement ps = null;

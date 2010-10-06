@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.munge;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.object.SPObject;
 
 public class CleanseResultStepTest extends MatchMakerTestCase<CleanseResultStep> {
@@ -44,6 +45,12 @@ public class CleanseResultStepTest extends MatchMakerTestCase<CleanseResultStep>
     protected void setUp() throws Exception {
         resultStep = new CleanseResultStep();
         super.setUp();
+        MungeProcess mp = new MungeProcess();
+    	mp.setResultStep(resultStep);
+    	Project project = (Project) createNewValueMaker(
+    			getRootObject(), null).makeNewValue(
+    					Project.class, null, "parent process");
+    	project.addMungeProcess(mp, 0);
     }
 
 	@Override
@@ -58,5 +65,10 @@ public class CleanseResultStepTest extends MatchMakerTestCase<CleanseResultStep>
 	@Override
 	public void testAllowedChildTypesField() throws Exception {
 		// Do nothing. This is in AbstractMungeStep
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		//This object is being treated as a final child.
 	}
 }
