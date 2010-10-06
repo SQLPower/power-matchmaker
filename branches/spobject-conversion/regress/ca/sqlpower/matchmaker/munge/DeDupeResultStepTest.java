@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
@@ -77,8 +78,9 @@ public class DeDupeResultStepTest extends MatchMakerTestCase<DeDupeResultStep> {
 		mp.addChild(inputStep);
 		mp.addChild(step);
 		project.addChild(mp);
-		
 		super.setUp();
+		getRootObject().addChild(project, 0);
+		project.setSession(new TestingMatchMakerSession());
 	}
 
 	public void test() throws Exception {
@@ -130,5 +132,11 @@ public class DeDupeResultStepTest extends MatchMakerTestCase<DeDupeResultStep> {
 	@Override
 	public void testDuplicate() throws Exception {
 		// Do nothing
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		//This class should only be a final child of a process but hasn't been
+		//updated to this state yet.
 	}
 }
