@@ -84,6 +84,7 @@ public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
         process.addChild(step);
 	    resultStep = (MungeResultStep) step.getOutputStep();
 	    process.addChild(resultStep);
+	    getRootObject().addChild(project, 0);
     }
     
     protected ProjectMode getProjectType() {
