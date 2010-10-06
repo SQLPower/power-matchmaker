@@ -696,6 +696,11 @@ public class Project extends AbstractMatchMakerObject {
 				SQLColumn column = returnTable.getColumns().get(i);
 				UserDefinedSQLType compareToType = compareToColumn.getUserDefinedSQLType();
 				UserDefinedSQLType type = column.getUserDefinedSQLType();
+				
+				if(compareToType.equals(type)) {
+					return returnTable;
+				}
+				
 				String forwardedName;
 				String typeName;
 				

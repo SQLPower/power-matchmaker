@@ -33,10 +33,10 @@ import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -48,12 +48,12 @@ import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class MatchResultVisualizerTest extends TestCase {
 	
@@ -81,14 +81,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		SQLTable resultTable = db.getTableByName(null, "pl", "match_results");
 		final SQLTable sourceTable = db.getTableByName(null, "pl", "source_table");
 		
-//		SQLTable sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
-//				true);
-//		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
-//				10, 0));
-//		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
-//				10, 0));
-//		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
-//				10, 0));
+		sourceTable.getColumns();
 
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
 		sourceTableIndex.addChild(new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
