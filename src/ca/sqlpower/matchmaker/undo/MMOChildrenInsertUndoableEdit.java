@@ -34,13 +34,11 @@ public class MMOChildrenInsertUndoableEdit extends AbstractUndoableEdit{
 	private static final Logger logger = Logger.getLogger(MMOChildrenInsertUndoableEdit.class);
 	
 	private SPChildEvent undoEvent;
-	private MatchMakerObject mmo;
-
-	public MMOChildrenInsertUndoableEdit(SPChildEvent e, MatchMakerObject mmo){
+	
+	public MMOChildrenInsertUndoableEdit(SPChildEvent e){
 		
 		super();
 		undoEvent = e;
-		this.mmo = mmo;
 	}
 
 	public void undo(){

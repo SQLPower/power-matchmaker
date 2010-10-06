@@ -25,7 +25,6 @@ import javax.swing.undo.CannotUndoException;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPChildEvent;
 
@@ -34,12 +33,10 @@ public class MMOChildrenRemoveUndoableEdit extends AbstractUndoableEdit{
 	private static final Logger logger = Logger.getLogger(MMOChildrenRemoveUndoableEdit.class);
 	
 	private SPChildEvent undoEvent;
-	private MatchMakerObject mmo;
 
-	public MMOChildrenRemoveUndoableEdit(SPChildEvent e, MatchMakerObject mmo){
+	public MMOChildrenRemoveUndoableEdit(SPChildEvent e){
 		super();
 		undoEvent = e;
-		this.mmo = mmo;
 	}
 
 	public void undo(){

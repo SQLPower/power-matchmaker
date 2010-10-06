@@ -1503,7 +1503,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 				final MatchMakerObject insertedMMO = (MatchMakerObject)e.getChild();
 				if (!(insertedMMO instanceof SQLInputStep
 						|| insertedMMO instanceof MungeResultStep
-						|| insertedMMO instanceof MungeStepOutput)) {
+						|| insertedMMO instanceof MungeStepOutput) && insertedMMO.isMagicEnabled()) {
 					SwingUtilities.invokeLater(new Runnable(){
 						public void run() {
 							MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
