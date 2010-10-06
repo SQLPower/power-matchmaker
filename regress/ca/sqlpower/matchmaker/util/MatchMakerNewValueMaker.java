@@ -44,6 +44,7 @@ import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.BooleanConstantMungeStep;
+import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -57,6 +58,7 @@ import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.testutil.GenericNewValueMaker;
 
 public class MatchMakerNewValueMaker extends GenericNewValueMaker {      
@@ -117,6 +119,19 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == DeDupeResultStep.class) {
         	MungeProcess mp = new MungeProcess();
         	DeDupeResultStep mrs = new DeDupeResultStep();
+        	mp.addChild(mrs);
+        	Project parent = ((Project) makeNewValue(Project.class, null, 
+				"munge process parent"));
+        	parent.addMungeProcess(mp, 0);
+        	return mrs;
+        } else if (valueType == CleanseResultStep.class) {
+        	MungeProcess mp = new MungeProcess();
+        	CleanseResultStep mrs;
+			try {
+				mrs = new CleanseResultStep();
+			} catch (SQLObjectException e) {
+				throw new RuntimeException(e);
+			}
         	mp.addChild(mrs);
         	Project parent = ((Project) makeNewValue(Project.class, null, 
 				"munge process parent"));
