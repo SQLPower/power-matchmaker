@@ -29,7 +29,6 @@ import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
 
 
 /**
@@ -77,7 +76,7 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
     	firePropertyChange("value", oldValue, newValue);
     }
     
-    @NonProperty
+    @Accessor
     public BigDecimal getValue() {
     	return value;
     }
@@ -95,5 +94,12 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
     	if (b) {
     		setValue(null);
     	}
+    }
+    
+    @Override
+    protected void copyPropertiesForDuplicate(MungeStep copy) {
+    	NumberConstantMungeStep step = (NumberConstantMungeStep) copy;
+    	step.setValue(getValue());
+    	step.setReturnNull(isReturnNull());
     }
 }

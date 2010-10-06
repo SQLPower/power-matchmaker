@@ -252,4 +252,15 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	public boolean isCaseSensitive() {
 		return caseSensitive;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		SubstringByWordMungeStep step = (SubstringByWordMungeStep) copy;
+		step.setBegIndex(getBegIndex());
+		step.setCaseSensitive(isCaseSensitive());
+		step.setDelimiter(getDelimiter());
+		step.setEndIndex(getEndIndex());
+		step.setRegex(isRegex());
+		step.setResultDelim(getResultDelim());
+	}
 }

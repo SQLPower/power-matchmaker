@@ -119,4 +119,9 @@ public class ConcatMungeStep extends AbstractMungeStep {
     public String getDelimiter() {
         return delimiter;
     }
+    
+    @Override
+    protected void copyPropertiesForDuplicate(MungeStep copy) {
+    	((ConcatMungeStep) copy).setDelimiter(getDelimiter());
+    }
 }

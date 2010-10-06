@@ -176,4 +176,11 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	private void updateFormat() {
 		format = getDateFormat() + " " + getTimeFormat();
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		DateToStringMungeStep step = (DateToStringMungeStep) copy;
+		step.setDateFormat(getDateFormat());
+		step.setTimeFormat(getTimeFormat());
+	}
 }

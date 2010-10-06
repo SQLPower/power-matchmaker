@@ -99,4 +99,9 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	public boolean isUseAlternate() {
 		return useAlternate;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		((DoubleMetaphoneMungeStep) copy).setUseAlternate(isUseAlternate());
+	}
 }

@@ -228,4 +228,14 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		this.outputFormat = outputFormat;
 		firePropertyChange("outputFormat", old, outputFormat);
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		StringToDateMungeStep step = (StringToDateMungeStep) copy;
+		step.setDateFormat(getDateFormat());
+		step.setIgnoreError(isIgnoreError());
+		step.setInputFormat(getInputFormat());
+		step.setOutputFormat(getOutputFormat());
+		step.setTimeFormat(getTimeFormat());
+	}
 }

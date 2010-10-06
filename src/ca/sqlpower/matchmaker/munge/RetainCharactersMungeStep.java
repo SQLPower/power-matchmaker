@@ -172,4 +172,12 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		this.retainChars = retainChars;
 		firePropertyChange("retainChars", oldChars, retainChars);
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		RetainCharactersMungeStep step = (RetainCharactersMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setRetainChars(getRetainChars());
+		step.setUseRegex(isUseRegex());
+	}
 }

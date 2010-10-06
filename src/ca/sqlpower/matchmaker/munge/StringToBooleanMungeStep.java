@@ -240,5 +240,14 @@ public class StringToBooleanMungeStep extends AbstractMungeStep {
 		return p;
 	}
 
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		StringToBooleanMungeStep step = (StringToBooleanMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setFalseList(getFalseList());
+		step.setNeither(getNeither());
+		step.setTrueList(getTrueList());
+		step.setUseRegex(isUseRegex());
+	}
 }
 

@@ -77,4 +77,9 @@ public class BooleanConstantMungeStep extends AbstractMungeStep {
 	public Boolean getConstant() {
 		return constant;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		((BooleanConstantMungeStep) copy).setConstant(getConstant());
+	}
 }

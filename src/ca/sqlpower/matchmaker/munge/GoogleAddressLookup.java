@@ -279,4 +279,12 @@ public class GoogleAddressLookup extends AbstractMungeStep {
 		this.rateLimit = rateLimit;
 		firePropertyChange("rateLimit", oldLimit, rateLimit);
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		GoogleAddressLookup step = (GoogleAddressLookup) copy;
+		step.setGoogleGeocoderURL(getGoogleGeocoderURL());
+		step.setGoogleMapsApiKey(getGoogleMapsApiKey());
+		step.setRateLimit(getRateLimit());
+	}
 }

@@ -170,4 +170,13 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 
 		return true;
 	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setFrom(getFrom());
+		step.setTo(getTo());
+		step.setRegex(isRegex());
+	}
 }

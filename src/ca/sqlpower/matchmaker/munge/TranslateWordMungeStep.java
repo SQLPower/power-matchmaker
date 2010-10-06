@@ -55,6 +55,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	/**
 	 * The UUID of the translate group for this munge step.
+	 * XXX This can now be the actual translate group. This is only a string
+	 * due to the old implementation of using a string map to reference all parameters.
 	 */
 	private String translateGroupUuid;
 	
@@ -202,5 +204,13 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	@Accessor
 	public boolean isCaseSensitive() {
 		return caseSensitive;
+	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		TranslateWordMungeStep step = (TranslateWordMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setRegex(isRegex());
+		step.setTranslateGroupUuid(getTranslateGroupUuid());
 	}
 }
