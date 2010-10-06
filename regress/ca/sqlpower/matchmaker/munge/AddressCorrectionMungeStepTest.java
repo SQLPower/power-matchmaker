@@ -38,6 +38,10 @@ public class AddressCorrectionMungeStepTest extends AbstractMungeStepTest<Addres
         step = new AddressCorrectionMungeStep();
         step.setSession(session);
         super.setUp();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
 
 	@Override

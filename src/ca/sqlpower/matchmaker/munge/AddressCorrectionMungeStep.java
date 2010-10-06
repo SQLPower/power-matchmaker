@@ -22,25 +22,29 @@ package ca.sqlpower.matchmaker.munge;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.address.Address;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.address.AddressValidator;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.NonBound;
+import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.validation.Status;
@@ -55,9 +59,14 @@ import ca.sqlpower.validation.ValidateResult;
  */
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	private Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
 	
-	public static final String ADDRESS_CORRECTION_DATA_PATH = "AddressCorrectionDataPath";
+	private String addressCorrectionDataPath;
 	
 	private AddressDatabase addressDB;
 	
@@ -121,11 +130,9 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		super.addInput(input5);
 	}
 	
-	@Mutator
+	@NonBound
 	public void setInputStep(MungeStep inputStep) {
-		MungeStep oldInputStep = this.inputStep;
 		this.inputStep = inputStep;
-		firePropertyChange("inputStep", oldInputStep, this.inputStep);
 	}
 	
 	@Override
@@ -154,10 +161,10 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public void validateDatabase() {
 		MatchMakerSession session = getSession();
 		MatchMakerSessionContext context = session.getContext();
-		setParameter(ADDRESS_CORRECTION_DATA_PATH, context.getAddressCorrectionDataPath());
+		setAddressCorrectionDataPath(context.getAddressCorrectionDataPath());
 		
 		
-		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
+		String addressCorrectionDataPath = getAddressCorrectionDataPath();
 		try {
 			setAddressDB(new AddressDatabase(new File(addressCorrectionDataPath)));
 		} catch (Exception e) {
@@ -478,34 +485,30 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	 * parsed in this step. Generally, the boolean value applies to the address
 	 * data it received that last time the {@link #doCall()} method was called.
 	 */
-	@NonProperty
-	public boolean isAddressCorrected() {
+	@Transient @Accessor
+	boolean isAddressCorrected() {
 		return addressCorrected;
 	}
 	
-	@Accessor
-	public MungeStep getInputStep() {
+	@NonBound
+	MungeStep getInputStep() {
 		return inputStep;
 	}
 	
-	@Accessor
-	public AddressDatabase getAddressDB() {
-		return addressDB;
-	}
-	
-	@Mutator
-	public void setAddressDB(AddressDatabase addressDB) {
+	@NonBound
+	private void setAddressDB(AddressDatabase addressDB) {
 		AddressDatabase oldValue = this.addressDB;
 		this.addressDB = addressDB;
-		firePropertyChange("addressDB", oldValue, this.addressDB);
+		//XXX: Firing this event would be better than the munge component listening to the context
+//		getEventSupport().firePropertyChange("addressDB", oldValue, addressDB);
 	}
 	
 	public boolean doesDatabaseExist()  {
 		return addressDB != null;
 	}
 	
-	@NonProperty
-	public void setAddressPool(AddressPool pool, Logger logger) {
+	@Transient @Mutator
+	void setAddressPool(AddressPool pool, Logger logger) {
 		this.pool = pool;
 	}
 	
@@ -527,8 +530,20 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	 * {@link AddressCorrectionMungeStep}. If it is null, then no addresses have
 	 * been processed by this step yet.
 	 */
-	@NonProperty
+	@Transient @Accessor
 	public AddressStatus getAddressStatus() {
 		return addressStatus;
+	}
+
+	@Mutator
+	public void setAddressCorrectionDataPath(String addressCorrectionDataPath) {
+		String oldPath = this.addressCorrectionDataPath;
+		this.addressCorrectionDataPath = addressCorrectionDataPath;
+		firePropertyChange("addressCorrectionDataPath", oldPath, addressCorrectionDataPath);
+	}
+
+	@Accessor
+	public String getAddressCorrectionDataPath() {
+		return addressCorrectionDataPath;
 	}
 }
