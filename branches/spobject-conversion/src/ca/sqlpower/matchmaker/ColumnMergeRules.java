@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +27,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.AbstractSPListener;
+import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
@@ -156,6 +159,15 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 	
 	private final ColumnMergeRulesImportedCachableColumn importedCachedColumn;
 	
+	private SPListener nameSynchronizer = new AbstractSPListener() {
+		@Override
+		public void propertyChanged(PropertyChangeEvent e) {
+			if (e.getPropertyName().equals("name") && !(e.getNewValue().equals(getName()))) {
+				setName((String)e.getNewValue());
+			}
+		}
+	};
+	
 	public ColumnMergeRules() {
 		this(new ColumnMergeRulesCachableColumn(), new ColumnMergeRulesImportedCachableColumn());
 	}
@@ -171,6 +183,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		this.importedCachedColumn = importedCachedColumn;
 		cachedColumn.setParent(this);
 		importedCachedColumn.setParent(this);
+		cachedColumn.addSPListener(nameSynchronizer);
 	}
 	
 	@Override
@@ -253,11 +266,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		this.actionType = actionType;
 		firePropertyChange("actionType", oldValue, this.actionType);
 	}
-
+	
 	@Override
-	@Accessor
-	public String getName() {
-		return getColumnName();
+	@Mutator
+	public void setName(String newm) {
+		super.setName(newm);
+		getCachedColumn().setName(newm);
 	}
 	
 	@Override
@@ -395,10 +409,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 		firePropertyChange("updateStatement", oldValue, this.updateStatement);
 	}
 	
+	@Accessor
 	public ColumnMergeRulesCachableColumn getCachedColumn() {
 		return cachedColumn;
 	}
 	
+	@Accessor
 	public ColumnMergeRulesImportedCachableColumn getImportedCachedColumn() {
 		return importedCachedColumn;
 	}
