@@ -51,12 +51,17 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		TableMergeRules tmr = new TableMergeRules();
+		TableMergeRules tmr = (TableMergeRules) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				TableMergeRules.class, null, "parent table rules");
 		tmr.setSession(testingMatchMakerSession);
 		tmr.setTable(new SQLTable(new SQLDatabase(),true));
 		tmr.getSourceTable().addColumn(new SQLColumn(tmr.getSourceTable(),"new",1,1,1));
 		m1 = new ColumnMergeRules();
 		m1.setParent(tmr);
+		m1.setSession(tmr.getSession());
+		tmr.addChild(m1);
+		
 	}
 	
 	@Override
@@ -64,6 +69,15 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 		return m1;
 	}
 
+	public void testNamesSynced() throws Exception {
+		m1.setName("moo");
+		assertEquals("Child name not updated when parent name updates", "moo", m1.getCachedColumn().getName());
+		m1.getCachedColumn().setName("meow");
+		assertEquals("Parent name not updated when child name updates", "meow", m1.getName());
+		
+		
+	}
+	
 	public void testEquals() throws SQLObjectException {
 		m1 = getTarget();
 		ColumnMergeRules m2 = new ColumnMergeRules();
