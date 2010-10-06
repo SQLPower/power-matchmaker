@@ -41,6 +41,10 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new StringSubstitutionMungeStep();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	/**
