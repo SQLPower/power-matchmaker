@@ -70,11 +70,13 @@ public class NumberConstantMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				boolean b = retNull.isSelected();
 				valueField.setEnabled(!b);
-				step.setReturnNull(b);
+				if (b) {
+					step.setValue(null);
+				}
 			}
         });
         
-        retNull.setSelected(step.isReturnNull());
+        retNull.setSelected(step.getValue() == null);
         valueField.setEnabled(!retNull.isSelected());
         
         FormLayout layout = new FormLayout("pref,4dlu,pref:grow");

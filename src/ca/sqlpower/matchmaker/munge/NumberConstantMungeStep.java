@@ -51,15 +51,9 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
      */
 	private BigDecimal value;
     
-    /**
-     * The value to set if the step is to return null
-     */
-	private boolean returnNull;
-    
     @Constructor
     public NumberConstantMungeStep() {
         super("Number Constant", false);
-        returnNull = false;
         addChild(new MungeStepOutput<BigDecimal>("Value", BigDecimal.class));
     }
     
@@ -81,25 +75,9 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
     	return value;
     }
 
-    @Accessor
-    public boolean isReturnNull() {
-    	return returnNull;
-    }
-
-    @Mutator
-    public void setReturnNull(boolean b) {
-    	boolean oldVal = returnNull;
-    	returnNull = b;
-    	firePropertyChange("returnNull", oldVal, b);
-    	if (b) {
-    		setValue(null);
-    	}
-    }
-    
     @Override
     protected void copyPropertiesForDuplicate(MungeStep copy) {
     	NumberConstantMungeStep step = (NumberConstantMungeStep) copy;
     	step.setValue(getValue());
-    	step.setReturnNull(isReturnNull());
     }
 }
