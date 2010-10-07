@@ -572,8 +572,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass);
 		int x = location.x + COM_DROP_OFFSET_X;
 		int y = location.y + COM_DROP_OFFSET_Y;
-		ms.setParameter(MungeStep.MUNGECOMPONENT_X, x);
-		ms.setParameter(MungeStep.MUNGECOMPONENT_Y, y);
+		ms.setPosition(new Point(x, y));
 		process.addChild(ms);
 	}
 	

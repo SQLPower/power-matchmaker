@@ -19,14 +19,14 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.Collection;
+import java.awt.Point;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.validation.ValidateResult;
 
 /**
@@ -45,66 +45,19 @@ import ca.sqlpower.validation.ValidateResult;
  */
 public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
 
-	public static final String MUNGECOMPONENT_X = "x";
-	public static final String MUNGECOMPONENT_Y = "y";
-	public static final String MUNGECOMPONENT_EXPANDED ="expanded";
-	
-	/**
-     * Returns the String representation of the parameter value associated with
-     * the given name.
-     * 
-     * @param name
-     *            The parameter to retrieve
-     * @return The value associated with the given parameter, or null if no such
-     *         parameter exists.
-     */
-	String getParameter(String name);
-	
-	/**
-	 * Sets a configuration parameter for this munge step.  Which parameter names
-	 * are meaningful is dependent on the actual implementation class of the step.
-	 * 
-	 * @param name The parameter name, which has a defined meaning to the current
-	 * step implementation.
-	 * @param value The value to associate with the named parameter.
-	 */
-	void setParameter(String name, String newValue);
-
-    /**
-     * Sets a boolean-valued configuration parameter for this munge step. Which
-     * parameter names are meaningful is dependent on the actual implementation
-     * class of the step.
-     * 
-     * @param name
-     *            The parameter name, which has a defined meaning to the current
-     *            step implementation.
-     * @param value
-     *            The value to associate with the named parameter.
-     */
-	void setParameter(String name, boolean newValue);
-	
-    /**
-     * Sets an integer-valued configuration parameter for this munge step. Which
-     * parameter names are meaningful is dependent on the actual implementation
-     * class of the step.
-     * 
-     * @param name
-     *            The parameter name, which has a defined meaning to the current
-     *            step implementation.
-     * @param value
-     *            The value to associate with the named parameter.
-     */
-	void setParameter(String name, int newValue);
-
 	/**
 	 * sets the position of the munge step
 	 */
-	void setPosition(int x, int y);
+	void setPosition(Point p);
 	
-    /**
-     * Enumerates the list of all parameter names currently in place in this munge step.
-     */
-    Collection<String> getParameterNames();
+	/**
+	 * Sets the expansion status of the munge step
+	 */
+	void setExpanded(boolean b);
+	
+	boolean isExpanded();
+	
+	Point getPosition();
     
 	/**
 	 * Adds a IOConnectors with the given InputDescriptor.
