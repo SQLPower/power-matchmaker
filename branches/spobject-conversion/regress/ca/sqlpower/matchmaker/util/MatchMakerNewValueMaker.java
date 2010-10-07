@@ -173,8 +173,6 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	}
         } else if (valueType == Map.class) {
         	return new HashMap<String, String>();
-        } else if (valueType == UpperCaseMungeStep.class) {
-        	return new UpperCaseMungeStep();
         } else if (valueType == MatchMakerObject.class) {
         	return new TestingAbstractMatchMakerObject();
         } else if (MungeStep.class.isAssignableFrom(valueType)) {
