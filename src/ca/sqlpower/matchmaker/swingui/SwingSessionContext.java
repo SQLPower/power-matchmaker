@@ -28,7 +28,6 @@ import java.util.Map;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -44,8 +43,7 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     //////// MatchMakerSessionContext implementation //////////
     public MatchMakerSwingSession createSession(JDBCDataSource ds,
 			String username, String password) throws PLSecurityException,
-			SQLException, SQLObjectException, MatchMakerConfigurationException,
-			RepositoryVersionException;
+			SQLException, SQLObjectException, MatchMakerConfigurationException;
 
     public List<JDBCDataSource> getDataSources();
 
@@ -90,15 +88,6 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     public void showDatabaseConnectionManager(Window owner);
 
     /**
-     * Shows the login dialog, which can lead to the creation of a new session within
-     * this context.
-     * 
-     * @param selectedDataSource The data source that should be selected in the dialog.
-     * If null, the dialog's selected data source will remain unchanged.
-     */
-    public void showLoginDialog(SPDataSource selectedDataSource);
-    
-    /**
      * This is the normal way of starting up the MatchMaker GUI. Based on the
      * user's preferences, this method either presents the repository login
      * dialog, or delegates the "create default session" operation to the delegate
@@ -109,7 +98,7 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      * and) logging into the local HSQLDB repository.
      */
     public void launchDefaultSession();
-    
+
     /**
      * Returns a new instance of the appropriate MungeComponent that is associated with the given MungeStep.
      * Theses are provided in the munge_component.properties in the ca.sqlpower.matchmaker.swingui.munge, and 
@@ -138,31 +127,4 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      */
     public MungeStep getMungeStep(Class<? extends MungeStep> create);
     
-    /**
-     * Preference: Should the launchDefaultSession method automatically create
-     * the default session, or should it present a login dialog?
-     */
-    public boolean isAutoLoginEnabled();
-
-    /**
-     * Preference: Should the launchDefaultSession method automatically create
-     * the default session, or should it present a login dialog?
-     */
-    public void setAutoLoginEnabled(boolean enabled);
-
-    /**
-     * Returns the data source for the auto-login repository.  If {@link #isAutoLoginEnabled()}
-     * is true, the MatchMaker will attempt to connect to this data source
-     * and use it as the repository.
-     */
-    public SPDataSource getAutoLoginDataSource();
-
-    /**
-     * Sets the data source for the auto-login repository.  If you want
-     * auto-login to actually happen when the application starts, you will
-     * have to enable it with the flag {@link #setAutoLoginEnabled(boolean)}.
-     */
-    public void setAutoLoginDataSource(SPDataSource selectedItem);
-
-
 }

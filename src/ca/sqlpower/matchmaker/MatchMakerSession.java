@@ -34,7 +34,6 @@ import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.RunnableDispatcher;
-import ca.sqlpower.util.Version;
 import ca.sqlpower.util.WorkspaceContainer;
 
 /**
@@ -63,11 +62,6 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 */
 	public SQLDatabase getDatabase();
 
-    /**
-     * get the PL Schema Version
-     */
-    public Version getPLSchemaVersion();
-    
 	/**
 	 * The PL Schema user for this session.  Often but not necessarily
 	 * the same as the DB User.

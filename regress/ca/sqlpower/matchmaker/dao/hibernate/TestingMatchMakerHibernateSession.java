@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -56,12 +54,11 @@ import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
-public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSession {
+public class TestingMatchMakerHibernateSession implements MatchMakerSession {
 
     private static final Logger logger = Logger.getLogger(TestingMatchMakerHibernateSession.class);
         
     private final JDBCDataSource dataSource;
-    private final SessionFactory hibernateSessionFactory;
     private TestingMatchMakerContext context = new TestingMatchMakerContext();
     private final TestingConnection con;
     private SQLDatabase db;
@@ -69,7 +66,6 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private TranslateGroupParent tgp = new TranslateGroupParent();
 	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 
-	private Session hSession;
     
     /**
      * The map of SQLDatabases to SPDatasources so they can be cached.
@@ -87,13 +83,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         super();
         try {
             this.dataSource = dataSource;
-            this.hibernateSessionFactory = HibernateTestUtil.buildHibernateSessionFactory(this.dataSource);
             this.con = DBTestUtil.connectToDatabase(this.dataSource);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
-        resetSession();
     }
     
     /**
@@ -103,16 +97,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         db = new SQLDatabase();
         con = null;
         dataSource = null;
-        hibernateSessionFactory = null;
     }
 
-    public Session openSession() {
-        return hSession;
-    }
-
-    public void resetSession() {
-    	hSession = hibernateSessionFactory.openSession(getConnection());
-    }
     /**
      * Enables or disables the connection associated with this session.  This is useful for
      * testing that Hibernate is correctly configured to eagerly fetch the data we expect it to.
@@ -356,8 +342,6 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
 	public boolean close() {
 		if (db.isConnected()) db.disconnect();
-		if (hSession.isConnected()) hSession.close();
-		if (!hibernateSessionFactory.isClosed()) hibernateSessionFactory.close();
 		fireSessionClosing();
 		return true;
 	}

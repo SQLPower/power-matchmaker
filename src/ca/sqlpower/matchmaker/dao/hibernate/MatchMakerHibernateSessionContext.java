@@ -39,7 +39,6 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.JDBCDataSourceType;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SpecificDataSourceCollection;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
@@ -132,8 +131,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      */
     public MatchMakerSession createSession(JDBCDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
-			SQLObjectException, MatchMakerConfigurationException,
-			RepositoryVersionException {
+			SQLObjectException, MatchMakerConfigurationException {
 
         try {
             MatchMakerSession session = new MatchMakerHibernateSessionImpl(this, ds);
@@ -145,12 +143,9 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         }
     }
     
-    public MatchMakerSession createDefaultSession() throws RepositoryException {
+    public MatchMakerSession createDefaultSession() {
         ensureHSQLDBIsSetup();
         JDBCDataSource ds = makeDefaultDataSource();
-        
-        // this throws an exception if there is a non-recoverable schema problem
-        RepositoryUtil.createOrUpdateRepositorySchema(ds);
         
         try {
             return createSession(ds, ds.getUser(), ds.getPass());
@@ -254,20 +249,6 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 		}
 	}
 
-	public void ensureDefaultRepositoryDefined() {
-	    SPDataSource defaultRepository = null;
-		
-	    for (SPDataSource ds : getDataSources()) {
-	        if (ds.getName().equals(DEFAULT_REPOSITORY_DATA_SOURCE_NAME)) {
-	        	defaultRepository = ds;
-	        }
-	    }
-	    
-	    if (defaultRepository == null) {
-	    	defaultRepository = makeDefaultDataSource();
-	    }
-	}
-	
     public void setAddressCorrectionDataPath(String path) {
     	prefs.put(ADDRESS_CORRECTION_DATA_PATH, path);
     }

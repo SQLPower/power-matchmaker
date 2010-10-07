@@ -19,10 +19,7 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -35,10 +32,6 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -47,15 +40,12 @@ import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
@@ -69,47 +59,20 @@ import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
-import ca.sqlpower.util.Version;
-import ca.sqlpower.util.VersionParseException;
 
 /**
  * An implementation of MatchMakerSession that uses Hibernate to
  * look up and store the business objects.
  */
-public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSession {
+public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
 
     private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionImpl.class);
 
-     /**
-     * The ID of the next instance we will create.  Used for Hibernate integration (ugh?)
-     */
-    private static long nextInstanceID = 0L;
-
-    /**
-     * The map used by {@link #getSpecificInstance(String)}.
-     */
-    private static final Map<String, MatchMakerSession> sessions = new HashMap<String, MatchMakerSession>();
-
-    /**
-     * A stupid hook to de-staticify the creation of a MatchMakerSessionConnectionProvider
-     * instance that has to be associated with a particular session.
-     * @param mmSessionId The ID that was generated in createSession().
-     * @return The MatchMakerSession instance with the given ID, or null if there is no such session.
-     */
-    static MatchMakerSession getSpecificInstance(String mmSessionId) {
-        return sessions.get(mmSessionId);
-    }
-    
     /**
      * The map of SQLDatabases to SPDatasources so they can be cached.
      */
     private Map<SPDataSource, SQLDatabase> databases = new HashMap<SPDataSource, SQLDatabase>();
 
-    /**
-     * The ID of this instance. A string version of this value is the key in the {@link #sessions} map.
-     */
-    private final long instanceID;
-    
 	/**
 	 * A list that helps keep track of the created sessions
 	 */
@@ -117,6 +80,15 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private final MatchMakerSessionContext context;
 	private final SQLDatabase database;
+
+	/**
+	 * The security manager is used to define a logged in user and their email
+	 * address. This will likely change as the security model changes in the
+	 * Enterprise Edition.
+	 * <p>
+	 * XXX Do we need a security manager now that Hibernate is gone and we are
+	 * no longer using a repository?
+	 */
 	private PLSecurityManager sm;
 	private PLUser appUser;
 	private String dbUser;
@@ -137,13 +109,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
-	private Session hSession;
-
-    /**
-     * The version of the Power*Loader schema we're connected to.
-     */
-    private final Version plSchemaVersion;
-
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
@@ -155,11 +120,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	public MatchMakerHibernateSessionImpl(MatchMakerSessionContext context,
 			JDBCDataSource ds) throws PLSecurityException,
 			SQLException, SQLObjectException,
-			MatchMakerConfigurationException, RepositoryVersionException {
+			MatchMakerConfigurationException {
 		
 		rootNode = new MMRootNode(this);
-        this.instanceID = nextInstanceID++;
-        sessions.put(String.valueOf(instanceID), this);
         
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
 
@@ -168,70 +131,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		dbUser = ds.getUser();
 
 		final Connection con = database.getConnection();
-		final DatabaseMetaData dbmd = con.getMetaData();
-        logger.info("Connected to repository database.");
-        logger.info("Database product name: "+dbmd.getDatabaseProductName());
-        logger.info("Database product version: "+dbmd.getDatabaseProductVersion());
-        logger.info("Database driver name: "+dbmd.getDriverName());
-        logger.info("Database driver version: "+dbmd.getDriverVersion());
 
-        Statement stmt = null;
-        ResultSet rs = null;
-        String versionString = null;
-        try {
-            stmt = con.createStatement();
-            rs = stmt.executeQuery("SELECT param_value FROM " + ds.getPlSchema() + ".mm_schema_info WHERE param_name='schema_version'");
-            if (!rs.next()) {
-            	throw new SQLException(
-            	"There is no schema_version entry in the mm_schema_info table.");
-            }
-            versionString = rs.getString(1);
-        } catch (SQLException e) {
-        	logger.info("Failed to select from mm_schema_info table. Attempting to create new repository and try again...", e);
-            try {
-            	RepositoryUtil.createOrUpdateRepositorySchema(ds);
-            	rs = stmt.executeQuery("SELECT param_value FROM " + ds.getPlSchema() + ".mm_schema_info WHERE param_name='schema_version'");
-                if (!rs.next()) {
-                	throw new SQLException(
-                	"There is no schema_version entry in the mm_schema_info table.");
-                }
-                versionString = rs.getString(1);
-            } catch (SQLException ex) {
-            	String plSchema = ds.getPlSchema();
-            	if (plSchema == null || plSchema.length() == 0) {
-            		// this case is unlikely to happen because we have to check for null when setting up hibernate 
-            		plSchema = "not set";
-            	}
-            	logger.error(e);
-            	throw new RepositoryVersionException("Couldn't determine the repository schema version!", e);
-            }
-        } finally {
-        	if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-        }
-        
-
-
-        try {
-        	plSchemaVersion = new Version(versionString);
-        } catch (VersionParseException e) {
-        	throw new RepositoryVersionException("Invalid repository schema version!", e);
-        }
-
-        int reposDiff = plSchemaVersion.compareTo(RepositoryUtil.MIN_PL_SCHEMA_VERSION);
-        if (reposDiff != 0) {
-            throw new RepositoryVersionException(
-                    "Incompatible repository schema version!",
-                    plSchemaVersion, RepositoryUtil.MIN_PL_SCHEMA_VERSION);
-        }
-        
         sm = new PLSecurityManager(con,
 				 					dbUser.toUpperCase(),
 				 					ds.getPass(),
                                     false);  // since this is a database login, we don't require correct app-level password
 		appUser = sm.getPrincipal();
 		sessionStartTime = new Date();
-        //rootNode = new MMRootNode(this);
+		
         con.close();
 	}
 
@@ -320,59 +227,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         }
     }
 
-    /**
-     * Creates a session from the hibernate session factory, allowing the factory
-     * to get its database connection using our &uuml;ber-cool connection provider.
-     */
-    public Session openSession() {
-        return hSession;
-    }
-
-
-    /**
-     * Creates or retrieves a Hibernate SessionFactory object for the
-     * given database.  Never creates two SessionFactory objects for
-     * the same jdbcurl+user+password combination.
-     *
-     * @param ds The connection specification for the session factory you want.
-     * @return A Hibernate SessionFactory for the given data source.
-     * 
-     * @throws MatchMakerConfigurationException If the given data source is not
-     * properly configured. 
-     */
-    private SessionFactory buildHibernateSessionFactory(JDBCDataSource ds) throws MatchMakerConfigurationException {
-        SessionFactory factory;
-        Configuration cfg = new Configuration();
-
-        URL configFile = getClass().getResource("/ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml");
-		if (configFile == null) {
-			throw new RuntimeException("Could not classload hibernate.cfg.xml");
-		}
-        cfg.configure(configFile);
-
-        // last-minute configuration overrides for stuff that can only be known at runtime
-        if (ds.getPlSchema() == null || ds.getPlSchema().trim().length() == 0) {
-            throw new MatchMakerConfigurationException(
-                    "Cannot connect to repository: Data source \"" + ds.getDisplayName() +
-                    "\" does not have the Repository Schema Owner set.");
-        }
-        cfg.setProperty("hibernate.default_schema",ds.getPlSchema());
-        cfg.setProperty("hibernate.dialect", HibernateUtil.guessHibernateDialect(ds.getParentType()));
-        cfg.setProperty(
-                Environment.CONNECTION_PROVIDER,
-                MatchMakerHibernateSessionConnectionProvider.class.getName());
-        cfg.setProperty(
-                MatchMakerHibernateSessionConnectionProvider.PROP_SESSION_ID,
-                String.valueOf(instanceID));
-        if (logger.isDebugEnabled()) {
-            cfg.setProperty("hibernate.show_sql", "true");
-            cfg.setProperty("hibernate.jdbc.batch_size", "0");
-        }
-        // Create the SessionFactory from hibernate.cfg.xml
-        factory = cfg.buildSessionFactory();
-        return factory;
-    }
-
     public Project getProjectByName(String name) {
     	for (PlFolder folder : rootNode.getCurrentFolderParent().getPlFolders()) {
     		for (Project p : folder.getProjects()) {
@@ -418,13 +272,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	}
 
     public TranslateGroupParent getTranslations() {
-        if (rootNode.getChildren(TranslateGroupParent.class).isEmpty()) {
-            MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
-            List<MatchMakerTranslateGroup> groups = matchMakerTranslateGroupDAO.findAll();
-            for (MatchMakerTranslateGroup g: groups) {
-            	rootNode.getTranslateGroupParent().addChild(g);
-            }
-        }
         return rootNode.getTranslateGroupParent();
     }
 
@@ -460,10 +307,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		return rootNode.getBackupFolderParent();
 	}
 
-    public Version getPLSchemaVersion() {
-        return plSchemaVersion;
-    }
-    
     /**
      * If you change this method, you must also change the methods in TestingMatchMakerSession and 
      * TestingMatchMakerSession because they are actually the same method......

@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
-import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -92,7 +91,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	}
 
 	public MatchMakerSession createSession(JDBCDataSource ds, String username,
-			String password) throws PLSecurityException, SQLException, RepositoryVersionException{
+			String password) throws PLSecurityException, SQLException {
 		return session;
 	}
 

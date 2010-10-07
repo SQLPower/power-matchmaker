@@ -22,9 +22,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,7 +29,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +37,6 @@ import java.util.StringTokenizer;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -53,8 +47,6 @@ import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
-import ca.sqlpower.matchmaker.dao.hibernate.RepositoryUtil;
-import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -118,24 +110,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     private final Preferences swingPrefs;
     
     /**
-     * Action that implements an extra button we put on the database connection manager
-     * dialog. It hides that dialog, then shows the login dialog, where the connection
-     * that was selected in the connection manager is made into the current selection.
-     */
-    private final Action loginDatabaseConnectionAction = new AbstractAction("Use as Repository") {
-
-		public void actionPerformed(ActionEvent e) {
-			SPDataSource dbcs = dbConnectionManager.getSelectedConnection();
-			if (dbcs == null) {
-				logger.debug("getSelectedConnection returned null");
-				return;
-			}
-			dbConnectionManager.closeDialog();
-            showLoginDialog(dbcs);
-		}
-	};
-
-    /**
      * The database connection manager GUI for this session context (because all sessions
      * share the same set of database connections).
      */
@@ -172,12 +146,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     };
     
     /**
-     * The login dialog for this app.  The session context will only create one login
-     * dialog.
-     */
-    private final LoginDialog loginDialog;
-
-    /**
      * Creates a new Swing session context, which is a holding place for all the basic
      * settings in the MatchMaker GUI application.  This constructor creates its own delegate
      * session context object based on information in the given prefs node, or failing that,
@@ -204,12 +172,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         
         // delegateContext will be a MatchMakerHibernateSessionContext
 
-        // Set a login action property so that if there is no connection selected 
-        // in the dbConnectionManager GUI, the corresponding button will be disabled.
-        loginDatabaseConnectionAction.putValue(DatabaseConnectionManager.DISABLE_IF_NO_CONNECTION_SELECTED, Boolean.TRUE);
-        
-        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), dsDialogFactory,dsTypeDialogFactory, Collections.singletonList(loginDatabaseConnectionAction));
-        loginDialog = new LoginDialog(this);
+        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), 
+        		dsDialogFactory,dsTypeDialogFactory);
         
         generatePropertiesList();
         
@@ -225,7 +189,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public MatchMakerSwingSession createSession(JDBCDataSource ds,
 			String username, String password) throws PLSecurityException,
-			SQLException, SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException {
+			SQLException, SQLObjectException, MatchMakerConfigurationException {
     	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     	getSessions().add(session);
         session.addSessionLifecycleListener(getSessionLifecycleListener());
@@ -320,17 +284,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         swingPrefs.put(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, ds.getName());
     }
 
-    public JDBCDataSource getAutoLoginDataSource() {
-        String lastDSName = swingPrefs.get(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, null);
-        if (lastDSName == null) {
-            lastDSName = DEFAULT_REPOSITORY_DATA_SOURCE_NAME;
-        }
-        for (JDBCDataSource ds : getDataSources()) {
-            if (ds.getName().equals(lastDSName)) return ds;
-        }
-        return null;
-    }
-
     public void setAddressCorrectionDataPath(String path) {
     	context.setAddressCorrectionDataPath(path);
     }
@@ -349,13 +302,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         dbConnectionManager.showDialog(owner);
     }
 
-    /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#showLoginDialog(ca.sqlpower.sql.SPDataSource)
-     */
-    public void showLoginDialog(SPDataSource selectedDataSource) {
-        loginDialog.showLoginDialog(selectedDataSource);
-    }
-
     /**
      * This is the normal way of starting up the MatchMaker GUI. Based on the
      * user's preferences, this method either presents the repository login
@@ -367,125 +313,14 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * and) logging into the local HSQLDB repository.
      */
     public void launchDefaultSession() {
-        try {
-        	ensureDefaultRepositoryDefined();
-        	
-            /*if (!isAutoLoginEnabled()) {
-                showLoginDialog(getLastLoginDataSource());
-            } else {*/
-            	autoLogin();
-            //}
-        } catch (Exception ex) {
-           	MMSUtils.showExceptionDialogNoReport("DQguru Startup Failed", ex);
-        }
-    }
-
-    /**
-	 * Automatically logs the user into the repository designated as the user's
-	 * preferred repository. If the specified repository does not actually exist,
-	 * or is out of date, then the MatchMaker will attempt to create/update it.
-	 */
-	private void autoLogin() {
-		JDBCDataSource dbSource = getAutoLoginDataSource();
 		final MatchMakerSession sessionDelegate;
-		try {
-			/*if (dbSource != null) {
-				// tries to login to the auto login database
-				sessionDelegate = context.createSession(dbSource,
-					dbSource.getUser(), dbSource.getPass());
-			} else {*/
-				// first time running match maker, run default
-				sessionDelegate = context.createDefaultSession();
-			//}
-			MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
-			getSessions().add(session);
-		    session.addSessionLifecycleListener(getSessionLifecycleListener());
-			session.showGUI();
-		} catch (Exception ex) {
-			if (ex instanceof RepositoryVersionException) {
-				handleRepositoryVersionException(dbSource, (RepositoryVersionException) ex);
-			} else {
-				JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed!", ex);
-				errorDialog.addWindowListener(new WindowAdapter() {
-					public void windowDeactivated(WindowEvent evt) {
-						showLoginDialog(getAutoLoginDataSource());
-					}
-				});
-			}
-		}
+		sessionDelegate = context.createDefaultSession();
+		MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
+		getSessions().add(session);
+		session.addSessionLifecycleListener(getSessionLifecycleListener());
+		session.showGUI();
 	}
-    
-    /**
-     * Provides the user with options to dealing with a repository schema version problem.
-     * If the schema is too old, attempt to run upgrade script. If the schema is too
-     * "new", prompts user to download newer mm or visit forum. Redisplays the login screen
-     * regardless of the result.
-     * 
-     * @param dbSource Used for running upgrade scripts to the schema.
-     * @param e Stores information of the schema problem.
-     */
-	public void handleRepositoryVersionException(final JDBCDataSource dbSource,
-			RepositoryVersionException e) {
-		Throwable t = null;
-		
-		if (e.getCurrentVersion() == null) {
-			// invalid schema version, just show the error dialog
-			t = e;
-		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) < 0) {
-			// schema is too old, prompt user to upgrade
-			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
-					"\nThe repository schema version is older than the DQguru required version." +
-					"\nWould you like to upgrade the schema now?",
-					"DQguru Repository Problem", JOptionPane.YES_NO_OPTION,
-					JOptionPane.WARNING_MESSAGE, null, new String[] {"Upgrade Now", "Not Now"}, "Upgrade Now");
-			
-			if (response == JOptionPane.YES_OPTION) {
-				try {
-					RepositoryUtil.upgradeSchema(dbSource, e.getCurrentVersion(), e.getRequiredVersion());
-					
-					JOptionPane.showMessageDialog(null, "The repository schema has been sucessfully upgrade to " +
-							e.getRequiredVersion() + ".", "Repository Upgrade Success", JOptionPane.INFORMATION_MESSAGE);
-				} catch (Exception ex) {
-					// failed upgrade, pass on exception to show user
-					t = ex;
-				}
-			}
-		} else if (e.getCurrentVersion().compareTo(e.getRequiredVersion()) > 0) {
-			// schema too ...new? prompt user to download new mm or visit forum
-			int response = JOptionPane.showOptionDialog(null, e.getMessage() +
-					"\nThe repository schema version is newer than the DQguru required version." +
-					"\nPlease download a newer version of the DQguru or visit our forum for help.",
-					"DQguru Repository Problem", JOptionPane.YES_NO_CANCEL_OPTION,
-					JOptionPane.WARNING_MESSAGE, null, new String[] {"Download Now", "Visit Forum", "Not Now"}, "Download Now");
-			
-			if (response == JOptionPane.YES_OPTION) { 
-				launchBrowser(DOWNLOAD_URL);
-			} else if (response == JOptionPane.NO_OPTION) {
-				launchBrowser(FORUM_URL);
-			}
-		} else {
-			// not something we're handling, just show the error dialog
-			t = e;
-		}
-		
-		if (t != null) {
-			// error not handled
-			JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Repository Schema Problem!", t);
-    		errorDialog.addWindowListener(new WindowAdapter() {
-    			public void windowDeactivated(WindowEvent arg0) {
-    				showLoginDialog(dbSource);
-    			}
-    		});
-		} else {
-			// error successfully handled
-			if (!isAutoLoginEnabled()) {
-				showLoginDialog(dbSource);
-			} else {
-				autoLogin();
-			}
-		}
-	}
-	
+
 	/**
 	 * Displays the given url with the default browser.
 	 * 
@@ -727,10 +562,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
     	return context.getSessionLifecycleListener();
     }
-
-	public void ensureDefaultRepositoryDefined() {
-		context.ensureDefaultRepositoryDefined();
-	}
 
 	public void addPreferenceChangeListener(PreferenceChangeListener l) {
 		context.addPreferenceChangeListener(l);

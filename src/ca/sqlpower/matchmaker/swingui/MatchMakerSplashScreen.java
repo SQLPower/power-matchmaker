@@ -146,7 +146,6 @@ public class MatchMakerSplashScreen {
         }
         
         summary.append("</tr><tr>");
-        summary.append("<td>DQguru Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
         summary.append("</tr></table></html>");
         JLabel summaryLabel = new JLabel(summary.toString(), JLabel.CENTER);
         

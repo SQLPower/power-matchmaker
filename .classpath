@@ -29,8 +29,6 @@
 	<classpathentry kind="lib" path="lib/gdata-core-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-meta-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="libsrc/hibernate3_src.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate-tools.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="lib/iText-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jhall.jar"/>
