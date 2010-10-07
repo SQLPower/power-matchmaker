@@ -541,7 +541,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void applyChanges() {
 		MungeStep step = getStep();
-		if (hasUnsavedChanges()) step.setPosition(getX(), getY());
+		if (hasUnsavedChanges()) step.setPosition(new Point(getX(), getY()));
 	}
 	
 	public boolean hasUnsavedChanges() {
@@ -656,7 +656,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	private boolean isExpanded() {
-		return getStepParameter(MungeStep.MUNGECOMPONENT_EXPANDED, false);
+		return step.isExpanded();
 	}
 	
 	/**
@@ -665,10 +665,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * until a mouse release event is fired.
 	 */
 	private int getXFromMMO() {
-		return getStepParameter(MungeStep.MUNGECOMPONENT_X, 0);
+		return step.getPosition().x;
 	}
 	private int getYFromMMO() {
-		return getStepParameter(MungeStep.MUNGECOMPONENT_Y, 0);
+		return step.getPosition().y;
 	}
 	
 	@Override
@@ -853,12 +853,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 		@Override
 		public void propertyChanged(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_EXPANDED)) {
-				setExpanded(Boolean.parseBoolean((String)evt.getNewValue()));
-			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_X)) {
+			if (evt.getPropertyName().equals("expanded")) {
+				setExpanded((Boolean)evt.getNewValue());
+			} else if (evt.getPropertyName().equals("position")) {
 				configureXFromMMO();
-			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_Y)) {
 				configureYFromMMO();
+				
 			} else if (evt.getPropertyName().equals("addInputs")){
 				repaint();
 			} else if (!evt.getPropertyName().equals("inputs")
@@ -873,7 +873,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	private class HideShowAction extends AbstractAction {
 		public void actionPerformed(ActionEvent e) {
-			step.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, !isExpanded());
+			step.setExpanded(!step.isExpanded());
 		}	
 	}
 	
@@ -978,7 +978,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			boolean showPopup = maybeShowPopup(e);
 			if (!showPopup && e.getClickCount() == 2) { 
-				step.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, !isExpanded());
+				step.setExpanded(!isExpanded());
 			}
 			bustGhost();
 			autoScrollTimer.stop();
@@ -1333,36 +1333,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * helper methods called by the subclasses
 	 * **************************************************************
 	 */
-	protected int getStepParameter(String key, int defaultValue) {
-		String val = step.getParameter(key);
-		if (val == null) {
-			return defaultValue;
-		}
-		try {
-			return Integer.parseInt(val);
-		} catch (NumberFormatException ex) {
-			logger.warn("Invalid integer value \"" + val + "\" for parameter \"" + key + "\" in step " + step);
-			return defaultValue;
-		}
-	}
-
-	protected boolean getStepParameter(String key, boolean defaultValue) {
-		String val = step.getParameter(key);
-		if (val == null) {
-			return defaultValue;
-		} else {
-			return Boolean.parseBoolean(val);
-		}
-	}
-
-	protected String getStepParameter(String key, String defaultValue) {
-		String val = step.getParameter(key);
-		if (val == null) {
-			return defaultValue;
-		} else {
-			return val;
-		}
-	}
 	
 	private Point getDifferencePoint() {
 		return this.diff;

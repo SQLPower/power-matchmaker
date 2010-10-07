@@ -19,17 +19,15 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.awt.Point;
 import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 import org.apache.log4j.Logger;
@@ -71,12 +69,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      */
     @SuppressWarnings("unused")
     private Long oid;
-    
-	
-	/**
-	 * A map of configuration parameters for this MungeStep.
-	 */
-	private Map<String,String> parameters = new HashMap<String, String>();
 	
     /**
      * Tracks whether a open() call has been made on this munge step.
@@ -107,6 +99,16 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	 * Tracks if this step is in preview mode.
 	 */
 	private boolean previewMode;
+	
+	/**
+	 * Stores the location of this step in a munge pen.
+	 */
+	private Point position;
+	
+	/**
+	 * Whether the step is expanded in a munge pen.
+	 */
+	private boolean expanded;
 	
 	/**
 	 * The default object type of this Munge Step's input. The default value is {@link Object#class}.
@@ -338,48 +340,29 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		fireChildRemoved(MungeStepOutput.class, mso, index);
 		return removed;
 	}
+	
+	@Mutator
+	public void setPosition(Point np) {
+		Point old = position;
+		position = np;
+		firePropertyChange("position", old, position);
+	}
+	
+	@Accessor
+	public boolean isExpanded() {
+		return expanded;
+	}
 
-	@NonProperty
-	public Collection<String> getParameterNames() {
-        return Collections.unmodifiableSet(parameters.keySet());
-    }
-    
-	@NonProperty
-	public String getParameter(String name) {
-		return parameters.get(name);
+	@Mutator
+	public void setExpanded(boolean expanded) {
+		boolean old = this.expanded;
+		this.expanded = expanded;
+		firePropertyChange("expanded", old, expanded);
 	}
-	
-	@NonProperty
-	public Boolean getBooleanParameter(String name) {
-		String param = parameters.get(name);
-		if (param != null) {
-			return Boolean.valueOf(param);
-		} else {
-			return null;
-		}
-	}
-	
-	@NonProperty
-	public Integer getIntegerParameter(String name) {
-		String param = parameters.get(name);
-		if (param != null) {
-			return Integer.valueOf(param);
-		} else {
-			return null;
-		}
-	}
-	
-	@NonProperty
-	public void setPosition(int x, int y) {
-		try {
-			begin("Setting position");
-			setParameter(MUNGECOMPONENT_X, x);
-			setParameter(MUNGECOMPONENT_Y, y);
-			commit();
-		} catch (RuntimeException e) {
-			rollback(e.getMessage());
-			throw e;
-		}
+
+	@Accessor
+	public Point getPosition() {
+		return position;
 	}
 	
 	/**
@@ -398,49 +381,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	public void setMSI(List<MungeStepInput> newInputs) {
 		inputs.clear();
 		inputs.addAll(newInputs);
-	}
-	
-	@NonProperty
-	public void setParameter(String name, String newValue) {
-		String oldValue = parameters.get(name);
-		Map<String, String> newParameters = new HashMap<String,String>();
-		newParameters.putAll(parameters);
-		newParameters.put(name, newValue);
-		setParameters(newParameters);
-		firePropertyChange(name, oldValue, newValue + "");
-	}
-	
-	@NonProperty
-	public void setParameter(String name, boolean newValue) {
-		String oldValue = parameters.get(name);
-		Map<String, String> newParameters = new HashMap<String,String>();
-		newParameters.putAll(parameters);
-		newParameters.put(name, newValue + "");
-		setParameters(newParameters);
-		firePropertyChange(name, oldValue, newValue + "");
-	}
-	
-	@NonProperty
-	public void setParameter(String name, int newValue) {
-		String oldValue = parameters.get(name);
-		Map<String, String> newParameters = new HashMap<String,String>();
-		newParameters.putAll(parameters);
-		newParameters.put(name, newValue + "");
-		setParameters(newParameters);
-		firePropertyChange(name, oldValue, newValue + "");
-	}
-	
-	@Transient @Mutator
-	public void setParameters(Map<String,String> parameters) {
-		Map<String, String> oldParameters = this.parameters;
-		this.parameters.clear();
-		this.parameters.putAll(parameters);
-		firePropertyChange("parameters", oldParameters, parameters);
-	}
-	
-	@Transient @Accessor
-	public Map<String,String> getParameters() {
-		return parameters;
 	}
 	
 	public MungeStep duplicate(MatchMakerObject parent) {
@@ -712,10 +652,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     	result.append("] [Outputs:");
     	for (MungeStepOutput mso : getChildren(MungeStepOutput.class)) {
     		result.append(" " + mso);
-    	}
-    	result.append("] [Parameters:");
-    	for (String param : getParameterNames()) {
-    		result.append(" <" + param + ":" + getParameter(param) + ">");
     	}
     	result.append("]");
     	return result.toString();
