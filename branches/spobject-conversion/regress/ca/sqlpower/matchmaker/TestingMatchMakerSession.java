@@ -133,9 +133,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-        if (businessClass == MatchMakerTranslateGroup.class){
-            return (MatchMakerDAO<T>) new MatchMakerTranslateGroupDAOStub();
-        } else if (businessClass == PlFolder.class){
+        if (businessClass == PlFolder.class){
             return (MatchMakerDAO<T>) new PlFolderDAOStup();
         }
         return null;

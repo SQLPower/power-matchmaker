@@ -99,7 +99,6 @@ import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
-import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
@@ -134,7 +133,6 @@ import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.TransactionEvent;
-import ca.sqlpower.util.Version;
 
 /**
  * The Main Window for the MatchMaker Application; contains a main() method that is
@@ -289,15 +287,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	    }
 	};
 
-	private Action remoteLoginAction = new AbstractAction("Connect to Remote Repository...") {
-		public void actionPerformed(ActionEvent e) {
-			sessionContext.showLoginDialog(null);
-		}
-
-	};
-
-    private CreateRepositoryAction createRepositoryAction = new CreateRepositoryAction(this);
-    
 	private Action newDeDupeAction = null;
 //	TODO: Implement Cross-referencing projects first before re-enabling this action
 //	private Action newXrefAction = null;
@@ -432,7 +421,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      *            like that).
 	 * @throws SQLException
      */
-	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws SQLException {
+	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
@@ -518,8 +507,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
 		JMenu databaseMenu = new JMenu("Connections");
 		databaseMenu.setMnemonic('d');
-		databaseMenu.add(remoteLoginAction);
-        databaseMenu.add(createRepositoryAction);
         databaseMenu.addSeparator();
 		databaseMenu.add(databaseConnectionAction);
 		menuBar.add(databaseMenu);
@@ -1128,10 +1115,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return smallMMIcon;
     }
 
-    public Version getPLSchemaVersion() {
-        return sessionImpl.getPLSchemaVersion();
-    }
-    
     /**
      * Opens a dialog for the user to choose a custom colour.
      * Returns the choosen colour.
