@@ -35,7 +35,7 @@ import ca.sqlpower.object.annotation.NonProperty;
  * A holder for translate groups
  */
 public class TranslateGroupParent extends AbstractMatchMakerObject {
-    
+	
 	/**
 	 * Defines an absolute ordering of the child types of this class.
 	 */
@@ -96,12 +96,8 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
         if (mmo instanceof TranslateWordMungeStep) {
             TranslateWordMungeStep step = (TranslateWordMungeStep) mmo;
-            String oidStr = step.getTranslateGroupUuid();
-            if (oidStr != null) {
-                Long oid = new Long(oidStr);
-                if (tg.getOid().equals(oid)) {
-                    return true;
-                }
+            if (tg.equals(step.getTranslateGroup())) {
+                return true;
             }
         }
         if (mmo instanceof Project) {
@@ -171,15 +167,5 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
-	}
-	
-	@NonProperty
-	public MatchMakerTranslateGroup getChildByUUID(String UU) {
-		for (MatchMakerTranslateGroup c: matchMakerTranslateGroups) {
-			if (c.getUUID().equals(UU)) {
-				return c;
-			}
-		}
-		return null;
 	}
 }

@@ -75,18 +75,6 @@ public abstract class AbstractMungeStepTest<T extends MatchMakerObject> extends 
 			assertEquals("Did not get any events",1,mml.getChildRemovedCount());
 		}
 	}
-
-	/**
-	 * Test to ensure setParameter properly sets a munge step parameter, and 
-	 * that it fires a property changed event
-	 */
-	public void testSetParameter() {
-		MatchMakerEventCounter mml = new MatchMakerEventCounter();
-		mungeStep.addSPListener(mml);
-		mungeStep.setParameter("test", "test");
-		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
-		assertEquals("Parameter cannot be found", "test", mungeStep.getParameter("test"));
-	}
 	
 	public void testConnectInput() {
 		if (mungeStep.canAddInput()) {

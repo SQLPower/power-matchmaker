@@ -52,6 +52,8 @@ import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.DefaultUserPrompterFactory;
+import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerHibernateSession implements MatchMakerSession {
@@ -437,4 +439,9 @@ public class TestingMatchMakerHibernateSession implements MatchMakerSession {
     	}
     	throw new IllegalArgumentException(name + " is not a sql datatype.");
     }
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new DefaultUserPrompterFactory();
+	}
 }

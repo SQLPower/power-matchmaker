@@ -52,14 +52,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 * This is the translate group that holds all the target and replacement strings.
 	 */
 	private MatchMakerTranslateGroup translateGroup;
-	
-	/**
-	 * The UUID of the translate group for this munge step.
-	 * XXX This can now be the actual translate group. This is only a string
-	 * due to the old implementation of using a string map to reference all parameters.
-	 */
-	private String translateGroupUuid;
-	
+
 	/**
 	 * Whether to use regular expressions in this munge step.
 	 */
@@ -165,9 +158,9 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public void refresh(Logger logger) throws Exception {
-		String uuid = getTranslateGroupUuid();
-		
-		translateGroup = getSession().getTranslations().getChildByUUID(uuid);
+		if (translateGroup == null) {
+			translateGroup = getSession().getTranslations().getChildren(MatchMakerTranslateGroup.class).get(0);
+		}
 	}
 
 	@Mutator
@@ -183,15 +176,15 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	}
 
 	@Mutator
-	public void setTranslateGroupUuid(String translateGroupUuid) {
-			String old = this.translateGroupUuid;
-			this.translateGroupUuid = translateGroupUuid;
-			firePropertyChange("translateGroupUuid", old, translateGroupUuid);
+	public void setTranslateGroup(MatchMakerTranslateGroup mmtg) {
+			MatchMakerTranslateGroup old = this.translateGroup;
+			this.translateGroup = mmtg;
+			firePropertyChange("translateGroup", old, translateGroup);
 	}
 
 	@Accessor
-	public String getTranslateGroupUuid() {
-		return translateGroupUuid;
+	public MatchMakerTranslateGroup getTranslateGroup() {
+		return translateGroup;
 	}
 
 	@Mutator
@@ -211,6 +204,6 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		TranslateWordMungeStep step = (TranslateWordMungeStep) copy;
 		step.setCaseSensitive(isCaseSensitive());
 		step.setRegex(isRegex());
-		step.setTranslateGroupUuid(getTranslateGroupUuid());
+		step.setTranslateGroup(getTranslateGroup());
 	}
 }

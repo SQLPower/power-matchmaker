@@ -19,16 +19,13 @@
 
 package ca.sqlpower.matchmaker;
 
+
 public class TestingMatchMakerTranslateGroupParent extends TranslateGroupParent {
 
 	public TestingMatchMakerTranslateGroupParent() {
 		super();
 		// TODO Auto-generated constructor stub
-	}
-	
-	@Override
-	public MatchMakerTranslateGroup getChildByUUID(String uuid) {
-    	MatchMakerTranslateGroup translateGroup = new MatchMakerTranslateGroup();
+		MatchMakerTranslateGroup translateGroup = new MatchMakerTranslateGroup();
 		MatchMakerTranslateWord test = new MatchMakerTranslateWord();
 		test.setFrom("ab");
 		test.setTo("12");
@@ -41,6 +38,8 @@ public class TestingMatchMakerTranslateGroupParent extends TranslateGroupParent 
 		test3.setFrom("x*y");
 		test3.setTo("-");
 		translateGroup.addChild(test3);
-		return translateGroup;
+		
+		addChild(translateGroup);
 	}
+	
 }

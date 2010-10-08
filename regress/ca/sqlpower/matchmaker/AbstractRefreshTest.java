@@ -30,6 +30,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.DatabaseConnectedTestCase;
+import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLTable;
 
 /**
@@ -91,6 +92,7 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
                 " CONSTRAINT customer_pk PRIMARY KEY (customer_id))");
         
         SQLTable customerTable = db.getTableByName(null, "PUBLIC", "CUSTOMER");
+        
         session = new TestingMatchMakerSession() {
             @Override
             public Connection getConnection() {
@@ -101,6 +103,10 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
                 }
             }
         };
+        
+        for(SQLColumn c : customerTable.getColumns()) {
+        	c.setType(session.getSQLType(c.getType()));
+        }
         session.setDatabase(db);
         
         p = new Project();

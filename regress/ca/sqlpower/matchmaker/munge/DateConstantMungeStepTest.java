@@ -48,7 +48,7 @@ public class DateConstantMungeStepTest extends MatchMakerTestCase<DateConstantMu
     }
     
     private void setFormat(int x){
-    	step.setParameter(DateConstantMungeStep.DATE_FORMAT, DateConstantMungeStep.FORMAT.get(x));
+    	step.setDateFormat(DateConstantMungeStep.FORMAT.get(x));
     }
     
     private void setRetNull(boolean b) {
