@@ -27,6 +27,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
@@ -80,6 +82,7 @@ import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.util.UserPrompter;
 import ca.sqlpower.util.Version;
 
 public class ProjectSAXHandler extends DefaultHandler {
@@ -191,12 +194,23 @@ public class ProjectSAXHandler extends DefaultHandler {
      */
     private TableMergeRules tableMergeRules;
     
+    private UserPrompter prompt;
+    
     private Map<String, TableMergeRules> tableMergeRulesIdMap = new HashMap<String, TableMergeRules>();
 
     private ColumnMergeRules columnMergeRules;
 
     ProjectSAXHandler(MatchMakerSession session) {
         this.session = session;
+        List<MatchMakerTranslateGroup> groups;
+        if (session.getTranslations() == null) {
+        	groups = Collections.emptyList();
+        } else {
+        	groups = session.getTranslations().getChildren(MatchMakerTranslateGroup.class);
+        }
+        prompt = session.createUserPrompterFactory().createListUserPrompter("A previously selected translate group" +
+        		"could not be carried over\nand must be selected manually. Choose a local translate group:",
+				groups, null);
     }
 
     @Override
@@ -961,8 +975,8 @@ public class ProjectSAXHandler extends DefaultHandler {
                 		} else if (parameterName.equals("useRegex")) {
                 			((TranslateWordMungeStep)step).setRegex(Boolean.valueOf(text.toString()));
                 		} else if (parameterName.equals("translateGroupOid")) {
-                			//UserPrompterFactory upf = new UserPrompterFactory();
-                			((TranslateWordMungeStep)step).setTranslateGroupUuid(text.toString());
+	                    		prompt.promptUser();
+	                    		((TranslateWordMungeStep)step).setTranslateGroup((MatchMakerTranslateGroup) prompt.getUserSelectedResponse());
                 		} else {
                 			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
                 		}

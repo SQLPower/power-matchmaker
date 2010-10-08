@@ -43,6 +43,8 @@ import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.DefaultUserPrompterFactory;
+import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.Version;
 
 /**
@@ -248,4 +250,9 @@ public class StubMatchMakerSession implements MatchMakerSession{
     {
     	return null;
     }
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new DefaultUserPrompterFactory();
+	}
 }
