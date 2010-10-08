@@ -34,6 +34,7 @@ import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.RunnableDispatcher;
+import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.WorkspaceContainer;
 
 /**
@@ -82,6 +83,13 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 * The time this session was created.
 	 */
 	public Date getSessionStartTime();
+	
+	/**
+	 * The prompter factory for this session. The returned factory will communicate with
+	 * the user through the proper method depending on what kind of session is running.
+	 * @return the factory
+	 */
+	public UserPrompterFactory createUserPrompterFactory();
 
     /**
      * Returns the folder that matches with the name

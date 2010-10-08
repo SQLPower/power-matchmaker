@@ -128,11 +128,13 @@ import ca.sqlpower.swingui.MemoryMonitor;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
+import ca.sqlpower.swingui.SwingUIUserPrompterFactory.NonModalSwingUIUserPrompterFactory;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.TransactionEvent;
+import ca.sqlpower.util.UserPrompterFactory;
 
 /**
  * The Main Window for the MatchMaker Application; contains a main() method that is
@@ -1588,5 +1590,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	@Override
 	public boolean isForegroundThread() {
         return true;
+	}
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new NonModalSwingUIUserPrompterFactory(frame);
 	}
 }

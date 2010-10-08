@@ -59,6 +59,8 @@ import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.DefaultUserPrompterFactory;
+import ca.sqlpower.util.UserPrompterFactory;
 
 /**
  * An implementation of MatchMakerSession that uses Hibernate to
@@ -100,6 +102,15 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
 	// TODO: Make this actually do something
 	//private ProjectDAOXML projectDAOXML = new ProjectDAOXML(new ByteArrayOutputStream());
 	private TimedGeneralDAO timedGeneralDAO = new TimedGeneralDAO(null);
+	
+	/**
+     * The factory that creates user prompters for this session. Defaults to a
+     * factory that makes an "always OK" user prompter for headless/embedded use.
+     * When this session is being used in a GUI environment, the startup code
+     * for the GUI will replace the default factory with one that actually
+     * prompts the user.
+     */
+    private UserPrompterFactory userPrompterFactory = new DefaultUserPrompterFactory();
 	
     /**
      * This node is the root node of all MatchMakerObjects and everything stems from this.
@@ -540,4 +551,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
     	}
     	throw new IllegalArgumentException(sqlType + " is not a sql datatype.");
     }
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new DefaultUserPrompterFactory();
+	}
 }
