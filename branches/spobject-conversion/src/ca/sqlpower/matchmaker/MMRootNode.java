@@ -24,6 +24,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import ca.sqlpower.enterprise.client.Group;
+import ca.sqlpower.enterprise.client.User;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
@@ -39,7 +41,8 @@ public class MMRootNode extends AbstractMatchMakerObject {
     @SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(FolderParent.class,  TranslateGroupParent.class)));
+				Arrays.asList(FolderParent.class,  TranslateGroupParent.class, 
+						User.class, Group.class)));
     
     /**
      * This is the folder that holds all the current projects in the tree.
@@ -57,6 +60,18 @@ public class MMRootNode extends AbstractMatchMakerObject {
      */
     private final TranslateGroupParent tgp;
     
+    /**
+     * This is the list of users in the system workspace and is only used as such. This
+     * list can be ignored when this is a normal MMRootNode.
+     */
+    private final List<User> users = new ArrayList<User>();
+    
+    /**
+     * This is the list of groups in the system workspace and is only used as such. This
+     * list can be ignored when this is a normal MMRootNode.
+     */
+    private final List<Group> groups = new ArrayList<Group>();
+    
     @Constructor
     public MMRootNode(@ConstructorParameter(propertyName="session") MatchMakerSession session) {
         setName("Root Node");
@@ -70,8 +85,62 @@ public class MMRootNode extends AbstractMatchMakerObject {
         tgp = new TranslateGroupParent();
         tgp.setName("Translation Groups");
     }
-
+    
     @Override
+    protected void addChildImpl(SPObject child, int index) {
+    	if (child instanceof User) {
+    		addUser((User) child, index);
+    	} else if (child instanceof Group) {
+    		addGroup((Group) child, index);
+    	} else {
+    		super.addChildImpl(child, index);
+    	}
+    }
+    
+    private void addUser(User user, int index) {
+    	users.add(index, user);
+    	user.setParent(this);
+    	fireChildAdded(User.class, user, index);
+    }
+    
+    private void addGroup(Group group, int index) {
+    	groups.add(index, group);
+    	group.setParent(this);
+    	fireChildAdded(Group.class, group, index);
+    }
+    
+    @Override
+    protected boolean removeChildImpl(SPObject child) {
+    	if (child instanceof User) {
+    		return removeUser((User) child);
+    	} else if (child instanceof Group) {
+    		return removeGroup((Group) child);
+    	} else {
+    		return super.removeChildImpl(child);
+    	}
+    }
+
+	private boolean removeGroup(Group child) {
+		boolean removed;
+		int index = groups.indexOf(child);
+		removed = groups.remove(child);
+		if (removed) {
+			fireChildRemoved(Group.class, child, index);
+		}
+		return removed;
+	}
+
+	private boolean removeUser(User child) {
+		boolean removed;
+		int index = users.indexOf(child);
+		removed = users.remove(child);
+		if (removed) {
+			fireChildRemoved(User.class, child, index);
+		}
+		return removed;
+	}
+
+	@Override
     public boolean equals(Object obj) {
         return this == obj;
     }
@@ -86,8 +155,20 @@ public class MMRootNode extends AbstractMatchMakerObject {
     }
 
 	@Override
-	public List<? extends SPObject> getChildren() {
-		return Collections.unmodifiableList(Arrays.asList(currentFolderParent, backupFolderParent, tgp));
+	public List<SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		if (currentFolderParent != null) {
+			children.add(currentFolderParent);
+		}
+		if (backupFolderParent != null) {
+			children.add(backupFolderParent);
+		}
+		if (tgp != null) {
+			children.add(tgp);
+		}
+		children.addAll(users);
+		children.addAll(groups);
+		return children;
 	}
 
 	@Override
