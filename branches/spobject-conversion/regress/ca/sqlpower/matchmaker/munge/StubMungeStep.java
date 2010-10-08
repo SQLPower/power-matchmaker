@@ -19,15 +19,15 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.Collection;
+import java.awt.Point;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.object.CleanupExceptions;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPListener;
@@ -81,16 +81,6 @@ public class StubMungeStep implements MungeStep {
         return null;
     }
 
-    @Override public String getParameter(String name) {
-        logger.debug("Stub call: StubMungeStep.getParameter()");
-        return null;
-    }
-
-    @Override public Collection<String> getParameterNames() {
-        logger.debug("Stub call: StubMungeStep.getParameterNames()");
-        return null;
-    }
-
     @Override public MungeProcess getParent() {
         logger.debug("Stub call: StubMungeStep.getParent()");
         return null;
@@ -103,20 +93,6 @@ public class StubMungeStep implements MungeStep {
     @Override public void open(Logger logger) throws Exception {
         logger.debug("Stub call: StubMungeStep.open()");
     }
-
-    @Override public void setParameter(String name, String newValue) {
-        logger.debug("Stub call: StubMungeStep.setParameter()");
-    }
-    
-
-	@Override public void setParameter(String name, boolean newValue) {
-		logger.debug("Stub call: StubMungeStep.setParameter()");
-		
-	}
-
-	@Override public void setParameter(String name, int newValue) {
-		logger.debug("Stub call: StubMungeStep.setParameter()");
-	}
 
     @Override public boolean allowsChildren() {
         logger.debug("Stub call: StubMungeStep.allowsChildren()");
@@ -221,11 +197,6 @@ public class StubMungeStep implements MungeStep {
 
 	@Override public void addInput(InputDescriptor desc, int index) {
 		logger.debug("Stub call: StubMungeStep.addInput()");
-	}
-
-	@Override public void setPosition(int x, int y) {
-		logger.debug("Stub call: StubMungeStep.setPosition()");
-		
 	}
 
 	@Override public void endCompoundEdit() {
@@ -393,4 +364,26 @@ public class StubMungeStep implements MungeStep {
     public List<MungeStepInput> getMungeStepInputs() {
     	return null;
     }
+
+	@Override
+	public Point getPosition() {
+		logger.debug("Stub call: MungeStep.getPosition()");
+		return null;
+	}
+
+	@Override
+	public boolean isExpanded() {
+		logger.debug("Stub call: MungeStep.isExpanded()");
+		return false;
+	}
+
+	@Override
+	public void setExpanded(boolean b) {
+		logger.debug("Stub call: MungeStep.setExpanded()");
+	}
+
+	@Override
+	public void setPosition(Point p) {
+		logger.debug("Stub call: MungeStep.setPosition()");
+	}
 }

@@ -84,20 +84,13 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			translateGroup = new JComboBox(translateGroups);
 			
 			// Sets the combo box to select the translate group in the parameter
-			if (temp.getTranslateGroupUuid() != null) {
-			    String uuid = temp.getTranslateGroupUuid();
-			    for (MatchMakerTranslateGroup group : translateGroups) {
-			        if (group.getUUID().equals(uuid)) {
-			            translateGroup.setSelectedItem(group);
-			        }
-			    }
+			if (temp.getTranslateGroup() != null) {
+			    translateGroup.setSelectedItem(temp.getTranslateGroup());
 			    
 			// Sets the parameter to the first translate group in the list if the step
 			// did not specific a translate group.
 			} else if (translateGroup.getSelectedItem() != null) {
-					MatchMakerTranslateGroup group = 
-						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setTranslateGroupUuid(group.getUUID().toString());
+					temp.setTranslateGroup((MatchMakerTranslateGroup)translateGroup.getSelectedItem());
 			}
 			
 		} else {
@@ -108,9 +101,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
 				if (translateGroup.getSelectedItem() != null) {
-					MatchMakerTranslateGroup group = 
-						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setTranslateGroupUuid(group.getUUID().toString());
+					temp.setTranslateGroup((MatchMakerTranslateGroup)translateGroup.getSelectedItem());
 				}
 			}
 			

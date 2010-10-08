@@ -161,12 +161,12 @@ public class MungeProcessorTest extends TestCase {
         	for (MungeStepOutput output: stepInputs) {
         		if (output != null) {
         			// Check if each parent step would be called before the current
-        			String called = output.getParent().getParameter("called");
-        			assertEquals("true", called);
+        			Boolean called = output.getParent().isExpanded();
+        			assertTrue(called);
         		}
         	}
         	// mark the current step as 'called'
-        	step.setParameter("called", "true");
+        	step.setExpanded(true);
         }
     }
     

@@ -20,6 +20,7 @@
 
 package ca.sqlpower.matchmaker;
 import java.awt.Color;
+import java.awt.Point;
 import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
@@ -151,7 +152,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("addressStatus");
         propertiesToIgnoreForDuplication.add("addressDB");
         propertiesToIgnoreForDuplication.add("open");
-        
+        propertiesToIgnoreForDuplication.add("expanded");
+        propertiesToIgnoreForDuplication.add("position");
         
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");
@@ -209,11 +211,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
 	
 							assertEquals("The two names are different.", oldStep.getName(), copyStep.getName());
 							assertEquals("The two visible properties are different.", oldStep.isVisible(), copyStep.isVisible());
-							assertEquals("The two lists of parameters are different.", oldStep.getParameterNames().size(), copyStep.getParameterNames().size());
-							for (String param : oldStep.getParameterNames()) {
-								assertEquals("The two values for parameter " + param + " are different",
-										oldStep.getParameter(param), copyStep.getParameter(param));
-							}
+
 						} else {
 							assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be equal",oldVal,copyVal);
 	
@@ -518,6 +516,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         		newVal = AutoValidateSetting.NOTHING;
         	} else {
         		newVal = AutoValidateSetting.SERP_CORRECTABLE;
+        	}
+        } else if (property.getPropertyType() == Point.class) {
+        	if (oldVal == null) {
+        		newVal = new Point(0, 0);
+        	} else {
+        		newVal = new Point(((Point) oldVal).x+1, ((Point) oldVal).y+1);
         	}
 		} else {
 			throw new RuntimeException("This test case lacks a value for "
