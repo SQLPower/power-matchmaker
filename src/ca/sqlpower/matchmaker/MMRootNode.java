@@ -28,7 +28,6 @@ import ca.sqlpower.enterprise.client.Group;
 import ca.sqlpower.enterprise.client.User;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.NonProperty;
 
 /**
@@ -72,10 +71,12 @@ public class MMRootNode extends AbstractMatchMakerObject {
      */
     private final List<Group> groups = new ArrayList<Group>();
     
+    /**
+     * The session for this root node must be set immediately after creating it.
+     */
     @Constructor
-    public MMRootNode(@ConstructorParameter(propertyName="session") MatchMakerSession session) {
+    public MMRootNode() {
         setName("Root Node");
-        setSession(session);
         currentFolderParent = new FolderParent();
         currentFolderParent.setName("Current Projects");
         currentFolderParent.setParent(this);
@@ -84,6 +85,7 @@ public class MMRootNode extends AbstractMatchMakerObject {
         backupFolderParent.setParent(this);
         tgp = new TranslateGroupParent();
         tgp.setName("Translation Groups");
+        tgp.setParent(this);
     }
     
     @Override

@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -292,5 +293,10 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
      * Gets the basic SQL type from the PL.INI file.
      */
     public UserDefinedSQLType getSQLType(int sqlType);
+    
+    /**
+     * Gets the upgrade version manager for this session.
+     */
+    public UpgradePersisterManager getUpgradePersisterManager();
 }
 

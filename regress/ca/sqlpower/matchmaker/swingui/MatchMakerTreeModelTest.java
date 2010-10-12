@@ -45,7 +45,8 @@ public class MatchMakerTreeModelTest extends TestCase {
 		super.setUp();
 		counter = new MatchMakerTreeEventCounter();
 		MatchMakerSession session = new TestingMatchMakerSession();
-		MMRootNode rootNode = new MMRootNode(session);
+		MMRootNode rootNode = new MMRootNode();
+		rootNode.setSession(session);
 		treeModel = new MatchMakerTreeModel(rootNode, session);
 		currentFoldersNode = (MatchMakerObject) treeModel.getChild(treeModel.getRoot(), 0);
 		currentFoldersNode.addChild(folder, 0);
