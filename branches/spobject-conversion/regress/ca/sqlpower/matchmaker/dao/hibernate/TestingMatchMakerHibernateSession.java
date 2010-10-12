@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
@@ -42,6 +43,7 @@ import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchMakerUpgradePersisterManager;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
@@ -443,5 +445,10 @@ public class TestingMatchMakerHibernateSession implements MatchMakerSession {
 	@Override
 	public UserPrompterFactory createUserPrompterFactory() {
 		return new DefaultUserPrompterFactory();
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return new MatchMakerUpgradePersisterManager();
 	}
 }

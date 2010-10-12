@@ -34,7 +34,8 @@ public class MMRootNodeTest extends MatchMakerTestCase<MMRootNode> {
 		super.setUp();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
-		rootNode = new MMRootNode(session);
+		rootNode = new MMRootNode();
+		rootNode.setSession(session);
 		getRootObject().addChild(rootNode, 0);
 	}
 	

@@ -76,6 +76,7 @@ import javax.swing.undo.UndoManager;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
@@ -106,6 +107,7 @@ import ca.sqlpower.matchmaker.swingui.action.ExportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.SaveProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
@@ -490,6 +492,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 
+		fileMenu.add(new SaveProjectAction(this));
+		
 		if (!MAC_OS_X) {
 			fileMenu.add(userPrefsAction);
 		}
@@ -1595,5 +1599,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	@Override
 	public UserPrompterFactory createUserPrompterFactory() {
 		return new NonModalSwingUIUserPrompterFactory(frame);
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return sessionImpl.getUpgradePersisterManager();
 	}
 }

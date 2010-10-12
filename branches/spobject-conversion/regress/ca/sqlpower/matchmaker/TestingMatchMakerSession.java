@@ -35,7 +35,9 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchMakerUpgradePersisterManager;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
@@ -77,7 +79,8 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         translateGroupParent= new TestingMatchMakerTranslateGroupParent();
         context = new TestingMatchMakerContext();
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
-        rootNode = new MMRootNode(this);
+        rootNode = new MMRootNode();
+        rootNode.setSession(this);
 	}
 
 	public String getAppUser() {
@@ -422,5 +425,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	@Override
 	public UserPrompterFactory createUserPrompterFactory() {
 		return new DefaultUserPrompterFactory();
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return new MatchMakerUpgradePersisterManager();
 	}
 }

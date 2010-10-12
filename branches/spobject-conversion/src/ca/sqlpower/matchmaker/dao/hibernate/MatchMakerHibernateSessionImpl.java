@@ -34,6 +34,7 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
@@ -45,6 +46,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchMakerUpgradePersisterManager;
 import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.security.PLSecurityException;
@@ -119,6 +121,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
     private MMRootNode rootNode;
     
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
+    
+    private final UpgradePersisterManager upgradeManager = new MatchMakerUpgradePersisterManager();
 
     /**
      * XXX this is untestable unless you're connected to a database right now.
@@ -133,7 +137,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
 			SQLException, SQLObjectException,
 			MatchMakerConfigurationException {
 		
-		rootNode = new MMRootNode(this);
+		rootNode = new MMRootNode();
+		rootNode.setSession(this);
         
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
 
@@ -555,5 +560,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
 	@Override
 	public UserPrompterFactory createUserPrompterFactory() {
 		return new DefaultUserPrompterFactory();
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return upgradeManager;
 	}
 }

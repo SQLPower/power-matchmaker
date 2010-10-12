@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -254,5 +255,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	@Override
 	public UserPrompterFactory createUserPrompterFactory() {
 		return new DefaultUserPrompterFactory();
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		logger.debug("Stub call: MatchMakerSession.getUpgradePersisterManager()");
+		return null;
 	}
 }
