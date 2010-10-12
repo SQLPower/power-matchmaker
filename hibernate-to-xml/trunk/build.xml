@@ -149,6 +149,14 @@
 				debug="true"
 		/>
 	</target>
+	
+	<!-- This target creates a jar that can be used to import all of the projects from an old
+	Hibernate repository into a new version of MatchMaker -->
+	<target name="hibernate_importer.jar" depends="compile">
+        <jar jarfile="${dist.base}/hibernate_importer.jar" basedir="${build}"
+            includes="ca/sqlpower/**">
+        </jar>
+    </target>
 
 	<!-- Compiles the MatchMaker and places the .class files into build-->
 	<target name="javadoc" depends="getAppVersion,compile">
@@ -207,36 +215,26 @@
 	
 	
 	<target name="copyfiles" depends="matchmaker.version.properties">
-		<mkdir dir="${build}/icons"/>
-	    <copy todir="${build}/icons">
-			<fileset dir="src/icons/">
-				<include name="**/*.gif"/>
-				<include name="**/*.png"/>
-				<include name="**/*.icns"/>
-			</fileset>
-		</copy>
 		
-		<copy todir="${build}/ca/sqlpower/matchmaker/dao/hibernate">
-			<fileset dir="src/ca/sqlpower/matchmaker/dao/hibernate">
+		<copy todir="${build}/ca/sqlpower/hibernateloader/dao/hibernate">
+			<fileset dir="src/ca/sqlpower/hibernateloader/dao/hibernate">
 				<include name="*.xml"/>
 				<include name="*.sql"/>
 				<include name="*.architect"/>
 			</fileset>
 		</copy>
 		
-		<copy todir="${build}/ca/sqlpower/matchmaker/address">
-			<fileset dir="src/ca/sqlpower/matchmaker/address">
+		<copy todir="${build}/ca/sqlpower/hibernateloader/address">
+			<fileset dir="src/ca/sqlpower/hibernateloader/address">
 				<include name="*.property"/>
 			</fileset>
 		</copy>
 		
-		<copy file="${dist.base}/matchmaker.version.properties" todir="${build}/ca/sqlpower/matchmaker"/>
+		<copy file="${dist.base}/matchmaker.version.properties" todir="${build}/ca/sqlpower/hibernateloader"/>
 		
 		<!-- copies the template log4j config file into the build dir -->
 		<copy tofile="${build}/log4j.properties"
 			file="src/log4j.properties.example"/>
-		<copy tofile="${build}/ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"
-			file="src/ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"/>
 	</target>
 	
 	
@@ -379,7 +377,7 @@
 
 		<!-- Warning: This is an extremely evil hack to get the product out the door!
 		              See bugzilla 1195 for details -->
-		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/doc/images" />
+		<mkdir dir="${build}/ca/sqlpower/hibernateloader/doc/doc/images" />
 		<copy todir="${build}/doc/html/doc/images" overwrite="true">
 			<fileset dir="doc/images">
 				<include name="*.png"/>
@@ -544,10 +542,10 @@
 	<target name="getAppVersion">
 		<mkdir dir="${build}"/>
 		<!-- get the version number from source code ArchitectUtils -->
-		<delete file="${build}/ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.class"/>
-		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" includes="ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.java" debug="true"/>
+		<delete file="${build}/ca/sqlpower/hibernateloader/antbuild/MatchMakerVersionTask.class"/>
+		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" includes="ca/sqlpower/hibernateloader/antbuild/MatchMakerVersionTask.java" debug="true"/>
 		<taskdef name="genVersion"
-					classname="ca.sqlpower.matchmaker.antbuild.MatchMakerVersionTask"
+					classname="ca.sqlpower.hibernateloader.antbuild.MatchMakerVersionTask"
 			        classpath="${build}"/>
 		<genVersion/>
 		<tstamp>

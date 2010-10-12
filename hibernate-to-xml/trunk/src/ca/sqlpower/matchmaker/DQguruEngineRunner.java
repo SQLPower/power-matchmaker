@@ -27,7 +27,6 @@ import java.util.prefs.Preferences;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
-import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -161,7 +160,7 @@ public class DQguruEngineRunner {
 		System.out.println("\t--debug | -d\t\t\t\tEnable debug");
 	}
 
-	private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) throws IOException {
+	public static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) throws IOException {
         if (plDotIniPath == null) {
             return null;
         }
@@ -172,7 +171,7 @@ public class DQguruEngineRunner {
 
         DataSourceCollection pld = new PlDotIni();
         // First, read the defaults
-        pld.read(SwingSessionContextImpl.class.getClassLoader().getResourceAsStream("ca/sqlpower/sql/default_database_types.ini"));
+        pld.read(MatchMakerSessionContext.class.getClassLoader().getResourceAsStream("ca/sqlpower/sql/default_database_types.ini"));
         // Now, merge in the user's own config
         pld.read(pf);
         return pld;

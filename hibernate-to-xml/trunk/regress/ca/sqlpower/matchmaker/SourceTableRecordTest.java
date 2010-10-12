@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 
 public class SourceTableRecordTest extends TestCase {
 

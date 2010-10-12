@@ -18,7 +18,7 @@
  */
 
 
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker.util;
 
 import java.util.Arrays;
 import java.util.Collections;

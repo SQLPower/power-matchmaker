@@ -30,7 +30,7 @@ import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
+import ca.sqlpower.matchmaker.StubMatchMakerSession;
 
 public class MungeResultTest extends TestCase {
 

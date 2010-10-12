@@ -36,7 +36,6 @@ import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SQL;

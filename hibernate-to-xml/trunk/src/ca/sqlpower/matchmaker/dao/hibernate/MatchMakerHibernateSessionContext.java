@@ -34,7 +34,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -130,7 +129,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSession createSession(JDBCDataSource ds, String username,
+    public MatchMakerHibernateSession createSession(JDBCDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
 			SQLObjectException, MatchMakerConfigurationException,
 			RepositoryVersionException {
@@ -144,7 +143,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         tempDbSource.setPass(password);
 
         try {
-            MatchMakerSession session = new MatchMakerHibernateSessionImpl(this, tempDbSource);
+            MatchMakerHibernateSession session = new MatchMakerHibernateSessionImpl(this, tempDbSource);
             sessions.add(session);
             session.addSessionLifecycleListener(sessionLifecycleListener);
             return session;

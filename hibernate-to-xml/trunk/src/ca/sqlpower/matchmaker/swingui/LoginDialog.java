@@ -24,8 +24,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -33,6 +35,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -46,7 +49,12 @@ import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
+import ca.sqlpower.matchmaker.DQguruEngineRunner;
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.util.ImportHibernateUtil;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
@@ -69,13 +77,24 @@ import com.jgoodies.forms.layout.FormLayout;
  * JFrame which it uses to display the Login screen.
  */
 public class LoginDialog implements SwingWorkerRegistry {
+	
+	public static void main(String[] args) throws Exception {
+		Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(null));
+		Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
+
+		String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
+		
+		DataSourceCollection<JDBCDataSource> plIni= DQguruEngineRunner.readPlDotIni(plDotIniPath);
+		MatchMakerHibernateSessionContext context = new MatchMakerHibernateSessionContext(prefs, plIni);
+		
+		LoginDialog loginDialog = new LoginDialog(context);
+		loginDialog.showLoginDialog(null);
+	}
 
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 
     private class LoginAction extends SPSwingWorker implements ActionListener {
 
-        private boolean loginWasSuccessful = false;
-        
         public LoginAction(SwingWorkerRegistry registry) {
         	super(registry);
         	setMessage("Logging in...");
@@ -136,52 +155,34 @@ public class LoginDialog implements SwingWorkerRegistry {
         @Override
         /** Called (once) by run() in superclass */
         public void doStuff() throws Exception {
-        	logger.debug("LoginAction.doStuff() was invoked!");
-            loginWasSuccessful = false;
-            
-            // Reset exception to null for each login. Without it,
-            // cleanup() would think there was an error if one existed
-            // in the previous attempt to login even if things were fixed.
-            setDoStuffException(null);
-            
-            session = sessionContext.createSession(dbSource,
-            		userID.getText(), new String(password.getPassword()));
-            session.getDatabase().populate();
-            loginWasSuccessful = true;
+        	String saveDirectoryLocation = saveDirectory.getText();
+        	File saveDirectoryFile = new File(saveDirectoryLocation);
+        	if (!saveDirectoryFile.isDirectory()) {
+        		throw new IllegalArgumentException("The directory " + saveDirectoryLocation + " is not a real directory.");
+        	}
+        	
+        	JDBCDataSource ds = new JDBCDataSource(dbSource);
+        	ds.setName(userID.getText());
+        	ds.setPass(new String(password.getPassword()));
+        	
+        	try {
+        		ImportHibernateUtil.exportHibernateProjects(sessionContext, ds, saveDirectoryFile);
+			} catch (Exception ex) {
+				throw new RuntimeException(ex);
+			}
         }
 
         @Override
         public void cleanup() {
-        	logger.debug("LoginAction.cleanup() starting");
-            try {
-                if (getDoStuffException() != null) {
-                	if (getDoStuffException() instanceof RepositoryVersionException) {
-                		sessionContext.handleRepositoryVersionException(dbSource,
-                				(RepositoryVersionException) getDoStuffException());
-                	} else {
-                		SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
-                	}
-                	
-                } else if (
-                        session != null &&
-                        session.getDatabase() != null &&
-                        session.getDatabase().isPopulated() &&
-                        loginWasSuccessful) {
-                	logger.debug("It looks like the login worked.");
-                    sessionContext.setLastLoginDataSource(dbSource);
-                    session.showGUI();
-                    frame.dispose();
-                } else {
-                    JOptionPane.showMessageDialog(frame, "The login failed for an unknown reason.");
-                }
-            } finally {
-                logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
-                loginButton.setEnabled(true);
-                userID.setEnabled(true);
-                password.setEnabled(true);
-                dbList.setEnabled(true);
-                logger.debug("Progress bar has been set to NOT visible");
-            }
+        	logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
+        	loginButton.setEnabled(true);
+        	userID.setEnabled(true);
+        	password.setEnabled(true);
+        	dbList.setEnabled(true);
+        	logger.debug("Progress bar has been set to NOT visible");
+        	if (getDoStuffException() != null) {
+        		throw new RuntimeException(getDoStuffException());
+        	}
         }
         
     }
@@ -203,7 +204,7 @@ public class LoginDialog implements SwingWorkerRegistry {
     	}
     }
     
-    private final Action cancelAction = new AbstractAction("Cancel") {
+    private final Action cancelAction = new AbstractAction("Close") {
         public void actionPerformed(ActionEvent e) {
         	if (sessionContext.getSessions().isEmpty()) {
         		// no sessions have been created yet
@@ -218,7 +219,8 @@ public class LoginDialog implements SwingWorkerRegistry {
     private final Action connectionManagerAction =
     	new AbstractAction("Manage Connections...") {
 		public void actionPerformed(ActionEvent e) {
-			sessionContext.showDatabaseConnectionManager(frame);
+			//TODO allow the management of connections
+//			sessionContext.showDatabaseConnectionManager(frame);
 		};
 	};
 
@@ -226,12 +228,12 @@ public class LoginDialog implements SwingWorkerRegistry {
 	 * The session context for this application.  The list of available
 	 * databases lives here, and login attempts will happen via this object.
 	 */
-	private SwingSessionContextImpl sessionContext;
+	private MatchMakerHibernateSessionContext sessionContext;
 
 	/**
 	 * The session that we will create upon successful login.
 	 */
-	private MatchMakerSwingSession session;
+	private MatchMakerSession session;
 
     /**
      * The frame that this dialog's UI gets displayed in.
@@ -257,6 +259,25 @@ public class LoginDialog implements SwingWorkerRegistry {
 
     private ActionListener loginAction = new LoginAction(this);
 
+    /**
+     * This text field contains the directory location where the xml
+     * representation of projects in Hibernate will be written to.
+     */
+    private JTextField saveDirectory;
+    
+    private Action saveDirectoryChooserAction = new AbstractAction("Choose directory...") {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fileChooser = new JFileChooser(saveDirectory.getText());
+			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			int returnValue = fileChooser.showOpenDialog(frame);
+			if (returnValue == JFileChooser.APPROVE_OPTION) {
+				saveDirectory.setText(fileChooser.getSelectedFile().getAbsolutePath());
+			}
+		}
+	};
+    
     /**
      * This action is an SPSwingWorker, which means it needs to register itself
      * somewhere.  Normally, the registry would be on the session object, but
@@ -285,14 +306,12 @@ public class LoginDialog implements SwingWorkerRegistry {
 		}};
 
     /**
-     * Creates a new login dialog, but does not display it.  Normally you should use
-     * {@link SwingSessionContextImpl#showLoginDialog()} and not create new login dialogs
-     * yourself.
+     * Creates a new login dialog, but does not display it.
      */
-	public LoginDialog(SwingSessionContextImpl sessionContext) {
+	public LoginDialog(MatchMakerHibernateSessionContext sessionContext) {
 		super();
         this.sessionContext = sessionContext;
-        frame = new JFrame("DQguru Login");
+        frame = new JFrame("DQguru Export");
         frame.setIconImage(new ImageIcon(getClass().getResource("/icons/dqguru_24.png")).getImage());
 		panel = createPanel();
         frame.getContentPane().add(panel);
@@ -338,8 +357,8 @@ public class LoginDialog implements SwingWorkerRegistry {
 	public JComponent createPanel() {
 
 		FormLayout layout = new FormLayout(
-				"4dlu, pref, 4dlu, fill:min(50dlu;pref):grow, min(20dlu;pref), 4dlu, min(15dlu;pref), fill:min, 4dlu", // columns
-				" 10dlu,pref,4dlu,pref,10dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu"); // rows
+				"4dlu, pref, 4dlu, fill:min(50dlu;pref):grow, pref, 4dlu, min(15dlu;pref), min, 4dlu", // columns
+				" 10dlu,pref,4dlu,pref,10dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu"); // rows
 
 		layout.setColumnGroups(new int [][] { {2,5},{4,7}});
 		CellConstraints cc = new CellConstraints();
@@ -350,8 +369,9 @@ public class LoginDialog implements SwingWorkerRegistry {
 		userID = new JTextField(20);
 		password = new JPasswordField(20);
 		dbSourceName = new JLabel();
+		saveDirectory = new JTextField(20);
 
-		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
+		JLabel line1 = new JLabel("Please choose one of the following databases to export from:");
 		connectionModel = new ConnectionComboBoxModel(sessionContext.getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
@@ -359,11 +379,9 @@ public class LoginDialog implements SwingWorkerRegistry {
 		
 		JLabel dbSourceName1 = new JLabel("Database source name:");
 
-		connectionModel.setSelectedItem(sessionContext.getLastLoginDataSource());
-
 		JButton connectionManagerButton = new JButton(connectionManagerAction);
 		loginButton.addActionListener(loginAction);
-		loginButton.setText("Login");
+		loginButton.setText("Export");
 		if (connectionModel.getSelectedItem() == null) {
 			loginButton.setEnabled(false);
 		}
@@ -390,10 +408,13 @@ public class LoginDialog implements SwingWorkerRegistry {
 		pb.add( userID, cc.xyw(4,8,2,"l,c"));
 		pb.add(passwordLabel,cc.xy(2,10,"r,c"));
 		pb.add(password,cc.xyw(4,10,2,"l,c"));
+		pb.add(new JLabel("Save directory"), cc.xy(2, 12, "r, c"));
+		pb.add(saveDirectory, cc.xyw(4, 12, 1, "l, c"));
+		pb.add(new JButton(saveDirectoryChooserAction), cc.xyw(5, 12, 2, "l, c"));
 
 		progressBar.setVisible(false);
-		pb.add(progressBar,cc.xyw(2,12,6));
-		pb.add(bbBuilder.getPanel(), cc.xyw(2,16,7));
+		pb.add(progressBar,cc.xyw(2,14,6));
+		pb.add(bbBuilder.getPanel(), cc.xyw(2,18,7));
 
 		frame.getRootPane().setDefaultButton(loginButton);
 		return pb.getPanel();

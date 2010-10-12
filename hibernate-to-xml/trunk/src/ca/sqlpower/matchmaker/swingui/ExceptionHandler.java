@@ -24,6 +24,8 @@ import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.swing.JFrame;
 
+import ca.sqlpower.swingui.SPSUtils;
+
 /**
  * Just a bridge from Java's UncaughtExceptionHandler to our
  * {@link MMSUtils#showExceptionDialog(java.awt.Component, String, Throwable)}.
@@ -47,7 +49,7 @@ public class ExceptionHandler implements UncaughtExceptionHandler {
 	}
 
 	public void uncaughtException(Thread t, Throwable e) {
-		MMSUtils.showExceptionDialog(parentFrame, "Caught Background Exception", e);
+		SPSUtils.showExceptionDialogNoReport(parentFrame, "Caught Background Exception", e);
 	}
 
 }

@@ -28,7 +28,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.swingui.ColorScheme;
+import ca.sqlpower.matchmaker.util.ColorScheme;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.

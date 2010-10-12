@@ -18,7 +18,7 @@
  */
 
 
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.util.Date;
@@ -26,14 +26,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
