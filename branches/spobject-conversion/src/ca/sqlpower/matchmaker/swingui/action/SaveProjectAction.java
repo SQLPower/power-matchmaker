@@ -53,17 +53,38 @@ public class SaveProjectAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser saveFileChooser = new JFileChooser();
-		FileNameExtensionFilter dqextension = new FileNameExtensionFilter("DQGuru XML Export", ".xml", ".dqguru");
+		FileNameExtensionFilter dqextension = new FileNameExtensionFilter("DQguru XML Export", ".xml", ".dqguru");
 		saveFileChooser.addChoosableFileFilter(dqextension);
 		int chosenReturnType = saveFileChooser.showSaveDialog(session.getFrame());
 		if (chosenReturnType != JFileChooser.APPROVE_OPTION) return;
 		
-		File selectedFile = saveFileChooser.getSelectedFile();
+		String backupString;
+		String tempString;
+		String extension;
+		
+		String selectedFileString = saveFileChooser.getSelectedFile().getAbsolutePath().toString();
+		if (selectedFileString.indexOf(".xml") == selectedFileString.length() - 4) {
+			backupString = selectedFileString.substring(0, selectedFileString.length() - 4);
+			extension = ".xml";
+		}
+		else if (selectedFileString.indexOf(".dqguru") == selectedFileString.length() - 7) {
+			backupString = selectedFileString.substring(0, selectedFileString.length() - 7);
+			extension = ".dqguru";
+		}
+		else {
+			backupString = selectedFileString;
+			selectedFileString += ".xml";
+			extension = ".xml";
+		}
+		tempString = backupString + "_tmp" + extension;
+		backupString += extension + "~";
+		
+		File selectedFile = new File(selectedFileString);
 		boolean confirmOverwrite = false;
 		
 		while (selectedFile.exists() && confirmOverwrite == false) {
 			int choice = JOptionPane.showConfirmDialog
-					(session.getFrame(), "File " + selectedFile.toString() + " already exists." +
+					(session.getFrame(), "File " + selectedFile.toString() + " already exists. " +
 					"Do you want to overwrite it?");
 			if (choice == JOptionPane.CANCEL_OPTION) return;
 			if (choice == JOptionPane.YES_OPTION) confirmOverwrite = true;
@@ -73,20 +94,25 @@ public class SaveProjectAction extends AbstractAction {
 				selectedFile = saveFileChooser.getSelectedFile();
 			}
 		}
+		
+		File backupFile = new File(backupString);
+		if (backupFile.exists()) {
+			if (JOptionPane.showConfirmDialog(session.getFrame(),
+					"A backup file will be overwritten. Continue?", "",
+					JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) return;
+		}
 
 		MMRootNode rootNode = session.getRootNode();
-		File tempOutFile = new File(selectedFile.getParentFile(), selectedFile.getName() + "_tmp.dqguru");
+		File tempOutFile = new File(tempString);
 		FileOutputStream fileOutputStream;
 		String cannotWriteFile = "A temporary file could not be written to " +
 				selectedFile.getParentFile() + ".";
 		try {
-			if (tempOutFile.exists()) {
-				int choice = JOptionPane.showConfirmDialog(session.getFrame(), "A previous temporary backup " +
-						"file will be overwritten. Continue?","",JOptionPane.YES_NO_OPTION);
-				if (choice == JOptionPane.NO_OPTION) return;
-			} else {
-				tempOutFile.createNewFile();
+			while (tempOutFile.exists()) {
+				tempString += "~";
+				tempOutFile = new File(tempString);
 			}
+			tempOutFile.createNewFile();
 			fileOutputStream = new FileOutputStream(tempOutFile);
 		} catch (FileNotFoundException ex) {
 			JOptionPane.showMessageDialog(session.getFrame(), cannotWriteFile);
@@ -110,7 +136,6 @@ public class SaveProjectAction extends AbstractAction {
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
-		File backupFile = new File(selectedFile.getParentFile(), selectedFile.getName() + "~");
 		
 		// Do the rename dance.
         // This is a REALLY bad place for failure (especially if we've made the user wait several hours to save
