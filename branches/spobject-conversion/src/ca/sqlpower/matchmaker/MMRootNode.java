@@ -59,7 +59,7 @@ public class MMRootNode extends AbstractMatchMakerObject {
      * This is the folder that holds all the translate groups in the tree.
      * The translate groups each hold a bunch of translations.
      */
-    private final TranslateGroupParent tgp;
+    private final TranslateGroupParent translateGroupParent;
     
     /**
      * This is the list of users in the system workspace and is only used as such. This
@@ -84,21 +84,21 @@ public class MMRootNode extends AbstractMatchMakerObject {
         backupFolderParent = new FolderParent();
         backupFolderParent.setName("Backup Projects");
         backupFolderParent.setParent(this);
-        tgp = new TranslateGroupParent();
-        tgp.setName("Translation Groups");
-        tgp.setParent(this);
+        translateGroupParent = new TranslateGroupParent();
+        translateGroupParent.setName("Translation Groups");
+        translateGroupParent.setParent(this);
     }
     
     @Constructor
     public MMRootNode(@ConstructorParameter(parameterType=ParameterType.CHILD, propertyName="currentFolderParent") FolderParent currentFolderParent,
     		@ConstructorParameter(parameterType=ParameterType.CHILD, propertyName="backupFolderParent") FolderParent backupFolderParent, 
-    		@ConstructorParameter(parameterType=ParameterType.CHILD, propertyName="tgp") TranslateGroupParent tgp) {
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, propertyName="translateGroupParent") TranslateGroupParent translateGroupParent) {
     	this.currentFolderParent = currentFolderParent;
     	this.currentFolderParent.setParent(this);
     	this.backupFolderParent = backupFolderParent;
     	this.backupFolderParent.setParent(this);
-    	this.tgp = tgp;
-    	this.tgp.setParent(this);
+    	this.translateGroupParent = translateGroupParent;
+    	this.translateGroupParent.setParent(this);
     }
     
     @Override
@@ -178,8 +178,8 @@ public class MMRootNode extends AbstractMatchMakerObject {
 		if (backupFolderParent != null) {
 			children.add(backupFolderParent);
 		}
-		if (tgp != null) {
-			children.add(tgp);
+		if (translateGroupParent != null) {
+			children.add(translateGroupParent);
 		}
 		children.addAll(users);
 		children.addAll(groups);
@@ -194,7 +194,7 @@ public class MMRootNode extends AbstractMatchMakerObject {
 
 	@NonProperty
 	public TranslateGroupParent getTranslateGroupParent() {
-		return tgp;
+		return translateGroupParent;
 	}
 
 	@NonProperty
