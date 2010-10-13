@@ -6,4 +6,4 @@ echo "Starting SQL Power DQguru Repository Exporter"
 echo "Using JRE Version:"
 java -version
 
-java -Xmx1000m -XX:MaxPermSize=128M -jar repository-export.jar
+java -Xmx500m -XX:MaxPermSize=128M -jar repository-export.jar
