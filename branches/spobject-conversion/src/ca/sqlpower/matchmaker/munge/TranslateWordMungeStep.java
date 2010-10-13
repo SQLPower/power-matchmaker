@@ -158,8 +158,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public void refresh(Logger logger) throws Exception {
-		if (translateGroup == null) {
-			translateGroup = getSession().getTranslations().getChildren(MatchMakerTranslateGroup.class).get(0);
+		if (translateGroup == null && getSession().getTranslations().getTranslateGroups().size() > 0) {
+			translateGroup = getSession().getTranslations().getTranslateGroups().get(0);
 		}
 	}
 
