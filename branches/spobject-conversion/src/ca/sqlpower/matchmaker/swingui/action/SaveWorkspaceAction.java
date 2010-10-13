@@ -39,13 +39,18 @@ import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.enterprise.MatchMakerPersisterSuperConverter;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
-public class SaveProjectAction extends AbstractAction {
+public class SaveWorkspaceAction extends AbstractAction {
+	
+	/**
+	 * The file extensions allowed for XML exports. The first element is the default.
+	 */
+	static final String[] XML_EXTENSIONS = {".dqguru", ".xml"};
 
-	private static final Logger logger = Logger.getLogger(SaveProjectAction.class);
+	private static final Logger logger = Logger.getLogger(SaveWorkspaceAction.class);
 	
 	private final MatchMakerSwingSession session;
 	
-	public SaveProjectAction(MatchMakerSwingSession session) {
+	public SaveWorkspaceAction(MatchMakerSwingSession session) {
 		super("Save");
 		this.session = session;
 	}
@@ -53,39 +58,39 @@ public class SaveProjectAction extends AbstractAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser saveFileChooser = new JFileChooser();
-		FileNameExtensionFilter dqextension = new FileNameExtensionFilter("DQguru XML Export", ".xml", ".dqguru");
+		FileNameExtensionFilter dqextension = new FileNameExtensionFilter("DQguru XML Export", XML_EXTENSIONS);
 		saveFileChooser.addChoosableFileFilter(dqextension);
 		int chosenReturnType = saveFileChooser.showSaveDialog(session.getFrame());
 		if (chosenReturnType != JFileChooser.APPROVE_OPTION) return;
 		
-		String backupString;
+		String backupString = null;
 		String tempString;
-		String extension;
+		String extension = null;
 		
 		String selectedFileString = saveFileChooser.getSelectedFile().getAbsolutePath().toString();
-		if (selectedFileString.indexOf(".xml") == selectedFileString.length() - 4) {
-			backupString = selectedFileString.substring(0, selectedFileString.length() - 4);
-			extension = ".xml";
+		for (String ext : XML_EXTENSIONS) {
+			if (selectedFileString.indexOf(ext) == selectedFileString.length() - ext.length()) {
+				backupString = selectedFileString.substring(0, selectedFileString.length() - ext.length());
+				extension = ext;
+			}
 		}
-		else if (selectedFileString.indexOf(".dqguru") == selectedFileString.length() - 7) {
-			backupString = selectedFileString.substring(0, selectedFileString.length() - 7);
-			extension = ".dqguru";
-		}
-		else {
+		if (extension == null) {
 			backupString = selectedFileString;
-			selectedFileString += ".xml";
-			extension = ".xml";
+			selectedFileString += XML_EXTENSIONS[0];
+			extension = XML_EXTENSIONS[0];
 		}
 		tempString = backupString + "_tmp" + extension;
 		backupString += extension + "~";
 		
 		File selectedFile = new File(selectedFileString);
 		boolean confirmOverwrite = false;
+		File backupFile = new File(backupString);
 		
 		while (selectedFile.exists() && confirmOverwrite == false) {
 			int choice = JOptionPane.showConfirmDialog
-					(session.getFrame(), "File " + selectedFile.toString() + " already exists. " +
-					"Do you want to overwrite it?");
+					(session.getFrame(), "The file " + selectedFile.toString() + 
+							(backupFile.exists()? " and its corresponding backup file " : "") +
+							"will be overwritten. Continue?");
 			if (choice == JOptionPane.CANCEL_OPTION) return;
 			if (choice == JOptionPane.YES_OPTION) confirmOverwrite = true;
 			if (choice == JOptionPane.NO_OPTION) {
@@ -93,13 +98,6 @@ public class SaveProjectAction extends AbstractAction {
 				if (chosenReturnType != JFileChooser.APPROVE_OPTION) return;
 				selectedFile = saveFileChooser.getSelectedFile();
 			}
-		}
-		
-		File backupFile = new File(backupString);
-		if (backupFile.exists()) {
-			if (JOptionPane.showConfirmDialog(session.getFrame(),
-					"A backup file will be overwritten. Continue?", "",
-					JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) return;
 		}
 
 		MMRootNode rootNode = session.getRootNode();

@@ -35,22 +35,29 @@ import ca.sqlpower.matchmaker.enterprise.MatchMakerPersisterSuperConverter;
 import ca.sqlpower.matchmaker.enterprise.MatchMakerSessionPersister;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
-public class OpenProjectAction extends AbstractAction {
+public class OpenWorkspaceAction extends AbstractAction {
 	
-	private static final Logger logger = Logger.getLogger(OpenProjectAction.class);
+	private static final Logger logger = Logger.getLogger(OpenWorkspaceAction.class);
 	
 	private final MatchMakerSwingSession session;
 
-	public OpenProjectAction(MatchMakerSwingSession session) {
+	public OpenWorkspaceAction(MatchMakerSwingSession session) {
 		super("Open");
 		this.session = session;
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		String[] extensionsWithBackups = new String[SaveWorkspaceAction.XML_EXTENSIONS.length * 2];
+		int i=0;
+		for (String ext : SaveWorkspaceAction.XML_EXTENSIONS) {
+			extensionsWithBackups[i] = ext + "~";
+			extensionsWithBackups[SaveWorkspaceAction.XML_EXTENSIONS.length+i++] = ext;
+		}
+
 		JFileChooser openFileChooser = new JFileChooser();
 		FileNameExtensionFilter dqextension = new FileNameExtensionFilter(
-				"DQguru XML Export", ".xml", ".dqguru");
+				"DQguru XML Export and Backup", extensionsWithBackups);
 		openFileChooser.addChoosableFileFilter(dqextension);
 		int chosenReturnType = openFileChooser.showOpenDialog(session.getFrame());
 		if (chosenReturnType != JFileChooser.APPROVE_OPTION) return;

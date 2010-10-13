@@ -107,8 +107,9 @@ import ca.sqlpower.matchmaker.swingui.action.ExportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.OpenProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.SaveProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.NewWorkspaceAction;
+import ca.sqlpower.matchmaker.swingui.action.OpenWorkspaceAction;
+import ca.sqlpower.matchmaker.swingui.action.SaveWorkspaceAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
@@ -493,8 +494,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 
-		fileMenu.add(new OpenProjectAction(this));
-		fileMenu.add(new SaveProjectAction(this));
+		fileMenu.add(new NewWorkspaceAction(this));
+		fileMenu.add(new OpenWorkspaceAction(this));
+		fileMenu.add(new SaveWorkspaceAction(this));
 		
 		if (!MAC_OS_X) {
 			fileMenu.add(userPrefsAction);
