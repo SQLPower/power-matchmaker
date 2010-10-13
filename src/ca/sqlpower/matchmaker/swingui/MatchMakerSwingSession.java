@@ -961,14 +961,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         }
     }
 
-    public String getAppUser() {
-        return sessionImpl.getAppUser();
-    }
-    
-    public String getAppUserEmail() {
-    	return sessionImpl.getAppUserEmail();
-    }
-
     public String getDBUser() {
         return sessionImpl.getDBUser();
     }
@@ -1604,5 +1596,19 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	@Override
 	public UpgradePersisterManager getUpgradePersisterManager() {
 		return sessionImpl.getUpgradePersisterManager();
+	}
+
+	@Override
+	public String getAppUserEmail() {
+		// TODO This will have very nice functionality once repositories are working again
+		logger.debug("Stub call: MatchMakerSession.getAppUserEmail()");
+		return null;
+	}
+
+	@Override
+	public String getAppUser() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchMakerSession.getAppUser()");
+		return null;
 	}
 }

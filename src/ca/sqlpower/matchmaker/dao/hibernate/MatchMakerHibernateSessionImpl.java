@@ -148,11 +148,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
 
 		final Connection con = database.getConnection();
 
-        sm = new PLSecurityManager(con,
-				 					dbUser.toUpperCase(),
-				 					ds.getPass(),
-                                    false);  // since this is a database login, we don't require correct app-level password
-		appUser = sm.getPrincipal();
 		sessionStartTime = new Date();
 		
         con.close();

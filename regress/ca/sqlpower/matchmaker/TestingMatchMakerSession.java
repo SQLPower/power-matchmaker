@@ -83,10 +83,6 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         rootNode.setSession(this);
 	}
 
-	public String getAppUser() {
-		return appUser;
-	}
-
 	public String getDBUser() {
 		return dbUser;
 	}
@@ -326,10 +322,6 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     		return false;
     	} 
     }
-
-	public String getAppUserEmail() {
-		return appUserEmail;
-	}
 	
 	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
 		SQLDatabase db = databases.get(dataSource);
@@ -430,5 +422,19 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	@Override
 	public UpgradePersisterManager getUpgradePersisterManager() {
 		return new MatchMakerUpgradePersisterManager();
+	}
+
+	@Override
+	public String getAppUserEmail() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchMakerSession.getAppUserEmail()");
+		return null;
+	}
+
+	@Override
+	public String getAppUser() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchMakerSession.getAppUser()");
+		return null;
 	}
 }
