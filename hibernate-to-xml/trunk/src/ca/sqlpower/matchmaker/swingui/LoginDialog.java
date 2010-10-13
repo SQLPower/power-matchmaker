@@ -36,6 +36,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -55,6 +56,7 @@ import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.matchmaker.util.ImportHibernateUtil;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.Olap4jDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
@@ -62,9 +64,9 @@ import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
+import ca.sqlpower.swingui.db.DataSourceDialogFactory;
 import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
 import ca.sqlpower.swingui.db.DatabaseConnectionManager;
-import ca.sqlpower.swingui.db.DefaultDataSourceDialogFactory;
 import ca.sqlpower.swingui.db.DefaultDataSourceTypeDialogFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -310,6 +312,25 @@ public class LoginDialog implements SwingWorkerRegistry {
         }
     };
 
+    /**
+     * This factory just passes the request through to the {@link MMSUtils#showDbcsDialog(Window, SPDataSource, Runnable)}
+     * method.
+     */
+    private final DataSourceDialogFactory dsDialogFactory = new DataSourceDialogFactory() {
+
+		public JDialog showDialog(Window parentWindow, JDBCDataSource dataSource,	Runnable onAccept) {
+			return MMSUtils.showDbcsDialog(parentWindow, dataSource, onAccept);
+		}
+
+        public JDialog showDialog(Window parentWindow,
+                Olap4jDataSource dataSource,
+                DataSourceCollection<? super JDBCDataSource> dsCollection,
+                Runnable onAccept) {
+            throw new UnsupportedOperationException("There is no editor implemented in DQ Guru for Olap4j at current.");
+        }
+    	
+    };
+    
     private final Action connectionManagerAction =
     	new AbstractAction("Manage Connections...") {
 		public void actionPerformed(ActionEvent e) {
@@ -320,7 +341,7 @@ public class LoginDialog implements SwingWorkerRegistry {
 		    		return d.showDialog(owner);
 		        }
 		    };
-			DatabaseConnectionManager dsManager = new DatabaseConnectionManager(sessionContext.getPlDotIni(), new DefaultDataSourceDialogFactory(), dsTypeDialogFactory);
+			DatabaseConnectionManager dsManager = new DatabaseConnectionManager(sessionContext.getPlDotIni(), dsDialogFactory, dsTypeDialogFactory);
 			dsManager.showDialog(frame);
 		};
 	};

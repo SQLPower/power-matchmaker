@@ -176,61 +176,31 @@
 		</javadoc>
 	</target>
 
-	<target name="javadoc.with.umlgraph" 
-		description="Generate the Javadoc documentation for the MatchMaker API along with UML diagrams generated using UMLGraph"
-		depends="getAppVersion, compile">
-		<mkdir dir="${dist.base}/doc/api"/>
-		<javadoc sourcepath="${src}" destdir="${dist.base}/doc/api"
-			packagenames="ca.sqlpower.*"
-			maxmemory="100m"
-			windowtitle="ca.sqlpower.matchmaker.* Power*MatchMaker"
-			Version="true" Author="true" Use="true"
-			Overview="html/overview.html"
-			classpathref="test.classpath"
-			>
-			<doclet name="gr.spinellis.umlgraph.doclet.UmlGraphDoc"
-    		  path="buildlib/UmlGraph.jar">
-    	        <param name="-attributes" />
-    	        <param name="-operations" />
-    	        <param name="-qualify" />
-    	        <param name="-types" />
-    	        <param name="-visibility" />
-    	    </doclet>
-			<packageset dir="${src}" defaultexcludes="yes">
-				<include name="ca/sqlpower/**" />
-				<exclude name="regress/**"/>
-			</packageset>
-			<bottom><![CDATA[<i>Copyright &#169; 2003-2008 SQL Power Group Inc. <a href="http://www.sqlpower.ca/">www.sqlpower.ca</a>]]></bottom>
-		</javadoc>
-		
-		<apply executable="dot" dest="${dist.base}/doc" parallel="false">
-			<arg value="-Tpng"/>
-			<arg value="-o"/>
-			<targetfile/>
-			<srcfile/>
-			<fileset dir="${dist.base}/doc" includes="*.dot"/>
-			<mapper type="glob" from="*.dot" to="*.png"/>
-		</apply>
-	</target>
-	
-	
 	<target name="copyfiles" depends="matchmaker.version.properties">
+	    <mkdir dir="${build}/icons"/>
+	    <copy todir="${build}/icons">
+	        <fileset dir="src/icons/">
+	            <include name="**/*.gif"/>
+	            <include name="**/*.png"/>
+	            <include name="**/*.icns"/>
+	        </fileset>
+	    </copy>
 		
-		<copy todir="${build}/ca/sqlpower/hibernateloader/dao/hibernate">
-			<fileset dir="src/ca/sqlpower/hibernateloader/dao/hibernate">
+		<copy todir="${build}/ca/sqlpower/matchmaker/dao/hibernate">
+			<fileset dir="src/ca/sqlpower/matchmaker/dao/hibernate">
 				<include name="*.xml"/>
 				<include name="*.sql"/>
 				<include name="*.architect"/>
 			</fileset>
 		</copy>
 		
-		<copy todir="${build}/ca/sqlpower/hibernateloader/address">
-			<fileset dir="src/ca/sqlpower/hibernateloader/address">
+		<copy todir="${build}/ca/sqlpower/matchmaker/address">
+			<fileset dir="src/ca/sqlpower/matchmaker/address">
 				<include name="*.property"/>
 			</fileset>
 		</copy>
 		
-		<copy file="${dist.base}/matchmaker.version.properties" todir="${build}/ca/sqlpower/hibernateloader"/>
+		<copy file="${dist.base}/matchmaker.version.properties" todir="${build}/ca/sqlpower/matchmaker"/>
 		
 		<!-- copies the template log4j config file into the build dir -->
 		<copy tofile="${build}/log4j.properties"
@@ -249,7 +219,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, pmd, pmd-cpd, findbugs, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_launch4j,generic_install,source_only_tgz">
+	<target name="dist" depends="junit, javadoc, windows_exe_installer_launch4j,generic_install">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.base}/doc"/>
 		<copy todir="${dist.base}/doc" overwrite="true">
@@ -273,16 +243,6 @@
 			PDF - because we can :-)
 	-->
 
-	<!-- NOTE: All XSLT steps currently require xalan on classpath since JDK1.5 is behind -->
-	<path id="docbookclasspath">
-		<fileset dir="doc/tools/xalan">
-			<include name="*.jar"/>
-		</fileset>
-	</path>
-
-	<target name="userguide" depends="help,pdf" description="Creates user guide in HTML and PDF">
-	</target>
-
 	<!-- Create an intermediate docbook document - for use both by help and html -
 	with no width attributes on the images (the Swing HTML browser chokes
 	when there is width but no height in an image tag)
@@ -294,74 +254,6 @@
 			out="${java.io.tmpdir}/DQguruUserGuide-nowidth.xml"
 			classpathref="docbookclasspath">
 		</xslt>
-	</target>
-
-	<!-- Build the Help (JavaHelp, HTML-based format).
-	 ** Note that at this time you must NOT have spaces in your
-	 ** path (e.g., an Eclipse Workspace under "Documents and Settings"
-	 ** will fail out because it changes spaces in filenames to %20.
-	 -->
-	<target name="help" depends="checkBuildPath, xslt-stripwidths" description="Create JavaHelp">
-		<mkdir dir="${build}/help"/>
-		<!-- This XSLT element is what's causing the problem with the
-			directories with spaces not working. It outputs the results
-			to a new directory with spaces replaced with '%20'-->
-		<xslt
-			style="doc/tools/xslt/javahelp/javahelp.xsl"
-			in="${java.io.tmpdir}/DQguruUserGuide-nowidth.xml"
-			out="${build}/help/zzz"
-			classpathref="docbookclasspath">
-		</xslt>
-
-		<!-- Index it I: limited-terms index: created manually, just copy it,
-		 *** overwriting empty one that DocBook Javahelp made.
-		 -->
-		<copy file="doc/jhelpidx.xml" todir="${build}/help" overwrite="true"/>
-
-		<!-- Index it II: full text search -->
-		<!-- DO NOT USE as it seems to have a built-in assumption
-		 *** that the help is all in one file.
-		<java classname="com.sun.java.help.search.Indexer"
-			classpath="lib/jhall.jar"
-			fork="true" failonerror="true">
-			<arg value="${build}/help"/>
-		</java>
-		<mkdir dir="${build}/help/JavaHelpSearch"/>
-		<move todir="${build}/help/JavaHelpSearch">
-			<fileset dir="JavaHelpSearch" includes="**"/>
-		</move>
-		-->
-		<!-- So, remove the search view from the JavaHelp config -->
-		<replace file="${build}/help/jhelpset.hs" value="">
-			<replacetoken><![CDATA[<view><name>Search</name><label>Search</label><type>javax.help.SearchView</type><data engine="com.sun.java.help.search.DefaultSearchEngine">JavaHelpSearch</data></view>]]></replacetoken>
-		</replace>
-
-		<!-- Add the Favorites/Bookmarks views into the JavaHelp Config -->
-		<replace file="${build}/help/jhelpset.hs"
-			token="jhelpidx.xml&lt;/data>&lt;/view>&lt;/helpset>"
-			value="jhelpidx.xml&lt;/data>&lt;/view>&lt;view>&lt;name>favorites&lt;/name>&lt;label>Favorites&lt;/label>&lt;type>javax.help.FavoritesView&lt;/type>&lt;/view>&lt;/helpset>"/>
-
-		<!-- Copy the images and icons; the DocBook files have
-			these horrid "src/" and "doc/" paths prepended
-			so we have to preserve these here -->
-		<mkdir dir="${build}/help/doc/images"/>
-		<copy todir="${build}/help/doc/images" overwrite="true">
-			<fileset dir="doc/images">
-				<include name="*.png"/>
-			</fileset>
-		</copy>
-
-		<mkdir dir="${build}/help/src/icons"/>
-		<copy todir="${build}/help/src/icons" overwrite="true">
-			<fileset dir="src/icons">
-				<include name="*.gif"/>
-				<include name="*.png"/>
-			</fileset>
-		</copy>
-
-		<!-- Jar the whole mess up and add to working classpath -->
-		<jar file="${build}/dqguruhelp.jar" basedir="${build}/help" update="false">
-		</jar>
 	</target>
 
 	<!-- Build the HTML -->
@@ -377,44 +269,13 @@
 
 		<!-- Warning: This is an extremely evil hack to get the product out the door!
 		              See bugzilla 1195 for details -->
-		<mkdir dir="${build}/ca/sqlpower/hibernateloader/doc/doc/images" />
+		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/doc/images" />
 		<copy todir="${build}/doc/html/doc/images" overwrite="true">
 			<fileset dir="doc/images">
 				<include name="*.png"/>
 			</fileset>
 		</copy>
 	</target>
-
-	<!-- Convert User Manual from XML to FO -->
-	<!-- USED to depend on init in architect, not sure if it is needed -->
-	<target name="fo" depends="getAppVersion" description="Create user guide in XML Formatting Objects">
-		<mkdir dir="${build}/doc/" />
-        <xslt
-			style="doc/tools/xslt/fo/docbook.xsl"
-			in="doc/DQguruUserGuide.xml"
-			out="${build}/doc/DQguruUserGuide-${app.version}.fo"
-			classpathref="docbookclasspath">
-		</xslt>
-	</target>
-
-	<!-- Finish it, from FO to PDF -->
-	<target name="pdf" depends="fo" description="Create user guide in PDF">
-		<path id="fop-classpath">
-			<fileset dir="doc/tools/xalan">
-			  <include name="*.jar"/>
-			</fileset>
-			<fileset dir="doc/tools/fop">
-			  <include name="*.jar"/>
-			</fileset>
-		</path>
-		<taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop" classpathref="fop-classpath"/>
-        <fop format="application/pdf" messagelevel="verbose" relativebase="true" >
-			<fileset dir="${build}/doc/">
-				<include name="*.fo"/>
-			</fileset>
-		</fop>
-
-    </target>
 
 	<!-- Runs the test suite -->
 	<target name="junit" depends="getAppVersion, compile-tests">
@@ -441,7 +302,7 @@
 	</target>
 	
 	
-	<target name="stage" depends="getAppVersion, compile, userguide">
+	<target name="stage" depends="getAppVersion, compile">
 		<mkdir dir="${dist.base}" />
         <mkdir dir="${staging.dir}"/>
         <mkdir dir="${staging.dir}/lib"/>
@@ -450,14 +311,8 @@
 		
     	<copy todir="${staging.dir}/lib">
     	    <fileset dir="lib" includes="*.jar"/>
-    		<fileset dir="${build}" includes="dqguruhelp.jar" />
     	</copy>
 		
-    	<copy todir="${staging.dir}/doc">
-        	<fileset dir="${build}/doc" includes="*-${app.version}.pdf"/>
-    	   	<fileset dir="${build}/doc" includes="*.txt"/>
-    	</copy>
-
 		<manifestclasspath property="dqguru.jar.classpath" jarfile="${staging.dir}/dqguru.jar">
     		<classpath>
 	    		<pathelement path="${staging.dir}/jdbc"/>
@@ -468,7 +323,7 @@
     	 </manifestclasspath>
 
     	<manifest file="${build}/manifest">
-    		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"/>
+    		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.swingui.LoginDialog"/>
     		<attribute name="Class-Path" value="${dqguru.jar.classpath}" />
     	</manifest>
 
@@ -477,12 +332,6 @@
     				includes="ca/** org/** icons/** log4j.properties default_database_types.ini"
     				manifest="${build}/manifest">
     	</jar>
-		
-		<manifest file="${build}/dqguruenginerunner_manifest">
-    		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.DQguruEngineRunner"/>
-    		<attribute name="Class-Path" value="dqguru.jar" />
-    	</manifest>
-		<jar destfile="${staging.dir}/dqguru-engine-runner.jar" manifest="${build}/dqguruenginerunner_manifest"/>	
 		
     	<launch4j>
 			<config dontwrapjar="true" 
@@ -502,29 +351,8 @@
 			</config>
 		</launch4j>
 		
-		<launch4j>
-			<config dontwrapjar="true" 
-					headertype="gui"
-					jarpath="uninstaller.jar"
-					outfile="${staging.dir}/uninstaller.exe"
-					errtitle="Java Runtime Required"
-					priority="normal"
-					downloadurl="http://java.com/download"
-					supporturl="http://www.sqlpower.ca/forum"
-					customprocname="false"
-					stayalive="false"
-					icon="installer/uninstall.ico">
-				<singleInstance
-					mutexName="SQL Power DQguru Uninstaller"
-					windowTitle="SQL Power DQguru Uninstaller"
-				/>
-				<jre minVersion="1.6.0"/>
-			</config>
-		</launch4j>
-		
 		<copy todir="${staging.dir}/lib">
     	    <fileset dir="lib" includes="*.jar"/>
-    		<!--fileset dir="${build}" includes="architecthelp.jar" /-->
     	</copy>
 		
 		<copy todir="${staging.dir}/jdbc">
@@ -532,7 +360,6 @@
 			<fileset dir="src" includes="default_database_types.ini"/>
 	    </copy>
 		
-		<copy todir="${staging.dir}/doc" file="doc/ReleaseNotes.txt"/>
 		<copy todir="${staging.dir}" file="LICENSE"/>
 		<copy todir="${staging.dir}" file="LEGAL"/>
 		
@@ -542,10 +369,10 @@
 	<target name="getAppVersion">
 		<mkdir dir="${build}"/>
 		<!-- get the version number from source code ArchitectUtils -->
-		<delete file="${build}/ca/sqlpower/hibernateloader/antbuild/MatchMakerVersionTask.class"/>
-		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" includes="ca/sqlpower/hibernateloader/antbuild/MatchMakerVersionTask.java" debug="true"/>
+		<delete file="${build}/ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.class"/>
+		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" includes="ca/sqlpower/matchmaker/antbuild/MatchMakerVersionTask.java" debug="true"/>
 		<taskdef name="genVersion"
-					classname="ca.sqlpower.hibernateloader.antbuild.MatchMakerVersionTask"
+					classname="ca.sqlpower.matchmaker.antbuild.MatchMakerVersionTask"
 			        classpath="${build}"/>
 		<genVersion/>
 		<tstamp>
@@ -725,59 +552,6 @@
 		classname="net.sourceforge.jarbundler.JarBundler"/>
 	
 	
-	<target name="osx_dist" depends="stage">
-		<!-- The pre-compiled osx adapter class (it only compiles on OS X) -->
-		<copy file="osx_packaging_utils/osx_adapter.jar" todir="${staging.dir}/lib"/>
-
-		<!-- jarbundler is from sourceforge, defined near top of file -->
-		<jarbundler dir="${staging.dir}"
-           name="SQL Power DQguru"
-           version="${app.version}"
-		   bundleid="ca.sqlpower.matchmaker"
-           mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
-           icon="src/icons/dqguru.icns"
-           jvmversion="1.6+"
-           shortname="SQL Power DQguru"
-           stubfile="osx_packaging_utils/DQguruStub"
-           vmoptions="-Xmx600m">
-			<jarfileset dir="${staging.dir}" includes="lib/*.jar"/>
-			<jarfileset dir="${staging.dir}" includes="dqguru.jar"/>
-			<jarfileset dir="${staging.dir}" includes="dqguru-engine-runner.jar"/>
-			<!-- Add any jdbc drivers as resources the directory jdbc is referenced
-					in the manifest as well as various targets. -->
-			<javafileset dir="${staging.dir}" includes="jdbc/*.jar jdbc/*.ini"/>
-			<extraclasspathfilelist dir="KICKME" files="jdbc"/>
-		</jarbundler>
-
-		<!-- XXX this is stupid. we should modify the jarbundler task to allow literal strings in the classpath -->
-		<replace file="${staging.dir}/SQL Power DQguru.app/Contents/Info.plist"
-				 token="${basedir}/KICKME"
-				 value="$JAVAROOT" />
-
-	</target>
-		
-	<!-- Creates a tarball containing only the Java source files -->
-	<target name="source_only_tgz" depends="getAppVersion"
-		description="Builds a source only tarball of the Architect">
-		<mkdir dir="${dist.base}"/>
-		<tar destfile="${dist.base}/SQL-Power-DQguru-src-only-${app.version}.tar.gz"
-			 compression="gzip" longfile="gnu">
-			<tarfileset dir="."
-				prefix="matchmaker-src-only-${app.version}"
-				includes="${src}/**/*.java,
-					  ${src}/**/*.png,
-					  ${src}/**/*.gif,
-					  ${src}/**/*.xml,
-					  ${src}/**/*.sql,
-					  ${src}/**/*.architect,
-					  regress/**/*.java,
-					  build.xml,
-					  build.properties.example,
-					  LICENSE,
-					  README.sourceonly
-					  "/>
-		</tar>
-	</target>
 	
 	
 	<!-- This is needed to prevent a problem with DocBook help file generation 
@@ -836,77 +610,6 @@
 		</fail>
 	</target>
 	
-	<target name="osx_tgz" depends="osx_dist" if="isUnix">
-		<!-- NOTE: This generally won't work on Windows as it typically doesn't have 'tar' installed -->
-		<exec executable="tar" dir="${staging.dir}">
-			<arg value="-cpzf"/>
-			<arg value="../${dist.base}/SQL-Power-DQguru-OSX-${app.version}.tar.gz"/>
-			<arg value="LICENSE"/>
-			<arg value="SQL Power DQguru.app"/>
-		</exec>
-		
-<!--		<tar destfile="${dist.base}/DQguru-OSX-${app.version}.tar.gz"
-					compression="gzip">
-			<tarfileset dir="${staging.dir}" includes="DQguru.app/**"/>
-		</tar> -->
-	</target>
-	
-	
-	<target name="osx_dmg" depends="osx_dist" if="isMac">
-		<!-- hdiutil create -size 50m -fs HFS+ -volname "Power*Architect" RWArchitect.dmg
-				     hdiutil attach RWArchitect.dmg
-				     (copy architect.app over, position it, etc)
-				     /Developer/Tools/SetFile -a V /Volumes/Power\*Architect/install_folder_background.png
-				     hdiutil detach /Volumes/Power\*Architect/
-				     rm Power_Architect-1.0.19.dmg
-				     hdiutil convert -format UDCO -o Power_Architect-1.0.19.dmg RWArchitect.dmg
-				  -->
-		<copy file="osx_packaging_utils/RWDQguru.dmg.sparseimage" tofile="${staging.dir}/RWDQguru.dmg.sparseimage" overwrite="true" />
-		<exec executable="hdiutil">
-					<arg value="detach" />
-					<arg value="/Volumes/SQL Power DQguru" />
-		</exec>
-		<exec executable="hdiutil">
-			<arg value="attach" />
-			<arg value="${staging.dir}/RWDQguru.dmg.sparseimage" />
-		</exec>
-		<delete dir="/Volumes/SQL Power DQguru/SQL Power DQguru.app/Contents/Resources/Java"/>
-		<copy todir="/Volumes/SQL Power DQguru/SQL Power DQguru.app/" overwrite="true"  >
-			<fileset dir="${staging.dir}/SQL Power DQguru.app"></fileset>
-		</copy>
-		<exec executable="chmod">
-			<arg value="a+x"/>
-			<arg value="/Volumes/SQL Power DQguru/SQL Power DQguru.app/Contents/MacOS/DQguruStub"/>
-		</exec>
-		<exec executable="hdiutil">
-			<arg value="detach" />
-			<arg value="/Volumes/SQL Power DQguru" />
-		</exec>
-		<delete file="${dist.base}/SQL-Power-DQguru-OSX-${app.version}.dmg" />
-		<exec executable="hdiutil">
-			<arg value="convert"/>
-			<arg value="${staging.dir}/RWDQguru.dmg.sparseimage"/>
-			<arg value="-format"/>
-			<arg value="UDCO"/>
-			<arg value="-o"/>
-			<arg value="${dist.base}/SQL-Power-DQguru-OSX-${app.version}.dmg"/>
-		</exec>
-
-		<javac srcdir="osx_packaging_utils"
-		   			   destdir="${build}"
-					   includes="ca/sqlpower/antbuild/AddLicenseToDMGTask.java"
-					   />
-		
-		<taskdef name="addLicenseToDMG"
-				 classname="ca.sqlpower.antbuild.AddLicenseToDMGTask"
-			     classpath="${build}"/>
-		<addLicenseToDMG
-				dmgFile="${dist.base}/SQL-Power-DQguru-OSX-${app.version}.dmg"
-                licenseFile="${staging.dir}/LICENSE"
-		        resourceTemplateFile="osx_packaging_utils/sla_template.r"/>
-    </target>
-	
-	
 	<!-- 
 		This build target checks for the sqlpower-library project, which is
 		required by the MatchMaker to build. 
@@ -942,64 +645,6 @@
 	
 	<target name="dist-clean" depends="clean">
 		<delete dir="${dist.base}"/>
-	</target>
-	
-	
-	<property name="pmd.home" value="ext-tools/pmd"/>
-	<property name="pmd.jar" value="${pmd.home}/lib/pmd-4.2.jar"/>
-	
-	<target name="pmd" depends="getAppVersion"
-		description="Runs the PMD code checking tool, saving results to a file."
-		>
-	 	<mkdir dir="${reports}"/>
-		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"
-			classpath="${pmd.jar}"/>
-		<property name="pmd-results" value="${reports}/pmd-ant-results.${pmd.report.format}"/>
-		<pmd shortFilenames="true" targetjdk="1.6">
-			<ruleset>basic,imports</ruleset>
-			<formatter type="${pmd.report.format}" toFile="${pmd-results}"/>
-			<fileset dir="${src}">
-				<include name="ca/sqlpower/**/*.java"/>
-			</fileset>
-		</pmd>
-		<echo message="PMD completed, output is in ${pmd-results}."/>
-	</target>
-	
-	<target name="pmd-cpd" depends="getAppVersion"
-		description="Runs the PMD Copy/Paste Detection tool, and saves results to a file">
-	 	<mkdir dir="${reports}"/>
-		<taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask"
-			classpath="${pmd.jar}"/>
-		<property name="cpd-results" value="${reports}/cpd-ant-results.xml"/>
-		<cpd encoding="UTF-8" minimumTokenCount="120" format="xml" outputfile="${cpd-results}">
-			<fileset dir="${src}">
-				<include name="ca/sqlpower/**/*.java"/>
-				<exclude name="generated/**.java"/>
-			</fileset>
-		</cpd>
-		<xslt in="${cpd-results}" style="${pmd.home}/etc/xslt/cpdhtml.xslt" out="${reports}/cpd-ant-results.html" />
-		<echo message="CPD completed, output is in ${reports}/cpd-ant-results.html."/>
-	</target>
-	
-
-
-	<target name="findbugs"
-		description="Runs the FindBugs tool, outputs results to a text file"
-		depends="compile, getAppVersion">
-		<mkdir dir="${reports}"/>
-		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
-			classpath="${findbugs-ant.jar}"/>
-		<findbugs home="${findbugs.home}"
-			output="${findbugs.report.format}"
-			outputFile="${reports}/findbugs-ant-results.${findbugs.report.format}"
-			reportLevel="low"
-			jvmargs="-Xmx512m">  <!-- FindBugs can use up a lot of memory, so adjust the JVM memory here-->
-			<class location="${build}" />
-			<sourcePath path="${src}" />
-			<!-- Classes needed by our code but that we don't want tested -->
-			<auxClasspath path="${pmd.jar}" />
-			<systemProperty name="findbugs.maskedfields.locals" value='true'/>
-		</findbugs>
 	</target>
 	
 	<target name="matchmaker.version.properties" depends="getAppVersion">
