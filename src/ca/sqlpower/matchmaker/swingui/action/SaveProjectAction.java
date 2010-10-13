@@ -96,7 +96,7 @@ public class SaveProjectAction extends AbstractAction {
 			return;
 		}
 		
-		XMLPersister xmlPersister = new XMLPersister(fileOutputStream, MMRootNode.class.getName());
+		XMLPersister xmlPersister = new XMLPersister(fileOutputStream, MMRootNode.class.getName(), "matchmaker-project");
 		XMLPersister.setUpgradePersisterManager(session.getUpgradePersisterManager());
 		MatchMakerPersisterSuperConverter converter = new MatchMakerPersisterSuperConverter(session.getContext().getPlDotIni(), rootNode);
 		SPPersisterListener spPersisterListener = new SPPersisterListener(xmlPersister, converter);
