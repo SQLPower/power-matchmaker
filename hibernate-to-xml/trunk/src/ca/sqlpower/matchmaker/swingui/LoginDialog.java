@@ -19,12 +19,13 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -49,19 +50,22 @@ import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.DQguruEngineRunner;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.matchmaker.util.ImportHibernateUtil;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
+import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
+import ca.sqlpower.swingui.db.DatabaseConnectionManager;
+import ca.sqlpower.swingui.db.DefaultDataSourceDialogFactory;
+import ca.sqlpower.swingui.db.DefaultDataSourceTypeDialogFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -77,15 +81,110 @@ import com.jgoodies.forms.layout.FormLayout;
  * JFrame which it uses to display the Login screen.
  */
 public class LoginDialog implements SwingWorkerRegistry {
+
+	/**
+	 * Creates the delegate context, prompting the user (GUI) for any missing
+	 * information.
+	 * <p>
+	 * Refactored from SwingSessionContextImpl.
+	 * 
+	 * @throws IOException
+	 */
+    private static MatchMakerHibernateSessionContext createContext(Preferences prefs) throws IOException {
+        DataSourceCollection<JDBCDataSource> plDotIni = null;
+        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
+        while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
+            logger.debug("readPlDotIni returns null, trying again...");
+            String message;
+            String[] options = new String[] {"Browse", "Create"};
+            final int BROWSE = 0; // indices into above array
+            final int CREATE = 1;
+            if (plDotIniPath == null) {
+                message = "location is not set";
+            } else if (new File(plDotIniPath).isFile()) {
+                message = "file \n\n\""+plDotIniPath+"\"\n\n could not be read";
+            } else {
+                message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
+            }
+            int choice = JOptionPane.showOptionDialog(null,   // blocking wait
+                    "The DQguru keeps its list of database connections" +
+                    "\nin a file called PL.INI.  Your PL.INI "+message+"." +
+                    "\n\nYou can browse for an existing PL.INI file on your system" +
+                    "\nor allow the DQguru to create a new one in your home directory.",
+                    "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
+
+            if (choice == JOptionPane.CLOSED_OPTION) {
+                throw new RuntimeException("Can't start without a pl.ini file");
+            } else if (choice == BROWSE) {
+                JFileChooser fc = new JFileChooser();
+                fc.setFileFilter(SPSUtils.INI_FILE_FILTER);
+                fc.setDialogTitle("Locate your PL.INI file");
+                int fcChoice = fc.showOpenDialog(null);       // blocking wait
+                if (fcChoice == JFileChooser.APPROVE_OPTION) {
+                    plDotIniPath = fc.getSelectedFile().getAbsolutePath();
+                } else {
+                    plDotIniPath = null;
+                }
+            } else if (choice == CREATE) {
+                String userHome = System.getProperty("user.home");
+                if (userHome == null) {
+                	throw new IllegalStateException("user.home property is null!");
+                }
+				plDotIniPath = userHome + File.separator + "pl.ini";
+				// Create an empty file so the read won't throw an IOE
+				if (new File(plDotIniPath).createNewFile()) {
+					logger.debug("Created file " + plDotIniPath);
+				} else {
+					logger.debug("Did NOT create file " + plDotIniPath +
+							"; mayhap it already exists?");
+				}
+            } else {
+                throw new RuntimeException(
+                "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
+            }
+        }
+        
+        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
+        return new MatchMakerHibernateSessionContext(prefs, plDotIni);
+    }
+    
+    /**
+     * Loads the pl.ini file if necessary.
+     */
+    private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) {
+        if (plDotIniPath == null) {
+            return null;
+        }
+        File pf = new File(plDotIniPath);
+        if (!pf.exists() || !pf.canRead()) {
+            return null;
+        }
+
+        DataSourceCollection pld = new PlDotIni();
+        
+        // First, read the defaults
+        try {
+            logger.debug("Reading PL.INI defaults");
+            pld.read(LoginDialog.class.getClassLoader().getResourceAsStream("ca/sqlpower/sql/default_database_types.ini"));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read system resource default_database_types.ini", e);
+        }
+        
+        // Now, merge in the user's own config
+        try {
+            pld.read(pf);
+            return pld;
+        } catch (IOException e) {
+            SPSUtils.showExceptionDialogNoReport("Could not read " + pf, e);
+            return null;
+        }
+    }
 	
 	public static void main(String[] args) throws Exception {
 		Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(null));
 		Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
 
-		String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
-		
-		DataSourceCollection<JDBCDataSource> plIni= DQguruEngineRunner.readPlDotIni(plDotIniPath);
-		MatchMakerHibernateSessionContext context = new MatchMakerHibernateSessionContext(prefs, plIni);
+		MatchMakerHibernateSessionContext context = createContext(prefs);
 		
 		LoginDialog loginDialog = new LoginDialog(context);
 		loginDialog.showLoginDialog(null);
@@ -204,23 +303,25 @@ public class LoginDialog implements SwingWorkerRegistry {
     	}
     }
     
-    private final Action cancelAction = new AbstractAction("Close") {
+    private final Action closeAction = new AbstractAction("Close") {
         public void actionPerformed(ActionEvent e) {
-        	if (sessionContext.getSessions().isEmpty()) {
-        		// no sessions have been created yet
-        		System.exit(0);
-        	} else {
-        		// there are other sessions, don't terminate the JVM
-        		frame.dispose();
-        	}
+        	frameClosing();	
+        	System.exit(0);
         }
     };
 
     private final Action connectionManagerAction =
     	new AbstractAction("Manage Connections...") {
 		public void actionPerformed(ActionEvent e) {
-			//TODO allow the management of connections
-//			sessionContext.showDatabaseConnectionManager(frame);
+		    DataSourceTypeDialogFactory dsTypeDialogFactory = new DataSourceTypeDialogFactory() {
+
+		    	public Window showDialog(Window owner) {
+		    		DefaultDataSourceTypeDialogFactory d = new DefaultDataSourceTypeDialogFactory(sessionContext.getPlDotIni());
+		    		return d.showDialog(owner);
+		        }
+		    };
+			DatabaseConnectionManager dsManager = new DatabaseConnectionManager(sessionContext.getPlDotIni(), new DefaultDataSourceDialogFactory(), dsTypeDialogFactory);
+			dsManager.showDialog(frame);
 		};
 	};
 
@@ -229,11 +330,6 @@ public class LoginDialog implements SwingWorkerRegistry {
 	 * databases lives here, and login attempts will happen via this object.
 	 */
 	private MatchMakerHibernateSessionContext sessionContext;
-
-	/**
-	 * The session that we will create upon successful login.
-	 */
-	private MatchMakerSession session;
 
     /**
      * The frame that this dialog's UI gets displayed in.
@@ -315,7 +411,7 @@ public class LoginDialog implements SwingWorkerRegistry {
         frame.setIconImage(new ImageIcon(getClass().getResource("/icons/dqguru_24.png")).getImage());
 		panel = createPanel();
         frame.getContentPane().add(panel);
-        SPSUtils.makeJDialogCancellable(frame, cancelAction);
+        SPSUtils.makeJDialogCancellable(frame, closeAction);
         frame.addWindowListener(optimizationManager);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
@@ -337,21 +433,10 @@ public class LoginDialog implements SwingWorkerRegistry {
     }
 
 	WindowListener optimizationManager = new WindowAdapter() {
-
-		/** If you try to login but have no Connections set up yet,
-		 * there is nothing you can do except "Manage Connections",
-		 * so we jump you to there.
-		 */
-		@Override
-		public void windowOpened(WindowEvent e) {
-			int dbListSize = connectionModel.getSize();
-
-			if (dbListSize == 0 ||
-				(dbListSize == 1 && connectionModel.getElementAt(0) == null)) {
-				ActionEvent actionEvent = new ActionEvent(LoginDialog.this, 0, "Fill in empty list");
-				connectionManagerAction.actionPerformed(actionEvent);
-			}
-		}
+		public void windowClosed(java.awt.event.WindowEvent e) {
+			frameClosing();
+			System.exit(0);
+		};
 	};
 
 	public JComponent createPanel() {
@@ -360,7 +445,6 @@ public class LoginDialog implements SwingWorkerRegistry {
 				"4dlu, pref, 4dlu, fill:min(50dlu;pref):grow, pref, 4dlu, min(15dlu;pref), min, 4dlu", // columns
 				" 10dlu,pref,4dlu,pref,10dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu"); // rows
 
-		layout.setColumnGroups(new int [][] { {2,5},{4,7}});
 		CellConstraints cc = new CellConstraints();
 
 		JLabel userIDLabel = new JLabel("User ID:");
@@ -385,7 +469,7 @@ public class LoginDialog implements SwingWorkerRegistry {
 		if (connectionModel.getSelectedItem() == null) {
 			loginButton.setEnabled(false);
 		}
-		JButton cancelButton = new JButton(cancelAction);
+		JButton cancelButton = new JButton(closeAction);
 
 		ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
         bbBuilder.addGridded(connectionManagerButton);
@@ -410,7 +494,7 @@ public class LoginDialog implements SwingWorkerRegistry {
 		pb.add(password,cc.xyw(4,10,2,"l,c"));
 		pb.add(new JLabel("Save directory"), cc.xy(2, 12, "r, c"));
 		pb.add(saveDirectory, cc.xyw(4, 12, 1, "l, c"));
-		pb.add(new JButton(saveDirectoryChooserAction), cc.xyw(5, 12, 2, "l, c"));
+		pb.add(new JButton(saveDirectoryChooserAction), cc.xyw(5, 12, 1, "l, c"));
 
 		progressBar.setVisible(false);
 		pb.add(progressBar,cc.xyw(2,14,6));
@@ -448,5 +532,9 @@ public class LoginDialog implements SwingWorkerRegistry {
 	 */
 	public void removeSwingWorker(SPSwingWorker worker) {
 		swingWorkers.remove(worker);
+	}
+	
+	private void frameClosing() {
+		sessionContext.closeAll();
 	}
 }
