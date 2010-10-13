@@ -53,7 +53,7 @@ public class MatchMakerSessionPersister extends SPSessionPersister {
         persistedBFP.setLoaded(true);
     
         String TGPUUID = (String) AbstractSPPersisterHelper.findPropertyAndRemove(
-                pso.getUUID(), "tgp", persistedProperties);
+                pso.getUUID(), "translateGroupParent", persistedProperties);
         PersistedSPObject persistedTGP = AbstractSPPersisterHelper.findPersistedSPObject(
                 pso.getUUID(), TGPUUID, persistedObjects);
         matchMakerProject.getTranslateGroupParent().setUUID(TGPUUID);

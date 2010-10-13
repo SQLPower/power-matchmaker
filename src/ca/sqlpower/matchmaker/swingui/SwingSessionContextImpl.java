@@ -196,9 +196,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         return session;
     }
 
-    public MatchMakerSession createDefaultSession() {
+    public MatchMakerSwingSession createDefaultSession() {
     	try {
-    		MatchMakerSession session = new MatchMakerSwingSession(this, context.createDefaultSession());
+    		MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createDefaultSession());
     		getSessions().add(session);
     		session.addSessionLifecycleListener(getSessionLifecycleListener());
     		return session;
