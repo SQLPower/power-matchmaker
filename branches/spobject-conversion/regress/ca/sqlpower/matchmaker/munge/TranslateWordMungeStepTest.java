@@ -69,7 +69,7 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("efg");
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getTranslateGroups().get(0));
 		step.connectInput(0, testInput);
 		
 		step.open(logger);

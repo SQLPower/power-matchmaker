@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.object.SPObject;
@@ -87,7 +88,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
     }
 
     /**
-     * Recursively searches for a munge step using the given translate group.
+     * Recursively searches for a munge step that uses the given translate group.
      *  
      * @param mmo the object and descendants we want to check.
      * @param tg the translate group to search for. Must not be null.
@@ -99,8 +100,9 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
             if (tg.equals(step.getTranslateGroup())) {
                 return true;
             }
-        }
-        if (mmo instanceof Project) {
+        } else if (mmo instanceof MungeStep || mmo instanceof TranslateGroupParent) {
+        	return false;
+        } else if (mmo instanceof Project) {
             Project projectChild = (Project) mmo;
             for (MungeProcess critGroup : projectChild.getMungeProcesses()) {
                 if (checkMMOContainsTranslateGroup((MatchMakerObject)critGroup, tg)) return true;
@@ -139,9 +141,13 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 		return g;
 	}
 
-	@Override
 	@NonProperty
 	public List<? extends SPObject> getChildren() {
+		return Collections.unmodifiableList(matchMakerTranslateGroups);
+	}
+	
+	@NonProperty
+	public List<MatchMakerTranslateGroup> getTranslateGroups() {
 		return Collections.unmodifiableList(matchMakerTranslateGroups);
 	}
 	
@@ -163,7 +169,6 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
 		return removed;
 	}
 
-	@Override
 	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
