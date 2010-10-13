@@ -127,4 +127,8 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      */
     public MungeStep getMungeStep(Class<? extends MungeStep> create);
     
+    @Override
+    public MatchMakerSwingSession createDefaultSession();
+    
+    
 }
