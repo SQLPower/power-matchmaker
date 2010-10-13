@@ -1,4 +1,4 @@
-<project name="matchmaker" default="dist" basedir=".">
+<project name="matchmaker" default="repository-exporter" basedir=".">
 
 	<!-- $Id$ -->
 	<!-- get the version number from source code MatchMakerUtils -->
@@ -152,10 +152,10 @@
 	
 	<!-- This target creates a jar that can be used to import all of the projects from an old
 	Hibernate repository into a new version of MatchMaker -->
-	<target name="hibernate_importer.jar" depends="compile">
-        <jar jarfile="${dist.base}/hibernate_importer.jar" basedir="${build}"
-            includes="ca/sqlpower/**">
-        </jar>
+	<target name="repository-exporter" depends="stage">
+		<mkdir dir="${dist.base}"/>
+		<zip destfile="${dist.base}/repository-export.zip" basedir="${staging.dir}">
+	    </zip>
     </target>
 
 	<!-- Compiles the MatchMaker and places the .class files into build-->
@@ -216,23 +216,6 @@
 		<javac srcdir="regress" destdir="${build.tests}"
 			classpathref="test.classpath"
 			debug="true"/>
-	</target>
-	
-	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, javadoc, windows_exe_installer_launch4j,generic_install">
-		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
-		<mkdir dir="${dist.base}/doc"/>
-		<copy todir="${dist.base}/doc" overwrite="true">
-			<fileset dir="${staging.dir}/doc">
-				<include name="*.txt"/>
-			</fileset>
-		</copy>
-		<copy todir="${dist.base}" overwrite="true">
-			<fileset dir="${staging.dir}/doc">
-				<include name="*-${app.version}.pdf"/>
-			</fileset>
-		</copy>
-		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
 	</target>
 	
 	<!-- DOCUMENTATION
@@ -313,7 +296,7 @@
     	    <fileset dir="lib" includes="*.jar"/>
     	</copy>
 		
-		<manifestclasspath property="dqguru.jar.classpath" jarfile="${staging.dir}/dqguru.jar">
+		<manifestclasspath property="dqguru.jar.classpath" jarfile="${staging.dir}/repository-export.jar">
     		<classpath>
 	    		<pathelement path="${staging.dir}/jdbc"/>
     			<fileset dir="${staging.dir}/">
@@ -336,8 +319,8 @@
     	<launch4j>
 			<config dontwrapjar="true" 
 					headertype="gui"
-					jarpath="dqguru.jar"
-					outfile="${staging.dir}/dqguru.exe"
+					jarpath="repository-export.jar"
+					outfile="${staging.dir}/repository-export.exe"
 					errtitle="Java Runtime Required"
 					priority="normal"
 					downloadurl="http://java.com/download"
@@ -362,6 +345,10 @@
 		
 		<copy todir="${staging.dir}" file="LICENSE"/>
 		<copy todir="${staging.dir}" file="LEGAL"/>
+		<copy todir="${staging.dir}" file="installer/repository-export.sh"/>
+		<chmod file="${staging.dir}/repository-export.sh" perm="u+x"/>
+		<copy todir="${staging.dir}" file="installer/repository-export.bat"/>
+		<chmod file="${staging.dir}/repository-export.bat" perm="u+x"/>
 		
 	</target>
 	
@@ -506,53 +493,6 @@
 			</config>
 		</izpack>
 	</target>
-	
-	<property name="izpack2exe.dir" value="${izpack.dir}/utils/izpack2exe"/>
-	
-	<target name="windows_exe_installer_launch4j" depends="windows_jar_installer">
-		<launch4j>
-			<config dontwrapjar="false" 
-					headertype="gui"
-					jar="${dist.base}/SQL-Power-DQguru-Setup-Windows-${app.version}.jar"
-					outfile="${dist.base}/SQL-Power-DQguru-Setup-Windows-${app.version}.exe"
-					errtitle="Java Runtime Required"
-					priority="normal"
-					downloadurl="http://java.com/download"
-					supporturl="http://www.sqlpower.ca/forum"
-					customprocname="false"
-					stayalive="false"
-					icon="installer/installerIcon-dq.ico">
-				<singleInstance
-					mutexName="DQguru Installer"
-					windowTitle="DQguru Installer"
-				/>
-				<jre minVersion="1.6.0"/>
-			</config>
-		</launch4j>
-	</target>
-		
-    <target name="generic_install" depends="stage">
-		<tar destfile="${dist.base}/SQL-Power-DQguru-generic-${app.version}.tar.gz"
-			compression="gzip">
-			<tarfileset
-			    prefix="dqguru-${app.version}"
-				dir="${staging.dir}"
-				includes="LICENSE, LEGAL, lib/*.jar, dqguru.jar, dqguru-engine-runner.jar, jdbc/*.ini, jdbc/*.jar" />
-			<tarfileset
-			    prefix="dqguru-${app.version}"
-				dir="doc"
-				includes="README.generic" />
-		</tar>
-    </target>
-	
-	
-	<!-- OS X .app bundling tool: jarbundler -->
-	<taskdef name="jarbundler" 
-		classpath="osx_packaging_utils/jarbundler.jar:osx_packaging_utils/xercesImpl.jar:osx_packaging_utils/xml-apis.jar"
-		classname="net.sourceforge.jarbundler.JarBundler"/>
-	
-	
-	
 	
 	<!-- This is needed to prevent a problem with DocBook help file generation 
 		 in which the XSLT replaces the spaces in the path name with '%20', and
