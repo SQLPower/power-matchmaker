@@ -110,7 +110,7 @@ public class NewMungeProcessAction extends AbstractAction {
 		int y = DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP;
 		
 		//sets the input one just outside of the autoscroll bounds
-		inputStep.setPosition(new Point(x, y));
+		inputStep.setPosition(new Point(x, x));
 		
 		//sets the location of the result step (reasonably arbitrary location)
 		mungeResultStep.setPosition(new Point(x, y));
