@@ -23,17 +23,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.dao.xml.ProjectDAOXML;
+import ca.sqlpower.matchmaker.dao.xml.TranslateGroupDAOXML;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -83,6 +86,32 @@ public class ImportHibernateUtil {
     				throw new IllegalStateException("The folder " + folderChild + 
     						" does not contain projects, it contains " + folderChild.getClass() + 
     						" which is unrecognized.");
+    			}
+    		}
+    	}
+    	for (MatchMakerTranslateGroup translateGroup : session.getTranslations().getChildren()) {
+    		//For some reason the hibernate session is set but not the
+    		//core session.
+    		translateGroup.setSession(session);
+    		FileOutputStream out = null;
+    		try {
+    			File exportFile = new File(exportDirectory, translateGroup.getName() + ".xml");
+    			int i = 0;
+    			while (exportFile.exists()) {
+    				i++;
+    				exportFile = new File(exportDirectory, translateGroup.getName() + " " + i + ".xml");
+    			}
+    			out = new FileOutputStream(exportFile);
+    			TranslateGroupDAOXML xmldao = new TranslateGroupDAOXML(new PrintWriter(out));
+    			xmldao.save(translateGroup);
+    		} finally {
+    			if (out != null) {
+    				try {
+    					out.close();
+    				} catch (IOException e) {
+    					logger.error("Exception when closing output stream. " +
+    							"Not rethrowing this exception to prevent masking the root cause.", e);
+    				}
     			}
     		}
     	}
