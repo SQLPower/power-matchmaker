@@ -1061,7 +1061,7 @@
 	</target>
 
 	<target name ="jar" depends="compile, compile-tests" description="Builds the embedable JAR">
-		<jar jarfile="dist/dqguru.jar" basedir="${build}" includes="src/ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"/>
+		<jar jarfile="dist/dqguru.jar" basedir="${build}"/>
 		<jar jarfile="dist/dqguru-tests.jar" basedir="${build.tests}"/>
 	</target>
 </project>

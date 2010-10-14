@@ -25,9 +25,12 @@ import ca.sqlpower.dao.helper.AbstractSPPersisterHelper;
 import ca.sqlpower.dao.session.SessionPersisterSuperConverter;
 import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.object.SPObject;
+import org.apache.log4j.Logger;
 
 public class MatchMakerSessionPersister extends SPSessionPersister {
 
+	private static Logger logger = Logger.getLogger(MatchMakerSessionPersister.class);
+	
 	public MatchMakerSessionPersister(String name, SPObject root,
 			SessionPersisterSuperConverter converter) {
 		super(name, root, converter);
@@ -40,6 +43,7 @@ public class MatchMakerSessionPersister extends SPSessionPersister {
         
         String CFPUUID = (String) AbstractSPPersisterHelper.findPropertyAndRemove(
                 pso.getUUID(), "currentFolderParent", persistedProperties);
+        logger.debug("Finding CFP with UUID " + CFPUUID);
         PersistedSPObject persistedCFP = AbstractSPPersisterHelper.findPersistedSPObject(
                 pso.getUUID(), CFPUUID, persistedObjects);
         matchMakerProject.getCurrentFolderParent().setUUID(CFPUUID);
@@ -47,13 +51,16 @@ public class MatchMakerSessionPersister extends SPSessionPersister {
         
         String BFPUUID = (String) AbstractSPPersisterHelper.findPropertyAndRemove(
                 pso.getUUID(), "backupFolderParent", persistedProperties);
+        logger.debug("Finding BFP with UUID " + BFPUUID);
         PersistedSPObject persistedBFP = AbstractSPPersisterHelper.findPersistedSPObject(
                 pso.getUUID(), BFPUUID, persistedObjects);
         matchMakerProject.getBackupFolderParent().setUUID(BFPUUID);
         persistedBFP.setLoaded(true);
     
+        
         String TGPUUID = (String) AbstractSPPersisterHelper.findPropertyAndRemove(
                 pso.getUUID(), "translateGroupParent", persistedProperties);
+        logger.debug("Finding TGP with UUID " + TGPUUID);
         PersistedSPObject persistedTGP = AbstractSPPersisterHelper.findPersistedSPObject(
                 pso.getUUID(), TGPUUID, persistedObjects);
         matchMakerProject.getTranslateGroupParent().setUUID(TGPUUID);
