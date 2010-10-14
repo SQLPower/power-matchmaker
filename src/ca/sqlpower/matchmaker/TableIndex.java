@@ -96,22 +96,24 @@ public class TableIndex extends AbstractMatchMakerObject{
 	@Transient @Accessor
     public SQLIndex getTableIndex() {
 		try {
-			if (tableIndex == null && getIndexName() != null) {
-				tableIndex = table.getTable().getIndexByName(getIndexName());
-			}
-			
-			if (tableIndex == null && !colNames.isEmpty()) {
-				List<SQLColumn> foundColumns = new ArrayList<SQLColumn>();
-				for (String columnName : colNames) {
-					SQLColumn columnByName = table.getTable().getColumnByName(columnName); 
-					if (columnByName != null) {
-						foundColumns.add(columnByName);
-					}
+			if (table != null && table.getTable() != null) {
+				if (tableIndex == null && getIndexName() != null) {
+					tableIndex = table.getTable().getIndexByName(getIndexName());
 				}
-				tableIndex = new SQLIndex();
-				tableIndex.setName(getIndexName());
-				for (SQLColumn col : foundColumns) {
-					tableIndex.addIndexColumn(col);
+
+				if (tableIndex == null && !colNames.isEmpty()) {
+					List<SQLColumn> foundColumns = new ArrayList<SQLColumn>();
+					for (String columnName : colNames) {
+						SQLColumn columnByName = table.getTable().getColumnByName(columnName); 
+						if (columnByName != null) {
+							foundColumns.add(columnByName);
+						}
+					}
+					tableIndex = new SQLIndex();
+					tableIndex.setName(getIndexName());
+					for (SQLColumn col : foundColumns) {
+						tableIndex.addIndexColumn(col);
+					}
 				}
 			}
 			
@@ -147,16 +149,18 @@ public class TableIndex extends AbstractMatchMakerObject{
     	tableIndex = index;
     	//TODO: Find the right propertyName
     	firePropertyChange(indexRole, oldIndex, index);
-    	setIndexName(index.getName());
-    	List<String> childColumns = new ArrayList<String>();
-    	try {
-			for (int i = 0; i < index.getChildCount(); i++) {
-				childColumns.add(index.getChild(i).getColumn().getName());
-			}
-		} catch (SQLObjectException e) {
-			throw new RuntimeException(e);
-		}
-    	setColNames(childColumns);
+    	if (index != null) {
+    		setIndexName(index.getName());
+    		List<String> childColumns = new ArrayList<String>();
+    		try {
+    			for (int i = 0; i < index.getChildCount(); i++) {
+    				childColumns.add(index.getChild(i).getColumn().getName());
+    			}
+    		} catch (SQLObjectException e) {
+    			throw new RuntimeException(e);
+    		}
+    		setColNames(childColumns);
+    	}
     }
 
 	/**
@@ -192,6 +196,7 @@ public class TableIndex extends AbstractMatchMakerObject{
 		t.setParent(parent);
 		t.setName(getName());
 		t.setVisible(isVisible());
+		t.setColNames(getColNames());
 		return t;
 	}
 
