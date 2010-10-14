@@ -146,6 +146,14 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     };
     
     /**
+     * This constructor is used by the MMProjectImporter and it bypasses the reading of the PL.INI
+     * when we already have one (i.e. in the EE). 
+     */ 
+    public SwingSessionContextImpl(Preferences prefsRootNode, DataSourceCollection<JDBCDataSource> dsCollection) throws IOException, ClassNotFoundException {
+        this(prefsRootNode, createDelegateContext(prefsRootNode, dsCollection));
+    }
+    
+    /**
      * Creates a new Swing session context, which is a holding place for all the basic
      * settings in the MatchMaker GUI application.  This constructor creates its own delegate
      * session context object based on information in the given prefs node, or failing that,
@@ -153,7 +161,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @throws ClassNotFoundException 
      */
     public SwingSessionContextImpl(Preferences prefsRootNode) throws IOException, ClassNotFoundException {
-        this(prefsRootNode, createDelegateContext(prefsRootNode));
+        this(prefsRootNode, createDelegateContext(prefsRootNode, null));
     }
 
     /**
@@ -168,20 +176,28 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             MatchMakerSessionContext delegateContext) throws IOException, ClassNotFoundException {
         this.swingPrefs = prefsRootNode;
         this.context = delegateContext;
+        
+        logger.debug("Initializing exception report");
+        
         ExceptionReport.init();
         
         // delegateContext will be a MatchMakerHibernateSessionContext
 
+        logger.debug("Creating Database Connection Manager");
+        
         dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), 
         		dsDialogFactory,dsTypeDialogFactory);
+
+        logger.debug("Generating Properties List");
         
         generatePropertiesList();
+        
+        logger.debug("Settings Icons");
         
         // sets the icon so exception dialogs handled by SPSUtils instead
         // of MMSUtils can still have the correct icon
         SPSUtils.setMasterIcon(MMSUtils.getFrameImageIcon());
     }
-
 
     //////// MatchMakerSessionContext implementation //////////
     /* (non-Javadoc)
@@ -339,61 +355,67 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * Creates the delegate context, prompting the user (GUI) for any missing information.
      * @throws IOException
      */
-    private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws IOException {
-        DataSourceCollection<JDBCDataSource> plDotIni = null;
-        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
-        while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
-            logger.debug("readPlDotIni returns null, trying again...");
-            String message;
-            String[] options = new String[] {"Browse", "Create"};
-            final int BROWSE = 0; // indices into above array
-            final int CREATE = 1;
-            if (plDotIniPath == null) {
-                message = "location is not set";
-            } else if (new File(plDotIniPath).isFile()) {
-                message = "file \n\n\""+plDotIniPath+"\"\n\n could not be read";
-            } else {
-                message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
-            }
-            int choice = JOptionPane.showOptionDialog(null,   // blocking wait
-                    "The DQguru keeps its list of database connections" +
-                    "\nin a file called PL.INI.  Your PL.INI "+message+"." +
-                    "\n\nYou can browse for an existing PL.INI file on your system" +
-                    "\nor allow the DQguru to create a new one in your home directory.",
-                    "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
-
-            if (choice == JOptionPane.CLOSED_OPTION) {
-                throw new RuntimeException("Can't start without a pl.ini file");
-            } else if (choice == BROWSE) {
-                JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(SPSUtils.INI_FILE_FILTER);
-                fc.setDialogTitle("Locate your PL.INI file");
-                int fcChoice = fc.showOpenDialog(null);       // blocking wait
-                if (fcChoice == JFileChooser.APPROVE_OPTION) {
-                    plDotIniPath = fc.getSelectedFile().getAbsolutePath();
-                } else {
-                    plDotIniPath = null;
-                }
-            } else if (choice == CREATE) {
-                String userHome = System.getProperty("user.home");
-                if (userHome == null) {
-                	throw new IllegalStateException("user.home property is null!");
-                }
-				plDotIniPath = userHome + File.separator + "pl.ini";
-				// Create an empty file so the read won't throw an IOE
-				if (new File(plDotIniPath).createNewFile()) {
-					logger.debug("Created file " + plDotIniPath);
-				} else {
-					logger.debug("Did NOT create file " + plDotIniPath +
-							"; mayhap it already exists?");
-				}
-            } else {
-                throw new RuntimeException(
-                "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
-            }
+    private static MatchMakerSessionContext createDelegateContext(Preferences prefs, DataSourceCollection<JDBCDataSource> dsCollection) throws IOException {
+        DataSourceCollection<JDBCDataSource> plDotIni = dsCollection;
+        if (dsCollection == null) {
+        	logger.debug("dsCollection is null. Creating new PlDotIni()");
+	        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
+	        while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
+	            logger.debug("readPlDotIni returns null, trying again...");
+	            String message;
+	            String[] options = new String[] {"Browse", "Create"};
+	            final int BROWSE = 0; // indices into above array
+	            final int CREATE = 1;
+	            if (plDotIniPath == null) {
+	                message = "location is not set";
+	            } else if (new File(plDotIniPath).isFile()) {
+	                message = "file \n\n\""+plDotIniPath+"\"\n\n could not be read";
+	            } else {
+	                message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
+	            }
+	            int choice = JOptionPane.showOptionDialog(null,   // blocking wait
+	                    "The DQguru keeps its list of database connections" +
+	                    "\nin a file called PL.INI.  Your PL.INI "+message+"." +
+	                    "\n\nYou can browse for an existing PL.INI file on your system" +
+	                    "\nor allow the DQguru to create a new one in your home directory.",
+	                    "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
+	
+	            if (choice == JOptionPane.CLOSED_OPTION) {
+	                throw new RuntimeException("Can't start without a pl.ini file");
+	            } else if (choice == BROWSE) {
+	                JFileChooser fc = new JFileChooser();
+	                fc.setFileFilter(SPSUtils.INI_FILE_FILTER);
+	                fc.setDialogTitle("Locate your PL.INI file");
+	                int fcChoice = fc.showOpenDialog(null);       // blocking wait
+	                if (fcChoice == JFileChooser.APPROVE_OPTION) {
+	                    plDotIniPath = fc.getSelectedFile().getAbsolutePath();
+	                } else {
+	                    plDotIniPath = null;
+	                }
+	            } else if (choice == CREATE) {
+	                String userHome = System.getProperty("user.home");
+	                if (userHome == null) {
+	                	throw new IllegalStateException("user.home property is null!");
+	                }
+					plDotIniPath = userHome + File.separator + "pl.ini";
+					// Create an empty file so the read won't throw an IOE
+					if (new File(plDotIniPath).createNewFile()) {
+						logger.debug("Created file " + plDotIniPath);
+					} else {
+						logger.debug("Did NOT create file " + plDotIniPath +
+								"; mayhap it already exists?");
+					}
+	            } else {
+	                throw new RuntimeException(
+	                "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
+	            }
+	        }
+	        
+	        logger.debug("Putting Prefs");
+	        
+	        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
         }
         
-        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
         return new MatchMakerHibernateSessionContext(prefs, plDotIni);
     }
 
@@ -413,12 +435,15 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             logger.debug("Reading PL.INI defaults");
             pld.read(SwingSessionContextImpl.class.getClassLoader().getResourceAsStream("ca/sqlpower/sql/default_database_types.ini"));
         } catch (IOException e) {
+        	logger.debug("Failed to read system resource default_database_types.ini");
             throw new RuntimeException("Failed to read system resource default_database_types.ini", e);
         }
         
         // Now, merge in the user's own config
         try {
+        	logger.debug("Starting to read PL.INI at path " + plDotIniPath);
             pld.read(pf);
+        	logger.debug("Finished reading PL.INI");
             return pld;
         } catch (IOException e) {
             MMSUtils.showExceptionDialogNoReport("Could not read " + pf, e);
