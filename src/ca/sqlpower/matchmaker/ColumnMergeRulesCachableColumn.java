@@ -30,6 +30,7 @@ public class ColumnMergeRulesCachableColumn extends CachableColumn {
 	@Constructor
 	public ColumnMergeRulesCachableColumn() {
 		super("column");
+		setName("ColumnMergeRulesCachableColum");
 	}
 	
 	@NonProperty

@@ -43,6 +43,7 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 
 	@Constructor
 	public MatchMakerTranslateWord() {
+		setName("MatchMakerTranslateWord");
 	}
     
 	/**

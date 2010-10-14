@@ -130,6 +130,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 */
 	@Constructor
 	public MungeProcess() {
+		setName("MungeProcess");
 	}
 
 	@NonProperty

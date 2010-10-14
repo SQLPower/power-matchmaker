@@ -74,6 +74,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 
 	@Constructor
 	public MatchMakerTranslateGroup() {
+        setName("MatchMakerTranslateGroup");
 	}
     
     /**
@@ -85,6 +86,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
      */
     MatchMakerTranslateGroup(Long initialOid) {
         this.oid = initialOid;
+        setName("MatchMakerTranslateGroup");
     }
 
 	@Override

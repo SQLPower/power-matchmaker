@@ -225,6 +225,9 @@ public class Project extends AbstractMatchMakerObject {
     	    		propertyName="mungeSettings") MungeSettings mungeSettings,
     	    @ConstructorParameter(parameterType=ParameterType.CHILD, 
     	       		propertyName="mungeSettings") MergeSettings mergeSettings) {
+		
+		setName("A new Project");
+		
 	    this.sourceTablePropertiesDelegate = sourceTablePropertiesDelegate;
 		this.resultTablePropertiesDelegate = resultTablePropertiesDelegate;
 		this.xrefTablePropertiesDelegate = xrefTablePropertiesDelegate;
@@ -238,8 +241,10 @@ public class Project extends AbstractMatchMakerObject {
         
         this.mungeSettings = mungeSettings;
         mungeSettings.setParent(this);
+        this.mungeSettings.setName("Munge Settings");
         this.mergeSettings = mergeSettings;
         mergeSettings.setParent(this);
+        this.mergeSettings.setName("Merge Settings");
     }
 	
 	public void addChild(SPObject spo) {
