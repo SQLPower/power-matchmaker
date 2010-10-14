@@ -37,7 +37,7 @@ import ca.sqlpower.swingui.event.SessionLifecycleListener;
  * MatchMaker API. If you were looking for the starting point, you've found it!
  *
  * <p>The normal implementation of this interface is
- * {@link ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext},
+ * {@link ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl},
  * so you probably want to create and configure one of those to get started.
  *
  * @version $Id$

@@ -50,7 +50,7 @@ public class HibernateSessionContextTest extends TestCase {
 	 * this separate from the regular MatchMaker Preferences to ensure the test
 	 * suite doesn't interfere with the user's preferences.
 	 */
-	Preferences prefs = Preferences.userNodeForPackage(MatchMakerHibernateSessionContext.class).node("test");
+	Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContextImpl.class).node("test");
 	
     @Override
     protected void setUp() throws Exception {
@@ -58,7 +58,7 @@ public class HibernateSessionContextTest extends TestCase {
         DataSourceCollection<JDBCDataSource> ini = new SpecificDataSourceCollection<JDBCDataSource>(new PlDotIni(), JDBCDataSource.class);
         ds = DBTestUtil.getOracleDS();
         ini.addDataSource(ds);
-        ctx = new MatchMakerHibernateSessionContext(prefs, ini);
+        ctx = new MatchMakerSessionContextImpl(prefs, ini);
     }
     
     public void testGetDataSources() {

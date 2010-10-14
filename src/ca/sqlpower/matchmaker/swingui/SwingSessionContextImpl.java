@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -416,7 +416,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
         }
         
-        return new MatchMakerHibernateSessionContext(prefs, plDotIni);
+        return new MatchMakerSessionContextImpl(prefs, plDotIni);
     }
 
     private static DataSourceCollection<JDBCDataSource> readPlDotIni(String plDotIniPath) {
