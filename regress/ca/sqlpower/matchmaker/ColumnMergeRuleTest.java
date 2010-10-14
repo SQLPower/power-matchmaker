@@ -29,7 +29,7 @@ import ca.sqlpower.sqlobject.SQLTable;
 public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 
 	ColumnMergeRules m1;
-	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession();
+	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession(false);
 
 	public ColumnMergeRuleTest(String name) {
 		

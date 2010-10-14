@@ -50,17 +50,22 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	Preferences prefs = Preferences.userNodeForPackage(TestingMatchMakerContext.class).node("test");
 	
 	public TestingMatchMakerContext() {
-		dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());
-		dataSources.add(DBTestUtil.getOracleDS());
-		dataSources.add(DBTestUtil.getSqlServerDS());
+		this(true);
+	}
+	
+	public TestingMatchMakerContext(boolean loadPlDotIni) {
+		plDotIni = new PlDotIni();
 		sessions.add(session);
 		
-		plDotIni = new PlDotIni();
-		
-		try {
-			plDotIni.read(new File("testbed/pl.regression.ini"));
-		} catch (IOException e) {
-			throw new RuntimeException(e.getMessage());
+		if (loadPlDotIni) {
+			dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());
+			dataSources.add(DBTestUtil.getOracleDS());
+			dataSources.add(DBTestUtil.getSqlServerDS());
+			try {
+				plDotIni.read(new File("testbed/pl.regression.ini"));
+			} catch (IOException e) {
+				throw new RuntimeException(e.getMessage());
+			}
 		}
 	}
 	

@@ -75,9 +75,13 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     private Map<SPDataSource, SQLDatabase> databases = new HashMap<SPDataSource, SQLDatabase>();
     
 	public TestingMatchMakerSession() {
+		this(true);
+	}
+	
+	public TestingMatchMakerSession(boolean loadPlDotIni) {
 		folders =  new ArrayList<PlFolder>();
         translateGroupParent= new TestingMatchMakerTranslateGroupParent();
-        context = new TestingMatchMakerContext();
+        context = new TestingMatchMakerContext(loadPlDotIni);
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         rootNode = new MMRootNode();
         rootNode.setSession(this);
