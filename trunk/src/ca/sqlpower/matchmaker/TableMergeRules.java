@@ -179,6 +179,7 @@ public class TableMergeRules
 		tableIndex = new TableIndex(cachableTable,"tableIndex");
 		tableIndex.setParent(this);
 		setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+		setName("TableMergeRules for " + cachableTable.getName());
 	}
 
 	@Override

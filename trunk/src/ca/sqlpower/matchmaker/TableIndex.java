@@ -76,6 +76,8 @@ public class TableIndex extends AbstractMatchMakerObject{
 					@ConstructorParameter(propertyName="indexRole") String indexRole) {
 		this.table = table;
 		this.indexRole = indexRole;
+		
+		setName("TableIndex for " + table.getTableName());
 	}
 	
 	@Accessor

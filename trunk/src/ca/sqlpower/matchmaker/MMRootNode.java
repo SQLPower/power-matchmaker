@@ -95,10 +95,13 @@ public class MMRootNode extends AbstractMatchMakerObject {
     		@ConstructorParameter(parameterType=ParameterType.CHILD, propertyName="translateGroupParent") TranslateGroupParent translateGroupParent) {
     	this.currentFolderParent = currentFolderParent;
     	this.currentFolderParent.setParent(this);
+        currentFolderParent.setName("Current Projects");
     	this.backupFolderParent = backupFolderParent;
     	this.backupFolderParent.setParent(this);
+        backupFolderParent.setName("Backup Projects");
     	this.translateGroupParent = translateGroupParent;
     	this.translateGroupParent.setParent(this);
+        translateGroupParent.setName("Translation Groups");
     }
     
     @Override

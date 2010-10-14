@@ -29,6 +29,7 @@ public class ColumnMergeRulesImportedCachableColumn extends CachableColumn {
 	@Constructor
 	public ColumnMergeRulesImportedCachableColumn() {
 		super("importedKeyColumn");
+		setName("ColumnMergeRulesImportedCachableColum");
 	}
 	
 	@NonProperty

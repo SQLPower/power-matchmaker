@@ -179,6 +179,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject {
 			@ConstructorParameter(parameterType=ParameterType.CHILD, 
 					propertyName="importedCachedColumn") 
 					ColumnMergeRulesImportedCachableColumn importedCachedColumn) {
+		setName("ColumnMergeRules " + cachedColumn.getColumnName());
 		this.cachedColumn = cachedColumn;
 		this.importedCachedColumn = importedCachedColumn;
 		cachedColumn.setParent(this);
