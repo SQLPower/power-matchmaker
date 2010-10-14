@@ -27,7 +27,7 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 
 	TestingAbstractMatchMakerObject test;
 	final String appUserName = "user1";
-	MatchMakerSession session = new TestingMatchMakerSession();
+	MatchMakerSession session = new TestingMatchMakerSession(false);
 
 	protected void setUp() throws Exception {
 		super.setUp();

@@ -158,12 +158,12 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == FolderParent.class) {
         	FolderParent folderParent = new FolderParent();
         	getRootObject().addChild(folderParent, 0);
-        	folderParent.setSession(new TestingMatchMakerSession());
+        	folderParent.setSession(new TestingMatchMakerSession(false));
         	return folderParent;
         } else if (valueType == TranslateGroupParent.class) {
         	TranslateGroupParent parent = new TranslateGroupParent();
         	getRootObject().addChild(parent, 0);
-        	parent.setSession(new TestingMatchMakerSession());
+        	parent.setSession(new TestingMatchMakerSession(false));
         	return parent;
         } else if (valueType == Class.class) {
         	if (oldVal == String.class) {
@@ -192,7 +192,7 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
 				"step parent"));
         	return step.getDescriptor();
         }  else if (valueType == MMRootNode.class) {
-        	MatchMakerSession session = new TestingMatchMakerSession();
+        	MatchMakerSession session = new TestingMatchMakerSession(false);
         	getRootObject().addChild(session.getRootNode(), 0);
         	return session.getRootNode();
         } else if (valueType == ProjectMode.class) {

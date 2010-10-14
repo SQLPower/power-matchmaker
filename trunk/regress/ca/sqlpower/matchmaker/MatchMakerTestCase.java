@@ -76,7 +76,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
     Set<String>propertiesThatDifferOnSetAndGet = new HashSet<String>();
     Set<String>propertiesThatHaveSideEffects = new HashSet<String>();
     
-    public MatchMakerSession session = new TestingMatchMakerSession();
+    public MatchMakerSession session = new TestingMatchMakerSession(false);
 
 	protected Set<String> propertiesToIgnoreForDuplication = new HashSet<String>();
 	
