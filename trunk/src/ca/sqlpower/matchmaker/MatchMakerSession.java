@@ -25,7 +25,7 @@ import java.util.List;
 
 import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -44,7 +44,7 @@ import ca.sqlpower.util.WorkspaceContainer;
  * throughout the MatchMaker business model.
  *
  * <p>To make one of these, use the
- * {@link MatchMakerHibernateSessionContext#createSession(SPDataSource, String, String)}
+ * {@link MatchMakerSessionContextImpl#createSession(SPDataSource, String, String)}
  * method.
  *
  * <p>This interface makes a strong committment to keeping the MatchMaker

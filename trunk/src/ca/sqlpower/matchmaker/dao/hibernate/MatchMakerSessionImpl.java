@@ -65,12 +65,12 @@ import ca.sqlpower.util.DefaultUserPrompterFactory;
 import ca.sqlpower.util.UserPrompterFactory;
 
 /**
- * An implementation of MatchMakerSession that uses Hibernate to
- * look up and store the business objects.
+ * An implementation of MatchMakerSession. This is the core implementation
+ * that does not deal with UI specifics.
  */
-public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
+public class MatchMakerSessionImpl implements MatchMakerSession {
 
-    private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionImpl.class);
+    private static final Logger logger = Logger.getLogger(MatchMakerSessionImpl.class);
 
     /**
      * The map of SQLDatabases to SPDatasources so they can be cached.
@@ -132,7 +132,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerSession {
      * @throws MatchMakerConfigurationException If there are some user settings that are
      * not set up properly. 
      */
-	public MatchMakerHibernateSessionImpl(MatchMakerSessionContext context,
+	public MatchMakerSessionImpl(MatchMakerSessionContext context,
 			JDBCDataSource ds) throws PLSecurityException,
 			SQLException, SQLObjectException,
 			MatchMakerConfigurationException {

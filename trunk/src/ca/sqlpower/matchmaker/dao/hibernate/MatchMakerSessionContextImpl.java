@@ -47,7 +47,7 @@ import ca.sqlpower.util.UnknownFreqCodeException;
 
 /**
  * Basic configuration object for a MatchMaker launch.  If you want to create MatchMakerSession
- * objects which are backed by Hibernate DAOs, create and configure one of these contexts, then
+ * objects without a UI, create and configure one of these contexts, then
  * ask it to make sessions for you!
  * 
  * <p>There's another version of this which is also tied into the Swing GUI.  In a GUI app,
@@ -55,9 +55,9 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  * 
  * @see ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl
  */
-public class MatchMakerHibernateSessionContext implements MatchMakerSessionContext {
+public class MatchMakerSessionContextImpl implements MatchMakerSessionContext {
 
-	private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
+	private static final Logger logger = Logger.getLogger(MatchMakerSessionContextImpl.class);
 
     /**
      * The list of database connections that this session context knows about.  This
@@ -83,7 +83,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * 
      * @param plIni The data source collection that this context will use.
      */
-    public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection<JDBCDataSource> plIni) {
+    public MatchMakerSessionContextImpl(Preferences prefs, DataSourceCollection<JDBCDataSource> plIni) {
         logger.debug("Creating new session context");
         this.sessions = new LinkedList<MatchMakerSession>();
         this.plDotIni = new SpecificDataSourceCollection<JDBCDataSource>(plIni, JDBCDataSource.class);
@@ -134,7 +134,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 			SQLObjectException, MatchMakerConfigurationException {
 
         try {
-            MatchMakerSession session = new MatchMakerHibernateSessionImpl(this, ds);
+            MatchMakerSession session = new MatchMakerSessionImpl(this, ds);
             sessions.add(session);
             session.addSessionLifecycleListener(sessionLifecycleListener);
             return session;

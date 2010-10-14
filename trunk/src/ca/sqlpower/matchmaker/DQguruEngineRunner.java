@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.util.prefs.Preferences;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -104,7 +104,7 @@ public class DQguruEngineRunner {
 
 		String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
 		DataSourceCollection<JDBCDataSource> plIni= readPlDotIni(plDotIniPath);
-		MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(prefs, plIni);
+		MatchMakerSessionContext context = new MatchMakerSessionContextImpl(prefs, plIni);
 		
 		JDBCDataSource repositoryDS = plIni.getDataSource(repositoryDSName);
 		if (repositoryDS == null) {
