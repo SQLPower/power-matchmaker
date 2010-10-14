@@ -30,6 +30,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -110,6 +111,7 @@ import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewWorkspaceAction;
 import ca.sqlpower.matchmaker.swingui.action.OpenWorkspaceAction;
 import ca.sqlpower.matchmaker.swingui.action.SaveWorkspaceAction;
+import ca.sqlpower.matchmaker.swingui.action.SaveWorkspaceAsAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
@@ -231,6 +233,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * should be enabled.
      */
 	private boolean enginesEnabled = true;
+	
+	/** 
+	 * The path where this file was most recently saved.
+	 */
+	private File savePoint;
 	
 	/**
 	 * A list that helps keep track of the created sessions
@@ -432,6 +439,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
         
+        sessionImpl.getRootNode().setSession(this);
+        
         matchEnginePanels = new HashMap<MatchEngineImpl, EngineSettingsPanel>();
         mergeEnginePanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
         cleanseEnginePanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
@@ -497,6 +506,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		fileMenu.add(new NewWorkspaceAction(this));
 		fileMenu.add(new OpenWorkspaceAction(this));
 		fileMenu.add(new SaveWorkspaceAction(this));
+		fileMenu.add(new SaveWorkspaceAsAction(this));
 		
 		if (!MAC_OS_X) {
 			fileMenu.add(userPrefsAction);
@@ -1136,6 +1146,21 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     }
     
     /**
+     * Returns the default save location for this workspace. Opening from this location
+     * is probably pointless since the same session already exists.
+     */
+    public File getSavePoint() {
+		return savePoint;
+	}
+
+    /**
+     * Sets the default save location for this workspace.
+     */
+	public void setSavePoint(File savePoint) {
+		this.savePoint = savePoint;
+	}
+
+	/**
      * Action Listener used by the custom colour dialog.
      */
     class ColorTracker implements ActionListener, Serializable {

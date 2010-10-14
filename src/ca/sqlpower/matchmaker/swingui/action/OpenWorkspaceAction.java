@@ -35,6 +35,9 @@ import ca.sqlpower.matchmaker.enterprise.MatchMakerPersisterSuperConverter;
 import ca.sqlpower.matchmaker.enterprise.MatchMakerSessionPersister;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
+/**
+ * The action for opening a workspace from a DQguru XML file. Creates a new session.
+ */
 public class OpenWorkspaceAction extends AbstractAction {
 	
 	private static final Logger logger = Logger.getLogger(OpenWorkspaceAction.class);
@@ -48,11 +51,11 @@ public class OpenWorkspaceAction extends AbstractAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String[] extensionsWithBackups = new String[SaveWorkspaceAction.XML_EXTENSIONS.length * 2];
+		String[] extensionsWithBackups = new String[SaveWorkspaceAsAction.XML_EXTENSIONS.length * 2];
 		int i=0;
-		for (String ext : SaveWorkspaceAction.XML_EXTENSIONS) {
+		for (String ext : SaveWorkspaceAsAction.XML_EXTENSIONS) {
 			extensionsWithBackups[i] = ext + "~";
-			extensionsWithBackups[SaveWorkspaceAction.XML_EXTENSIONS.length+i++] = ext;
+			extensionsWithBackups[SaveWorkspaceAsAction.XML_EXTENSIONS.length+i++] = ext;
 		}
 
 		JFileChooser openFileChooser = new JFileChooser();
