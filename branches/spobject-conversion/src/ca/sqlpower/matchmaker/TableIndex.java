@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -43,6 +45,21 @@ public class TableIndex extends AbstractMatchMakerObject{
      * unique indices defined in the database; the user can pick an arbitrary set of columns.
      */
     private SQLIndex tableIndex;
+    
+    /**
+     * The name of the index this object is wrapping. If the index itself is null
+     * this name can be used to look up the correct index in the table and return
+     * it instead.
+     */
+    private String indexName;
+
+	/**
+	 * In the special case where the user creates a new unique index by
+	 * selecting columns we need to store the columns selected in the order they
+	 * are defined in. This list will store these columns so they can be loaded
+	 * again when necessary.
+	 */
+    private final List<String> colNames = new ArrayList<String>();
     
     
     private CachableTable table;
@@ -76,9 +93,28 @@ public class TableIndex extends AbstractMatchMakerObject{
      * column names to actual SQLColumn references on the source table,
      * and then returns it!
      */
-	@Accessor
+	@Transient @Accessor
     public SQLIndex getTableIndex() {
 		try {
+			if (tableIndex == null && getIndexName() != null) {
+				tableIndex = table.getTable().getIndexByName(getIndexName());
+			}
+			
+			if (tableIndex == null && !colNames.isEmpty()) {
+				List<SQLColumn> foundColumns = new ArrayList<SQLColumn>();
+				for (String columnName : colNames) {
+					SQLColumn columnByName = table.getTable().getColumnByName(columnName); 
+					if (columnByName != null) {
+						foundColumns.add(columnByName);
+					}
+				}
+				tableIndex = new SQLIndex();
+				tableIndex.setName(getIndexName());
+				for (SQLColumn col : foundColumns) {
+					tableIndex.addIndexColumn(col);
+				}
+			}
+			
 	    	if (tableIndex != null && !tableIndex.isPopulated()) tableIndex.populate();
 	    	
 	    	if (table.getTable() != null && tableIndex != null) {
@@ -105,12 +141,22 @@ public class TableIndex extends AbstractMatchMakerObject{
     	}
 	}
 
-    @Mutator
+    @Transient @Mutator
 	public void setTableIndex(SQLIndex index) {
     	final SQLIndex oldIndex = tableIndex;
     	tableIndex = index;
     	//TODO: Find the right propertyName
     	firePropertyChange(indexRole, oldIndex, index);
+    	setIndexName(index.getName());
+    	List<String> childColumns = new ArrayList<String>();
+    	try {
+			for (int i = 0; i < index.getChildCount(); i++) {
+				childColumns.add(index.getChild(i).getColumn().getName());
+			}
+		} catch (SQLObjectException e) {
+			throw new RuntimeException(e);
+		}
+    	setColNames(childColumns);
     }
 
 	/**
@@ -159,5 +205,34 @@ public class TableIndex extends AbstractMatchMakerObject{
 	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
+	}
+
+	@Mutator
+	public void setIndexName(String indexName) {
+		String oldName = this.indexName;
+		this.indexName = indexName;
+		firePropertyChange("indexName", oldName, indexName);
+	}
+
+	@Accessor
+	public String getIndexName() {
+		return indexName;
+	}
+	
+	@Accessor
+	public List<String> getColNames() {
+		return Collections.unmodifiableList(colNames);
+	}
+
+	/**
+	 * This setter should only really be called from the persister helpers. This
+	 * is also not ideal.
+	 */
+	@Mutator
+	public void setColNames(List<String> colNames) {
+		List<String> oldNames = new ArrayList<String>(this.colNames);
+		this.colNames.clear();
+		this.colNames.addAll(colNames);
+		firePropertyChange("colNames", oldNames, colNames);
 	}
 }
