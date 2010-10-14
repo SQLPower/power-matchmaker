@@ -21,25 +21,36 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.log4j.Logger;
 
-public class StringConstantMungeStepTest extends AbstractMungeStepTest {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
 
-    StringConstantMungeStep step;
+public class StringConstantMungeStepTest extends MatchMakerTestCase<StringConstantMungeStep> {
+
+    public StringConstantMungeStepTest(String name) {
+		super(name);
+	}
+
+	StringConstantMungeStep step;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         step = new StringConstantMungeStep();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
     
     public void testNullValue() throws Exception {
-        step.setValue(null);
+        step.setOutValue(null);
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertNull(step.getOut().getData());
     }
 
     public void testNonNullValue() throws Exception {
-        step.setValue("moocow");
+        step.setOutValue("moocow");
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertEquals("moocow", step.getOut().getData());
@@ -49,29 +60,44 @@ public class StringConstantMungeStepTest extends AbstractMungeStepTest {
      * Ensures the step doesn't update its output value at runtime until after the call().
      */
     public void testChangeValueDuringRun() throws Exception {
-        step.setValue("moocow");
+        step.setOutValue("moocow");
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertEquals("moocow", step.getOut().getData());
-        step.setValue("woofdog");
+        step.setOutValue("woofdog");
         step.call();
         assertEquals("woofdog", step.getOut().getData());
-        step.setValue("meowcat");
+        step.setOutValue("meowcat");
         assertEquals("woofdog", step.getOut().getData());
         step.call();
         assertEquals("meowcat", step.getOut().getData());
     }
     
     public void testReturnNull() throws Exception {
-    	step.setReturningNull(true);
-    	step.setValue("moocow");
+    	step.setReturnNull(true);
+    	step.setOutValue("moocow");
         step.open(Logger.getLogger(getClass()));
         step.call();
         assertNull(step.getOut().getData());
-    	step.setReturningNull(false);
-        step.setValue("moocow2");
+    	step.setReturnNull(false);
+        step.setOutValue("moocow2");
         step.call();
         assertEquals("moocow2", step.getOut().getData());
     }
+
+	@Override
+	protected StringConstantMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// no-op
+	}
    
 }

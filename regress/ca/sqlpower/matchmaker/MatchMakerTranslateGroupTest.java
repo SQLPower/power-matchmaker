@@ -20,9 +20,13 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.object.SPObject;
 
-public class MatchMakerTranslateGroupTest 
-	extends MatchMakerTestCase<MatchMakerTranslateGroup> {
+public class MatchMakerTranslateGroupTest extends MatchMakerTestCase<MatchMakerTranslateGroup> {
+
+	public MatchMakerTranslateGroupTest(String name) {
+		super(name);
+	}
 
 	final String appUserName = "test_user";
 	MatchMakerTranslateGroup target;
@@ -31,11 +35,19 @@ public class MatchMakerTranslateGroupTest
 		target = new MatchMakerTranslateGroup();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
-		target.setSession(session);
+		TranslateGroupParent parent = new TranslateGroupParent();
+		parent.addChild(target);
+		parent.setSession(session);
+		getRootObject().addChild(parent, 0);
 	}
 
 	@Override
 	protected MatchMakerTranslateGroup getTarget() {
 		return target;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MatchMakerTranslateWord.class;
 	}
 }

@@ -19,13 +19,27 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.codec.language.Soundex;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
 
 /**
  * This munge step will output the soundex code of the given input.
  */
 public class SoundexMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
+	@Constructor
 	public SoundexMungeStep() {
 		super("Soundex",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("soundexOutput", String.class);
@@ -40,7 +54,7 @@ public class SoundexMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Soundex substitution munge step does not support removeInput()");
 	}
 	

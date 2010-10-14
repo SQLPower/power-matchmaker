@@ -57,7 +57,7 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 		WordCountMungeStep step = (WordCountMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		delimiters = new JTextField(step.getParameter(step.DELIMITER_PARAMETER_NAME));
+		delimiters = new JTextField(step.getDelimiter());
 		
 		RegexValidator validator = new RegexValidator();
 		getHandler().addValidateObject(delimiters, useRegex, validator);
@@ -65,18 +65,18 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				WordCountMungeStep step = (WordCountMungeStep) getStep();
-				step.setParameter(step.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+				step.setRegex(useRegex.isSelected());
 			}	
 		});
-		useRegex.setSelected(step.getBooleanParameter(step.USE_REGEX_PARAMETER_NAME));
+		useRegex.setSelected(step.isRegex());
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(step.getBooleanParameter(step.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.setSelected(step.isCaseSensitive());
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				WordCountMungeStep step = (WordCountMungeStep) getStep();
-				step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+				step.setCaseSensitive(caseSensitive.isSelected());
 			}
 			
 		});
@@ -94,7 +94,7 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
 				WordCountMungeStep step = (WordCountMungeStep) getStep();
-				step.setParameter(step.DELIMITER_PARAMETER_NAME, delimiters.getText());
+				step.setDelimiter(delimiters.getText());
             }
         });
 

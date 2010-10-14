@@ -28,11 +28,12 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
-
-
-
 public class MockJDBCCleanseTest extends SQLInputStepTest {
 	
+	public MockJDBCCleanseTest(String name) {
+		super(name);
+	}
+
 	private final Logger logger = Logger.getLogger("testLogger");
 
     @Override
@@ -42,8 +43,8 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	
 	public void testDoNothing() throws Exception {
         
-        assertSame(project, step.getParent().getParent().getParent());
-        assertSame(ProjectMode.CLEANSE, ((Project) (step.getParent().getParent().getParent())).getType());
+        assertSame(project, step.getParent().getParent());
+        assertSame(ProjectMode.CLEANSE, ((Project) (step.getParent().getParent())).getType());
 
 	    MungeProcessor mp = new MungeProcessor(process, logger);
 	    try {
@@ -69,8 +70,8 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	    UpperCaseMungeStep ucms = new UpperCaseMungeStep();
 	    resultStep.refresh(logger);
 	    process.addChild(ucms);
-	    ucms.connectInput(0, step.getChildren().get(0));
-	    resultStep.connectInput(0, ucms.getChildren().get(0));
+	    ucms.connectInput(0, step.getMungeStepOutputs().get(0));
+	    resultStep.connectInput(0, ucms.getMungeStepOutputs().get(0));
 
 	    MungeProcessor mp = new MungeProcessor(process, logger);
         mp.call();

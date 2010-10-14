@@ -20,7 +20,16 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 /**
  * This munge step will return the number of words in a given string based
@@ -35,32 +44,33 @@ import java.util.regex.Pattern;
  * regular expression delimiter.
  */
 public class WordCountMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
 	/**
-	 * The value of the String that will be used as the delimiter to determine
-	 * what is used to divide the String into words
+	 * The string that will be used as the delimiter for this munge step.
 	 */
-	public static final String DELIMITER_PARAMETER_NAME = "delimiter";
+	private String delimiter;
 	
 	/**
-	 * This is the name of the parameter that decides whether this step will use
-	 * regular expression to interpret the delimiter. The only values accepted by 
-	 * the parameter are "true" and "false".
+	 * Whether to use regular expressions in this munge step.
 	 */
-	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
+	private boolean regex;
 	
 	/**
-	 * This is the name of the parameter that decides whether this step will be
-	 * case sensitive. The only values accepted by the parameter are "true" and
-	 *  "false".
+	 * Whether the effects of this munge step should be case sensitive.
 	 */
-	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	private boolean caseSensitive;
 	
+	@Constructor
 	public WordCountMungeStep() {
 		super("Word Count",false);
-		setParameter(DELIMITER_PARAMETER_NAME, " ");
-		setParameter(USE_REGEX_PARAMETER_NAME, false);
-		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
+		setDelimiter(" ");
+		setRegex(false);
+		setCaseSensitive(true);
 		
 		MungeStepOutput<BigDecimal> out = new MungeStepOutput<BigDecimal>("wordCountOutput", BigDecimal.class);
 		addChild(out);
@@ -74,7 +84,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Word count munge step does not support removeInput()");
 	}
 	
@@ -88,9 +98,9 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	}
 	
 	public Boolean doCall() throws Exception {
-		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
-		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
-		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
+		String delimiter = getDelimiter();
+		boolean useRegex = isRegex();
+		boolean caseSensitive = isCaseSensitive();
 		
 		MungeStepOutput<BigDecimal> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
@@ -122,4 +132,49 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		out.setData(new BigDecimal(wordCount));
 		return true;
 	}
+
+	@Mutator
+	public void setDelimiter(String delim) {
+			String old = delimiter;
+			delimiter = delim;
+			firePropertyChange("delimiter", old, delim);
+	}
+
+	@Accessor
+	public String getDelimiter() {
+		return delimiter;
+	}
+
+	@Mutator
+	public void setRegex(boolean regex) {
+			boolean old = this.regex;
+			this.regex = regex;
+			firePropertyChange("regex", old, regex);
+	}
+
+	@Accessor
+	public boolean isRegex() {
+		return regex;
+	}
+
+	@Mutator
+	public void setCaseSensitive(boolean caseSensitive) {
+			boolean old = this.caseSensitive;
+			this.caseSensitive = caseSensitive;
+			firePropertyChange("caseSensitive", old, caseSensitive);
+	}
+
+	@Accessor
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		WordCountMungeStep step = (WordCountMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setDelimiter(getDelimiter());
+		step.setRegex(isRegex());
+	}
+	
 }

@@ -23,6 +23,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,29 +34,51 @@ import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.diff.DiffChunk;
 import ca.sqlpower.diff.DiffType;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
-import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
+import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.util.Monitorable;
 
 /**
  * folder is the parent of project. should be not null.
  */
-public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder> {
+public class Project extends AbstractMatchMakerObject {
 
     static final Logger logger = Logger.getLogger(Project.class);
     
-	public enum ProjectMode {
+    /**
+     * List of allowable child types
+     */
+    @SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeProcess.class, TableMergeRules.class,
+						CachableTable.class, TableIndex.class, 
+						MungeSettings.class, MergeSettings.class)));
+    
+    List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
+    List<TableMergeRules> tableMergeRules = new ArrayList<TableMergeRules>();
+    
+    public enum ProjectMode {
 		FIND_DUPES("Find Duplicates"), 
 		BUILD_XREF("Build Cross-Reference"), 
 		CLEANSE("Cleanse"),
@@ -104,10 +128,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * The settings for the munging engine. This applies to Match, Cleanse, and
 	 * Address Correction Projects
 	 */
-    private MungeSettings mungeSettings = new MungeSettings();
+    private final MungeSettings mungeSettings;
 
 	/** the settings for the merge engine */
-    private MergeSettings mergeSettings = new MergeSettings();
+    private final MergeSettings mergeSettings;
 
 	/** Optional SQL WHERE clause for the source table. If no filer is desired, this value is null. */
     private String filter;
@@ -120,19 +144,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     
     /** Folder name for munge processes. */
     public static final String MUNGE_PROCESSES_FOLDER_NAME = "Transformations";
-    
-    /**
-     * Contains the Munge Processes and the Munge Steps
-     */
-    private MatchMakerFolder<MungeProcess> mungeProcessesFolder =
-    	new MatchMakerFolder<MungeProcess>(MungeProcess.class);
-    
-    /** 
-     * Container for the TableMergeRules 
-     * We have these folders so that we don't have to deal with multiple child types
-     */ 
-    private MatchMakerFolder<TableMergeRules> tableMergeRulesFolder =
-    	new MatchMakerFolder<TableMergeRules>(TableMergeRules.class);
     
     /**
      * Cached source table 
@@ -151,6 +162,11 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * The unique index of the source table that we're using. Not necessarily
 	 * one of the unique indices defined in the database; the user can pick an
 	 * arbitrary set of columns.
+	 * <p>
+	 * XXX This table should be final but it currently takes in a table that is
+	 * a sibling of this object in its constructor. Since there is no annotation
+	 * pattern for this yet this will be passed for the less favorable implementation
+	 * of being non-final until MatchMaker works again.
 	 */
     private TableIndex sourceTableIndex;
     
@@ -190,16 +206,109 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     private final AtomicReference<Monitorable> runningEngine = new AtomicReference<Monitorable>();
     
 	public Project() {
-	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
-	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
-	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
-		mungeProcessesFolder.setName(MUNGE_PROCESSES_FOLDER_NAME);
-        this.addChild(mungeProcessesFolder);
-		tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
-        this.addChild(tableMergeRulesFolder);
-        
+	    this(new CachableTable("sourceTable"), 
+	    		new CachableTable("resultTable"), 
+	    		new CachableTable("xrefTable"),
+	    		new MungeSettings(),
+	    		new MergeSettings());
+	}
+    
+	@Constructor
+    public Project(
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    				propertyName="sourceTable") CachableTable sourceTablePropertiesDelegate, 
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    				propertyName="resultTable") CachableTable resultTablePropertiesDelegate, 
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    				propertyName="xrefTable") CachableTable xrefTablePropertiesDelegate,
+    		@ConstructorParameter(parameterType=ParameterType.CHILD, 
+    	    		propertyName="mungeSettings") MungeSettings mungeSettings,
+    	    @ConstructorParameter(parameterType=ParameterType.CHILD, 
+    	       		propertyName="mungeSettings") MergeSettings mergeSettings) {
+	    this.sourceTablePropertiesDelegate = sourceTablePropertiesDelegate;
+		this.resultTablePropertiesDelegate = resultTablePropertiesDelegate;
+		this.xrefTablePropertiesDelegate = xrefTablePropertiesDelegate;
+		sourceTablePropertiesDelegate.setParent(this);
+	    resultTablePropertiesDelegate.setParent(this);
+	    xrefTablePropertiesDelegate.setParent(this);
+	    
         setType(ProjectMode.FIND_DUPES);
-        sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
+        sourceTableIndex = new TableIndex(sourceTablePropertiesDelegate, "sourceTableIndex");
+        sourceTableIndex.setParent(this);
+        
+        this.mungeSettings = mungeSettings;
+        mungeSettings.setParent(this);
+        this.mergeSettings = mergeSettings;
+        mergeSettings.setParent(this);
+    }
+	
+	public void addChild(SPObject spo) {
+		int size = 0;
+		if(spo instanceof TableMergeRules) {
+			size = tableMergeRules.size();
+		} else if (spo instanceof MungeProcess) {
+			size = mungeProcesses.size();
+		}
+		addChild(spo, size);
+	}
+	
+	protected void addChildImpl(SPObject spo, int index) {
+		if (spo instanceof MungeProcess) {
+			addMungeProcess((MungeProcess)spo, index);
+		} else if (spo instanceof TableMergeRules) {
+			addTableMergeRules((TableMergeRules)spo, index);
+		} else if (spo instanceof TableIndex) {
+			TableIndex oldIndex = sourceTableIndex;
+			if (oldIndex != null) {
+				fireChildRemoved(TableIndex.class, oldIndex, 0);
+			}
+			sourceTableIndex = (TableIndex) spo;
+			if (sourceTableIndex != null) {
+				fireChildAdded(TableIndex.class, sourceTableIndex, 0);
+			}
+		} else {
+			throw new RuntimeException("Cannot add " + spo.getName() + " as a child to " + getName() + " as it is of type " + spo.getClass() + " which this class " + getClass() + " does not support.");
+		}
+	}
+	public void addMungeProcess(MungeProcess spo, int index) {
+		mungeProcesses.add(index, spo);
+		spo.setParent(this);
+		fireChildAdded(MungeProcess.class, spo, index);
+	}
+	
+	public void addTableMergeRules(TableMergeRules spo, int index) {
+		tableMergeRules.add(index, spo);
+		spo.setParent(this);
+		fireChildAdded(TableMergeRules.class, spo, index);
+	}
+	
+	@Override
+	protected boolean removeChildImpl(SPObject spo) {
+		if(spo instanceof MungeProcess) {
+			return removeMungeProcess((MungeProcess)spo);
+		} else if(spo instanceof TableMergeRules) {
+			return removeTableMergeRules((TableMergeRules)spo);
+		} else {
+			throw new RuntimeException("Cannot remove a child of this type to proejct.");
+		}
+	}
+	
+	public boolean removeMungeProcess(MungeProcess spo) {
+		int index = mungeProcesses.indexOf(spo);
+		boolean removed = mungeProcesses.remove(spo);
+		if(removed) {
+			fireChildRemoved(MungeProcess.class, spo, index);
+		}
+		return removed;
+	}
+	
+	public boolean removeTableMergeRules(TableMergeRules spo) {
+		int index = tableMergeRules.indexOf(spo);
+		boolean removed = tableMergeRules.remove(spo);
+		if(removed) {
+			fireChildRemoved(TableMergeRules.class, spo, index);
+		}
+		return removed;
 	}
 	
     /**
@@ -323,34 +432,34 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 
 		SQLColumn col;
 		for (int i = 0; i < si.getChildCount(); i++) {
-			col = new SQLColumn(t, "candidate_1"+i+"_mapped", Types.VARCHAR, 1, 0);
+			col = new SQLColumn(t, "candidate_1"+i+"_mapped", getSession().getSQLType(Types.VARCHAR), 1, 0, false);
 			t.addColumn(col);
 		}
 
 		for (int i = 0; i < si.getChildCount(); i++) {
-			col = new SQLColumn(t, "candidate_2"+i+"_mapped", Types.VARCHAR, 1, 0);
+			col = new SQLColumn(t, "candidate_2"+i+"_mapped", getSession().getSQLType(Types.VARCHAR), 1, 0, false);
 			t.addColumn(col);
 		}
 
-		col = new SQLColumn(t, "match_percent", Types.INTEGER, 10, 0);
+		col = new SQLColumn(t, "match_percent", getSession().getSQLType(Types.INTEGER), 0, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "group_id", Types.VARCHAR, 30, 0);
+		col = new SQLColumn(t, "group_id", getSession().getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_date", Types.TIMESTAMP, 0, 0);
+		col = new SQLColumn(t, "match_date", getSession().getSQLType(Types.TIMESTAMP), 0, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_status", Types.VARCHAR, 15, 0);
+		col = new SQLColumn(t, "match_status", getSession().getSQLType(Types.VARCHAR), 15, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_status_date", Types.TIMESTAMP, 0, 0);
+		col = new SQLColumn(t, "match_status_date", getSession().getSQLType(Types.TIMESTAMP), 0, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "match_status_user", Types.VARCHAR, 35, 0);
+		col = new SQLColumn(t, "match_status_user", getSession().getSQLType(Types.VARCHAR), 35, 0, false);
 		t.addColumn(col);
 
-		col = new SQLColumn(t, "dup1_master_ind", Types.VARCHAR, 1, 0);
+		col = new SQLColumn(t, "dup1_master_ind", getSession().getSQLType(Types.VARCHAR), 1, 0, false);
 		t.addColumn(col);
 
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
@@ -377,7 +486,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
-			SQLColumn newCol = new SQLColumn(t, baseName+i, idxCol.getType(), idxCol.getPrecision(), idxCol.getScale());
+			SQLColumn newCol = new SQLColumn(t, baseName+i, getSession().getSQLType(idxCol.getType()), idxCol.getPrecision(), idxCol.getScale(), idxCol.isAutoIncrement());
 			t.addColumn(newCol);
 		}
 	}
@@ -394,7 +503,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * <p>master_idxxx [yyy],
 	 * <p>candidate_1xxx_mapped VARCHAR(1),
 	 * <p>candidate_2xxx_mapped VARCHAR(1),
-	 * <p>match_percent INTEGER(10),
+	 * <p>match_percent INTEGER,
 	 * <p>group_id  VARCHAR(30),
 	 * <p>match_date TIMESTAMP,
 	 * <p>match_status VARCHAR(15),
@@ -466,16 +575,24 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			throw new IllegalStateException(
 					"The result table does not exist in the SQL Database");
 		}
-
-		List<SQLTable> inMemory = new ArrayList<SQLTable>();
+		
+		SQLTable builtResultTable;
 		if (type == ProjectMode.FIND_DUPES) {
-			inMemory.add(buildDedupeResultTable(resultTable, si));
+			builtResultTable = buildDedupeResultTable(resultTable, si);
 		} else if (type == ProjectMode.ADDRESS_CORRECTION){
-			inMemory.add(AddressPool.buildAddressCorrectionResultTable(resultTable, si));
+			builtResultTable = AddressPool.buildAddressCorrectionResultTable(resultTable, si);
 		} else {
 			throw new IllegalStateException("Checking result table on a project type that does not use result tables! " +
 					"Project Name: " + this.getName() + " Project Type: " + this.getType());
 		}
+
+		table = checkForwarding(builtResultTable, table, resultTable.getParentDatabase().getDataSource().getPropertiesMap().get("Connection Type"));
+		if(table == null) {
+			return false;
+		}
+
+		List<SQLTable> inMemory = new ArrayList<SQLTable>();
+		inMemory.add(builtResultTable);
 		List<SQLTable> physical = new ArrayList<SQLTable>();
 		physical.add(table);
 		CompareSQL compare = new CompareSQL(inMemory,physical,true);
@@ -531,9 +648,15 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 				sourceTable.getCatalogName(),
 				sourceTable.getSchemaName(),
 				sourceTable.getName());
+		
 		if (table == null) {
 			throw new IllegalStateException(
 					"The source table does not exist in the SQL Database");
+		}
+		
+		table = checkForwarding(sourceTable, table,  sourceTable.getParentDatabase().getDataSource().getPropertiesMap().get("Connection Type"));
+		if(table == null) {
+			return false;
 		}
 
 		List<SQLTable> inMemory = new ArrayList<SQLTable>();
@@ -546,78 +669,159 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		int diffCount = 0;
 		for ( DiffChunk<SQLObject> diff : tableDiffs) {
 			logger.debug(diff.toString());
-			if (diff.getType() != DiffType.SAME) {
+			if (diff.getType() != DiffType.SAME && diff.getType() != DiffType.MODIFIED) {
 				diffCount++;
 			}
 		}
 		
 		return diffCount == 0;
 	}
+	
+	/**
+	 * Here we are checking if the UDSQLTypes from the current table and the UDSQLTypes we get from
+	 * the database can be forward engineered to the same. If so, we set the database table's
+	 * types to the current table's types. Otherwise, the tables are not the same so we return
+	 * false.
+	 * @param compareTo The source table that the project builds.
+	 * @param table The table we got from the database.
+	 * @throws SQLObjectException 
+	 */
+	private SQLTable checkForwarding(SQLTable compareTo, SQLTable table, String platformName)
+																	throws SQLObjectException {
+		SQLTable returnTable = table;
+		boolean same = false;
+		if(compareTo.getColumnsWithoutPopulating().size() == returnTable.getColumnsWithoutPopulating().size()) {
+			same = true;
+			for (int i = 0; i < compareTo.getColumns().size(); i++) {
+				SQLColumn compareToColumn = compareTo.getColumns().get(i);
+				SQLColumn column = returnTable.getColumns().get(i);
+				UserDefinedSQLType compareToType = compareToColumn.getUserDefinedSQLType();
+				UserDefinedSQLType type = column.getUserDefinedSQLType();
+				
+				if(compareToType.equals(type)) {
+					continue;
+				}
+				
+				String forwardedName;
+				String typeName;
+				
+				if (compareToType.getUpstreamType() != null) {
+					forwardedName = compareToType.getUpstreamType().getPhysicalName(platformName);
+		        } else {
+		        	forwardedName = type.getPhysicalName(platformName);
+		        }
+				
+				if (type.getUpstreamType() != null) {
+					typeName = type.getUpstreamType().getPhysicalName(platformName);
+		        } else {
+		        	typeName = type.getPhysicalName(platformName);
+		        }
+				
+				if (forwardedName.equalsIgnoreCase(typeName)) {
+					type.setScaleType(platformName, compareToType.getScaleType(platformName));
+	            	type.setPrecisionType(platformName, compareToType.getPrecisionType(platformName));
+	            	
+	            	type.setScale(platformName, null);
+	            	type.setPrecision(platformName, null);
 
+	            	if (compareToType.getNullability() != null
+	            			&& !compareToType.getNullability().equals(type.getMyNullability())) {
+	            		type.setMyNullability(compareToType.getNullability());
+	            	}
+
+	            	if (compareToType.getDefaultValue(platformName) != null
+	            			&& compareToType.getDefaultValue(platformName).equals(type.getDefaultValue(platformName))) {
+	            		type.setDefaultValue(platformName, null);
+	            	}
+
+	            	if (compareToType.getAutoIncrement() != null
+	            			&& compareToType.getAutoIncrement().equals(type.getAutoIncrement())) {
+	            		type.setMyAutoIncrement(null);
+	            	}
+	            	
+	            	table.getColumnsWithoutPopulating().get(i).setType(type);
+	            	type.setUpstreamType(compareToType);
+				} else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("The column " + compareToColumn.getName() + " of " + 
+								compareTo.getName() + " does not have the correct UserDefinedSQLType." +
+								"Expected \"" + typeName + "\" but got \"" + forwardedName + " when " +
+								"forward engineered in " + platformName + ".");
+					}
+					same = false;
+				}
+			}
+		}
+		return same ? returnTable : null;
+	}
+
+	@Accessor
 	public String getFilter() {
 		return filter;
 	}
 
+	@Mutator
 	public void setFilter(String filter) {
 		String oldValue = this.filter;
 		this.filter = filter;
-		getEventSupport().firePropertyChange("filter", oldValue, this.filter);
+		firePropertyChange("filter", oldValue, this.filter);
 	}
 
+	@NonProperty
 	public MungeSettings getMungeSettings() {
 		return mungeSettings;
 	}
 
-	public void setMungeSettings(MungeSettings mungeSettings) {
-		if (mungeSettings==null) throw new NullPointerException("You should not try to set the settings to null");
-		MungeSettings oldValue = this.mungeSettings;
-		this.mungeSettings = mungeSettings;
-		getEventSupport().firePropertyChange("mungeSettings", oldValue,
-				this.mungeSettings);
-	}
-
+	@NonProperty
 	public MergeSettings getMergeSettings() {
 		return mergeSettings;
 	}
 
-	public void setMergeSettings(MergeSettings mergeSettings) {
-		MergeSettings oldValue = this.mergeSettings;
-		this.mergeSettings = mergeSettings;
-		getEventSupport().firePropertyChange("mergeSettings", oldValue,
-				this.mergeSettings);
-	}
-
+    @Accessor
 	public ProjectMode getType() {
 		return type;
 	}
 
+    @Mutator
 	public void setType(ProjectMode type) {
 		ProjectMode oldValue = this.type;
 		this.type = type;
 		if (type == ProjectMode.CLEANSE || type == ProjectMode.ADDRESS_CORRECTION) {
-			getTableMergeRulesFolder().setVisible(false);
+			for (TableMergeRules r : getTableMergeRules()) {
+				r.setVisible(false);
+			}
 		}
-		getEventSupport().firePropertyChange("type", oldValue, this.type);
+		firePropertyChange("type", oldValue, this.type);
 	}
 
+	@Transient
+	@Accessor
 	public ViewSpec getView() {
 		return view;
 	}
 
+	@Transient
+    @Mutator
 	public void setView(ViewSpec view) {
 		ViewSpec oldValue = this.view;
 		this.view = view;
-		getEventSupport().firePropertyChange("view", oldValue, this.view);
+		firePropertyChange("view", oldValue, this.view);
 	}
 
-
+	@NonProperty
 	public List<MungeProcess> getMungeProcesses() {
-		return getMungeProcessesFolder().getChildren();
+		return getChildren(MungeProcess.class);
+	}
+
+	@NonProperty
+	public List<TableMergeRules> getTableMergeRules() {
+		return getChildren(TableMergeRules.class);
 	}
 	
 	/**
 	 * Returns a list of munge processes defined by {@link MungeProcess#isValidate()}
 	 */
+	@NonProperty
 	public List<MungeProcess> getValidatingMungeProcesses(){
 		List<MungeProcess> validatingProcesses = new ArrayList<MungeProcess>();
 		for (MungeProcess mp : getMungeProcesses()) {
@@ -627,7 +831,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		}
 		return validatingProcesses;
 	}
-
+	
+	@NonProperty
 	public MungeProcess getMungeProcessByName(String name) {
 		List <MungeProcess> mungeProcesses = getMungeProcesses();
 		for ( MungeProcess g : mungeProcesses) {
@@ -662,11 +867,17 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
             return false;
         return true;
     }
+	
+	@Accessor
 	public Long getOid() {
 		return oid;
 	}
+	
+	@Mutator
 	public void setOid(Long oid) {
+		Long oldOid = this.oid;
 		this.oid = oid;
+		firePropertyChange("oid", oldOid, oid);
 	}
 
     @Override
@@ -689,80 +900,18 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     }
 
     /**
-     * Add a TableMergeRule rule to the TableMergeRules folder of this Project
-     */
-    public void addTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child inserted event
-        tableMergeRulesFolder.addChild(rule);
-    }
-
-    /**
-     * Removes the TableMergeRule rule from the TableMergeRules folder of this project
-     */
-    public void removeTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child removed event
-    	tableMergeRulesFolder.removeChild(rule);
-    }
-
-    public List<TableMergeRules> getTableMergeRules(){
-        return tableMergeRulesFolder.getChildren();
-    }
-
-    /**
-     *  Allow bulk replacement of all table merge rules for this project
-     *  This should only be used by the DAOs. Assumes that you never
-     *  pass in a null list 
-     */
-    public void setTableMergeRules(List<TableMergeRules> rules){
-    	tableMergeRulesFolder.setChildren(rules);
-    }
-
-    public MatchMakerFolder<TableMergeRules> getTableMergeRulesFolder() {
-        return tableMergeRulesFolder;
-    }
-    
-    /**
-     * Adds a munge process to the munge process folder of this project
-     *
-     * @param mungeProcess
-     */
-    public void addMungeProcess(MungeProcess mungeProcess) {
-        // The folder will fire the child inserted event
-        mungeProcessesFolder.addChild(mungeProcess);
-        mungeProcess.setMatchPriority(mungeProcessesFolder.getChildren().indexOf(mungeProcess));
-    }
-
-    /**
-     * Removes the munge process from the rule set folder of this process
-     *
-     * @param process
-     */
-    public void removeMungeProcess(MungeProcess process) {
-        // The folder will fire the child removed event
-        mungeProcessesFolder.removeChild(process);
-    }
-
-    public void setMungeProcesses(List<MungeProcess> processes){
-        mungeProcessesFolder.setChildren(processes);
-    }
-
-    public MatchMakerFolder<MungeProcess> getMungeProcessesFolder() {
-        return mungeProcessesFolder;
-    }
-
-    /**
      * duplicate the project object. by inserting a new set of record 
      * to the matchmaker tables.
      * objects under different id and oid 
      * @return true if nothing wrong.
      */
-	public Project duplicate(MatchMakerObject parent,MatchMakerSession s) {
+	public Project duplicate(MatchMakerObject parent) {
 		Project newProject = new Project();
 		newProject.setParent(getParent());
 		newProject.setName(getName());
 		newProject.setFilter(getFilter());
-		newProject.setMergeSettings(getMergeSettings().duplicate(newProject,s));
-		newProject.setMungeSettings(getMungeSettings().duplicate(newProject,s));
+		getMergeSettings().copyPropertiesToTarget(newProject.getMergeSettings());
+		getMungeSettings().copyPropertiesToTarget(newProject.getMungeSettings());
 		
 		newProject.setSourceTable(getSourceTable());
 		newProject.setResultTable(getResultTable());
@@ -770,17 +919,16 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		newProject.setXrefTable(getXrefTable());
 		newProject.setType(getType());
 		newProject.setView(getView()==null?null:getView().duplicate());
-		newProject.setSession(s);
 		newProject.setVisible(isVisible());
 		
 		for (MungeProcess g : getMungeProcesses()) {
-			MungeProcess newGroup = g.duplicate(newProject.getMungeProcessesFolder(),s);
-			newProject.addMungeProcess(newGroup);
+			MungeProcess newGroup = g.duplicate(this);
+			newProject.addChild(newGroup);
 		}
 
 		for (TableMergeRules g : getTableMergeRules()) {
-			TableMergeRules newMergeRule = g.duplicate(newProject.getTableMergeRulesFolder(),s);
-			newProject.addTableMergeRule(newMergeRule);
+			TableMergeRules newMergeRule = g.duplicate(this);
+			newProject.addChild(newMergeRule);
 		}
 		
 		return newProject;
@@ -788,106 +936,151 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	
 
     /////// The source table delegate methods //////
+    @NonProperty
     public SQLTable getSourceTable() {
-        return sourceTablePropertiesDelegate.getSourceTable();
+        return sourceTablePropertiesDelegate.getTable();
     }
+    @NonProperty
     public String getSourceTableCatalog() {
         return sourceTablePropertiesDelegate.getCatalogName();
     }
+    @NonProperty
     public String getSourceTableSchema() {
     	return sourceTablePropertiesDelegate.getSchemaName();
     }
+    @NonProperty
     public String getSourceTableName() {
         return sourceTablePropertiesDelegate.getTableName();
     }
+    @NonProperty
     public void setSourceTable(SQLTable sourceTable) {
         sourceTablePropertiesDelegate.setTable(sourceTable);
     }
+    @NonProperty
     public void setSourceTableCatalog(String sourceTableCatalog) {
         sourceTablePropertiesDelegate.setCatalogName(sourceTableCatalog);
     }
+    @NonProperty
     public void setSourceTableSchema(String sourceTableSchema) {
     	sourceTablePropertiesDelegate.setSchemaName(sourceTableSchema);
     }
+    @NonProperty
     public void setSourceTableName(String sourceTableName) {
         sourceTablePropertiesDelegate.setTableName(sourceTableName);
     }
+    @NonProperty
     
     public void setSourceTableSPDatasource(String sourceTableSPDName) {
-    	sourceTablePropertiesDelegate.setSPDataSource(sourceTableSPDName);
+    	sourceTablePropertiesDelegate.setSPDataSourceName(sourceTableSPDName);
     }
-    
+
+    @NonProperty
     public String getSourceTableSPDatasource() {
     	return sourceTablePropertiesDelegate.getSPDataSourceName();
     }
+    
+    @NonProperty
+    public CachableTable getSourceTablePropertiesDelegate() {
+		return sourceTablePropertiesDelegate;
+	}
 
     /////// The result table delegate methods //////
+    @NonProperty
     public SQLTable getResultTable() {
-        return resultTablePropertiesDelegate.getSourceTable();
+        return resultTablePropertiesDelegate.getTable();
     }
+    @NonProperty
     public String getResultTableCatalog() {
         return resultTablePropertiesDelegate.getCatalogName();
     }
+    @NonProperty
     public String getResultTableName() {
         return resultTablePropertiesDelegate.getTableName();
     }
+    @NonProperty
     public String getResultTableSchema() {
         return resultTablePropertiesDelegate.getSchemaName();
     }
+    @NonProperty
     public void setResultTable(SQLTable resultTable) {
         resultTablePropertiesDelegate.setTable(resultTable);
     }
+    @NonProperty
     public void setResultTableCatalog(String resultTableCatalog) {
         resultTablePropertiesDelegate.setCatalogName(resultTableCatalog);
     }
+    @NonProperty
     public void setResultTableName(String resultTableName) {
         resultTablePropertiesDelegate.setTableName(resultTableName);
     }
+    @NonProperty
     public void setResultTableSchema(String resultTableSchema) {
         resultTablePropertiesDelegate.setSchemaName(resultTableSchema);
     }
 
+    @NonProperty
     public void setResultTableSPDatasource(String resultTableSPDName) {
-    	resultTablePropertiesDelegate.setSPDataSource(resultTableSPDName);
+    	resultTablePropertiesDelegate.setSPDataSourceName(resultTableSPDName);
     }
-    
+
+    @NonProperty
     public String getResultTableSPDatasource() {
     	return resultTablePropertiesDelegate.getSPDataSourceName();
     }
+    
+    @NonProperty
+    public CachableTable getResultTablePropertiesDelegate() {
+		return resultTablePropertiesDelegate;
+	}
 
     /////// The xref table delegate methods //////
+    @NonProperty
     public SQLTable getXrefTable() {
-        return xrefTablePropertiesDelegate.getSourceTable();
+        return xrefTablePropertiesDelegate.getTable();
     }
+    @NonProperty
     public String getXrefTableCatalog() {
         return xrefTablePropertiesDelegate.getCatalogName();
     }
+    @NonProperty
     public String getXrefTableName() {
         return xrefTablePropertiesDelegate.getTableName();
     }
+    @NonProperty
     public String getXrefTableSchema() {
         return xrefTablePropertiesDelegate.getSchemaName();
     }
+    @NonProperty
     public void setXrefTable(SQLTable xrefTable) {
         xrefTablePropertiesDelegate.setTable(xrefTable);
     }
+    @NonProperty
     public void setXrefTableCatalog(String xrefTableCatalog) {
         xrefTablePropertiesDelegate.setCatalogName(xrefTableCatalog);
     }
+    @NonProperty
     public void setXrefTableName(String xrefTableName) {
         xrefTablePropertiesDelegate.setTableName(xrefTableName);
     }
+    @NonProperty
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
-    
+
+    @NonProperty
     public void setXrefTableSPDatasource(String xrefTableSPDName) {
-    	xrefTablePropertiesDelegate.setSPDataSource(xrefTableSPDName);
+    	xrefTablePropertiesDelegate.setSPDataSourceName(xrefTableSPDName);
     }
-    
+
+    @NonProperty
     public String getXrefTableSPDatasource() {
     	return xrefTablePropertiesDelegate.getSPDataSourceName();
     }
+    
+    @NonProperty
+    public CachableTable getXrefTablePropertiesDelegate() {
+		return xrefTablePropertiesDelegate;
+	}
     
     /**
      * Returns a SQLIndex object which is the set of columns the user
@@ -897,6 +1090,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * function properly if this set of columns doesn't have the uniqueness
      * property.
      */
+    @NonProperty
 	public SQLIndex getSourceTableIndex() throws SQLObjectException {
 		return sourceTableIndex.getTableIndex();
 	}
@@ -913,6 +1107,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * will have to be wiped out and re-created from scratch.  They both
      * depend on the chosen set of columns that uniquely identify a row.
      */
+    @NonProperty
 	public void setSourceTableIndex(SQLIndex index) {
 		sourceTableIndex.setTableIndex(index);
 	}
@@ -924,6 +1119,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * 
 	 * @return The engine implementation.
 	 */
+	@Accessor
 	public CleanseEngineImpl getCleansingEngine() {
 		if (cleansingEngine == null) {
 			cleansingEngine = new CleanseEngineImpl(getSession(), this); 
@@ -938,6 +1134,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * 
 	 * @return The engine implementation.
 	 */
+	@Accessor
 	public MatchEngineImpl getMatchingEngine() {
 		if (matchingEngine == null) {
 			matchingEngine = new MatchEngineImpl(getSession(), this); 
@@ -952,6 +1149,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * 
 	 * @return The engine implementation.
 	 */
+	@Accessor
 	public MergeEngineImpl getMergingEngine() {
 		if (mergingEngine == null) {
 			mergingEngine = new MergeEngineImpl(getSession(), this); 
@@ -966,6 +1164,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * 
 	 * @return The Address Correction Engine contained
 	 */
+	@Accessor
 	public AddressCorrectionEngine getAddressCorrectionEngine() {
 		if (addressCorrectionEngine == null) {
 			addressCorrectionEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_PARSE_AND_CORRECT_ADDRESSES);
@@ -973,6 +1172,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		return addressCorrectionEngine;
 	}
 	
+	@Accessor
 	public AddressCorrectionEngine getAddressCommittingEngine() {
 		if (addressCommittingEngine == null) {
 			addressCommittingEngine = new AddressCorrectionEngine(getSession(), this, AddressCorrectionEngineMode.ADDRESS_CORRECTION_WRITE_BACK_ADDRESSES);
@@ -986,8 +1186,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * @throws SQLException 
 	 */
 	public Connection createSourceTableConnection() throws SQLException {
-		if (sourceTablePropertiesDelegate.getSourceTable() != null) {
-			return sourceTablePropertiesDelegate.getSourceTable().getParentDatabase().getDataSource().createConnection();
+		if (sourceTablePropertiesDelegate.getTable() != null) {
+			return sourceTablePropertiesDelegate.getTable().getParentDatabase().getDataSource().createConnection();
 		} 
 		return null;
 	}
@@ -998,8 +1198,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * @throws SQLException 
 	 */
 	public Connection createResultTableConnection() throws SQLException {
-		if (resultTablePropertiesDelegate.getSourceTable() != null) {
-			return resultTablePropertiesDelegate.getSourceTable().getParentDatabase().getDataSource().createConnection();
+		if (resultTablePropertiesDelegate.getTable() != null) {
+			return resultTablePropertiesDelegate.getTable().getParentDatabase().getDataSource().createConnection();
 		} 
 		return null;
 	}
@@ -1073,7 +1273,29 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * @return A way of monitoring the progress of something that holds the engine
      * lock on this project; null if the engine lock is free.
      */
+	@Accessor
 	public Monitorable getRunningEngine() {
 	    return runningEngine.get();
+	}
+
+	@Override
+	@NonProperty
+	public List<? extends SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.addAll(mungeProcesses);
+		children.addAll(tableMergeRules);
+		children.add(sourceTablePropertiesDelegate);
+		children.add(resultTablePropertiesDelegate);
+		children.add(xrefTablePropertiesDelegate);
+		children.add(sourceTableIndex);
+		children.add(mungeSettings);
+		children.add(mergeSettings);
+		return Collections.unmodifiableList(children);
+	}
+
+	@Override
+	@NonProperty
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

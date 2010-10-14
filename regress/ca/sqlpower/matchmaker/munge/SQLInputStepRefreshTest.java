@@ -46,7 +46,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         
         inputStep.refresh(logger);
         
-        assertEquals(2, inputStep.getChildCount());
+        assertEquals(2, inputStep.getChildren(MungeStepOutput.class).size());
         assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
         assertEquals("DOB", inputStep.getChildren().get(1).getName());
     }
@@ -61,7 +61,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         
         inputStep.refresh(logger);
         
-        assertEquals(4, inputStep.getChildCount());
+        assertEquals(4, inputStep.getChildren(MungeStepOutput.class).size());
         assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
         assertEquals("NAME", inputStep.getChildren().get(1).getName());
         assertEquals("DOB", inputStep.getChildren().get(2).getName());
@@ -79,7 +79,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         ConcatMungeStep step = new ConcatMungeStep();
         mungeProcess.addChild(step);
         step.connectInput(0, nameOutput);
-        assertSame(nameOutput, step.getInputs().get(0).getCurrent());
+        assertSame(nameOutput, step.getMungeStepInputs().get(0).getCurrent());
         
         sqlx("ALTER TABLE customer DROP COLUMN name");
         db.refresh();
@@ -87,7 +87,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         inputStep.refresh(logger);
         
         assertNull("Concat input is still connected to the NAME output, which has been removed from its parent step!",
-                step.getInputs().get(0).getCurrent());
+                step.getMungeStepInputs().get(0).getCurrent());
 
     }
 
@@ -129,7 +129,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         
         inputStep.refresh(logger);
         
-        assertNull(step.getInputs().get(0).getCurrent());
+        assertNull(step.getMungeStepInputs().get(0).getCurrent());
         assertFalse(inputStep.getChildren().contains(dobOutput));
         MungeStepOutput<?> newDobOutput = inputStep.getOutputByName("DOB");
         assertNotNull("Old String output still on SQL Input Step!", newDobOutput);
@@ -158,7 +158,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         MungeStepOutput<?> newDobOutput = inputStep.getOutputByName("DOB");
         assertNotNull("Old String output still on SQL Input Step!", newDobOutput);
         assertEquals(String.class, newDobOutput.getType());
-        assertSame(newDobOutput, step.getInputs().get(0).getCurrent());
+        assertSame(newDobOutput, step.getMungeStepInputs().get(0).getCurrent());
     }
 
 }

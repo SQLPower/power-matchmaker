@@ -19,8 +19,17 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 
@@ -29,39 +38,43 @@ import java.util.regex.Pattern;
  */
 public class RetainCharactersMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	/**
 	 * This is the name of the parameter that decides whether this step will be
-	 * case sensitive. The only values accepted by the parameter are "true" and
-	 *  "false".
+	 * case sensitive.
 	 */
-	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	private boolean caseSensitive;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will use
-	 * regular expression to replace words. The only values accepted by the parameter
-	 * are "true" and "false".
+	 * regular expression to replace words.
 	 */
-	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
+	private boolean useRegex;
 	
 	/**
 	 * This is the name of the parameter containing the list of characters to 
 	 * retain. The parameter would be interpreted as a regular expression if
 	 * the option is set to true.
 	 */
-	public static final String RETAIN_CHARACTERS_PARAMETER_NAME = "retainChars";
+	private String retainChars;
 
 	/**
 	 * Case sensitive is set to true and use regex is set to false for this
 	 * munge step as defaults.
 	 */
+	@Constructor
 	public RetainCharactersMungeStep() {
 		super("Retain Chars",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("retainCharacters", String.class);
-		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
-		setParameter(USE_REGEX_PARAMETER_NAME, false);
-		setParameter(RETAIN_CHARACTERS_PARAMETER_NAME, "");
+		caseSensitive = true;
+		useRegex = false;
+		retainChars = "";
 		super.addInput(desc);
 	}
 	
@@ -71,7 +84,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Retain characters munge step does not support removeInput()");
 	}
 	
@@ -88,9 +101,6 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
-		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
-		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
-		String retainChars = getParameter(RETAIN_CHARACTERS_PARAMETER_NAME);
 		String data = in.getData();
 		StringBuilder result = new StringBuilder();
 		
@@ -125,5 +135,49 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 			out.setData(null);
 		}
 		return true;
+	}
+
+	@Accessor
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+
+	@Mutator
+	public void setCaseSensitive(boolean caseSensitive) {
+		boolean oldVal = this.caseSensitive;
+		this.caseSensitive = caseSensitive;
+		firePropertyChange("caseSensitive", oldVal, caseSensitive);
+	}
+
+	@Accessor
+	public boolean isUseRegex() {
+		return useRegex;
+	}
+
+	@Mutator
+	public void setUseRegex(boolean useRegex) {
+		boolean oldVal = this.useRegex;
+		this.useRegex = useRegex;
+		firePropertyChange("useRegex", oldVal, useRegex);
+	}
+
+	@Accessor
+	public String getRetainChars() {
+		return retainChars;
+	}
+
+	@Mutator
+	public void setRetainChars(String retainChars) {
+		String oldChars = this.retainChars;
+		this.retainChars = retainChars;
+		firePropertyChange("retainChars", oldChars, retainChars);
+	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		RetainCharactersMungeStep step = (RetainCharactersMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setRetainChars(getRetainChars());
+		step.setUseRegex(isUseRegex());
 	}
 }

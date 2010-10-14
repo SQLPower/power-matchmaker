@@ -19,6 +19,16 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
+
 
 /**
  * A munge step that concatenates all string input values into a single output value.
@@ -35,13 +45,19 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class ConcatMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
     /**
      * The value of this parameter will be placed between each concatenated value.
      * When the delimiter is set to null, this step behaves as if the delimiter was
      * set to the empty string.
      */
-    public static final String DELIMITER_PARAMETER_NAME = "delimiter";
+	private String delimiter;
     
+    @Constructor
 	public ConcatMungeStep() {
 		super("Concat", true);
 		//This might be overriden by hibernate when loading from database.
@@ -92,11 +108,20 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		return true;
 	}
     
+	@Mutator
     public void setDelimiter(String delimiter) {
-        setParameter(DELIMITER_PARAMETER_NAME, delimiter);
+		String oldDelimiter = this.delimiter;
+		this.delimiter = delimiter;
+		firePropertyChange("delimiter", oldDelimiter, delimiter);
     }
 
+    @Accessor
     public String getDelimiter() {
-        return getParameter(DELIMITER_PARAMETER_NAME);
+        return delimiter;
+    }
+    
+    @Override
+    protected void copyPropertiesForDuplicate(MungeStep copy) {
+    	((ConcatMungeStep) copy).setDelimiter(getDelimiter());
     }
 }

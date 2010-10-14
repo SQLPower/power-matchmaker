@@ -23,17 +23,24 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.TypeMap;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sql.CachedRowSet;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -49,6 +56,11 @@ import ca.sqlpower.sqlobject.SQLTable;
  */
 public class SQLInputStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	/**
 	 * Default value to input when setting the ResultSet fetch size using
 	 * {@link ResultSet#setFetchSize(int)}. This is to help with a production bug running
@@ -99,14 +111,14 @@ public class SQLInputStep extends AbstractMungeStep {
         
         if (!rs.next()) {
             for (int i = 0; i < table.getColumns().size(); i++) {
-                MungeStepOutput<?> o = getChildren().get(i);
+                MungeStepOutput<?> o = getChildren(MungeStepOutput.class).get(i);
                 o.setData(null);
             }
             return false;
         }
         
         for (int i = 0; i < table.getColumns().size(); i++) {
-            MungeStepOutput<?> o = getChildren().get(i);
+            MungeStepOutput<?> o = getChildren(MungeStepOutput.class).get(i);
             if (o.getType() == String.class) {
                 MungeStepOutput<String> oo = (MungeStepOutput<String>) o;
                 oo.setData(rs.getString(i + 1));
@@ -229,8 +241,19 @@ public class SQLInputStep extends AbstractMungeStep {
      * columns' types have changed.
      */
     private void setupOutputs() throws SQLObjectException {
-        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren());
+        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren(MungeStepOutput.class));
         for (SQLColumn c : table.getColumns()) {
+        	
+        	/*
+			 * this next line is needed because we need to assign upstream types
+			 * to every type in columns otherwise stuff doesn't work right.
+			 * Unfortunately, we cannot do this at the source of the problem:
+			 * 		SQLTable.fetchColumnsForTable
+			 * since we have no session info there
+			 */
+			c.setType(c.getType());
+			c.setType(getSession().getSQLType(c.getType()));
+			
             String colName = c.getName();
             MungeStepOutput<?> output = getOutputByName(colName);
             if (output == null) {
@@ -241,9 +264,9 @@ public class SQLInputStep extends AbstractMungeStep {
                 // existing column changed type -- recreate output with same name and new type
                 int idx = getChildren().indexOf(output);
                 MungeStepOutput<?> newOutput = new MungeStepOutput(colName, TypeMap.typeClass(c.getType()));
-                addChild(idx, newOutput);
+                addChild(newOutput, idx);
                 MungeProcess mp = getParent();
-                for (MungeStep step : mp.getChildren()) {
+                for (MungeStep step : mp.getChildren(MungeStep.class)) {
                     for (int i = 0; i < step.getInputCount(); i++) {
                         InputDescriptor id = step.getInputDescriptor(i);
                         MungeStepOutput input = step.getMSOInputs().get(i);
@@ -258,7 +281,11 @@ public class SQLInputStep extends AbstractMungeStep {
                     }
                     
                 }
-                removeChild(output);
+                try {
+                	removeChild(output);
+                } catch (ObjectDependentException e) {
+                	throw new RuntimeException(e);
+                }
                 orphanOutputs.remove(output);
             } else {
                 // existing column with existing output -- nothing to do
@@ -269,10 +296,14 @@ public class SQLInputStep extends AbstractMungeStep {
         // clean up outputs whose columns no longer exist in the table
         for (MungeStepOutput mso : orphanOutputs) {
             MungeProcess mp = getParent();
-            for (MungeStep step : mp.getChildren()) {
+            for (MungeStep step : mp.getChildren(MungeStep.class)) {
                 step.disconnectInput(mso);
             }
-            removeChild(mso);
+            try {
+            	removeChild(mso);
+            } catch (ObjectDependentException e) {
+            	throw new RuntimeException(e);
+            }
         }
     }
     
@@ -305,10 +336,12 @@ public class SQLInputStep extends AbstractMungeStep {
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
+    @NonProperty
     public MungeResultStep getOutputStep() throws SQLObjectException {
         return getOutputStep(getProject());
     }
     
+    @NonProperty
     public MungeResultStep getOutputStep(Project project) throws SQLObjectException {
         if (outputStep != null) {
             return outputStep;
@@ -321,10 +354,12 @@ public class SQLInputStep extends AbstractMungeStep {
     }
     
     @Override
+    @NonProperty
     public boolean isInputStep() {
     	return true;
     }
     
+    @NonProperty
     public ResultSet getResultSet() {
     	return rs;
     }

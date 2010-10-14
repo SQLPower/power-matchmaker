@@ -19,25 +19,32 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
 
+public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implements Comparable <MatchMakerTranslateGroup> {
 
-
-public class MatchMakerTranslateGroup
-	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, MatchMakerTranslateWord> 
-	implements Comparable <MatchMakerTranslateGroup> {
-
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.<Class<? extends SPObject>>singletonList(MatchMakerTranslateWord.class);
+	
+	List<MatchMakerTranslateWord> children = new ArrayList<MatchMakerTranslateWord>();
+	
     /**
      * Object identifier. Required for the persistence layer.
      */
-    @SuppressWarnings("unused")
-	private Long oid;
+    private Long oid;
     
     /**
      * Returns this translate group's peristent Object Identifier.  This get method
      * should probably be declared in the AbstractMatchMakerObject, but I just need it
      * here right now.
      */
+	@NonProperty
     public Long getOid() {
         return oid;
     }
@@ -65,6 +72,7 @@ public class MatchMakerTranslateGroup
 		return true;
 	}
 
+	@Constructor
 	public MatchMakerTranslateGroup() {
 	}
     
@@ -84,20 +92,51 @@ public class MatchMakerTranslateGroup
 		return getName();
 	}
 
-	public MatchMakerTranslateGroup duplicate(MatchMakerObject parent, MatchMakerSession s) {
+	public MatchMakerTranslateGroup duplicate(MatchMakerObject parent) {
 		MatchMakerTranslateGroup g = new MatchMakerTranslateGroup();
-		g.setSession(s);
 		g.setParent(parent);
 		g.setName(this.getName());
 		g.setVisible(isVisible());
-		for (MatchMakerTranslateWord w: getChildren()){
-			g.addChild(w.duplicate(g,s));
+		int i = 0;
+		for (MatchMakerTranslateWord w: getChildren(MatchMakerTranslateWord.class)){
+			MatchMakerTranslateWord duplicate = w.duplicate(g);
+			g.addChild(duplicate, i);
+			i++;
 		}
 		return g;
 	}
 
 	public int compareTo(MatchMakerTranslateGroup o) {
 		return getName().compareTo(((MatchMakerTranslateGroup) o).getName());
+	}
+
+	@Override
+	@NonProperty
+	public List<MatchMakerTranslateWord> getChildren() {
+		return Collections.unmodifiableList(children);
+	}
+
+	@Override
+	@NonProperty
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+	
+	public void addChild(SPObject spo) {
+		addChild(spo,children.size());
+	}
+	
+	protected void addChildImpl(SPObject spo, int index) {
+		children.add(index, (MatchMakerTranslateWord) spo);
+		fireChildAdded(MatchMakerTranslateWord.class, spo, index);
+	}
+	
+	protected boolean removeChildImpl(SPObject spo) {
+		int index = children.indexOf(spo);
+		boolean removed = children.remove(spo);
+		fireChildRemoved(MatchMakerTranslateWord.class, spo, index);
+		spo.setParent(null);
+		return removed;
 	}
 
 }

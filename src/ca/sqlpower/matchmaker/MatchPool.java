@@ -204,7 +204,7 @@ public class MatchPool extends MonitorableImpl {
             SQLIndex sourceTableIndex = project.getSourceTableIndex();
 			if (displayColumns == null || displayColumns.size() == 0) {
             	displayColumns = new ArrayList<SQLColumn>();
-            	for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
+            	for (SQLIndex.Column col : sourceTableIndex.getChildren(SQLIndex.Column.class)) {
             		displayColumns.add(col.getColumn());
             	}
             }
@@ -229,8 +229,8 @@ public class MatchPool extends MonitorableImpl {
             sql.append(DDLUtils.toQualifiedName(sourceTable));
             sql.append(" source2");
             int index = 0;
-            for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
-            	if (index == 0) { 
+        	for (SQLIndex.Column col : sourceTableIndex.getChildren(SQLIndex.Column.class)) {
+        		if (index == 0) { 
             		sql.append("\n WHERE");
             	} else {
             		sql.append(" AND");
@@ -940,7 +940,7 @@ public class MatchPool extends MonitorableImpl {
 		if (syntheticMungeProcess == null) {
 			syntheticMungeProcess = new MungeProcess();
 			syntheticMungeProcess.setName(MungeProcess.SYNTHETIC_MATCHES);
-			project.getMungeProcessesFolder().addChild(syntheticMungeProcess);
+			project.addChild(syntheticMungeProcess);
 			MatchMakerDAO<Project> dao = session.getDAO(Project.class);
 			dao.save(project);
 		}

@@ -38,10 +38,8 @@ import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
@@ -64,7 +62,7 @@ public class FolderEditor implements DataEntryPanel {
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 	private JPanel panel;
 	private final MatchMakerSwingSession swingSession;
-	private PlFolder<Project> folder;
+	private PlFolder folder;
 
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
@@ -72,7 +70,7 @@ public class FolderEditor implements DataEntryPanel {
 	private JTextField folderName = new JTextField(40);
 	private JTextArea folderDesc = new JTextArea(4,40);
 
-	public FolderEditor(MatchMakerSwingSession swingSession, PlFolder<Project> folder) {
+	public FolderEditor(MatchMakerSwingSession swingSession, PlFolder folder) {
 		this.swingSession = swingSession;
 		this.folder = folder;
 		handler = new FormValidationHandler(status);
@@ -192,13 +190,12 @@ public class FolderEditor implements DataEntryPanel {
 
         if ( !swingSession.getCurrentFolderParent().getChildren().contains(folder) ) {
             TreeModel treeModel = swingSession.getTree().getModel();
-            MatchMakerObject<?,?> root = (MatchMakerObject<?,?>) treeModel.getRoot();
-            if (treeModel.getIndexOfChild(root, folder) == -1){
+            if (treeModel.getIndexOfChild(swingSession.getCurrentFolderParent(), folder) == -1){
                 swingSession.getCurrentFolderParent().addNewChild(folder);
             }
         }
 
-        PlFolderDAO dao = (PlFolderDAO)swingSession.getDAO(PlFolder.class);
+        TimedGeneralDAO dao = (TimedGeneralDAO)swingSession.getDAO(PlFolder.class);
         dao.save(folder);
         handler.resetHasValidated();
 

@@ -19,14 +19,21 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.object.AbstractSPObject;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
+import ca.sqlpower.util.RunnableDispatcher;
+import ca.sqlpower.util.SessionNotFoundException;
+import ca.sqlpower.util.WorkspaceContainer;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
@@ -37,25 +44,17 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @param <T> The type of this matchmaker object implementation
  * @param <C> The child type of this matchmaker object implementation
  */
-public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C extends MatchMakerObject>
-	implements MatchMakerObject<T, C> {
+public abstract class AbstractMatchMakerObject extends AbstractSPObject implements MatchMakerObject 
+{
 
     private static final Logger logger = Logger.getLogger(AbstractMatchMakerObject.class);
-
-	private MatchMakerObject parent;
-
-	@SuppressWarnings("unchecked")
-	private MatchMakerEventSupport<T,C> eventSupport =
-		new MatchMakerEventSupport<T,C>((T) this);
-
-	private List<C> children = new ArrayList<C>();
-	private String lastUpdateAppUser;
+    
+    private String lastUpdateAppUser;
 	private String lastUpdateOsUser;
 	private Date lastUpdateDate;
 	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
 	private Date createDate;
 	private MatchMakerSession matchMakerSession;
-	private String name;
 
 	private boolean visible;
 
@@ -63,161 +62,17 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		visible = true;
 	}
 
-	/**
-     * Adds the given child object to the end of this MatchMakerObject's child
-     * list, then fires an event indicating the insertion took place.
-     * <p>
-     * Note to subclassers: If you override this method, you must fire the
-     * childrenInserted event yourself!
-     * 
-     * @param child
-     *            The child object to add. Must not be null.
-     */
-	public final void addChild(C child) {
-        addImpl(children.size(), child);
-	}
-
-	/**
-     * Inserts the given child object at the given position of this
-     * MatchMakerObject's child list, then fires an event indicating the
-     * insertion took place.
-     * <p>
-     * Note to subclassers: If you override this method, you must fire the
-     * childrenInserted event yourself!
-     * 
-     * @param index
-     *            The position to insert the child at. 0 inserts the child at
-     *            the beginning of the list. The given index must be at least 0
-     *            but not more than the current child count of this object.
-     * @param child
-     *            The child object to add. Must not be null.
-     */
-	public final void addChild(int index, C child) {
-        addImpl(index, child);
-	}
-	
-	protected void addImpl(int index, C child) {
-		logger.debug("addChild: children collection is a "+children.getClass().getName());
-        if(child== null) throw new NullPointerException("Cannot add a null child");
-		children.add(index, child);
-		child.setParent(this);
-		List<C> insertedChildren = new ArrayList<C>();
-		insertedChildren.add(child);
-		eventSupport.fireChildrenInserted("children",new int[] {index},insertedChildren);
-	}
-	
-	
-
-    /**
-     * Returns the number of children in this MatchMakerObject. For those
-     * objects that do not allow children, always returns 0.
-     */
-	public int getChildCount() {
-		return children.size();
-	}
-
-    /**
-     * Returns the list of children in this object.  The returned list must not
-     * be modified by client code (this is not enforced, but the MatchMaker will
-     * not work properly if the client code modifies this list directly).  See
-     * {@link #addChild(int, MatchMakerObject)} and {@link #removeChild(MatchMakerObject)}
-     * for the correct way to manipulate the child list.
-     * <p>
-     * MatchMakerObjects that do not support children always return an empty
-     * list (never null).
-     */
-	public List<C> getChildren() {
-		return children;
-	}
-
-    /**
-     * Replaces the list of children with the passed in list.
-     * <p>
-     * This method should only be used by code that saves and restores
-     * MatchMaker projects. At the time of this writing, this includes the
-     * Hibernate and XML persistence layers.
-     * 
-     * @param children
-     */
-    public void setChildren(List<C> children){
-        this.children = children;
-        eventSupport.fireStructureChanged();
-    }
-
-	/**
-     * Removes the given child and fires a childrenRemoved event.  If the
-     * given child is not present in this object, calling this method has
-     * no effect (no children are removed and no events are fired).
-     * <p>
-	 * Note to subclassers: If you override this method, you must fire the
-     * ChildrenRemoved yourself.
-     *
-	 * @param child The child object to remove.  If it is not present in this
-     * object's child list, this method call has no effect.
-	 */
-	public void removeChild(C child) {
-		int childIndex = children.indexOf(child);
-        if (childIndex == -1) return;
-        int [] removedIndices = {childIndex};
-		List<C> removedChildren = new ArrayList<C>();
-		removedChildren.add(child);
-		children.remove(child);
-		eventSupport.fireChildrenRemoved("children",removedIndices,removedChildren);
-	}
-
-	/**
-     * Swaps the elements at the specified positions.
-     * (If the specified positions are equal, invoking this method leaves
-     * the list unchanged.)
-     *
-     * @param i the index of one element to be swapped.
-     * @param j the index of the other element to be swapped.
-     */
-	public void swapChildren(int i, int j) {
-		final List<C> l = getChildren();
-		try {
-			startCompoundEdit();
-			int less;
-			int more;
-			if (i < j) {
-				less = i;
-				more = j;
-			} else {
-				less = j;
-				more = i;
-			}
-			C child1 = l.get(less);
-			C child2 = l.get(more);
-
-			removeChild(child1);
-			removeChild(child2);
-
-			addChild(less, child2);
-			addChild(more, child1);
-		} finally {
-			endCompoundEdit();
-		}
-	}
-	
-	public void moveChild(int from, int to) {
-		if (to == from) return;
-		final List<C> l = getChildren();
-		C child = l.get(from);
-		try {
-			startCompoundEdit();
-			removeChild(l.get(from));
-			addChild(to, child);
-		} finally {
-			endCompoundEdit();
-		}
-	}
-	
+	@Transient @Accessor
 	public String getLastUpdateAppUser() {
 		return lastUpdateAppUser;
 	}
+
+	@Transient @Accessor
 	public String getLastUpdateOSUser() {
 		return lastUpdateOsUser;
 	}
+
+	@Transient @Accessor
 	public Date getLastUpdateDate() {
 		return lastUpdateDate;
 	}
@@ -241,16 +96,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		}
 	}
 
-	public MatchMakerObject getParent() {
-		return parent;
-	}
-
-	public void setParent(MatchMakerObject parent) {
-		MatchMakerObject oldValue = this.parent;
-		this.parent = parent;
-		eventSupport.firePropertyChange("parent", oldValue, this.parent);
-	}
-
+	@Transient @Mutator
 	public void setSession(MatchMakerSession matchMakerSession) {
 		this.matchMakerSession = matchMakerSession;
 	}
@@ -259,7 +105,8 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	 * Returns this object's session, if it has one. Otherwise, defers
 	 * to the parent's getSession() method.
 	 */
-    public MatchMakerSession getSession() {
+    @Transient @Accessor
+	public MatchMakerSession getSession() {
         if (getParent() == this) {
             // this check prevents infinite recursion in case of funniness
             throw new IllegalStateException("Something tells me this class belongs to the royal family");
@@ -276,94 +123,75 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
         		logger.debug(getClass().getName()+"@"+System.identityHashCode(this)+
         				": looking up the tree");
         	}
-            return getParent().getSession();
+        	SPObject parent = getParent();
+        	if (!(parent instanceof MatchMakerObject)) {
+        		throw new ClassCastException("There shouldn't be any SPObjects that aren't MatchMakerObjects in Matchmaker sessions!");
+        	}
+            return ((MatchMakerObject)parent).getSession();
         }
     }
+	
+	public WorkspaceContainer getWorkspaceContainer() {
+		if (getSession() != null) {
+			return getSession();
+		} else if (getParent() != null) {
+			return getParent().getWorkspaceContainer();
+		} else {
+			throw new SessionNotFoundException("Root object does not have a workspace container reference");
+		}
+	}
+	
+	public RunnableDispatcher getRunnableDispatcher() throws SessionNotFoundException {
+		if (getSession() != null) {
+			return getSession();
+		} else if(getParent() != null) {
+			return getParent().getRunnableDispatcher();
+		} else {
+			throw new SessionNotFoundException("Root object does not have a runnable dispatcher reference");
+		}
+	}
 
+	@Transient @Accessor
 	public Date getCreateDate() {
 		return createDate;
 	}
-
-	public boolean allowsChildren() {
-		return true;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		String oldValue = this.name;
-		this.name = name;
-		eventSupport.firePropertyChange("name", oldValue, this.name);
-	}
-
-    /**
-     * Declared abstract here to force subclasses to implement equals().
-     */
-	public abstract boolean equals(Object obj);
-
-    /**
-     * Declared abstract here to force subclasses to implement hashCode().
-     */
-	public abstract int hashCode();
-
-
-	/////// Event stuff ///////
-
-	public void addMatchMakerListener(MatchMakerListener<T, C> l) {
-		eventSupport.addMatchMakerListener(l);
-	}
-
-	public void removeMatchMakerListener(MatchMakerListener<T, C> l) {
-		eventSupport.removeMatchMakerListener(l);
-	}
-
-	protected MatchMakerEventSupport<T, C> getEventSupport() {
-		return eventSupport;
-	}
 	
+	/////// Event stuff ///////
+	@Mutator
 	public void setVisible(boolean visible) {
 		boolean old = this.visible;
 		this.visible = visible;
-		eventSupport.firePropertyChange("visible", old, visible);
+		firePropertyChange("visible", old, visible);
 	}
 	
+	@Accessor
 	public boolean isVisible() {
 		return visible;
 	}
-	
-	/////// Undo Stuff ///////
-	// fires the event as a undo event if this is true;
-	private boolean isUndoing;
 
-	public boolean isUndoing() {
-		return isUndoing;
+    @Override
+    public String toString() {
+    	return super.toString() + ", " + getName() + ":" + getUUID();
+    }
+
+	@Override
+	public void removeDependency(SPObject spo) {
+		//TODO: Might add this in at somepoint. Not sure, this just removes a necessary override.
 	}
 
-	public void setUndoing(boolean isUndoing) {
-		this.isUndoing = isUndoing;
-	}
-	
-	/**
-	 * Searches through the tree recursively to find if the mmo 
-	 * is part of the hierarchy.
-	 */
-	public boolean hierarchyContains(MatchMakerObject mmo) {
-		if (allowsChildren()) {
-			if (getChildren().contains(mmo)) {
-				return true;
-			}
-			for (C child : getChildren()) {
-				if (child.hierarchyContains(mmo)) {
-					return true;
-				}
-			}
-		}
+	@Override
+	protected boolean removeChildImpl(SPObject child) {
 		return false;
 	}
-	
-	/**
+
+	@Override
+	@NonProperty
+	public List<? extends SPObject> getDependencies() {
+		//TODO: Might add this in at somepoint. Not sure, this just removes a necessary override.
+		return null;
+	}
+    
+    /**
 	 * Starts a compound edit so that the whole compound edit can
 	 * be undo'ed at the same time. Note that one must call endCompoundEdit after or the
 	 * undo listeners will not work properly. Use the following code snippet to ensure 
@@ -378,7 +206,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @see AbstractMatchMakerObject#endCompoundEdit()
 	 */
 	public void startCompoundEdit() {
-		getEventSupport().firePropertyChange("UNDOSTATE", false, true);
+		firePropertyChange("UNDOSTATE", false, true);
 	}
 	
 	/**
@@ -386,6 +214,70 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	 * @see AbstractMatchMakerObject#startCompoundEdit()
 	 */
 	public void endCompoundEdit() {
-		getEventSupport().firePropertyChange("UNDOSTATE", true, false);
+		firePropertyChange("UNDOSTATE", true, false);
+	}
+	
+	/**
+     * Swaps the elements at the specified positions in the specific child type list.
+     * (If the specified positions are equal, invoking this method leaves
+     * the list unchanged.)
+     *
+     * @param i the index of one element to be swapped.
+     * @param j the index of the other element to be swapped.
+     */
+	public void swapChildren(int i, int j, Class<? extends MatchMakerObject> classType) {
+		try {
+			begin("Swapping Children");
+			int less;
+			int more;
+			if (i < j) {
+				less = i;
+				more = j;
+			} else {
+				less = j;
+				more = i;
+			}
+			MatchMakerObject child1 = getChildren(classType).get(less);
+			MatchMakerObject child2 = getChildren(classType).get(more);
+
+			try {
+				removeChild(child1);
+				removeChild(child2);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException();
+			}
+
+			addChild(child2, less);
+			addChild(child1, more);
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
+		}
+	}
+	
+	/**
+     * Moves the element from one index to another in the specific child type list.
+     *
+     * @param i the index of the child to be moved
+     * @param to the index where you want to move the child to
+     * @param classType the classtype of the child you are moving
+     */
+	public void moveChild(int from, int to, Class<? extends MatchMakerObject> classType) {
+		if (to == from) return;
+		MatchMakerObject child = getChildren(classType).get(from);
+		try {
+			begin("Moving Child");
+			try {
+				removeChild(child);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException();
+			}
+			addChild(child, to);
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
+		}
 	}
 }

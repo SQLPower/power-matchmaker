@@ -26,7 +26,6 @@ import java.util.prefs.Preferences;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
-import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -53,7 +52,7 @@ public class DQguruEngineRunner {
 	 * @throws SourceTableException 
 	 * @throws EngineSettingException 
 	 */
-	public static void main(String[] args) throws RepositoryVersionException,
+	public static void main(String[] args) throws
 			PLSecurityException, SQLException, SQLObjectException,
 			MatchMakerConfigurationException, IOException, EngineSettingException, SourceTableException {
 		String repositoryDSName = null;

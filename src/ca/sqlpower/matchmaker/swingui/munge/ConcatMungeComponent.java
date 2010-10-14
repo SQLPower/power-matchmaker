@@ -55,7 +55,7 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
 		addInputButton = new JButton(new AddInputAction("Add Input"));
 		removeInputsButton = new JButton(new RemoveUnusedInputAction("Clean Up"));
         
-        delimiterField = new JTextField(step.getParameter(ConcatMungeStep.DELIMITER_PARAMETER_NAME));
+        delimiterField = new JTextField(step.getDelimiter());
 		delimiterField.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -68,7 +68,7 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
             	ConcatMungeStep step = (ConcatMungeStep) getStep();
-				step.setParameter(ConcatMungeStep.DELIMITER_PARAMETER_NAME, delimiterField.getText());
+				step.setDelimiter(delimiterField.getText());
             }
         });
         

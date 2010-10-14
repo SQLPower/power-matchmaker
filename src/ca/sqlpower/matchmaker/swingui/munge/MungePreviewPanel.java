@@ -269,7 +269,7 @@ public class MungePreviewPanel {
 			}
 		};
 		
-		project = process.getParentProject();
+		project = process.getParent();
 		switch(project.getType()) {
 		case FIND_DUPES:
 			MatchEngineImpl matchingEngine = project.getMatchingEngine();

@@ -20,10 +20,16 @@
 
 package ca.sqlpower.matchmaker;
 
-public class MatchMakerTranslateWordTest
-	extends MatchMakerTestCase<MatchMakerTranslateWord> {
+import ca.sqlpower.object.SPObject;
+
+public class MatchMakerTranslateWordTest extends MatchMakerTestCase<MatchMakerTranslateWord> {
+
+	public MatchMakerTranslateWordTest(String name) {
+		super(name);
+	}
 
 	final String appUserName = "test_user";
+	MatchMakerTranslateGroup parent;
 	MatchMakerTranslateWord target;
 
 	@Override
@@ -32,7 +38,10 @@ public class MatchMakerTranslateWordTest
 		target = new MatchMakerTranslateWord();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		parent = new MatchMakerTranslateGroup();
 		target.setSession(session);
+		parent.addChild(target);
+		getRootObject().addChild(parent, 0);
 		
 		// Ignoring because the getName() has been changed to enable
 		// naming the node on the tree.
@@ -62,10 +71,14 @@ public class MatchMakerTranslateWordTest
 		try {
 			target.addChild(new TestingAbstractMatchMakerObject());
 			fail("Translate word does not allow child!");
-		} catch ( IllegalStateException e ) {
+		} catch ( IllegalArgumentException e ) {
 			// what we excepted
 		}
 	}
 
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return null;
+	}
 
 }

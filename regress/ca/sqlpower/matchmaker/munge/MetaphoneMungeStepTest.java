@@ -21,21 +21,30 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class MetaphoneMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class MetaphoneMungeStepTest extends MatchMakerTestCase<MetaphoneMungeStep> {
 
 	private MetaphoneMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
+
+	public MetaphoneMungeStepTest(String name) {
+		super(name);
+	}
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new MetaphoneMungeStep();
+		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonNormalString() throws Exception {
@@ -44,7 +53,7 @@ public class MetaphoneMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("FBR", result);
@@ -56,7 +65,7 @@ public class MetaphoneMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -71,5 +80,20 @@ public class MetaphoneMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected MetaphoneMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// already in AbstractMungeStep
 	}
 }

@@ -132,7 +132,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 
 		MungeProcess mp = new MungeProcess();
 		mp.setName("test");
-		project.addMungeProcess(mp);
+		project.addChild(mp);
 
 		//This is different for Oracle and SQL Server
 		createTables();
@@ -153,7 +153,10 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		if (project.doesResultTableExist()) {
 			ddlg.dropTable(project.getResultTable());
 		}
-		ddlg.addTable(project.createResultTable());
+		
+		SQLTable t = project.createResultTable();
+		
+		ddlg.addTable(t);
 		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(1));
 		
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
@@ -237,9 +240,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cccmr_date.setColumn(sourceTable.getColumnByName("COL_DATE"));
 		cccmr_number.setColumn(sourceTable.getColumnByName("COL_NUMBER"));
 		
-		project.addTableMergeRule(tmr);
-		project.addTableMergeRule(ctmr);
-		project.addTableMergeRule(cctmr);
+		project.addChild(tmr);
+		project.addChild(ctmr);
+		project.addChild(cctmr);
    	}
 
 	/**

@@ -21,9 +21,12 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.munge.BooleanConstantMungeStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
+import ca.sqlpower.object.SPObject;
 
 
 public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
@@ -31,8 +34,8 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
 	MungeProcess target;
 	final String appUserName = "test user";
 
-    public MungeProcessTest() {
-        super();
+    public MungeProcessTest(String name	) {
+        super(name);
         propertiesToIgnoreForEventGeneration.add("parentProject");
         propertiesThatDifferOnSetAndGet.add("parent");
     }
@@ -44,6 +47,10 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
+		Project parent = (Project) createNewValueMaker(
+				getRootObject(), null).makeNewValue(
+						Project.class, null, "Parent project");
+		parent.addMungeProcess(target, 0);
 	}
 
 	@Override
@@ -57,10 +64,79 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
         MatchMakerEventCounter listener = new MatchMakerEventCounter();
         MungeProcess process = new MungeProcess();
 
-        process.addMatchMakerListener(listener);
-        process.setParentProject(project);
+        process.addSPListener(listener);
+        process.setParent(project);
         assertEquals("Incorrect number of events fired",1,listener.getAllEventCounts());
-        assertEquals("Wrong property fired in the event","parent",listener.getLastEvt().getPropertyName());
+        assertEquals("Wrong property fired in the event","parent",listener.getLastPropertyChangeEvent().getPropertyName());
     }
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return SQLInputStep.class;
+	}
 
+	/**
+	 * Tests that input steps can only be added at the start of the munge
+	 * process list. Any additions later in the list will throw an exception as
+	 * they would be considered a step in process.
+	 */
+	public void testInsertSQLInputStepAtStart() throws Exception {
+		MungeProcess process = new MungeProcess();
+		SQLInputStep input1 = new SQLInputStep();
+		try {
+			process.addMungeStep(input1, 0);
+		} catch (Exception e) {
+			fail("The process failed to allow an input step to be correctly added at the start");
+		}
+		
+		BooleanConstantMungeStep step = new BooleanConstantMungeStep();
+		process.addMungeStep(step, 1);
+		
+		SQLInputStep input2 = new SQLInputStep();
+		try {
+			process.addMungeStep(input2, 1);
+		} catch (Exception e) {
+			fail("The process failed to allow an input step to be correctly added before other steps.");
+		}
+		
+		SQLInputStep input3 = new SQLInputStep();
+		try {
+			process.addMungeStep(input3, 3);
+			fail("We should not be allowed to add a munge step after the third position.");
+		} catch (Exception e) {
+			//we pass at this point because an exception was thrown
+		}
+	}
+
+	/**
+	 * Tests that steps can only be added after the input steps if the step is
+	 * not itself an input step. This ensures the list ordering is as we expect.
+	 */
+	public void testOtherStepsAfterInputSteps() throws Exception {
+		MungeProcess process = new MungeProcess();
+		SQLInputStep input1 = new SQLInputStep();
+		process.addMungeStep(input1, 0);
+		
+		BooleanConstantMungeStep step = new BooleanConstantMungeStep();
+		try {
+			process.addMungeStep(step, 1);
+		} catch (Exception e) {
+			fail("We should be able to add munge steps after the input steps.");
+		}
+
+		BooleanConstantMungeStep step2 = new BooleanConstantMungeStep();
+		try {
+			process.addMungeStep(step2, 0);
+			fail("We should not be able to add munge steps before the input steps.");
+		} catch (Exception e) {
+			//we pass because we get an exception for an invalid position
+		}
+		
+		BooleanConstantMungeStep step3 = new BooleanConstantMungeStep();
+		try {
+			process.addMungeStep(step3, 3);
+			fail("We should not be able to add munge steps after the result step.");
+		} catch (Exception e) {
+			//we pass because we get an exception for an invalid position
+		}
+	}
 }

@@ -20,8 +20,14 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import sun.misc.BASE64Encoder;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
 
 /**
  * This class will create a new munge step to the MatchMaker in order to calculate the
@@ -29,7 +35,12 @@ import sun.misc.BASE64Encoder;
  */
 public class MD5CheckSumMungeStep extends AbstractMungeStep {
 	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 	
+	@Constructor
 	public MD5CheckSumMungeStep(){
 		super("MD5 CheckSum", false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("md5CheckSumOutput", String.class);
@@ -44,7 +55,7 @@ public class MD5CheckSumMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("MD5 CheckSum substitution munge step does not support removeInput()");
 	}
 	

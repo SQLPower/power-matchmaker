@@ -22,17 +22,18 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -42,29 +43,33 @@ import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchMakerUpgradePersisterManager;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.DefaultUserPrompterFactory;
+import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.Version;
 
-public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSession {
+public class TestingMatchMakerHibernateSession implements MatchMakerSession {
 
     private static final Logger logger = Logger.getLogger(TestingMatchMakerHibernateSession.class);
         
     private final JDBCDataSource dataSource;
-    private final SessionFactory hibernateSessionFactory;
     private TestingMatchMakerContext context = new TestingMatchMakerContext();
     private final TestingConnection con;
     private SQLDatabase db;
     private List<String> warnings = new ArrayList<String>();
-    private TranslateGroupParent tgp = new TranslateGroupParent(this);
+    private TranslateGroupParent tgp = new TranslateGroupParent();
 	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 
-	private Session hSession;
     
     /**
      * The map of SQLDatabases to SPDatasources so they can be cached.
@@ -82,13 +87,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         super();
         try {
             this.dataSource = dataSource;
-            this.hibernateSessionFactory = HibernateTestUtil.buildHibernateSessionFactory(this.dataSource);
             this.con = DBTestUtil.connectToDatabase(this.dataSource);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
-        resetSession();
     }
     
     /**
@@ -98,16 +101,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         db = new SQLDatabase();
         con = null;
         dataSource = null;
-        hibernateSessionFactory = null;
     }
 
-    public Session openSession() {
-        return hSession;
-    }
-
-    public void resetSession() {
-    	hSession = hibernateSessionFactory.openSession(getConnection());
-    }
     /**
      * Enables or disables the connection associated with this session.  This is useful for
      * testing that Hibernate is correctly configured to eagerly fetch the data we expect it to.
@@ -288,7 +283,9 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    				catalog,
 	    				schema,
 	    				tableName);
-	    		table.getColumns();
+	    		for(SQLColumn c : table.getColumns()) {
+	    			c.setType(getSQLType(c.getSourceDataTypeName()));
+	    		}
 	    		table.getImportedKeys();
 	    		return table;
 	    	} finally {
@@ -349,8 +346,6 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
 	public boolean close() {
 		if (db.isConnected()) db.disconnect();
-		if (hSession.isConnected()) hSession.close();
-		if (!hibernateSessionFactory.isClosed()) hibernateSessionFactory.close();
 		fireSessionClosing();
 		return true;
 	}
@@ -384,5 +379,76 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		// no-op
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.removeStatusMessage()");
 		
+	}
+
+	@Override
+	public MMRootNode getRootNode() {
+		logger.debug("Stub call: MatchMakerSession.getRootNode()");
+		return null;
+	}
+
+	@Override
+	public SPObject getWorkspace() {
+		return getRootNode();
+	}
+
+	@Override
+	public void runInForeground(Runnable runner) {
+		
+	}
+
+	@Override
+	public void runInBackground(Runnable runner) {
+		
+	}
+
+	@Override
+	public boolean isForegroundThread() {
+		return false;
+	}
+	 /** 
+     * Gets the basic SQL types from the PL.INI file
+     */
+    public List<UserDefinedSQLType> getSQLTypes()
+    {
+    	return Collections.unmodifiableList(this.getContext().getPlDotIni().getSQLTypes());
+    }
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file by copmaring jdbc codes.
+     */
+    public UserDefinedSQLType getSQLType(int sqlType)
+    {
+    	List<UserDefinedSQLType> types = getSQLTypes();
+    	for(UserDefinedSQLType s : types) {
+    		if(s.getType().equals(sqlType)) {
+    			return s;
+    		}
+    	}
+    	throw new IllegalArgumentException(sqlType + " is not a sql datatype.");
+    }
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file by comparing names.
+     */
+    public UserDefinedSQLType getSQLType(String name)
+    {
+    	List<UserDefinedSQLType> types = getSQLTypes();
+    	for(UserDefinedSQLType us : types) {
+    		if(us.getName().equalsIgnoreCase(name)) {
+    			return us;
+    		}
+    	}
+    	throw new IllegalArgumentException(name + " is not a sql datatype.");
+    }
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new DefaultUserPrompterFactory();
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return new MatchMakerUpgradePersisterManager();
 	}
 }

@@ -20,13 +20,18 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLIndex;
 
 /**
@@ -35,6 +40,11 @@ import ca.sqlpower.sqlobject.SQLIndex;
  * matching.
  */
 public class DeDupeResultStep extends AbstractMungeStep implements MungeResultStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
 	private static final Logger logger = Logger.getLogger(DeDupeResultStep.class);
 	
@@ -61,6 +71,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	 */
 	private MungeStepOutput[] indexValues;
 
+	@Constructor
 	public DeDupeResultStep() {
 		super("Transformation Results",true);
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
@@ -72,6 +83,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
      * Sets the input step associated with this result step.  This has to
      * be done before calling {@link #open(Logger)}.
      */
+	@NonProperty
     public void setInputStep(MungeStep step) {
         this.inputStep = step;
     }
@@ -147,6 +159,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		return Boolean.TRUE;
 	}
 	
+	@NonProperty
 	public List<MungeResult> getResults() {
 		return results;
 	}

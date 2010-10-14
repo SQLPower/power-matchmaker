@@ -91,7 +91,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("cleanseTest", "log");
 		settings.setLog(file);
-		project.setMungeSettings(settings);
+		settings.copyPropertiesToTarget(project.getMungeSettings());
 		engine = new CleanseEngineImpl(session, project);
    	}
 	
@@ -125,17 +125,17 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		mungep.addChild(step);
 		mungep.addChild(ucms);
 		mungep.setName("test");
-		project.addMungeProcess(mungep);
+		project.addChild(mungep);
 		
 		MungeStep mrs = step.getOutputStep();
 		mungep.addChild(mrs);
 		
 		step.refresh(logger);
 		mrs.open(logger);
-        mrs.rollback();
-		mrs.close();
-		mrs.connectInput(1, ucms.getChildren().get(0));
-		ucms.connectInput(0, step.getChildren().get(1));
+        mrs.mungeRollback();
+		mrs.mungeClose();
+		mrs.connectInput(1, ucms.getMungeStepOutputs().get(0));
+		ucms.connectInput(0, step.getMungeStepOutputs().get(1));
 		
 		engine.call();
 

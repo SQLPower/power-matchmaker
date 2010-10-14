@@ -21,21 +21,30 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class LowerCaseMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class LowerCaseMungeStepTest extends MatchMakerTestCase<LowerCaseMungeStep> {
 
 	private LowerCaseMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
+
+	public LowerCaseMungeStepTest(String name) {
+		super(name);
+	}
 	
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new LowerCaseMungeStep();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonUpperCaseString() throws Exception {
@@ -44,7 +53,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcdefg", result);
@@ -56,7 +65,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcdef!@#$%^&*", result);
@@ -69,7 +78,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -103,5 +112,20 @@ public class LowerCaseMungeStepTest extends TestCase {
             // good
         }
     }
+
+	@Override
+	protected LowerCaseMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// already in AbstractMungeStep
+	}
 
 }

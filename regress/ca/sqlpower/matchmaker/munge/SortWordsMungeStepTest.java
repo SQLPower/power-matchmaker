@@ -21,21 +21,32 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class SortWordsMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.object.SPObject;
+
+public class SortWordsMungeStepTest extends MatchMakerTestCase<SortWordsMungeStep> {
 
 	private SortWordsMungeStep step;
 	
 	private MungeStepOutput<String> testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-	
+
+	public SortWordsMungeStepTest(String name) {
+		super(name);
+	}
+
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new SortWordsMungeStep();
+		step.setSession(new TestingMatchMakerSession());
+		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallOnNull() throws Exception {
@@ -44,7 +55,7 @@ public class SortWordsMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String) output.getData();
 		assertNull(result);
@@ -68,7 +79,7 @@ public class SortWordsMungeStepTest extends TestCase {
 	    step.connectInput(0, testInput);
 	    step.open(logger);
 	    step.call();
-	    List<MungeStepOutput> results = step.getChildren();
+	    List<MungeStepOutput> results = step.getMungeStepOutputs();
 	    MungeStepOutput output = results.get(0);
 	    String result = (String) output.getData();
 	    assertEquals("alpha bravo charlie", result);
@@ -80,7 +91,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha bravo charlie", result);
@@ -89,12 +100,12 @@ public class SortWordsMungeStepTest extends TestCase {
     public void testLiteralDelimiter() throws Exception {
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("abc+def+aab+aba+ab+z");
-        step.setDelimiterRegex(false);
+        step.setRegex(false);
         step.setDelimiter("b+");
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("aba+a abc+def+aa z", result);
@@ -103,12 +114,12 @@ public class SortWordsMungeStepTest extends TestCase {
     public void testRegexDelimiter() throws Exception {
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("abc+def+aab+aba+ab+z");
-        step.setDelimiterRegex(true);
+        step.setRegex(true);
         step.setDelimiter("b+");
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("+a +z a a+a c+def+aa", result);
@@ -120,7 +131,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha", result);
@@ -132,7 +143,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha", result);
@@ -145,7 +156,7 @@ public class SortWordsMungeStepTest extends TestCase {
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha bravo crix", result);
@@ -155,11 +166,11 @@ public class SortWordsMungeStepTest extends TestCase {
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("AalphaAAAAcrixAAbravo");
         step.setDelimiter("A");
-        step.setDelimiterCaseSensitive(true);
+        step.setCaseSensitive(true);
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha bravo crix", result);
@@ -169,11 +180,11 @@ public class SortWordsMungeStepTest extends TestCase {
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("AalphaAAAAcrixAAbravo");
         step.setDelimiter("A");
-        step.setDelimiterCaseSensitive(false);
+        step.setCaseSensitive(false);
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("br crix lph vo", result);
@@ -183,15 +194,29 @@ public class SortWordsMungeStepTest extends TestCase {
         testInput = new MungeStepOutput<String>("test", String.class);
         testInput.setData("AalphaAAAAcrixAAbravo");
         step.setDelimiter("A");
-        step.setDelimiterCaseSensitive(true);
-        step.setResultDelimiter("\\");
+        step.setCaseSensitive(true);
+        step.setResultDelim("\\");
         step.connectInput(0, testInput);
         step.open(logger);
         step.call();
-        List<MungeStepOutput> results = step.getChildren();
+        List<MungeStepOutput> results = step.getMungeStepOutputs();
         MungeStepOutput output = results.get(0);
         String result = (String) output.getData();
         assertEquals("alpha\\bravo\\crix", result);
     }
-    
+
+	@Override
+	protected SortWordsMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// already in AbstractMungeStep
+	}
 }

@@ -20,23 +20,58 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.awt.Color;
+import java.sql.SQLInput;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.
  * {@link #matchPriority} can be NULL, and the constructor
  * sets it to NULL by default.
  */
-public class MungeProcess
-	extends AbstractMatchMakerObject<MungeProcess, MungeStep> {
+public class MungeProcess extends AbstractMatchMakerObject {
+	
+	/**
+	 * This the list that tells us the allowable child types and their order in getting children.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStep.class)));
+	
+	/**
+	 * The intermediate munge steps used between start and finish of the process.
+	 * They appear in the the middle of getChildren();
+	 */
+	private final List<MungeStep> mungeSteps = new ArrayList<MungeStep>();
+
+	/**
+	 * The MungeStep that is used to accumulate the resulting munged data.
+	 * Any class can get the munge results by calling {@link #getResults()},
+	 * which will delegate to getting the results from this output step.
+	 * This will appear last in getChildren();
+	 */
+	private MungeResultStep resultStep;
+	
+	/**
+	 * The input steps. It includes things like string constants as well as the main input.
+	 * They appear first in getChildren();
+	 */
+	private final List<SQLInputStep> inputSteps = new ArrayList<SQLInputStep>();
 	
 	/**
 	 * This is the name given to a rule set made by the Match Maker
@@ -89,102 +124,92 @@ public class MungeProcess
      * in the GUI.
      */
 	private Color colour = DEFAULT_COLOR;
-
-	/**
-	 * The MungeStep that is used to accumulate the resulting munged data.
-	 * Any class can get the munge results by calling {@link #getResults()},
-	 * which will delegate to getting the results from this output step.
-	 */
-	private MungeResultStep resultStep;
-	
-	/**
-	 * The input steps that are presently here.	 
-	 */
-	private List<SQLInputStep> inputSteps = new ArrayList<SQLInputStep>();
 	
 	/**
      * Constructor that sets up a default Munge process.
 	 */
+	@Constructor
 	public MungeProcess() {
 	}
 
-    public Long getOid() {
+	@NonProperty
+	public Long getOid() {
         return oid;
     }
 
+	@NonProperty
     public void setOid(Long oid) {
         this.oid = oid;
     }
     
-    /**
-     * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
-     * (a folder) is null, returns null.
-     */
-    public Project getParentProject() {
-        MatchMakerObject parentFolder = getParent();
-        if (parentFolder == null) {
-            return null;
-        } else {
-            return (Project) parentFolder.getParent();
-        }
+    @Override
+    @Accessor
+	public Project getParent() {
+    	return (Project) super.getParent();
     }
-
-    /**
-     * Sets the parent of this object to be the rule set folder of the given project object
-     *
-     * this will fire a <b>parent</b> changed event not a parent match event
-     */
-    public void setParentProject(Project grandparent) {
-        if (grandparent == null) {
-            setParent(null);
-        } else {
-            setParent(grandparent.getMungeProcessesFolder());
-        }
+    
+    @Override
+    @Mutator
+    public void setParent(SPObject parent) {
+    	if (!(parent instanceof Project) && !(parent == null)) {
+    		throw new IllegalArgumentException("The parent " + parent + 
+    				" cannot be the parent of a munge process because it is not a project.");
+    	}
+    	super.setParent(parent);
     }
-
+    
+    @Accessor
 	public String getDesc() {
 		return desc;
 	}
 
+    @Mutator
 	public void setDesc(String desc) {
 		String oldDesc = this.desc;
 		this.desc = desc;
-		getEventSupport().firePropertyChange("desc", oldDesc, desc);
+		firePropertyChange("desc", oldDesc, desc);
 	}
 
+	@Accessor
 	public Integer getMatchPriority() {
 		return matchPriority;
 	}
 
+	@Mutator
 	public void setMatchPriority(Integer matchPriority) {
         Integer oldValue = this.matchPriority;
 		this.matchPriority = matchPriority;
-		getEventSupport().firePropertyChange("matchPriority", oldValue, matchPriority);
+		firePropertyChange("matchPriority", oldValue, matchPriority);
 	}
 
+	@Accessor
 	public boolean getActive() {
 		return active;
 	}
 
+	@Mutator
 	public void setActive(boolean active) {
 		boolean oldValue = this.active;
 		this.active = active;
-		getEventSupport().firePropertyChange("active", oldValue, active);
+		firePropertyChange("active", oldValue, active);
 	}
 
+	@Accessor
 	public String getFilter() {
 		return filter;
 	}
 
+	@Mutator
 	public void setFilter(String filter) {
 		String oldValue = this.filter;
 		this.filter = filter;
-		getEventSupport().firePropertyChange("filter", oldValue, filter);
+		firePropertyChange("filter", oldValue, filter);
 	}
 	
 	/**
 	 * Indicates whether this munge process will be displayed on the Match Validation screen
 	 */
+	@Accessor
 	public boolean isValidate() {
 		return validate;
 	}
@@ -192,43 +217,25 @@ public class MungeProcess
 	/**
 	 * Sets whether this munge process will be displayed on the Match Validation screen
 	 */
+	@Mutator
 	public void setValidate(boolean validate) {
 		boolean oldValue = this.validate;
 		this.validate = validate;
-		getEventSupport().firePropertyChange("validate", oldValue, validate);
+		firePropertyChange("validate", oldValue, validate);
 	}
 
-    public Color getColour() {
+	@Accessor
+	public Color getColour() {
         return colour;
     }
     
-    public void setColour(Color mungeProcessColor) {
+	@Mutator
+	public void setColour(Color mungeProcessColor) {
         Color oldValue = this.colour;
         this.colour = mungeProcessColor;
-        getEventSupport().firePropertyChange("colour", oldValue, mungeProcessColor);
+        firePropertyChange("colour", oldValue, mungeProcessColor);
     }
     
-	@Override
-	public int hashCode() {
-        int result = ((getName() == null) ? 0 : getName().hashCode());
-        return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!(obj instanceof MungeProcess))
-			return false;
-		final MungeProcess other = (MungeProcess) obj;
-		if (getName() == null) {
-			if (other.getName() != null)
-				return false;
-		} else if (!getName().equals(other.getName()))
-			return false;
-		return true;
-	}
-
 	/**
 	 * duplicate all the properties of the MungeProcess 
 	 * and it's children, except oid and parent
@@ -236,7 +243,7 @@ public class MungeProcess
 	 * @return new MungeProcess object with the same properties
 	 * and children
 	 */
-	public MungeProcess duplicate(MatchMakerObject parent, MatchMakerSession s){
+	public MungeProcess duplicate(MatchMakerObject parent){
 		MungeProcess mungeProcess = new MungeProcess();
 		mungeProcess.setActive(getActive());
 		mungeProcess.setValidate(isValidate());
@@ -245,11 +252,10 @@ public class MungeProcess
         mungeProcess.setColour(getColour() == null ? null : new Color(getColour().getRGB()));
 		mungeProcess.setMatchPriority(getMatchPriority()==null?null:new Integer(getMatchPriority()));
 		mungeProcess.setName(getName()==null?null:new String(getName()));
-		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());
 		
-		for (MungeStep step : getChildren()) {
-            MungeStep newStep = step.duplicate(mungeProcess,s);
+		for (MungeStep step : getChildren(MungeStep.class)) {
+            MungeStep newStep = (MungeStep)step.duplicate(mungeProcess);
 			mungeProcess.addChild(newStep);
 		}
 		
@@ -262,6 +268,7 @@ public class MungeProcess
 	 * a munge processor.
 	 * @throws NullPointerException if the output step has not been set.
 	 */
+	@NonProperty
 	public List<MungeResult> getResults() {
 		if (resultStep == null) {
 			throw new NullPointerException("The output step for this process has not been set!");
@@ -273,88 +280,199 @@ public class MungeProcess
 	public String toString() {
 		return getName();
 	}
-	
-	@Override
-	protected void addImpl(int index, MungeStep child) {
-		includeMungeStep(child);
-		super.addImpl(index, child);
+
+	/**
+	 * Add only munge input and middle steps, not results steps using this method.
+	 */
+	public void addChild(SPObject spo) {
+		if(spo instanceof SQLInputStep) {
+			addChild(spo, inputSteps.size());
+		} else if(spo instanceof MungeResultStep) {
+			addChild(spo, inputSteps.size() + mungeSteps.size());
+		} else if(spo instanceof MungeStep){
+			addChild(spo, inputSteps.size() + mungeSteps.size());
+		} else {
+			throw new RuntimeException("Trying to add a child of incorrect type: " + spo.getClass());
+		}
 	}
 	
-	/**
-	 * Updates the result and input steps if nessary.
-	 * 
-	 * @param child The child to add to the process
-	 */
-	private void includeMungeStep(MungeStep child) {
-		if (child instanceof SQLInputStep) {
-			inputSteps.add((SQLInputStep) child);
-			if (resultStep != null) {
-				resultStep.addInputStep((SQLInputStep) child);
+	@Override
+	protected void addChildImpl(SPObject spo, int index) {
+		if (spo instanceof MungeResultStep) {
+			setResultStep((MungeResultStep) spo);
+		} else {
+			addMungeStep((MungeStep) spo, index);
+		}
+
+	}
+	
+	public void addMungeStep(MungeStep step, int index) {
+		if (step instanceof SQLInputStep) {
+			if (index > inputSteps.size()) {
+				throw new IllegalArgumentException("The input step " + step + 
+						" must be inserted before position " + inputSteps.size() + 
+						" instead of at " + index + " as it must come before the other steps.");
 			}
-			for (MungeStep step: getChildren()) {
-				if (child instanceof AddressCorrectionMungeStep) {
-					((AddressCorrectionMungeStep)step).setInputStep(child);
-				}
+			inputSteps.add(index, (SQLInputStep)step);
+			for(AddressCorrectionMungeStep s : getChildren(AddressCorrectionMungeStep.class)) {
+				s.setInputStep((SQLInputStep)step);
 			}
-		} else if (child instanceof MungeResultStep) {
-			if (resultStep != null && resultStep != child) {
-				throw new IllegalStateException("A transformation can only have one result transformer");
-			} else if (resultStep == null) {
-				this.resultStep = (MungeResultStep) child;
+			step.setParent(this);
+			fireChildAdded(SQLInputStep.class, step, index);
+		} else {
+			int endPosition = inputSteps.size() + mungeSteps.size();
+			if (index < inputSteps.size() || index > endPosition) {
+				throw new IllegalArgumentException("The input step " + step + 
+						" must be inserted after position " + inputSteps.size() + " and before " + endPosition + 
+						" instead of at " + index + " as it must come in the other steps.");
+			}
+			if (step instanceof AddressCorrectionMungeStep) {
 				for (SQLInputStep input : inputSteps) {
-					this.resultStep.addInputStep(input);
+					((AddressCorrectionMungeStep)step).setInputStep(input);
 				}
 			}
-		} else if (child instanceof AddressCorrectionMungeStep) {
+			mungeSteps.add(index - inputSteps.size(), (MungeStep)step);
+			step.setParent(this);
+			fireChildAdded(MungeStep.class, step, index);
+		}
+	}
+
+	/**
+	 * Sets the result step of a munge process. This can only be done once and
+	 * should be done in the constructor but is not yet due to backwards
+	 * compatibility with old Hibernate code. This should be fixed sometime soon
+	 * in the future.
+	 */
+	@NonProperty
+	public void setResultStep(MungeResultStep step) {
+		if (resultStep == null) {
+			resultStep = step;
 			for (SQLInputStep input : inputSteps) {
-				((AddressCorrectionMungeStep)child).setInputStep(input);
+				this.resultStep.addInputStep(input);
 			}
+			resultStep.setParent(this);
+		} else {
+			throw new IllegalArgumentException("The MungeResultStep should be set at the constructor of MungeProcess.");
 		}
 	}
 
 	@Override
-	public void removeChild(MungeStep child) {
-		if (child instanceof MungeResultStep) {
-			throw new IllegalStateException("Removal of result transformer is not allowed!");
-		} else {
-			super.removeChild(child);
+	protected boolean removeChildImpl(SPObject spo) {
+		return removeMungeStep((MungeStep) spo);
+	}
+	
+	public boolean removeMungeStep(MungeStep step) {
+		if (step instanceof SQLInputStep) {
+			int index = inputSteps.indexOf(step);
+			boolean removed = inputSteps.remove(step);
+			if (removed) {
+				fireChildRemoved(SQLInputStep.class, step, index);
+			}
+			return removed;
+		} else if (step instanceof MungeStep) {
+			int index = mungeSteps.indexOf(step);
+			boolean removed = mungeSteps.remove(step);
+			if (removed) {
+				fireChildRemoved(MungeStep.class, step, index + inputSteps.size());
+			}
+			return removed;
 		}
+		return false;
 	}
 	
 	public void removeChildAndInputs(MungeStep ms) {
 		try {
-			startCompoundEdit();
+			begin("removing child and inputs");
 			
 			//disconnect inputs
 			for (int x = 0; x < ms.getMSOInputs().size(); x++) {
-				MungeStepOutput link = ms.getMSOInputs().get(x);
+				MungeStepOutput link = (MungeStepOutput) ms.getMSOInputs().get(x);
 				if (link != null) {
 					ms.disconnectInput(x);
 				}
 			}
 			
 			//disconnect outputs
-			for (MungeStepOutput mso : ms.getChildren()) {
-				for (MungeStep child : getChildren()) {
+			for (SPObject spo : ms.getMungeStepOutputs()) {
+				MungeStepOutput mso = (MungeStepOutput) spo;
+				for (SPObject spo2 : getChildren()) {
+					MungeStep child = (MungeStep) spo2;
 					child.disconnectInput(mso);
 				}
 			}
 			
-			removeChild(ms);
-		} finally {
-			endCompoundEdit();
+			try{
+				removeChild(ms);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException(e);
+			}
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
 		}
+	}
+	
+
+	/**
+	 * Gets the result munge step in the process, i.e. the munge step everything
+	 * goes to and has no outputs.
+	 */
+	@NonProperty
+	public MungeResultStep getResultStep() {
+		return resultStep;
+	}
+
+	@Override
+	@NonProperty
+	public List<SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.addAll(inputSteps);
+		children.addAll(mungeSteps);
+		if (resultStep != null) {
+			children.add(resultStep);
+		}
+		return Collections.unmodifiableList(children);
+	}
+
+	/**
+	 * This is the position offset for different child types. The types are
+	 * broken into {@link SQLInputStep}s, {@link MungeResultStep}s, and the rest
+	 * of the munge steps.
+	 */
+	public int mungeProcessChildPositionOffset(Class<? extends SPObject> childType) {
+        if (SQLInput.class.isAssignableFrom(childType)) return 0;
+        if (MungeResultStep.class.isAssignableFrom(childType)) {
+        	return getInputSteps().size() + getMungeSteps().size();
+        }
+        if (MungeStep.class.isAssignableFrom(childType)) {
+        	return getInputSteps().size();
+        }
+        throw new IllegalArgumentException(childType.getName() + 
+                " is not a valid child type of " + getClass().getName());
+    }
+
+	/**
+	 * Gets the input munge steps in the process, i.e. those with only
+	 * inputs.
+	 */
+	@NonProperty
+	public List<SQLInputStep> getInputSteps() {
+		return Collections.unmodifiableList(inputSteps);
+	}
+	
+	/**
+	 * Gets the intermediate munge steps in the process, i.e. those with both
+	 * inputs and outputs.
+	 */
+	@NonProperty
+	public List<MungeStep> getMungeSteps() {
+		return Collections.unmodifiableList(mungeSteps);
 	}
 	
 	@Override
-	public void setChildren(List<MungeStep> children) {
-		super.setChildren(children);
-		for (MungeStep ms : children) {
-			includeMungeStep(ms);
-		}
-	}
-	
-	MungeResultStep getResultStep() {
-		return resultStep;
+	@NonProperty
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

@@ -23,18 +23,13 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -44,8 +39,6 @@ import javax.swing.text.Document;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.address.AddressDatabase;
-import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
 
@@ -70,13 +63,6 @@ public class UserPreferencesEditor implements DataEntryPanel {
      */
     private final JPanel panel;
 
-    /**
-     * The radio button that chooses to log in
-     */
-    private JRadioButton autoLoginRadioButton = new JRadioButton("Automatically connect to this repository");
-    private JComboBox autoLoginDataSourceBox = new JComboBox();
-    private JRadioButton loginDialogRadioButton = new JRadioButton("Show the Login Dialog");
-    
     private Document addressDataPathDoc = new DefaultStyledDocument();
     private JTextField addressDataPath = new JTextField();
     private JFileChooser addressDataPathChooser = new JFileChooser();
@@ -100,29 +86,6 @@ public class UserPreferencesEditor implements DataEntryPanel {
 		CellConstraints cc = new CellConstraints();
 		DefaultFormBuilder fb = new DefaultFormBuilder(layout);
 		fb.setDefaultDialogBorder();
-        
-        ButtonGroup bg = new ButtonGroup();
-        bg.add(autoLoginRadioButton);
-        bg.add(loginDialogRadioButton);
-        
-        autoLoginRadioButton.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                autoLoginDataSourceBox.setEnabled(autoLoginRadioButton.isSelected());
-            }
-        });
-
-        autoLoginRadioButton.setSelected(context.isAutoLoginEnabled());
-        loginDialogRadioButton.setSelected(!context.isAutoLoginEnabled());
-        
-        // only add data sources that are marked as being repositories
-        for (JDBCDataSource ds : context.getPlDotIni().getConnections()) {
-            if (ds.getPlSchema() != null && ds.getPlSchema().length() > 0) {
-                autoLoginDataSourceBox.addItem(ds);
-            }
-        }
-
-        autoLoginDataSourceBox.setSelectedItem(context.getAutoLoginDataSource());
-        autoLoginDataSourceBox.setEnabled(context.isAutoLoginEnabled());
         
         validatePathExInfo.setOpaque(false);
         validatePathExInfo.setEditable(false);
@@ -196,11 +159,6 @@ public class UserPreferencesEditor implements DataEntryPanel {
         });
        
 		
-        fb.addLabel("On Startup:", cc.xy(1, 1)); 
-        fb.add(autoLoginRadioButton, cc.xyw(3, 1, 2));		
-        fb.add(autoLoginDataSourceBox, cc.xyw(3, 3, 2));
-        fb.add(loginDialogRadioButton, cc.xyw(3, 5, 2));
-        fb.addSeparator("", cc.xyw(1, 6, 5));
         fb.addLabel("Address Correction Data Path:", cc.xy(1, 7));
         fb.add(addressDataPath, cc.xy(3, 7));
         fb.add(selectPath, cc.xy(5, 7));
@@ -212,8 +170,6 @@ public class UserPreferencesEditor implements DataEntryPanel {
     }
     
     public boolean applyChanges() {
-        context.setAutoLoginEnabled(autoLoginRadioButton.isSelected());
-        context.setAutoLoginDataSource((SPDataSource) autoLoginDataSourceBox.getSelectedItem());
         context.setAddressCorrectionDataPath(addressDataPath.getText());
         return true;
     }

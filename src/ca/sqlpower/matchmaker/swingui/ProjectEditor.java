@@ -53,7 +53,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
@@ -83,7 +83,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * The MatchEditor is the GUI for editing all aspects of a {@link Project} instance.
  */
-public class ProjectEditor implements MatchMakerEditorPane<Project> {
+public class ProjectEditor implements MatchMakerEditorPane {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 
@@ -119,7 +119,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
      * create a new ProjectEditor.
      */
 	private final Project project;
-	private final PlFolder<Project> folder;
+	private final PlFolder folder;
 	private FormValidationHandler handler;
 
 	
@@ -131,7 +131,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * @param project the project Object to be edited
 	 * @param folder the project's parent folder
 	 */
-    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder, Action cancelAction) throws SQLObjectException {
+    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder folder, Action cancelAction) throws SQLObjectException {
         if (project == null) throw new IllegalArgumentException("You can't edit a null project");
         if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
         
@@ -380,7 +380,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			row+=2;
 		}
 		
-        final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
+        final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren(PlFolder.class);
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
         folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
 
@@ -628,19 +628,19 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				mergeRule.setTable(sourceTable);
 				mergeRule.setTableIndex(sourceTableIndex);
 				mergeRule.deriveColumnMergeRules();
-				for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+				for (ColumnMergeRules cmr : mergeRule.getChildren(ColumnMergeRules.class)) {
 					if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
 						cmr.setActionType(MergeActionType.NA);
 					}
 				}
-				project.getTableMergeRulesFolder().addChild(mergeRule);
+				project.addChild(mergeRule);
         	}
         } else {
         	if (project.getType() == ProjectMode.FIND_DUPES) {
         		for (TableMergeRules tmr : project.getTableMergeRules()) {
         			if (tmr.isSourceMergeRule()) {
         				tmr.setTableIndex(sourceTableIndex);
-        				for (ColumnMergeRules cmr : tmr.getChildren()) {
+        				for (ColumnMergeRules cmr : tmr.getChildren(ColumnMergeRules.class)) {
         					if (tmr.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
         						cmr.setActionType(MergeActionType.NA);
         					} else if (cmr.getActionType() == MergeActionType.NA) {
@@ -799,7 +799,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				}
 			}
 			
-			ProjectDAO dao = (ProjectDAO) swingSession.getDAO(Project.class);
+			TimedGeneralDAO dao = (TimedGeneralDAO) swingSession.getDAO(Project.class);
 			SPDataSource ds = (SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem();
 			String catalogName = getSelectedCatalogName();
 			String schemaName = getSelectedSchemaName();

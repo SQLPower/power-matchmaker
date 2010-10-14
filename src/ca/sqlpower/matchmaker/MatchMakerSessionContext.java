@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.prefs.PreferenceChangeListener;
 
-import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -94,7 +93,7 @@ public interface MatchMakerSessionContext {
      */
     public MatchMakerSession createSession(JDBCDataSource ds, String username,
 			String password) throws PLSecurityException, SQLException,
-			SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException;
+			SQLObjectException, MatchMakerConfigurationException;
 
     /**
      * Creates a session using some default repository data source. If the
@@ -138,12 +137,6 @@ public interface MatchMakerSessionContext {
      * action for a project.
      */
     public void closeAll();
-    
-    /**
-	 * Checks whether or not the default repository is defined in the user's
-	 * data sources, and if it's not, then add an entry for it.
-	 */
-    public void ensureDefaultRepositoryDefined();
     
     /**
      * Sets the path of the directory containing the Address Correction Data.

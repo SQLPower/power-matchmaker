@@ -19,10 +19,11 @@
 
 package ca.sqlpower.matchmaker.undo;
 
+import java.beans.PropertyChangeEvent;
+
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.StringConstantMungeStep;
 
 public class MMOPropertyChangeUndoableEditTest extends TestCase {
@@ -35,21 +36,19 @@ public class MMOPropertyChangeUndoableEditTest extends TestCase {
 	public void testSetMungeStepInputToNull() {
 		StringConstantMungeStep stringConstantStep = new StringConstantMungeStep();
 		DeDupeResultStep resultStep = new DeDupeResultStep();
-		assertEquals(1, resultStep.getInputCount());
-		resultStep.connectInput(0, stringConstantStep.getChildren().get(0));
-		assertEquals(2, resultStep.getInputCount());
+		assertEquals("Wrong amount of inputs", 1, resultStep.getInputCount());
+		resultStep.connectInput(0, stringConstantStep.getChildren(MungeStepOutput.class).get(0));
+		assertEquals("Wrong amount of inputs", 2, resultStep.getInputCount());
 		
-		MatchMakerEvent<DeDupeResultStep, MatchMakerObject> inputChangeEvent = new MatchMakerEvent<DeDupeResultStep, MatchMakerObject>();
-		inputChangeEvent.setSource(resultStep);
-		inputChangeEvent.setOldValue(null);
-		inputChangeEvent.setPropertyName("inputs");
-		int[] changedIndices = { 0 };
-		inputChangeEvent.setChangeIndices(changedIndices);
+		PropertyChangeEvent inputChangeEvent = 
+			new PropertyChangeEvent(resultStep.getMungeStepInputs().get(0), "current", null, stringConstantStep.getChildren(MungeStepOutput.class).get(0));
 		MMOPropertyChangeUndoableEdit edit = new MMOPropertyChangeUndoableEdit(inputChangeEvent);
+
+		assertNotNull("Your input should be connected", resultStep.getMSOInputs().get(0));
 		
 		edit.undo();
-		assertNotNull(resultStep.getInputs());
-		assertEquals(2, resultStep.getInputCount());
-		assertNull(resultStep.getMSOInputs().get(0));
+		assertNotNull("You should still have inputs", resultStep.getMungeStepInputs());
+		assertEquals("You should have all inputs still there" ,2, resultStep.getInputCount());
+		assertNull("Your original input should be disconnected", resultStep.getMSOInputs().get(0));
 	}
 }

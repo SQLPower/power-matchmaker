@@ -27,13 +27,16 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+
 /**
  * The Project (Object) settings that are common to both the match and the merge
  * engines
  *
  */
 public abstract class MatchMakerSettings extends
-		AbstractMatchMakerObject<MatchMakerSettings, MatchMakerObject> {
+		AbstractMatchMakerObject {
 
     private static final Logger logger = Logger.getLogger(MatchMakerSettings.class);
 
@@ -134,72 +137,83 @@ public abstract class MatchMakerSettings extends
 	 */
 	private Date lastRunDate;
 
+	@Accessor
 	public boolean getAppendToLog() {
 		return appendToLog;
 	}
 
+	@Mutator
 	public void setAppendToLog(boolean appendToLog) {
 		boolean oldValue = this.appendToLog;
 		this.appendToLog = appendToLog;
-		getEventSupport().firePropertyChange("appendToLog", oldValue,
-				appendToLog);
+		firePropertyChange("appendToLog", oldValue, appendToLog);
 	}
 
+	@Accessor
 	public boolean getDebug() {
 		return debug;
 	}
 
+	@Mutator
 	public void setDebug(boolean debug) {
 		boolean oldValue = this.debug;
 		this.debug = debug;
-		getEventSupport().firePropertyChange("debug", oldValue, debug);
+		firePropertyChange("debug", oldValue, debug);
 	}
 
     /**
      * The number of records the engine should process.  See {@link #processCount}
      * for details.
      */
+	@Accessor
 	public Integer getProcessCount() {
 		return processCount;
 	}
 
+	@Mutator
 	public void setProcessCount(Integer processCount) {
 		Integer oldValue = this.processCount;
 		this.processCount = processCount;
-		getEventSupport().firePropertyChange("processCount", oldValue,
-				processCount);
+		firePropertyChange("processCount", oldValue, processCount);
 	}
 
+	@Accessor
 	public boolean getSendEmail() {
 		return sendEmail;
 	}
 
+	@Mutator
 	public void setSendEmail(boolean sendEMail) {
 		boolean oldValue = this.sendEmail;
 		this.sendEmail = sendEMail;
-		getEventSupport().firePropertyChange("sendEmail", oldValue, sendEMail);
+		firePropertyChange("sendEmail", oldValue, sendEMail);
 	}
 
+	@Accessor
 	public File getLog() {
 		return log;
 	}
 
+	@Mutator
 	public void setLog(File log) {
 		File oldValue = this.log;
 		this.log = log;
-		getEventSupport().firePropertyChange("log", oldValue, this.log);
+		firePropertyChange("log", oldValue, this.log);
 	}
 
+	@Accessor
 	public String getDescription() {
 		return description;
 	}
 
+	@Mutator
 	public void setDescription(String description) {
 		String oldValue = this.description;
 		this.description = description;
-		getEventSupport().firePropertyChange("description", oldValue, this.description);
+		firePropertyChange("description", oldValue, this.description);
 	}
 
+	@Accessor
 	public Date getLastRunDate() {
 		return lastRunDate;
 	}
@@ -209,10 +223,11 @@ public abstract class MatchMakerSettings extends
      *
      * @param lastRunDate The last time the match or merge was run, it can be null.
      */
+	@Mutator
 	public void setLastRunDate(Date lastRunDate) {
 		Date oldValue = this.lastRunDate;
 		this.lastRunDate = lastRunDate == null ? null : new Date(lastRunDate.getTime());
-		getEventSupport().firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
+		firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
 	}
 
     @Override

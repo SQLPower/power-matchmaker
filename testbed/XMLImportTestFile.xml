@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<matchmaker-projects export-format="1.1.0">
+ <project id="project.0" name="string" visible="false" type="BUILD_XREF">
+  <source-table datasource="mock database" catalog="cat" schema="schem" table="match_table">
+   <where-filter>string</where-filter>
+   <unique-index name="match_table_pk">
+    <column name="pk" />
+   </unique-index>
+  </source-table>
+  <result-table datasource="mock database" catalog="cat" schema="schem" table="result_table" />
+  <munge-settings name="string" visible="false" append-to-log="true" debug="true" description="string" last-run="2010-10-08 14:54:36 -0400" log-file="/var/folders/ty/ty0EpaV8EDWuqVwzCC8jPE+++TI/-Tmp-/mmTest3524790855960977276.tmp" process-count="0" send-email="true" clear-match-pool="true" auto-match-threshold="10" last-backup-number="0" use-batch-execution="true" auto-write-autovalidated-addresses="true" pool-filter-setting="EVERYTHING" auto-validate-setting="NOTHING" />
+  <merge-settings name="string" visible="false" append-to-log="true" debug="true" description="string" last-run="2010-10-08 14:54:36 -0400" log-file="/var/folders/ty/ty0EpaV8EDWuqVwzCC8jPE+++TI/-Tmp-/mmTest4621816157001896490.tmp" process-count="0" send-email="true" augment-null="true" backup="true" />
+  <munge-process id="process.0.0" name="string" visible="false" active="false" validate="false" colour="0xe4291c" priority="0">
+   <description>string</description>
+   <where-filter>string</where-filter>
+   <munge-step id="step.0.0.0" name="match_table" visible="true" step-type="ca.sqlpower.matchmaker.munge.SQLInputStep">
+    <output id="output.0.0.0.0" name="pk" visible="true" data-type="java.math.BigDecimal"/>
+    <output id="output.0.0.0.1" name="string_col" visible="true" data-type="java.lang.String"/>
+    <output id="output.0.0.0.2" name="number_col" visible="true" data-type="java.math.BigDecimal"/>
+    <output id="output.0.0.0.3" name="date_col" visible="true" data-type="java.util.Date"/>
+    <output id="output.0.0.0.4" name="bool_col" visible="true" data-type="java.lang.Boolean"/>
+   </munge-step>
+   <munge-step id="step.0.0.1" name="Concat" visible="true" step-type="ca.sqlpower.matchmaker.munge.ConcatMungeStep">
+    <output id="output.0.0.1.0" name="concatOutput" visible="true" data-type="java.lang.String"/>
+   </munge-step>
+   <connections>
+    <munge-step ref="step.0.0.0">
+    </munge-step>
+    <munge-step ref="step.0.0.1">
+     <input name="concat1" data-type="java.lang.String" from-ref="output.0.0.0.1" />
+     <input name="concat2" data-type="java.lang.String" connected="false" />
+    </munge-step>
+   </connections>
+  </munge-process>
+  <table-merge-rule id="tmr.0.0" name="cat.schem.fake_table_to_merge" visible="false" datasource="mock database" catalog="cat" schema="schem" table="fake_table_to_merge" child-merge-action="DELETE_ALL_DUP_CHILD">
+   <unique-index name="new index">
+   </unique-index>
+  </table-merge-rule>
+  <table-merge-rule id="tmr.0.1" name="cat.schem.match_table" visible="true" datasource="mock database" catalog="cat" schema="schem" table="match_table" child-merge-action="UPDATE_FAIL_ON_CONFLICT">
+   <unique-index name="match_table_pk">
+    <column name="pk" />
+   </unique-index>
+   <column-merge-rule name="pk" visible="true" column-name="pk" action-type="USE_MASTER_VALUE" in-pk="false">
+    <update-statement>test update statement</update-statement>
+   </column-merge-rule>
+   <column-merge-rule name="string" visible="false" column-name="string" imported-key-column-name="string" action-type="CONCAT" in-pk="true">
+    <update-statement>string</update-statement>
+   </column-merge-rule>
+   <column-merge-rule name="number_col" visible="true" column-name="number_col" action-type="CONCAT" in-pk="false">
+    <update-statement null="true" />
+   </column-merge-rule>
+   <column-merge-rule name="date_col" visible="true" column-name="date_col" action-type="MIN" in-pk="false">
+    <update-statement null="true" />
+   </column-merge-rule>
+   <column-merge-rule name="bool_col" visible="true" column-name="bool_col" action-type="MAX" in-pk="false">
+    <update-statement null="true" />
+   </column-merge-rule>
+  </table-merge-rule>
+  <merge-rule-connection  parent-ref="tmr.0.1" child-ref="tmr.0.0" />
+ </project>
+</matchmaker-projects>

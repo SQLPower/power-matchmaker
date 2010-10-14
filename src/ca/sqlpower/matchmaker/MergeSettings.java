@@ -20,12 +20,23 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 
 /**
  * Settings specific to the Merge engine
  */
 public class MergeSettings extends MatchMakerSettings {
+	
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.emptyList();
 	/**
 	 * Backup the data that is going to be merged
 	 */
@@ -69,29 +80,43 @@ public class MergeSettings extends MatchMakerSettings {
 		return true;
 	}
 
+	@Accessor
 	public boolean getBackUp() {
 		return backUp;
 	}
 
+	@Mutator
 	public void setBackUp(boolean backUp) {
 		boolean oldValue = this.backUp;
 		this.backUp = backUp;
-		getEventSupport().firePropertyChange("backUp", oldValue, backUp);
+		firePropertyChange("backUp", oldValue, backUp);
 	}
 
+	@Accessor
 	public boolean getAugmentNull() {
 		return augmentNull;
 	}
 
+	@Mutator
 	public void setAugmentNull(boolean augmentNull) {
 		boolean oldValue = this.augmentNull;
 		this.augmentNull = augmentNull;
-		getEventSupport().firePropertyChange("augmentNull", oldValue,
+		firePropertyChange("augmentNull", oldValue,
 				this.augmentNull);
 	}
 	
-	public MergeSettings duplicate(MatchMakerObject parent,MatchMakerSession s) {
+	public MergeSettings duplicate(MatchMakerObject parent) {
 		MergeSettings settings = new MergeSettings();
+		copyPropertiesToTarget(settings);
+		
+		return settings;
+	}
+	
+	/**
+	 * Copies all of the properties from this object to the settings object
+	 * passed in.
+	 */
+	public void copyPropertiesToTarget(MergeSettings settings) {
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAugmentNull(getAugmentNull());
 		settings.setBackUp(getBackUp());
@@ -102,12 +127,8 @@ public class MergeSettings extends MatchMakerSettings {
 		settings.setName(getName()==null?null:new String(getName()));
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setSendEmail(getSendEmail());
-		settings.setSession(s);
 		settings.setVisible(isVisible());
-		
-		return settings;
 	}
-
 	
 	@Override
 	public String toString() {
@@ -118,5 +139,17 @@ public class MergeSettings extends MatchMakerSettings {
         buf.append(super.toString());
         buf.append("]");
         return buf.toString();
+	}
+
+	@Override
+	@NonProperty
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	@Transient @Accessor
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }
