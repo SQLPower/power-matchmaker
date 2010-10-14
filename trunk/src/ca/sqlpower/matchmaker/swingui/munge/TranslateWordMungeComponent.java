@@ -55,23 +55,23 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 		TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setSelected(temp.getBooleanParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME));
+		useRegex.setSelected(temp.isRegex());
 		useRegex.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
-				temp.setParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+				temp.setRegex(useRegex.isSelected());
 			}
 			
 		});
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(temp.getBooleanParameter(temp.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.setSelected(temp.isCaseSensitive());
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
-				temp.setParameter(temp.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+				temp.setCaseSensitive(caseSensitive.isSelected());
 			}
 			
 		});
@@ -84,22 +84,13 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			translateGroup = new JComboBox(translateGroups);
 			
 			// Sets the combo box to select the translate group in the parameter
-			if (temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME) != null) {
-			    String oid = temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
-			    long searchForOid = Long.valueOf(oid);
-			    for (MatchMakerTranslateGroup group : translateGroups) {
-			        if (group.getOid().longValue() == searchForOid) {
-			            translateGroup.setSelectedItem(group);
-			        }
-			    }
+			if (temp.getTranslateGroup() != null) {
+			    translateGroup.setSelectedItem(temp.getTranslateGroup());
 			    
 			// Sets the parameter to the first translate group in the list if the step
 			// did not specific a translate group.
 			} else if (translateGroup.getSelectedItem() != null) {
-					MatchMakerTranslateGroup group = 
-						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
-						group.getOid().toString());
+					temp.setTranslateGroup((MatchMakerTranslateGroup)translateGroup.getSelectedItem());
 			}
 			
 		} else {
@@ -110,10 +101,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
 				if (translateGroup.getSelectedItem() != null) {
-					MatchMakerTranslateGroup group = 
-						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
-						group.getOid().toString());
+					temp.setTranslateGroup((MatchMakerTranslateGroup)translateGroup.getSelectedItem());
 				}
 			}
 			

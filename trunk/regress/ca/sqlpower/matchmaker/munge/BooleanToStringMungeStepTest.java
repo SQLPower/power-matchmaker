@@ -19,23 +19,31 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class BooleanToStringMungeStepTest extends TestCase {
+public class BooleanToStringMungeStepTest extends AbstractMungeStepTest<BooleanToStringMungeStep> {
 
 	private BooleanToStringMungeStep step;
+	
+	public BooleanToStringMungeStepTest(String name) {
+		super(name);
+	}
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new BooleanToStringMungeStep();
-		step.open(logger);
+		MungeStepOutput mso = new MungeStepOutput<Boolean>("in",Boolean.class);
+		step.connectInput(0, mso);
+		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public void testDefault() throws Exception {
+		step.open(logger);
 		MungeStepOutput<Boolean> mso = new MungeStepOutput<Boolean>("in",Boolean.class);
 		step.connectInput(0, mso);
 		String ret;
@@ -58,8 +66,9 @@ public class BooleanToStringMungeStepTest extends TestCase {
 	
 	
 	public void testCustom() throws Exception {
-		step.setParameter(BooleanToStringMungeStep.FALSE_STRING_PARAMETER_NAME, "F");
-		step.setParameter(BooleanToStringMungeStep.TRUE_STRING_PARAMETER_NAME, "T");
+		step.open(logger);
+		step.setFalseString("F");
+		step.setTrueString("T");
 		MungeStepOutput<Boolean> mso = new MungeStepOutput<Boolean>("in",Boolean.class);
 		step.connectInput(0, mso);
 		String ret;
@@ -78,6 +87,11 @@ public class BooleanToStringMungeStepTest extends TestCase {
 		step.call();
 		ret = (String) step.getOut().getData();
 		assertNull(ret);
+	}
+
+	@Override
+	protected BooleanToStringMungeStep getTarget() {
+		return step;
 	}
 }
 

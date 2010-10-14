@@ -24,37 +24,48 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-public class DateConstantMungeStepTest extends AbstractMungeStepTest {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class DateConstantMungeStepTest extends MatchMakerTestCase<DateConstantMungeStep> {
 
 	private static final Logger logger = Logger.getLogger(DateConstantMungeStep.class);
 
     DateConstantMungeStep step;
-    
+
+	public DateConstantMungeStepTest(String name) {
+		super(name);
+	}
+	
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
         step = new DateConstantMungeStep();
+        super.setUp();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
     
     private void setFormat(int x){
-    	step.setParameter(DateConstantMungeStep.DATE_FORMAT, DateConstantMungeStep.FORMAT.get(x));
+    	step.setDateFormat(DateConstantMungeStep.FORMAT.get(x));
     }
     
     private void setRetNull(boolean b) {
-    	step.setParameter(DateConstantMungeStep.RETURN_NULL, String.valueOf(b));
+    	step.setReturnNull(b);
     }
     
     private void setUseCurrent(boolean b) {
-    	step.setParameter(DateConstantMungeStep.USE_CURRENT_TIME, String.valueOf(b));
+    	step.setUseCurrentTime(b);
     }
     
     private Date runWith(Date d) throws Exception {
-    	step.setValue(d);
+    	step.setValueAsDate(d);
     	step.open(logger);
     	step.call();
     	Date out = (Date) step.getOut().getData();
-    	step.rollback();
-    	step.close();
+    	step.mungeRollback();
+    	step.mungeClose();
     	return out;
     }
     
@@ -110,5 +121,19 @@ public class DateConstantMungeStepTest extends AbstractMungeStepTest {
     	Date d = cal.getTime();
     	assert(runWith(d) instanceof java.sql.Time);
     }
+
+	@Override
+	protected DateConstantMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
     
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Already in AbstractMungeStep
+	}
 }

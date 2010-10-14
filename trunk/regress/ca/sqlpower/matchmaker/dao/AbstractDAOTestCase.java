@@ -108,7 +108,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
      * reference to the given session.  Every findXXXX() method in every DAO
      * should explicitly test this assertion on the returned object(s).
      */
-    public void assertHierarchyHasSession(MatchMakerSession expected, MatchMakerObject<MatchMakerObject, MatchMakerObject> root) {
+    public void assertHierarchyHasSession(MatchMakerSession expected, MatchMakerObject root) {
         assertNotNull(
                 "the MatchMakerSession went missing for a "+root.getClass().getName(),
                 root.getSession());
@@ -118,7 +118,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
                 "session out of sync for "+root.getClass().getName(),
                 expected, root.getSession());
 
-        for (MatchMakerObject<MatchMakerObject, MatchMakerObject> child : root.getChildren()) {
+        for (MatchMakerObject child : root.getChildren(MatchMakerObject.class)) {
             assertHierarchyHasSession(expected, child);
         }
     }
@@ -227,7 +227,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		MatchMakerObject mmo = object;
 
 		MatchMakerEventCounter listener = new MatchMakerEventCounter();
-		mmo.addMatchMakerListener(listener);
+		mmo.addSPListener(listener);
 
 		List<PropertyDescriptor> settableProperties;
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
@@ -291,7 +291,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						newVal = File.createTempFile("mmTest",".tmp");
 						((File)newVal).deleteOnExit();
 					} else if (property.getPropertyType() == PlFolder.class) {
-						newVal = new PlFolder<Project>();
+						newVal = new PlFolder();
 					} else if (property.getPropertyType() == ProjectMode.class) {
 						if (oldVal == ProjectMode.BUILD_XREF) {
 							newVal = ProjectMode.FIND_DUPES;

@@ -33,23 +33,29 @@ import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectUtils;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.testutil.MockJDBCDriver;
 
 public class ProjectTest extends MatchMakerTestCase<Project> {
 
-    Project project;
+    public ProjectTest(String name) {
+		super(name);
+	}
+
+    PlFolder parentFolder;
+	Project project;
 	private TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
@@ -78,6 +84,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         propertiesToIgnoreForDuplication.add("xrefTableSPDatasource");
 
         // These set other properties to null that describe the same object
+        propertiesToIgnoreForDuplication.add("resultTablePropertiesDelegate");
+        propertiesToIgnoreForDuplication.add("sourceTablePropertiesDelegate");
+        propertiesToIgnoreForDuplication.add("xrefTablePropertiesDelegate");
         propertiesToIgnoreForDuplication.add("resultTable");
         propertiesToIgnoreForDuplication.add("sourceTable");
         propertiesToIgnoreForDuplication.add("xrefTable");
@@ -101,6 +110,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         session = new TestingMatchMakerSession();
 		session.setDatabase(new SQLDatabase());
         project.setSession(session);
+        parentFolder = new PlFolder();
+        parentFolder.addChild(project);
+        getRootObject().addChild(parentFolder, 0);
     }
     @Override
     protected Project getTarget() {
@@ -123,11 +135,14 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 
     public void testMatchMakerFolderFiresEventForMungeProcesses(){
         MatchMakerEventCounter l = new MatchMakerEventCounter();
-        project.getMungeProcessesFolder().addMatchMakerListener(l);
+        project.addSPListener(l);
         List<MungeProcess> mmoList = new ArrayList<MungeProcess>();
-        project.setMungeProcesses(mmoList);
+        mmoList.add(new MungeProcess());
+        for(MungeProcess m : mmoList) {
+        	project.addChild(m);
+        }
         assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
-        assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
+        assertEquals("Wrong type of event fired",0,l.getPropertyChangedCount());
     }
     
     public void testCreateResultTable() throws SQLObjectException {
@@ -254,7 +269,24 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     public void testCreateResultTableInCorrectCatalogSchema() throws Exception {
     	// dumb source table and index with no columns to satisfy createResultsTable() preconditions
     	SQLTable tab = new SQLTable(session.getDatabase(), true);
-    	SQLIndex idx = new SQLIndex("my_index", true, null, null, null);
+    	
+    	SQLColumn pk1 = new SQLColumn(tab, "pk1", Types.VARCHAR, 20, 0);
+    	pk1.setNullable(DatabaseMetaData.columnNoNulls);
+    	tab.addColumn(pk1);
+    
+    	SQLColumn pk2 = new SQLColumn(tab, "pk2", Types.INTEGER, 20, 0);
+    	pk2.setNullable(DatabaseMetaData.columnNoNulls);
+    	tab.addColumn(pk2);
+    	
+    	SQLColumn col = new SQLColumn(tab, "normal_col_1", Types.VARCHAR, 20, 0);
+    	col.setNullable(DatabaseMetaData.columnNullable);
+    	tab.addColumn(col);
+    	
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
+    	idx.addChild(new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(new Column(pk2, AscendDescend.UNSPECIFIED));
+    	tab.addIndex(idx);
+    	
     	project.setSourceTable(tab);
     	project.setSourceTableIndex(idx);
     	
@@ -404,18 +436,18 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		
     	SQLTable sourceTable = new SQLTable(db.getSchemaByName(ds.getPlSchema()), "match_source", null, "TABLE", true);
     	
-    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
+    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk1);
     
     	// precision can not be other value than 10 since the sql server does not 
     	// support column width for int, and the column size from jdbc will
     	// be 10.
-    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", Types.INTEGER, 10, 0);
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", session.getSQLType(Types.INTEGER), 0, 0, false);
     	pk2.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk2);
     	
-    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", Types.VARCHAR, 20, 0);
+    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
@@ -448,6 +480,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	
     	SQLSchema sch = db.getSchemaByName(ds.getPlSchema());
     	SQLTable resultTable = new SQLTable(sch,"my_result_table",null,"TABLE",true);
+    	sch.addChild(resultTable);
     	project.setResultTable(resultTable);
     	resultTable = project.createResultTable();
 
@@ -479,13 +512,16 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
 		
+		assertEquals("You should have a primary key index and one other index for your result table.", 2, project.getResultTable().getIndices().size());
+		
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndices().get(1));
 		
 		int successCount = 0;
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
 	    	sql = sqlStatement.getSQLText();
-	    	if ( execSQL(con,sql))	successCount += 1;
+	    	if ( execSQL(con,sql))	
+	    		successCount += 1;
 	    }
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
@@ -511,22 +547,20 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		session.setConnection(db.getConnection());
 		project.setSession(session);
 		
-		
-		
     	SQLTable sourceTable = new SQLTable(db.getSchemaByName(ds.getPlSchema()), "match_source", null, "TABLE", true);
     	
-    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
+    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk1);
     
     	// precision can not be other value since the sql server does not 
     	// support column width for int, and the column size from jdbc will
     	// be 10.
-    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", Types.DECIMAL, 10, 0);
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", session.getSQLType(Types.INTEGER), 0, 0, false);
     	pk2.setNullable(DatabaseMetaData.columnNoNulls);
     	sourceTable.addColumn(pk2);
     	
-    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", Types.VARCHAR, 20, 0);
+    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", session.getSQLType(Types.VARCHAR), 20, 0, false);
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
@@ -559,6 +593,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	
     	SQLSchema sch = db.getSchemaByName(ds.getPlSchema());
     	SQLTable resultTable = new SQLTable(sch,"my_result_table",null,"TABLE",true);
+    	sch.addChild(resultTable);
     	project.setResultTable(resultTable);
     	resultTable = project.createResultTable();
 
@@ -586,7 +621,10 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
+		
+		assertEquals("You should have a primary key index and one other index for your result table.", 2, project.getResultTable().getIndices().size());
+		
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndices().get(1));
 		
 		
 		int successCount = 0;
@@ -650,4 +688,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         assertTrue(newTableInDatabase.getColumns().size() > 0);
         assertSame(newTable, newTableInDatabase);
     }
+    
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeProcess.class;
+	}
 }

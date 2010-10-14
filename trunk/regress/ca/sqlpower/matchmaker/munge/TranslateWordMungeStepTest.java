@@ -21,14 +21,17 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroupDAOStub;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
-public class TranslateWordMungeStepTest extends TestCase {
+public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateWordMungeStep> {
+
+	public TranslateWordMungeStepTest(String name) {
+		super(name);
+	}
 
 	private TranslateWordMungeStep step;
 	
@@ -43,9 +46,20 @@ public class TranslateWordMungeStepTest extends TestCase {
 	 * despite any given oid. Check the method for translate words.
 	 */
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new TranslateWordMungeStep();
+		super.setUp();
 		step.setSession(new TestingMatchMakerSession());
+		MungeProcess mp = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+		mp.addMungeStep(step, mp.getMungeSteps().size());
+		
+		Project p = new Project();
+		p.addChild(mp);
+		mp.setParent(p);
+		p.setParent(getRootObject());
+		getRootObject().addChild(p, getRootObject().getChildren().size());
+
 	}
 
 	/**
@@ -55,12 +69,12 @@ public class TranslateWordMungeStepTest extends TestCase {
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("efg");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getTranslateGroups().get(0));
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("efg", result);
@@ -69,12 +83,12 @@ public class TranslateWordMungeStepTest extends TestCase {
 	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("1234ABC1234", result);
@@ -87,12 +101,12 @@ public class TranslateWordMungeStepTest extends TestCase {
 	public void testCallonConsecutiveOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ababcdcd");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12123434", result);
@@ -106,12 +120,12 @@ public class TranslateWordMungeStepTest extends TestCase {
 	public void testCallonWrongOrder() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdbadc");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("1234badc", result);
@@ -124,12 +138,12 @@ public class TranslateWordMungeStepTest extends TestCase {
 	public void testCallonRegexInput() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ab\\-+*?()[]{}|$^<=cd");
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12\\-+*?()[]{}|$^<=34", result);
@@ -142,12 +156,12 @@ public class TranslateWordMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("xxyfooxxyfooxyfooy");
 		step.connectInput(0, testInput);
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setRegex(true);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("-foo-foo-foo-", result);
@@ -157,12 +171,12 @@ public class TranslateWordMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCD");
 		step.connectInput(0, testInput);
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setCaseSensitive(false);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12341234", result);
@@ -172,10 +186,10 @@ public class TranslateWordMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -190,5 +204,31 @@ public class TranslateWordMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected TranslateWordMungeStep getTarget() {
+		return step;
+	}
+	
+	@Override
+	public void testDuplicate() {
+		// do nothing
+	}
+	
+	@Override
+	public void testCallAfterRollback() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData(null);
+		step.connectInput(0, testInput);
+		super.testCallAfterRollback();
+	}
+	
+	@Override
+	public void testCallAfterCommit() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData(null);
+		step.connectInput(0, testInput);
+		super.testCallAfterCommit();
 	}
 }

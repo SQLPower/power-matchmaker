@@ -26,6 +26,8 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -35,14 +37,17 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 /**
  * The Cleanse Result Step is the ultimate destination for munge data in a data
@@ -59,24 +64,30 @@ import ca.sqlpower.sqlobject.SQLIndex.Column;
  * affected.
  */
 public class CleanseResultStep extends AbstractMungeStep implements MungeResultStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	private SQLTable table;
 	private SQLInputStep inputStep;
 	private PreparedStatement ps = null;
 	private boolean usePS = false; 
 	
-	
+	@Constructor
 	public CleanseResultStep() throws SQLObjectException {
 		super("Table!", false);
 	}
 	
 	private void refreshInputs() throws SQLObjectException {
-        Set<Input> orphanInputs = new HashSet<Input>(getInputs());
+        Set<MungeStepInput> orphanInputs = new HashSet<MungeStepInput>(getMungeStepInputs());
         for (SQLColumn c : table.getColumns()) {
             String colName = c.getName();
             int inputIdx = -1;
-            Input input = null;
+            MungeStepInput input = null;
             for (int i = 0; i < getInputCount(); i++) {
-                Input in = getInputs().get(i);
+                MungeStepInput in = getMungeStepInputs().get(i);
                 if (c.getName().equals(in.getName())) {
                     inputIdx = i;
                     input = in;
@@ -101,8 +112,8 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
         }
         
         // clean up inputs whose columns no longer exist in the table
-        for (Input orphanInput : orphanInputs) {
-            int index = getInputs().indexOf(orphanInput);
+        for (MungeStepInput orphanInput : orphanInputs) {
+            int index = getMungeStepInputs().indexOf(orphanInput);
             removeInput(index);
         }
 
@@ -274,6 +285,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		}
 	}
 	
+	@NonProperty
 	public List<MungeResult> getResults() {
 		return Collections.emptyList();
 	}
@@ -296,6 +308,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	
 	
 	@Override
+	@NonProperty
 	public Project getProject() {
 		Project p = super.getProject();
 		if (p == null && inputStep != null) {

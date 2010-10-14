@@ -20,15 +20,24 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import ca.sqlpower.matchmaker.address.AddressValidator;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 
 /**
  * Settings that are specific to the Match engine
  */
 public class MungeSettings extends MatchMakerSettings {
 
+	public static final List<Class<? extends SPObject>> allowedChildTypes =
+        Collections.emptyList();
 	/**
 	 * An enumeration of settings for which records to store in a result table.
 	 */
@@ -203,83 +212,98 @@ public class MungeSettings extends MatchMakerSettings {
 	
 	private AutoValidateSetting autoValidateSetting = AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION;
 	
+	@Transient @Accessor
 	public boolean getClearMatchPool() {
 		return clearMatchPool;
 	}
 
+	@Accessor
 	public boolean isClearMatchPool() {
 		return clearMatchPool;
 	}
 
+	@Accessor
 	public boolean isUseBatchExecution() {
 		return useBatchExecution;
 	}
 	
+	@Mutator
 	public void setUseBatchExecution(boolean useBatchExecute) {
 		boolean oldValue = this.useBatchExecution;
 		this.useBatchExecution = useBatchExecute;
-		getEventSupport().firePropertyChange("useBatchExecution", oldValue,
+		firePropertyChange("useBatchExecution", oldValue,
 				this.useBatchExecution);
 	}
 	
+	@Accessor
 	public boolean isAutoWriteAutoValidatedAddresses() {
 		return autoWriteAutoValidatedAddresses;
 	}
 
+	@Mutator
 	public void setAutoWriteAutoValidatedAddresses(boolean autoWriteAutoValidatedAddresses) {
 		boolean oldValue = this.autoWriteAutoValidatedAddresses;
 		this.autoWriteAutoValidatedAddresses = autoWriteAutoValidatedAddresses;
-		getEventSupport().firePropertyChange("autoWriteAutoValidatedAddresses", oldValue,
+		firePropertyChange("autoWriteAutoValidatedAddresses", oldValue,
 				this.autoWriteAutoValidatedAddresses);
 	}
 	
+	@Mutator
 	public void setClearMatchPool(boolean clearMatchPool) {
 		boolean oldValue = this.clearMatchPool;
 		this.clearMatchPool = clearMatchPool;
-		getEventSupport().firePropertyChange("clearMatchPool", oldValue,
+		firePropertyChange("clearMatchPool", oldValue,
 				this.clearMatchPool);
 	}
 
+	@Accessor
 	public Short getAutoMatchThreshold() {
 		return autoMatchThreshold;
 	}
 
+	@Mutator
 	public void setAutoMatchThreshold(Short autoMatchThreshold) {
 		Short oldValue = this.autoMatchThreshold;
 		this.autoMatchThreshold = autoMatchThreshold;
-		getEventSupport().firePropertyChange("autoMatchThreshold", oldValue,
+		firePropertyChange("autoMatchThreshold", oldValue,
 				this.autoMatchThreshold);
 	}
 
+	@Accessor
 	public Long getLastBackupNo() {
 		return lastBackupNo;
 	}
 
+	@Mutator
 	public void setLastBackupNo(Long lastBackupNo) {
 		Long oldValue = this.lastBackupNo;
 		this.lastBackupNo = lastBackupNo;
-		getEventSupport().firePropertyChange("lastBackupNo", oldValue,
+		firePropertyChange("lastBackupNo", oldValue,
 				this.lastBackupNo);
 	}
 	
+	@Accessor
     public PoolFilterSetting getPoolFilterSetting() {
 		return poolFilterSetting;
 	}
 
+	@Mutator
 	public void setPoolFilterSetting(PoolFilterSetting poolFilterSetting) {
 		PoolFilterSetting oldValue = this.poolFilterSetting;
 		this.poolFilterSetting = poolFilterSetting;
-		getEventSupport().firePropertyChange("poolFilterSetting", oldValue, poolFilterSetting);
+		firePropertyChange("poolFilterSetting", oldValue, poolFilterSetting);
 	}
 
+	@Accessor
 	public AutoValidateSetting getAutoValidateSetting() {
 		return autoValidateSetting;
 	}
 
+	@Mutator
 	public void setAutoValidateSetting(AutoValidateSetting autoValidateSetting) {
 		AutoValidateSetting oldValue = this.autoValidateSetting;
 		this.autoValidateSetting = autoValidateSetting;
-		getEventSupport().firePropertyChange("autoValidateSetting", oldValue, autoValidateSetting);
+		firePropertyChange("autoValidateSetting", oldValue, autoValidateSetting);
 	}
 
 	@Override
@@ -303,8 +327,17 @@ public class MungeSettings extends MatchMakerSettings {
      * @return new MungeSettings instance with the same properties
      * except parent
      */
-	public MungeSettings duplicate(MatchMakerObject parent,MatchMakerSession s) {
+	public MungeSettings duplicate(MatchMakerObject parent) {
 		MungeSettings settings = new MungeSettings();
+		copyPropertiesToTarget(settings);
+		return settings;
+	}
+
+	/**
+	 * Copies all of the properties from this object to the settings object
+	 * passed in.
+	 */
+	public void copyPropertiesToTarget(MungeSettings settings) {
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAutoMatchThreshold(getAutoMatchThreshold()==null?null:new Short(getAutoMatchThreshold()));
 		settings.setDebug(getDebug());
@@ -315,13 +348,23 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setName(getName()==null?null:new String(getName()));
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setSendEmail(getSendEmail());
-		settings.setSession(s);
 		settings.setClearMatchPool(isClearMatchPool());
 		settings.setVisible(isVisible());
 		settings.setUseBatchExecution(isUseBatchExecution());
 		settings.setAutoWriteAutoValidatedAddresses(isAutoWriteAutoValidatedAddresses());
 		settings.setPoolFilterSetting(getPoolFilterSetting());
 		settings.setAutoValidateSetting(getAutoValidateSetting());
-		return settings;
+	}
+
+	@NonProperty
+	@Override
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Transient @Accessor
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

@@ -28,7 +28,6 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
@@ -38,10 +37,10 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionType;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.swingui.ColoredIcon;
+import ca.sqlpower.swingui.FolderNode;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -116,9 +115,9 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			} else { 
 				setIcon(infoIcon);
 			}
-		} else if (value instanceof PlFolder || value instanceof MatchMakerFolder ||
-				value instanceof TranslateGroupParent || 
-				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup){
+		} else if (value instanceof PlFolder ||	value instanceof TranslateGroupParent || 
+				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup ||
+				value instanceof FolderNode){
 			setIcon(folderIcon);
 		} else if (value instanceof MatchMakerTranslateWord) {
 			setIcon(translateWordIcon);

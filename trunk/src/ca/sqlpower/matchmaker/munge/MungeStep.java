@@ -19,7 +19,7 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.Collection;
+import java.awt.Point;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -43,68 +43,21 @@ import ca.sqlpower.validation.ValidateResult;
  * as equivalent.  In terms of conforming data, a munge step might format a North
  * American telephone number or Canadian postal code.
  */
-public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<Boolean> {
-
-	public static final String MUNGECOMPONENT_X = "x";
-	public static final String MUNGECOMPONENT_Y = "y";
-	public static final String MUNGECOMPONENT_EXPANDED ="expanded";
-	
-	/**
-     * Returns the String representation of the parameter value associated with
-     * the given name.
-     * 
-     * @param name
-     *            The parameter to retrieve
-     * @return The value associated with the given parameter, or null if no such
-     *         parameter exists.
-     */
-	String getParameter(String name);
-	
-	/**
-	 * Sets a configuration parameter for this munge step.  Which parameter names
-	 * are meaningful is dependent on the actual implementation class of the step.
-	 * 
-	 * @param name The parameter name, which has a defined meaning to the current
-	 * step implementation.
-	 * @param value The value to associate with the named parameter.
-	 */
-	void setParameter(String name, String newValue);
-
-    /**
-     * Sets a boolean-valued configuration parameter for this munge step. Which
-     * parameter names are meaningful is dependent on the actual implementation
-     * class of the step.
-     * 
-     * @param name
-     *            The parameter name, which has a defined meaning to the current
-     *            step implementation.
-     * @param value
-     *            The value to associate with the named parameter.
-     */
-	void setParameter(String name, boolean newValue);
-	
-    /**
-     * Sets an integer-valued configuration parameter for this munge step. Which
-     * parameter names are meaningful is dependent on the actual implementation
-     * class of the step.
-     * 
-     * @param name
-     *            The parameter name, which has a defined meaning to the current
-     *            step implementation.
-     * @param value
-     *            The value to associate with the named parameter.
-     */
-	void setParameter(String name, int newValue);
+public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
 
 	/**
 	 * sets the position of the munge step
 	 */
-	void setPosition(int x, int y);
+	void setPosition(Point p);
 	
-    /**
-     * Enumerates the list of all parameter names currently in place in this munge step.
-     */
-    Collection<String> getParameterNames();
+	/**
+	 * Sets the expansion status of the munge step
+	 */
+	void setExpanded(boolean b);
+	
+	boolean isExpanded();
+	
+	Point getPosition();
     
 	/**
 	 * Adds a IOConnectors with the given InputDescriptor.
@@ -140,7 +93,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * @return true if the given IOConnector was removed from the step; false if it
 	 *         wasn't.
 	 */
-	void removeInput(int index);
+	boolean removeInput(int index);
 	
 	/**
 	 * Removes the inputs that are not used.
@@ -176,6 +129,16 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * @return A non-modifiable list of the current inputs to this step.
 	 */
 	List<MungeStepOutput> getMSOInputs();
+	
+	/**
+     * Returns the mungeStepOutput children;
+     */
+    List<MungeStepOutput> getMungeStepOutputs();
+
+    /**
+     * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input)
+     */
+    List<MungeStepInput> getMungeStepInputs();
 	
 	/**
 	 * Causes this munge step to evaluate its current input values and produce
@@ -249,7 +212,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * this step, it is mandatory to call this method after the {@link #open()}
      * method has been called.
      */
-    void close() throws Exception;
+    void mungeClose() throws Exception;
     
     /**
      * Returns the first MungeStepOutput it finds with the given name. 
@@ -265,7 +228,8 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
     /**
      * Causes this step to undo any changes it has effected since it was opened.
      * For a step that modifies a database resource, this will be a database
-     * rollback operation. Many steps do not have permanent side-effects, and in
+     * rollback operation. This does not rollback a larger server-side commit.
+     * Many steps do not have permanent side-effects, and in
      * that case this method is a no-op.
      * <p>
      * Lifecycle note: The processor will call this method if there was a fatal
@@ -273,19 +237,20 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * to be aborted. Even if this method is called, the processor will still
      * call {@link close()} at a later time.
      */
-    void rollback() throws Exception;
+    void mungeRollback() throws Exception;
 
     /**
      * Causes this step to commit (make permanent) any changes it has effected
      * since it was opened. For a step that modifies a database resource, this
      * will be a database commit operation. Many steps do not have permanent
-     * side-effects, and in that case this method is a no-op.
+     * side-effects, and in that case this method is a no-op. This commit is
+     * unrelated to committing projects.
      * <p>
      * Lifecycle note: The processor will call this method after all steps have
      * completed normally. After this method is called, the processor will still
      * call {@link close()} at a later time.
      */
-    void commit() throws Exception;
+    void mungeCommit() throws Exception;
 
     /**
      * Returns true if rollback() has been called on this step since it was last

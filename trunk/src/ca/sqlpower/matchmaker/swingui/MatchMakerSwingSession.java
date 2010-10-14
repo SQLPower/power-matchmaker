@@ -29,6 +29,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -75,15 +77,15 @@ import javax.swing.undo.UndoManager;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -94,18 +96,11 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
-import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
-import ca.sqlpower.matchmaker.dao.PlFolderDAO;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
-import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
@@ -113,10 +108,18 @@ import ca.sqlpower.matchmaker.swingui.action.ExportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.ImportProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.NewWorkspaceAction;
+import ca.sqlpower.matchmaker.swingui.action.OpenWorkspaceAction;
+import ca.sqlpower.matchmaker.swingui.action.SaveWorkspaceAction;
+import ca.sqlpower.matchmaker.swingui.action.SaveWorkspaceAsAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
+import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -131,10 +134,13 @@ import ca.sqlpower.swingui.MemoryMonitor;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
+import ca.sqlpower.swingui.SwingUIUserPrompterFactory.NonModalSwingUIUserPrompterFactory;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
-import ca.sqlpower.util.Version;
+import ca.sqlpower.util.SQLPowerUtils;
+import ca.sqlpower.util.TransactionEvent;
+import ca.sqlpower.util.UserPrompterFactory;
 
 /**
  * The Main Window for the MatchMaker Application; contains a main() method that is
@@ -228,6 +234,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      */
 	private boolean enginesEnabled = true;
 	
+	/** 
+	 * The path where this file was most recently saved.
+	 */
+	private File savePoint;
+	
 	/**
 	 * A list that helps keep track of the created sessions
 	 */
@@ -289,15 +300,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	    }
 	};
 
-	private Action remoteLoginAction = new AbstractAction("Connect to Remote Repository...") {
-		public void actionPerformed(ActionEvent e) {
-			sessionContext.showLoginDialog(null);
-		}
-
-	};
-
-    private CreateRepositoryAction createRepositoryAction = new CreateRepositoryAction(this);
-    
 	private Action newDeDupeAction = null;
 //	TODO: Implement Cross-referencing projects first before re-enabling this action
 //	private Action newXrefAction = null;
@@ -432,10 +434,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      *            like that).
 	 * @throws SQLException
      */
-	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws SQLException {
+	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
+        
+        sessionImpl.getRootNode().setSession(this);
         
         matchEnginePanels = new HashMap<MatchEngineImpl, EngineSettingsPanel>();
         mergeEnginePanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
@@ -464,8 +468,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         buttonPanel.add(new JButton(closeWarningDialogAction));
         cp.add(buttonPanel, BorderLayout.SOUTH);
         
-        MatchMakerUtils.listenToHierarchy(removeEditorListener, getCurrentFolderParent());
-        MatchMakerUtils.listenToHierarchy(removeEditorListener, getTranslateGroupParent());
+        SQLPowerUtils.listenToHierarchy(getCurrentFolderParent(), removeEditorListener);
+        SQLPowerUtils.listenToHierarchy(getTranslateGroupParent(), removeEditorListener);
 	}
 
 	public void showGUI() {
@@ -499,6 +503,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 
+		fileMenu.add(new NewWorkspaceAction(this));
+		fileMenu.add(new OpenWorkspaceAction(this));
+		fileMenu.add(new SaveWorkspaceAction(this));
+		fileMenu.add(new SaveWorkspaceAsAction(this));
+		
 		if (!MAC_OS_X) {
 			fileMenu.add(userPrefsAction);
 		}
@@ -518,8 +527,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
 		JMenu databaseMenu = new JMenu("Connections");
 		databaseMenu.setMnemonic('d');
-		databaseMenu.add(remoteLoginAction);
-        databaseMenu.add(createRepositoryAction);
         databaseMenu.addSeparator();
 		databaseMenu.add(databaseConnectionAction);
 		menuBar.add(databaseMenu);
@@ -582,7 +589,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		Container projectBarPane = frame.getContentPane();
 		projectBarPane.setLayout(new BorderLayout());
 
-		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),getTranslateGroupParent(), this));
+		tree = new JTree(new MatchMakerTreeModel(getRootNode(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
 		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
@@ -613,6 +620,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		frame.setBounds(sessionContext.getFrameBounds());
 		frame.addWindowListener(new MatchMakerFrameWindowListener());
 	}
+    
+	/**
+	 * Retrieves the root node of all MatchMakerObject objects
+	 */
+    public MMRootNode getRootNode() {
+    	MMRootNode rootNode = sessionImpl.getRootNode();
+    	return rootNode;
+    }
 
     public FolderParent getBackupFolderParent() {
     	FolderParent backup = sessionImpl.getBackupFolderParent();
@@ -649,6 +664,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     public List<UserDefinedSQLType> getSQLTypes()
     {
     	return Collections.unmodifiableList(this.getContext().getPlDotIni().getSQLTypes());
+    }
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file.
+     */
+    public UserDefinedSQLType getSQLType(int sqlType)
+    {
+    	List<UserDefinedSQLType> types = getSQLTypes();
+    	for(UserDefinedSQLType s : types) {
+    		if(s.getType().equals(sqlType)) {
+    			return s;
+    		}
+    	}
+    	throw new IllegalArgumentException(sqlType + " is not a sql datatype.");
     }
     
     private final class EditProjectAction extends AbstractAction {
@@ -946,14 +975,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         }
     }
 
-    public String getAppUser() {
-        return sessionImpl.getAppUser();
-    }
-    
-    public String getAppUserEmail() {
-    	return sessionImpl.getAppUserEmail();
-    }
-
     public String getDBUser() {
         return sessionImpl.getDBUser();
     }
@@ -995,35 +1016,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	}
 
 	/**
-	 * XXX This is for actions that aren't written yet.
-	 * It will be removed when the application is completed;
-	 * only used in about half a dozen places now...
-	 */
-	private class DummyAction extends AbstractAction {
-
-		private String label;
-		private JFrame parent;
-
-		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(parent,
-				String.format("The %s function is not yet implemented", label),
-				"Apologies",
-				JOptionPane.INFORMATION_MESSAGE);
-		}
-
-		public DummyAction(JFrame parent, String label) {
-			super(label);
-			this.label = label;
-			this.parent = parent;
-		}
-
-		DummyAction(String label) {
-			this(frame != null ? frame : null, label);
-		}
-
-	}
-
-	/**
 	 * persist the match maker object to the database
 	 *
 	 * XXX Push this into the match maker session interface
@@ -1032,26 +1024,22 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public void save(MatchMakerObject mmo) {
 		if (mmo instanceof Project){
 			Project project = (Project)mmo;
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
-			dao.save(project);
-		} else if (mmo instanceof MatchMakerFolder){
-			Project project = (Project)mmo.getParent();
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof TableMergeRules) {
-			Project project = ((TableMergeRules)mmo).getParentProject();
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+			Project project = (Project) ((TableMergeRules)mmo).getParent();
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof PlFolder){
-			PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(PlFolder.class);
 			dao.save((PlFolder) mmo);
 		} else if (mmo instanceof MungeProcess) {
 			MungeProcess cg = (MungeProcess)mmo;
-			MungeProcessDAO dao = (MungeProcessDAO) getDAO(MungeProcess.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MungeProcess.class);
 			dao.save(cg);
 		} else if (mmo instanceof MatchMakerTranslateGroup) {
 			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup)mmo;
-			MatchMakerTranslateGroupDAO dao = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MatchMakerTranslateGroup.class);
 			dao.save(tg);
 		} else {
 			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
@@ -1066,18 +1054,22 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * @param mmo The MatchMakerObject to delete, both from the persistence
      * layer and by removing it from its parent object.
      */
-	@SuppressWarnings("unchecked")
-	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
+	public void delete(MatchMakerObject mmo) {
 		if (mmo.getParent() != null) {
-		    MatchMakerDAO dao = getDAO(mmo.getClass());
+		    /*MatchMakerDAO dao = getDAO(mmo.getClass());
 		    logger.debug("dao is:"+ dao+ "mmo is"+ mmo);
-		    dao.delete(mmo);
+		    dao.delete(mmo);*/
+			try {
+				mmo.getParent().removeChild(mmo);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException(e);
+			}
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
 		
 		// If mmo is a project, clean up and remove its engine panels
-		if (mmo instanceof Project) {
+		/*if (mmo instanceof Project) {
 			EngineSettingsPanel panel;
 			
 			panel = matchEnginePanels.remove(((Project) mmo).getMatchingEngine());
@@ -1102,7 +1094,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			if (panel != null) {
 				panel.cleanup();
 			};
-		}
+		}*/
 	}
 	
 	/**
@@ -1114,14 +1106,17 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param objectToMove the object you want to move
 	 * @param destination the new parent object
 	 */
-	@SuppressWarnings("unchecked")
 	public void move(MatchMakerObject objectToMove, MatchMakerObject destination) {
 		if (!destination.allowsChildren()) throw new IllegalArgumentException("The destination object "+destination+" Does not support children");
-		MatchMakerObject oldParent = objectToMove.getParent();
+		MatchMakerObject oldParent = (MatchMakerObject) objectToMove.getParent();
 		if (oldParent != null) {
-			oldParent.removeChild(objectToMove);
+			try {
+				oldParent.removeChild(objectToMove);
+			} catch (ObjectDependentException e) {
+				throw new RuntimeException(e);
+			}
 		}
-		destination.addChild(objectToMove);
+		destination.addChild(objectToMove,destination.getChildren(objectToMove.getClass()).size());
 		save(destination);
 	}
 
@@ -1132,10 +1127,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return smallMMIcon;
     }
 
-    public Version getPLSchemaVersion() {
-        return sessionImpl.getPLSchemaVersion();
-    }
-    
     /**
      * Opens a dialog for the user to choose a custom colour.
      * Returns the choosen colour.
@@ -1155,6 +1146,21 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     }
     
     /**
+     * Returns the default save location for this workspace. Opening from this location
+     * is probably pointless since the same session already exists.
+     */
+    public File getSavePoint() {
+		return savePoint;
+	}
+
+    /**
+     * Sets the default save location for this workspace.
+     */
+	public void setSavePoint(File savePoint) {
+		this.savePoint = savePoint;
+	}
+
+	/**
      * Action Listener used by the custom colour dialog.
      */
     class ColorTracker implements ActionListener, Serializable {
@@ -1493,16 +1499,21 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * editor pane to null if the current editor pane is editing
 	 * the child being removed
 	 */
-	private class SelectRemoveEditorListener implements MatchMakerListener {
+	private class SelectRemoveEditorListener implements SPListener {
+		
 		private Boolean selectNewChild = true;
+		
+		public void setSelectNewChild(Boolean selectNewChild) {
+			this.selectNewChild = selectNewChild;
+		}
 
-		public void mmChildrenInserted(MatchMakerEvent evt) {
-			// selects the new child on the tree if one new child is added
-			if (selectNewChild && !evt.isUndoEvent() && !evt.isCompoundEvent() && evt.getChildren().size() == 1) {
-				final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
+		@Override
+		public void childAdded(SPChildEvent e) {// selects the new child on the tree if one new child is added
+			if (selectNewChild) {
+				final MatchMakerObject insertedMMO = (MatchMakerObject)e.getChild();
 				if (!(insertedMMO instanceof SQLInputStep
 						|| insertedMMO instanceof MungeResultStep
-						|| insertedMMO instanceof MungeStepOutput)) {
+						|| insertedMMO instanceof MungeStepOutput) && insertedMMO.isMagicEnabled()) {
 					SwingUtilities.invokeLater(new Runnable(){
 						public void run() {
 							MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
@@ -1512,36 +1523,42 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 					});
 				}
 			}
-			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
-				MatchMakerUtils.listenToHierarchy(this, mmo);
-			}
+			SQLPowerUtils.listenToHierarchy(e.getChild(), this);
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent evt) {
+		@Override
+		public void childRemoved(SPChildEvent e) {
 			//sets the current editor pane to null if object is removed.
 			if (oldPane instanceof MatchMakerEditorPane) {
-				for (MatchMakerObject removedChild : (List<MatchMakerObject>)evt.getChildren()) {
-					MatchMakerObject editorMMO = ((MatchMakerEditorPane)oldPane).getCurrentEditingMMO();
-					if (removedChild.equals(editorMMO) || removedChild.hierarchyContains(editorMMO)) {
-						MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-						TreePath treePath = treeModel.getPathForNode(evt.getSource());
-						getTree().setSelectionPath(treePath);
-					}
+				MatchMakerObject removedChild = (MatchMakerObject) e.getChild();
+				MatchMakerObject editorMMO = ((MatchMakerEditorPane)oldPane).getCurrentEditingMMO();
+				if (removedChild.equals(editorMMO) || SQLPowerUtils.hierarchyContains(removedChild, editorMMO)) {
+					MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+					TreePath treePath = treeModel.getPathForNode((MatchMakerObject)e.getSource());
+					getTree().setSelectionPath(treePath);
 				}
 			}
-			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
-				MatchMakerUtils.unlistenToHierarchy(this, mmo);
-			}
+			SQLPowerUtils.unlistenToHierarchy(e.getChild(), this);
 		}
 
-		// don't care
-		public void mmPropertyChanged(MatchMakerEvent evt) {}
+		@Override
+		public void transactionStarted(TransactionEvent e) {
+			//no-op
+		}
 
-		// don't care
-		public void mmStructureChanged(MatchMakerEvent evt) {}
+		@Override
+		public void transactionEnded(TransactionEvent e) {
+			//no-op			
+		}
 
-		public void setSelectNewChild(Boolean selectNewChild) {
-			this.selectNewChild = selectNewChild;
+		@Override
+		public void transactionRollback(TransactionEvent e) {
+			//no-op
+		}
+
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
+			//no-op
 		}
 	}
 	
@@ -1574,5 +1591,53 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		statusLabel.setText("");
 		logger.debug("Stub call: MatchMakerSwingSession.removeStatusMessage()");
 		
+	}
+
+	@Override
+	public SPObject getWorkspace() {
+		return getRootNode();
+	}
+	
+	@Override
+    public void runInForeground(Runnable runner) {
+        SwingUtilities.invokeLater(runner);
+    }
+
+	@Override
+    public void runInBackground(Runnable runner) {
+        runInBackground(runner, "worker");
+    }
+
+	public void runInBackground(final Runnable runner, String name) {
+        new Thread(runner, name).start();       
+    }
+
+	@Override
+	public boolean isForegroundThread() {
+        return true;
+	}
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new NonModalSwingUIUserPrompterFactory(frame);
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return sessionImpl.getUpgradePersisterManager();
+	}
+
+	@Override
+	public String getAppUserEmail() {
+		// TODO This will have very nice functionality once repositories are working again
+		logger.debug("Stub call: MatchMakerSession.getAppUserEmail()");
+		return null;
+	}
+
+	@Override
+	public String getAppUser() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchMakerSession.getAppUser()");
+		return null;
 	}
 }

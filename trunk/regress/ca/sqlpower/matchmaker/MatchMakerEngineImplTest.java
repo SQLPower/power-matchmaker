@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sqlobject.SQLDatabase;
 
@@ -33,18 +32,17 @@ public class MatchMakerEngineImplTest extends TestCase {
 
 	Project project;
 	MatchEngineImpl matchMakerEngine;
-	private TestingMatchMakerHibernateSession session;
-	private TestingMatchMakerContext context;
+	private TestingMatchMakerSession session;
+	private MatchMakerSessionContext context;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
 		project = new Project();
-		session = new TestingMatchMakerHibernateSession(DBTestUtil.getOracleDS());
+		session = new TestingMatchMakerSession();
 		session.setDatabase(new SQLDatabase());
 		project.setSession(session);
 		matchMakerEngine = new MatchEngineImpl(session,project);
-		context = new TestingMatchMakerContext();
-		session.setContext(context);
+		context = session.getContext();
 	}
 
 	protected void tearDown() throws Exception {
@@ -66,8 +64,8 @@ public class MatchMakerEngineImplTest extends TestCase {
         MatchMakerSettings settings = new MungeSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
-        log.createNewFile();
-        log.setReadOnly();
+        assertTrue(log.createNewFile());
+        assertTrue(log.setReadOnly());
         assertFalse(log.canWrite());
         assertFalse(AbstractEngine.canWriteLogFile(settings));
         log.delete();

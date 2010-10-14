@@ -62,16 +62,17 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 
 	@Override
 	protected JPanel buildUI() {
+		final DateConstantMungeStep step = (DateConstantMungeStep) getStep();
 		Date value;
 		try {
-			value = ((DateConstantMungeStep) getStep()).getValue();
+			value = ((DateConstantMungeStep) getStep()).getValueAsDate();
 		} catch (ParseException e) {
 			SPSUtils.showExceptionDialogNoReport(getPen(), "Error Loading munge step", e);
 			value = null;
 		}
 		if (value == null) {
 		    value = new Date();
-		    ((DateConstantMungeStep) getStep()).setValue(value);
+		    ((DateConstantMungeStep) getStep()).setValueAsDate(value);
 		}
 		dc = new SpinnerDateModel(value, null, null, Calendar.SECOND);
 		date = new JSpinner(dc);
@@ -100,7 +101,7 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 					useCurrent.setEnabled(true);
 					opts.setEnabled(!retNull.isSelected());
 				}
-				getStep().setParameter(DateConstantMungeStep.RETURN_NULL, String.valueOf(b));
+				step.setReturnNull(b);
 			}
 		});
 
@@ -118,15 +119,15 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 					opts.setEnabled(!retNull.isSelected());
 					retNull.setEnabled(true);
 				}
-				getStep().setParameter(DateConstantMungeStep.USE_CURRENT_TIME, String.valueOf(b));
+				step.setUseCurrentTime(b);
 			}
 		});
 
-		retNull.setSelected(Boolean.valueOf(getStep().getParameter(DateConstantMungeStep.RETURN_NULL)).booleanValue());
+		retNull.setSelected(step.isReturnNull());
 		if (retNull.isSelected()) {
 			useCurrent.setEnabled(false);
 		}
-		useCurrent.setSelected(Boolean.valueOf(getStep().getParameter(DateConstantMungeStep.USE_CURRENT_TIME)).booleanValue());
+		useCurrent.setSelected(step.getUseCurrentTime());
 		if (useCurrent.isSelected()) {
 			retNull.setEnabled(false);
 		}
@@ -137,12 +138,13 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 		opts = new JComboBox(DateConstantMungeStep.FORMAT.toArray());
 		opts.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {
-				getStep().setParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME,(String) opts.getSelectedItem());
+				step.setDateFormat((String) opts.getSelectedItem());
 				date.setEditor(new JSpinner.DateEditor(date,getFormateString()));
 			}
 		});
 
-		opts.setSelectedItem(getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME));
+		
+		opts.setSelectedItem(step.getDateFormat());
 		opts.setEnabled(!retNull.isSelected());
 
 		FormLayout layout = new FormLayout("pref,4dlu,pref:grow");
@@ -157,15 +159,16 @@ public class DateConstantMungeComponent extends AbstractMungeComponent {
 
 	private void setDate() {
 		if (dc.getDate() != null) {
-			((DateConstantMungeStep) getStep()).setValue(dc.getDate());
+			((DateConstantMungeStep) getStep()).setValueAsDate(dc.getDate());
 		}
 	}
 
 	private String getFormateString() {
-		if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME) != null) {
-			if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME).equals(DateConstantMungeStep.FORMAT.get(1))) {
+		DateConstantMungeStep step = (DateConstantMungeStep) getStep();
+		if (step.getDateFormat() != null) {
+			if (step.getDateFormat().equals(DateConstantMungeStep.FORMAT.get(1))) {
 				return "yyyy/MM/dd";
-			} else if (getStep().getParameter(DateConstantMungeStep.FORMAT_PARAMETER_NAME).equals(DateConstantMungeStep.FORMAT.get(2))) { 
+			} else if (step.getDateFormat().equals(DateConstantMungeStep.FORMAT.get(2))) { 
 				return "HH:mm:ss";
 			}
 		}

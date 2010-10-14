@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.util.Date;
+import java.util.List;
 
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -30,8 +32,11 @@ import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLDatabaseMapping;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
-import ca.sqlpower.util.Version;
+import ca.sqlpower.util.RunnableDispatcher;
+import ca.sqlpower.util.UserPrompterFactory;
+import ca.sqlpower.util.WorkspaceContainer;
 
 /**
  * The MatchMakerSession interface represents one person's login to
@@ -47,7 +52,7 @@ import ca.sqlpower.util.Version;
  *
  * @version $Id$
  */
-public interface MatchMakerSession extends SQLDatabaseMapping {
+public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContainer, RunnableDispatcher {
 
     /**
      * The session context that created this session.
@@ -59,11 +64,6 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
 	 */
 	public SQLDatabase getDatabase();
 
-    /**
-     * get the PL Schema Version
-     */
-    public Version getPLSchemaVersion();
-    
 	/**
 	 * The PL Schema user for this session.  Often but not necessarily
 	 * the same as the DB User.
@@ -84,6 +84,13 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
 	 * The time this session was created.
 	 */
 	public Date getSessionStartTime();
+	
+	/**
+	 * The prompter factory for this session. The returned factory will communicate with
+	 * the user through the proper method depending on what kind of session is running.
+	 * @return the factory
+	 */
+	public UserPrompterFactory createUserPrompterFactory();
 
     /**
      * Returns the folder that matches with the name
@@ -164,6 +171,11 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
      */
     public void removeWarningListener(WarningListener l);
 
+	/**
+	 * Retrieves the root node of all MatchMakerObject objects
+	 */
+    public MMRootNode getRootNode();
+    
     /**
      * get all of the translations the user can see
      */
@@ -271,5 +283,20 @@ public interface MatchMakerSession extends SQLDatabaseMapping {
 	 * 
 	 */
 	public void removeStatusMessage();
+	
+	 /** 
+     * Gets the basic SQL types from the PL.INI file
+     */
+    public List<UserDefinedSQLType> getSQLTypes();
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file.
+     */
+    public UserDefinedSQLType getSQLType(int sqlType);
+    
+    /**
+     * Gets the upgrade version manager for this session.
+     */
+    public UpgradePersisterManager getUpgradePersisterManager();
 }
 

@@ -41,8 +41,8 @@ public class MultiPlatformCleanseTest extends AbstractCleanseEngineImplTest {
 			sql = "CREATE TABLE " + getFullTableName() + " (" +
 				"\n ID NUMERIC NOT NULL PRIMARY KEY," +
 				"\n COL_STRING VARCHAR(20) NULL," +
-				"\n COL_DATE DATETIME NULL," +
-				"\n COL_NUMBER NUMERIC NULL)";
+				"\n COL_DATE DATE NULL," +
+				"\n COL_NUMBER NUMERIC(10) NULL)";
 			execSQL(con,sql);
 			
 			sourceTable = session.getDatabase(DBTestUtil.getSqlServerDS()).getTableByName("MM_TEST", "MM_TEST", "CLEANSE_TEST");

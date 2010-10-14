@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="jdbc_drivers"/>
+	<classpathentry kind="src" path="generated"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry kind="src" path="testbed"/>
@@ -28,8 +29,6 @@
 	<classpathentry kind="lib" path="lib/gdata-core-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-meta-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="libsrc/hibernate3_src.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate-tools.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="lib/iText-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jhall.jar"/>
@@ -51,5 +50,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="lib" path="buildlib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/architect-core-1.0.3.jar" sourcepath="/architect/src/main/java/ca/sqlpower/architect/ddl"/>
+	<classpathentry kind="lib" path="lib/sqlpower_library.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

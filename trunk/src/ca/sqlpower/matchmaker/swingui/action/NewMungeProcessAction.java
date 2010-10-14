@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,9 +88,9 @@ public class NewMungeProcessAction extends AbstractAction {
     	}
     	process.setColour(color);
     	
-    	project.addMungeProcess(process);
+    	project.addMungeProcess(process,project.getMungeProcesses().size());
     	SQLInputStep inputStep = new SQLInputStep();
-		inputStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
+		inputStep.setExpanded(true);
 		process.addChild(inputStep);
 		
 		try {
@@ -105,25 +106,23 @@ public class NewMungeProcessAction extends AbstractAction {
 			throw new RuntimeException("Could not find or set up the result munge step!", ex);
 		}
 		
-		String x = Integer.toString(MungePen.AUTO_SCROLL_INSET + 5);
-		String y = Integer.toString(DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP);
+		int x = MungePen.AUTO_SCROLL_INSET + 5;
+		int y = DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP;
 		
 		//sets the input one just outside of the autoscroll bounds
-		inputStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
-		inputStep.setParameter(MungeStep.MUNGECOMPONENT_Y, x);
+		inputStep.setPosition(new Point(x, x));
 		
-		//sets the location of the result step (resonalibly arbatrary location)
-		mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
-		mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_Y, y);
+		//sets the location of the result step (reasonably arbitrary location)
+		mungeResultStep.setPosition(new Point(x, y));
 		
 		process.addChild(mungeResultStep);
 		
 		if (mungeResultStep instanceof CleanseResultStep) {
 			try {
-				mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
+				mungeResultStep.setExpanded(true);
 				mungeResultStep.open(logger);
-                mungeResultStep.rollback();
-				mungeResultStep.close();
+                mungeResultStep.mungeRollback();
+				mungeResultStep.mungeClose();
 			} catch (Exception ex) {
 				throw new RuntimeException("Could not set up the cleanse result munge step!", ex);
 			}
@@ -132,9 +131,8 @@ public class NewMungeProcessAction extends AbstractAction {
 		if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
 			AddressCorrectionMungeStep addressStep = new AddressCorrectionMungeStep();
 			addressStep.setInputStep(inputStep);
-			addressStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
-			addressStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
-			addressStep.setParameter(MungeStep.MUNGECOMPONENT_Y, Integer.toString(DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP / 2));
+			addressStep.setExpanded(true);
+			addressStep.setPosition(new Point(x, DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP / 2));
 			process.addChild(addressStep);
 		}
 		

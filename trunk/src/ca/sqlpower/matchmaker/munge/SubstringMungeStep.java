@@ -19,6 +19,16 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
+
 
 
 
@@ -28,20 +38,26 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class SubstringMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
 	/**
-	 * This is the name of the parameter with the value of the beginIndex.
+	 * The begin index for the output substring of this munge step.
 	 */
-	public static final String BEGIN_PARAMETER_NAME = "beginIndex";
+	private int begIndex;
 
 	/**
-	 * This is the name of the parameter with the value of the endIndex.
+	 * The end index for the output substring of this munge step.
 	 */
-	public static final String END_PARAMETER_NAME = "endIndex";
+	private int endIndex;
 	
+	@Constructor
 	public SubstringMungeStep() {
 		super("Substring",false);
-		setParameter(BEGIN_PARAMETER_NAME, 0);
-		setParameter(END_PARAMETER_NAME, 0);
+		setBegIndex(0);
+		setEndIndex(0);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
@@ -54,7 +70,7 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Substring munge step does not support removeInput()");
 	}
 	
@@ -73,8 +89,8 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	 */
 	public Boolean doCall() throws Exception {
 
-		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
-		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
+		int beginIndex = getBegIndex();
+		int endIndex = getEndIndex();
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
@@ -96,5 +112,36 @@ public class SubstringMungeStep extends AbstractMungeStep {
 		}
 		
 		return true;
+	}
+
+	@Mutator
+	public void setBegIndex(int begIndex) {
+			int old = this.begIndex;
+			this.begIndex = begIndex;
+			firePropertyChange("begIndex", old, begIndex);
+	}
+
+	@Accessor
+	public int getBegIndex() {
+		return begIndex;
+	}
+
+	@Mutator
+	public void setEndIndex(int endIndex) {
+			int old = this.endIndex;
+			this.endIndex = endIndex;
+			firePropertyChange("endIndex", old, endIndex);
+	}
+
+	@Accessor
+	public int getEndIndex() {
+		return endIndex;
+	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		SubstringMungeStep step = (SubstringMungeStep) copy;
+		step.setBegIndex(getBegIndex());
+		step.setEndIndex(getEndIndex());
 	}
 }

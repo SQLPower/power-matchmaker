@@ -24,27 +24,38 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchMakerUpgradePersisterManager;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.DefaultUserPrompterFactory;
+import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerSession implements MatchMakerSession {
 	
 	private static Logger logger = Logger.getLogger(TestingMatchMakerSession.class);
+
+	MMRootNode rootNode;
 	
 	Date date = new Date();
 	String appUser = "App User";
@@ -65,13 +76,11 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
-        translateGroupParent= new TranslateGroupParent(this);
+        translateGroupParent= new TestingMatchMakerTranslateGroupParent();
         context = new TestingMatchMakerContext();
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
-	}
-
-	public String getAppUser() {
-		return appUser;
+        rootNode = new MMRootNode();
+        rootNode.setSession(this);
 	}
 
 	public String getDBUser() {
@@ -125,9 +134,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-        if (businessClass == MatchMakerTranslateGroup.class){
-            return (MatchMakerDAO<T>) new MatchMakerTranslateGroupDAOStub();
-        } else if (businessClass == PlFolder.class){
+        if (businessClass == PlFolder.class){
             return (MatchMakerDAO<T>) new PlFolderDAOStup();
         }
         return null;
@@ -194,10 +201,14 @@ public class TestingMatchMakerSession implements MatchMakerSession {
      */
     public void removeWarningListener(WarningListener l) {
     }
+    
+	public MMRootNode getRootNode() {
+    	return rootNode;
+    }
 
     public TranslateGroupParent getTranslations() {
     	if (translateGroupParent == null){
-    		translateGroupParent = new TranslateGroupParent(this);
+    		translateGroupParent = new TranslateGroupParent();
     	}
     	return translateGroupParent;
     }
@@ -207,8 +218,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
     public FolderParent getCurrentFolderParent() {
-    	FolderParent current = new FolderParent(this);
-    	current.getChildren().addAll(folders);
+    	FolderParent current = new FolderParent();
+    	for(PlFolder child : folders) {
+    		current.addChild(child);
+    	}
     	return current;
     }
 
@@ -309,10 +322,6 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     		return false;
     	} 
     }
-
-	public String getAppUserEmail() {
-		return appUserEmail;
-	}
 	
 	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
 		SQLDatabase db = databases.get(dataSource);
@@ -357,6 +366,75 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	public void removeStatusMessage() {
 		// np-op
 		logger.debug("Stub call: TestingMatchMakerSession.removeStatusMessage()");
-		
+	}
+	
+	@Override
+	public SPObject getWorkspace() {
+		return getRootNode();
+	}
+	
+	@Override
+    public void runInForeground(Runnable runner) {
+        SwingUtilities.invokeLater(runner);
+    }
+
+	@Override
+    public void runInBackground(Runnable runner) {
+        runInBackground(runner, "worker");
+    }
+
+	public void runInBackground(final Runnable runner, String name) {
+        new Thread(runner, name).start();       
+    }
+
+	@Override
+	public boolean isForegroundThread() {
+        return true;
+	}
+	
+	/** 
+     * Gets the basic SQL types from the PL.INI file
+     */
+    public List<UserDefinedSQLType> getSQLTypes()
+    {
+    	return Collections.unmodifiableList(this.getContext().getPlDotIni().getSQLTypes());
+    }
+    
+    /** 
+     * Gets the basic SQL type from the PL.INI file.
+     */
+    public UserDefinedSQLType getSQLType(int sqlType)
+    {
+    	List<UserDefinedSQLType> types = getSQLTypes();
+    	for(UserDefinedSQLType s : types) {
+    		if(s.getType().equals(sqlType)) {
+    			return s;
+    		}
+    	}
+    	throw new IllegalArgumentException(sqlType + " is not a sql datatype.");
+    }
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new DefaultUserPrompterFactory();
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return new MatchMakerUpgradePersisterManager();
+	}
+
+	@Override
+	public String getAppUserEmail() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchMakerSession.getAppUserEmail()");
+		return null;
+	}
+
+	@Override
+	public String getAppUser() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchMakerSession.getAppUser()");
+		return null;
 	}
 }

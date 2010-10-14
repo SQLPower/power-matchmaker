@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.event.TableModelEvent;
 
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -41,18 +40,25 @@ import ca.sqlpower.sqlobject.SQLTable;
  * 		<dt>merge action  <dd> table merge rule merge action in a combo box
  * </dl>
  */
-public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<MatchMakerFolder<TableMergeRules>, TableMergeRules> {
+public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Project> {
+	
+	Project project;
 
 	public MergeTableRuleTableModel(Project project) {
-		super(project.getTableMergeRulesFolder());
+		super(project);
+		this.project = project;
 	}
 	
 	public int getColumnCount() {
 		return 4;
 	}
+	
+	public int getRowCount() {
+		return project.getTableMergeRules().size();
+	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		TableMergeRules tableMergeRule = mmo.getChildren().get(rowIndex);
+		TableMergeRules tableMergeRule = mmo.getChildren(TableMergeRules.class).get(rowIndex);
 		if (columnIndex == 0) {
 			return tableMergeRule.getCatalogName();
 		} else if (columnIndex == 1) {
@@ -72,7 +78,7 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Match
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		TableMergeRules rule = mmo.getChildren().get(rowIndex);
+		TableMergeRules rule = mmo.getChildren(TableMergeRules.class).get(rowIndex);
 		
 		if (columnIndex == 3 && !rule.isSourceMergeRule()) {
 			return true;
@@ -110,7 +116,7 @@ public class MergeTableRuleTableModel extends AbstractMatchMakerTableModel<Match
 	}
 	
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		TableMergeRules rule = mmo.getChildren().get(rowIndex);
+		TableMergeRules rule = mmo.getChildren(TableMergeRules.class).get(rowIndex);
 		if (rule.isSourceMergeRule()) return;
 		
 		if (columnIndex == 3) {

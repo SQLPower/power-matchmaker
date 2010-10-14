@@ -19,6 +19,10 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +31,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
-import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -36,31 +42,26 @@ import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
  *  This step supports using regular expressions as an option for the target string.
  */
 public class TranslateWordMungeStep extends AbstractMungeStep {
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
 	/**
 	 * This is the translate group that holds all the target and replacement strings.
 	 */
 	private MatchMakerTranslateGroup translateGroup;
-	
-    /**
-     * The name of the parameter that specifies the OID of the translate group used
-     * by this step.
-     */
-	public static final String TRANSLATE_GROUP_PARAMETER_NAME = "translateGroupOid";
+
+	/**
+	 * Whether to use regular expressions in this munge step.
+	 */
+	private boolean regex;
 	
 	/**
-	 * This is the name of the parameter that decides whether this step will use
-	 * regular expression to replace words. The only values accepted by the parameter
-	 * are "true" and "false".
+	 * Whether the effects of this munge step should be case sensitive.
 	 */
-	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
-	
-	/**
-	 * This is the name of the parameter that decides whether this step will be
-	 * case sensitive. The only values accepted by the parameter are "true" and
-	 *  "false".
-	 */
-	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	private boolean caseSensitive;
 	
 	
 	public TranslateWordMungeStep() {
@@ -69,8 +70,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
 		super.addInput(desc);
-		setParameter(USE_REGEX_PARAMETER_NAME, false);
-		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
+		setRegex(false);
+		setCaseSensitive(true);
 	}
 	
 	@Override
@@ -79,7 +80,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public void removeInput(int index) {
+	public boolean removeInput(int index) {
 		throw new UnsupportedOperationException("Translate word munge step does not support removeInput()");
 	}
 	
@@ -100,8 +101,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 
 		String from;
 		String to;
-		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
-		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
+		boolean useRegex = isRegex();
+		boolean caseSensitive = isCaseSensitive();
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
@@ -157,12 +158,52 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	@Override
 	public void refresh(Logger logger) throws Exception {
-		String oid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
-		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (getSession().getDAO(MatchMakerTranslateGroup.class));
-		if (oid != null) {
-			translateGroup = groupDAO.findByOID(Long.valueOf(oid));
-		} else {
-			logger.debug("Opening Translate Words transformer with an null translate group oid");
+		if (translateGroup == null && getSession().getTranslations().getTranslateGroups().size() > 0) {
+			translateGroup = getSession().getTranslations().getTranslateGroups().get(0);
 		}
+	}
+
+	@Mutator
+	public void setRegex(boolean useRegex) {
+			boolean old = this.regex;
+			this.regex = useRegex;
+			firePropertyChange("regex", old, regex);
+	}
+
+	@Accessor
+	public boolean isRegex() {
+		return regex;
+	}
+
+	@Mutator
+	public void setTranslateGroup(MatchMakerTranslateGroup mmtg) {
+			MatchMakerTranslateGroup old = this.translateGroup;
+			this.translateGroup = mmtg;
+			firePropertyChange("translateGroup", old, translateGroup);
+	}
+
+	@Accessor
+	public MatchMakerTranslateGroup getTranslateGroup() {
+		return translateGroup;
+	}
+
+	@Mutator
+	public void setCaseSensitive(boolean caseSensitive) {
+			boolean old = this.caseSensitive;
+			this.caseSensitive = caseSensitive;
+			firePropertyChange("caseSensitive", old, caseSensitive);
+	}
+	
+	@Accessor
+	public boolean isCaseSensitive() {
+		return caseSensitive;
+	}
+	
+	@Override
+	protected void copyPropertiesForDuplicate(MungeStep copy) {
+		TranslateWordMungeStep step = (TranslateWordMungeStep) copy;
+		step.setCaseSensitive(isCaseSensitive());
+		step.setRegex(isRegex());
+		step.setTranslateGroup(getTranslateGroup());
 	}
 }

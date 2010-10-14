@@ -20,13 +20,21 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.Transient;
 
 /**
  * MungeStepOutput instances represent an output connection point of a MungeStep
@@ -39,8 +47,11 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
  *
  * @param <T> The type of data this output holds.
  */
-public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput, MatchMakerObject> 
+public class MungeStepOutput<T> extends AbstractMatchMakerObject 
 								implements Comparable<MungeStepOutput<T>> {
+	
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
 
 	private static final Logger logger = Logger.getLogger(MungeStepOutput.class);
 	
@@ -57,7 +68,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	 * This is a bound property. This object will fire a MatchMakerObject property
 	 * change event when this property is updated.
 	 */
-	private Class<T> type;
+	private final Class<T> type;
 	
 	/**
 	 * The current data value of this step.  This will change with every call to the
@@ -66,16 +77,12 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	private T data;
 	
 	/**
-	 * Default Constructor used by hibernate
-	 */
-	public MungeStepOutput() {
-	}
-	
-	/**
 	 * Creates a new MungeStepOutput with the given initial name (can be changed
 	 * later) and type (permanently fixed at the given value).
 	 */
-	public MungeStepOutput(String name, Class<T> type) {
+	@Constructor
+	public MungeStepOutput(@ConstructorParameter(propertyName="Name") String name,
+						@ConstructorParameter(propertyName="type") Class<T> type) {
 		setName(name);
 		this.type = type;
 	}
@@ -83,13 +90,18 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	/**
 	 * Returns the data type that this output holds.
 	 */
+	@Accessor
 	public Class<T> getType() {
 		return type;
 	}
+	
+	//XXX does this need to be persisted?
 
 	/**
 	 * Returns the current data in this output.
 	 */
+	@Transient
+	@Accessor
 	public T getData() {
 		return data;
 	}
@@ -98,8 +110,12 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	 * Sets the 
 	 * @param data
 	 */
+	@Transient
+	@Mutator
 	public void setData(T data) {
+		T oldData = data;
 		this.data = data;
+		firePropertyChange("data", oldData, data);
 	}
 
 	/**
@@ -111,25 +127,9 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	}
 	
 	/**
-	 * Determines if this step output is equal to the other based on reference
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		return this == obj;
-	}
-
-	/**
-	 * @return The identity hash code
-	 */
-	@Override
-	public int hashCode() {
-		return System.identityHashCode(this);
-	}
-
-	/**
 	 * Not implemented because we're pretty sure we don't want a duplicate system like this.
 	 */
-	public MungeStepOutput<T> duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public MungeStepOutput<T> duplicate(MatchMakerObject parent) {
 		throw new UnsupportedOperationException("Duplicate is not supported");
 	}
 	
@@ -181,7 +181,15 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 		return "<" + getName() + ": " + getData() + ">";
 	}
 
-	public void setType(Class<T> type) {
-		this.type = type;
+	@Override
+	@NonProperty
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+
+	@Override
+	@NonProperty
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
 	}
 }

@@ -26,7 +26,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -35,11 +37,15 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
+import ca.sqlpower.util.DefaultUserPrompterFactory;
+import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.Version;
 
 /**
@@ -124,6 +130,10 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
     public void removeWarningListener(WarningListener l) {
         logger.debug("Stub call: StubMatchMakerSession.removeWarningListener()");
+    }
+    
+	public MMRootNode getRootNode() {
+    	return null;
     }
 
     public TranslateGroupParent getTranslations() {
@@ -212,5 +222,44 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	public void removeStatusMessage() {
 		logger.debug("Stub call: StubMatchMakerSession.removeStatusMessage()");
 		
+	}
+
+	@Override
+	public SPObject getWorkspace() {
+		return null;
+	}
+
+	@Override
+	public void runInForeground(Runnable runner) {
+	}
+
+	@Override
+	public void runInBackground(Runnable runner) {
+	}
+
+	@Override
+	public boolean isForegroundThread() {
+		return false;
+	}
+	
+	public List<UserDefinedSQLType> getSQLTypes()
+    {
+    	return null;
+    }
+    
+    public UserDefinedSQLType getSQLType(int sqlType)
+    {
+    	return null;
+    }
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return new DefaultUserPrompterFactory();
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		logger.debug("Stub call: MatchMakerSession.getUpgradePersisterManager()");
+		return null;
 	}
 }

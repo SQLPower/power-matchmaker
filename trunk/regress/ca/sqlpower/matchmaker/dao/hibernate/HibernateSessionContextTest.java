@@ -19,8 +19,6 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -33,7 +31,6 @@ import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SpecificDataSourceCollection;
-import ca.sqlpower.util.Version;
 
 public class HibernateSessionContextTest extends TestCase {
 
@@ -73,40 +70,6 @@ public class HibernateSessionContextTest extends TestCase {
 		assertNotNull(session);
 	}
     
-	@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = { "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE" }, 
-			justification = "This is simply a unit test, so we are not so concerned with performance or security concerns here.")
-    public void testCheckSchemaVersion() throws Exception {
-	    JDBCDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
-
-	    Version schemaVersion = RepositoryUtil.MIN_PL_SCHEMA_VERSION;
-	    StringBuffer buffer = new StringBuffer();
-	    buffer.append(((Integer) schemaVersion.getParts()[0] - 1));
-	    for (int i = 1; i < schemaVersion.getParts().length; i++) {
-	        buffer.append(".").append(schemaVersion.getParts()[i].toString());
-	    }
-        Version v = new Version(buffer.toString());
-        
-        // this is very simplistic, and assumes that the startup sequence of
-        // MatchMakerHibernateSessionImpl checks the schema version before accessing
-        // the database in any other way.  The only thing in the whole database is a
-        // DEF_PARAM table with one column!
-        Connection con = DBTestUtil.connectToDatabase(ds);
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate("CREATE TABLE "+ds.getPlSchema()+".MM_SCHEMA_INFO (PARAM_NAME VARCHAR(50), PARAM_VALUE VARCHAR(2000))");
-        stmt.executeUpdate("INSERT INTO "+ds.getPlSchema()+".MM_SCHEMA_INFO VALUES ('schema_version', '"+v.toString()+"')");
-        stmt.close();
-        
-        try {
-            // if this fails for any reason other than version mismatch, you will have
-            // to enhance the "pl schema create script" above, or modify the HibernateSession
-            // to check the schema version earlier.
-            ctx.createSession(ds, ds.getUser(), ds.getPass());
-            fail("Session init failed to report bad schema version");
-        } catch (RepositoryVersionException ex) {
-            assertEquals(RepositoryUtil.MIN_PL_SCHEMA_VERSION.compareTo(ex.getRequiredVersion()), 0);
-            assertEquals(v.compareTo(ex.getCurrentVersion()), 0);
-        }
-    }
     /**
      * The context might have to alter the username and password in the data source
      * we give it, but we don't want this to permanently alter the settings in pl.ini.

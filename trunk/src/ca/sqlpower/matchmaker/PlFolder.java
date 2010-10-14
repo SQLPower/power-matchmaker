@@ -19,7 +19,16 @@
 
 package ca.sqlpower.matchmaker;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 
 /**
  * A container class desigend to hold match maker objects (for now),
@@ -29,13 +38,21 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *
  * <p>All setter methods in this class fire the appropriate events.
  */
-public class PlFolder<C extends MatchMakerObject>
-	extends AbstractMatchMakerObject<PlFolder, C> {
+public class PlFolder extends AbstractMatchMakerObject {
 
+	/**
+	 * This the list that tells us the allowable child types and their order in getting children.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(Project.class)));
+	
+	private final List<Project> projects = new ArrayList<Project>();
+	
 	/**
 	 * The object id
 	 */
-	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
 	private Long oid;
 	
 	/**
@@ -61,6 +78,7 @@ public class PlFolder<C extends MatchMakerObject>
      * Creates a new folder with a null name.  You'll have to call setName()
      * before expecting the folder to do much useful stuff.
      */
+    @Constructor
 	public PlFolder() {
 		this(null);
 	}
@@ -72,34 +90,40 @@ public class PlFolder<C extends MatchMakerObject>
 		setName(name);
 	}
 
+	@Accessor
 	public String getFolderDesc() {
 		return folderDesc;
 	}
 
+	@Mutator
 	public void setFolderDesc(String folderDesc) {
 		String oldValue = this.folderDesc;
 		this.folderDesc = folderDesc;
-		getEventSupport().firePropertyChange("folderDesc", oldValue, folderDesc);
+		firePropertyChange("folderDesc", oldValue, folderDesc);
 	}
 
+	@Accessor
 	public String getFolderStatus() {
 		return folderStatus;
 	}
 
+	@Mutator
 	public void setFolderStatus(String folderStatus) {
 		String oldValue = this.folderStatus;
 		this.folderStatus = folderStatus;
-		getEventSupport().firePropertyChange("folderStatus", oldValue, folderStatus);
+		firePropertyChange("folderStatus", oldValue, folderStatus);
 	}
 
+	@Accessor
 	public Long getLastBackupNo() {
 		return lastBackupNo;
 	}
 
+	@Mutator
 	public void setLastBackupNo(Long lastBackupNo) {
 		long oldValue = this.lastBackupNo;
 		this.lastBackupNo = lastBackupNo;
-		getEventSupport().firePropertyChange("lastBackupNo", oldValue, lastBackupNo);
+		firePropertyChange("lastBackupNo", oldValue, lastBackupNo);
 	}
 
 
@@ -128,7 +152,7 @@ public class PlFolder<C extends MatchMakerObject>
 		return true;
 	}
 
-	public PlFolder duplicate(MatchMakerObject parent, MatchMakerSession session) {
+	public PlFolder duplicate(MatchMakerObject parent) {
 		PlFolder f = new PlFolder();
 		f.setName(getName());
 		f.setFolderDesc(getFolderDesc());
@@ -136,14 +160,52 @@ public class PlFolder<C extends MatchMakerObject>
 		f.setFolderStatus(getFolderStatus());
 		f.setParent(parent);
 		f.setVisible(isVisible());
-		f.setSession(session);
-		for (MatchMakerObject o: getChildren()){
-			f.addChild(o.duplicate(parent, session));
+		for (SPObject spo: getChildren()) {
+			Project pr = (Project)spo;
+			f.addChild(pr.duplicate(parent));
 		}
 		return f;
 	}
 
+	@NonProperty
 	public Long getOid() {
 		return oid;
+	}
+
+	@Override
+	@NonProperty
+	public List<? extends SPObject> getChildren() {
+		return Collections.unmodifiableList(projects);
+	}
+	
+	public void addChild(SPObject spo) {
+		addChild(spo, projects.size());
+	}
+	
+	@Override
+	protected void addChildImpl(SPObject spo, int index) {
+		projects.add(index,(Project)spo);
+		fireChildAdded(Project.class, spo, index);
+	}
+	
+	@Override
+	protected boolean removeChildImpl(SPObject spo) {
+		int index = projects.indexOf(spo);
+		boolean removed = projects.remove(spo);
+		if(removed) {
+			fireChildRemoved(Project.class, spo, index);
+		}
+		return removed;
+	}
+
+	@Override
+	@NonProperty
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
+	}
+	
+	@NonProperty
+	public List<Project> getProjects() {
+		return Collections.unmodifiableList(projects);
 	}
 }

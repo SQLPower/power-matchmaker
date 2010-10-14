@@ -23,11 +23,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
-public class DateToStringMungeStepTest extends TestCase {
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
+import ca.sqlpower.object.SPObject;
+
+public class DateToStringMungeStepTest extends MatchMakerTestCase<DateToStringMungeStep> {
 
 	private DateToStringMungeStep step;
 	
@@ -36,12 +37,21 @@ public class DateToStringMungeStepTest extends TestCase {
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
+
+	public DateToStringMungeStepTest(String name) {
+		super(name);
+	}
 	
 	protected void setUp() throws Exception {
 		step = new DateToStringMungeStep();
 		Calendar c = Calendar.getInstance();
 		c.set(2007, 1, 1, 13, 1, 1);
 		date = c.getTime();
+		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 
 	public void testCallonDateOnly() throws Exception {
@@ -53,7 +63,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		testInput.setData(date);
 		step.connectInput(0, testInput);
 		step.open(logger);
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		for (String format : DateToStringMungeStep.DATE_FORMATS) {
 			step.setFormat(format);
@@ -70,7 +80,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		testInput.setData(date);
 		step.connectInput(0, testInput);
 		step.open(logger);
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		for (String format : DateToStringMungeStep.TIME_FORMATS) {
 			step.setFormat(format);
@@ -84,7 +94,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		testInput.setData(date);
 		step.connectInput(0, testInput);
 		step.open(logger);
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		step.call();
 		assertEquals("2/1/2007 1:01:01 PM", output.getData());
@@ -100,7 +110,7 @@ public class DateToStringMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getChildren(); 
+		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -115,5 +125,20 @@ public class DateToStringMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+
+	@Override
+	protected DateToStringMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// Already in AbstractMungeStep
 	}
 }

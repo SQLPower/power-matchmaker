@@ -21,25 +21,35 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.log4j.Logger;
 
-public class BooleanConstantMungeStepTest extends AbstractMungeStepTest {
+public class BooleanConstantMungeStepTest extends AbstractMungeStepTest<BooleanConstantMungeStep> {
 
 	BooleanConstantMungeStep step;
-    
+	
+	private final Logger logger = Logger.getLogger("testLogger");
+
+	public BooleanConstantMungeStepTest(String name) {
+		super(name);
+	}
+	
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
         step = new BooleanConstantMungeStep();
+        super.setUp();
+        MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
     }
     
     public void testNull() throws Exception {
-    	step.setParameter(BooleanConstantMungeStep.BOOLEAN_VALUE, BooleanConstantMungeStep.NULL);
+    	step.setConstant(null);
     	step.open(Logger.getLogger(getClass()));
         step.call();
         assertNull(step.getOut().getData());
     }
     
     public void testTrue() throws Exception {
-    	step.setParameter(BooleanConstantMungeStep.BOOLEAN_VALUE, BooleanConstantMungeStep.TRUE);
+    	step.setConstant(true);
     	step.open(Logger.getLogger(getClass()));
         step.call();
         MungeStepOutput<Boolean> out = step.getOut();
@@ -47,11 +57,16 @@ public class BooleanConstantMungeStepTest extends AbstractMungeStepTest {
     }
 
     public void testFalse() throws Exception {
-    	step.setParameter(BooleanConstantMungeStep.BOOLEAN_VALUE, BooleanConstantMungeStep.FALSE);
+    	step.setConstant(false);
     	step.open(Logger.getLogger(getClass()));
         step.call();
         MungeStepOutput<Boolean> out = step.getOut();
         assertFalse(out.getData().booleanValue());
     }
+
+	@Override
+	protected BooleanConstantMungeStep getTarget() {
+		return step;
+	}
    
 }

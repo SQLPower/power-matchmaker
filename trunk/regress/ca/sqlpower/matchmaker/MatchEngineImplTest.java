@@ -80,6 +80,7 @@ public class MatchEngineImplTest extends TestCase {
 		stmt.close();
 		
 		resultTable = db.getTableByName(null, "pl", "match_results");
+		resultTable.getColumns();
 		session = new TestingMatchMakerSession() {
 			@Override
 			public Connection getConnection() {
@@ -100,14 +101,14 @@ public class MatchEngineImplTest extends TestCase {
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("matchTest", "log");
 		settings.setLog(file);
-		project.setMungeSettings(settings);
+		settings.copyPropertiesToTarget(project.getMungeSettings());
 		
 		MungeProcess mungeProcessOne = new MungeProcess();
 		mungeProcessOne.setName("Munge_Process_One");
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessOne.addChild(inputStep);
 		
-		project.addMungeProcess(mungeProcessOne);
+		project.addChild(mungeProcessOne);
 
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessOne.addChild(outputStep);
@@ -154,7 +155,7 @@ public class MatchEngineImplTest extends TestCase {
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessTwo.addChild(inputStep);
 		
-		project.addMungeProcess(mungeProcessTwo);
+		project.addChild(mungeProcessTwo);
 		
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessTwo.addChild(outputStep);

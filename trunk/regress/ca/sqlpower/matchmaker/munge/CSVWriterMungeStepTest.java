@@ -22,13 +22,13 @@ package ca.sqlpower.matchmaker.munge;
 import java.io.File;
 import java.util.Scanner;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.object.SPObject;
 
-public class CSVWriterMungeStepTest extends TestCase {
+public class CSVWriterMungeStepTest extends MatchMakerTestCase<CSVWriterMungeStep> {
 
 	private CSVWriterMungeStep step;
 	
@@ -37,12 +37,20 @@ public class CSVWriterMungeStepTest extends TestCase {
 	private String fileName = "test.csv";
 	
 	private final Logger logger = Logger.getLogger("testLogger");
+
+	public CSVWriterMungeStepTest(String name) {
+		super(name);
+	}
 	
 	protected void setUp() throws Exception {
-		super.setUp();
 		step = new CSVWriterMungeStep();
 		step.setSession(new TestingMatchMakerSession());
 		step.setFilePath(fileName);
+		super.setUp();
+		MungeProcess process = (MungeProcess) createNewValueMaker(
+        		getRootObject(), null).makeNewValue(
+        				MungeProcess.class, null, "parent process");
+        process.addMungeStep(step, process.getMungeSteps().size());
 	}
 	
 	public void testCallOnStringAndNull() throws Exception {
@@ -58,8 +66,8 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
-		step.close();
+		step.mungeCommit();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());
@@ -78,8 +86,8 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
-		step.close();
+		step.mungeCommit();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());
@@ -89,7 +97,7 @@ public class CSVWriterMungeStepTest extends TestCase {
 	}
 	
 	public void testCallOnAppend() throws Exception {
-		step.setDoClearFile(false);
+		step.setClearFile(false);
 		
 		int i = 0;
 		testInput = new MungeStepOutput<String>("test", String.class);
@@ -99,8 +107,8 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
-		step.close();
+		step.mungeCommit();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());
@@ -112,8 +120,8 @@ public class CSVWriterMungeStepTest extends TestCase {
 		
 		step.open(logger);
 		step.call();
-		step.commit();
-		step.close();
+		step.mungeCommit();
+		step.mungeClose();
 		
 		f = new File(fileName);
 		assertTrue(f.exists());
@@ -132,8 +140,8 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.rollback();
-		step.close();
+		step.mungeRollback();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertFalse(f.exists());
@@ -153,8 +161,8 @@ public class CSVWriterMungeStepTest extends TestCase {
 		step.removeUnusedInput();
 		step.open(logger);
 		step.call();
-		step.commit();
-		step.close();
+		step.mungeCommit();
+		step.mungeClose();
 		
 		File f = new File(fileName);
 		assertTrue(f.exists());
@@ -167,5 +175,25 @@ public class CSVWriterMungeStepTest extends TestCase {
 	protected void tearDown() throws Exception {
 		File f = new File(fileName);
 		f.delete();
+	}
+
+	@Override
+	protected CSVWriterMungeStep getTarget() {
+		return step;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return MungeStepOutput.class;
+	}
+	
+	@Override
+	public void testDuplicate() throws Exception {
+		// Do nothing.
+	}
+	
+	@Override
+	public void testAllowedChildTypesField() throws Exception {
+		// do nothing
 	}
 }

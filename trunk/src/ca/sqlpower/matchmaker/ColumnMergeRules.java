@@ -19,14 +19,38 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.object.AbstractSPListener;
+import ca.sqlpower.object.SPListener;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLTable;
 
-public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,MatchMakerObject> {
+
+public class ColumnMergeRules extends AbstractMatchMakerObject {
 
 	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
+	
+	/**
+	 * Defines an absolute ordering of the child types of this class.
+	 */
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(ColumnMergeRulesCachableColumn.class,
+				ColumnMergeRulesImportedCachableColumn.class)));
 
     /**
      * An enumeration of all possible types of actions that can be
@@ -104,6 +128,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
          * Returns the human-readable English text shown to the user for
          * this action type.
          */
+        @Accessor
         public String getText() {
             return text;
         }
@@ -116,38 +141,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		public String toString() {
             return getText();
 		}
-	}
-
-	public class ColumnMergeRulesCachableColumn extends CachableColumn {
-		public ColumnMergeRulesCachableColumn() {
-			super(ColumnMergeRules.this, "column");
-		}
-		
-		public SQLTable getTable() {
-			TableMergeRules tableMergeRules = (TableMergeRules) eventSource.getParent();
-	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
-	        SQLTable st = tableMergeRules.getSourceTable();
-			return st;
-		}
-
-	}
-	
-	public class ColumnMergeRulesImportedCachableColumn extends CachableColumn {
-		public ColumnMergeRulesImportedCachableColumn() {
-			super(ColumnMergeRules.this, "importedKeyColumn");
-		}
-		
-		public SQLTable getTable() {
-			TableMergeRules tableMergeRules = (TableMergeRules) eventSource.getParent();
-	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
-	        if (tableMergeRules.getParentMergeRule() == null) {
-	        	return null;
-	        } else {
-	        	SQLTable st = tableMergeRules.getParentMergeRule().getSourceTable();
-	        	return st;
-	        }
-		}
-
 	}
 	
 	/**
@@ -162,9 +155,36 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	
 	private String updateStatement;
 	
-	private ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
+	private final ColumnMergeRulesCachableColumn cachedColumn;
 	
-	private ColumnMergeRulesImportedCachableColumn importedCachedColumn = new ColumnMergeRulesImportedCachableColumn();
+	private final ColumnMergeRulesImportedCachableColumn importedCachedColumn;
+	
+	private SPListener nameSynchronizer = new AbstractSPListener() {
+		@Override
+		public void propertyChanged(PropertyChangeEvent e) {
+			if (e.getPropertyName().equals("name") && !(e.getNewValue().equals(getName()))) {
+				setName((String)e.getNewValue());
+			}
+		}
+	};
+	
+	public ColumnMergeRules() {
+		this(new ColumnMergeRulesCachableColumn(), new ColumnMergeRulesImportedCachableColumn());
+	}
+
+	@Constructor
+	public ColumnMergeRules(
+			@ConstructorParameter(parameterType=ParameterType.CHILD, 
+					propertyName="cachedColumn") ColumnMergeRulesCachableColumn cachedColumn, 
+			@ConstructorParameter(parameterType=ParameterType.CHILD, 
+					propertyName="importedCachedColumn") 
+					ColumnMergeRulesImportedCachableColumn importedCachedColumn) {
+		this.cachedColumn = cachedColumn;
+		this.importedCachedColumn = importedCachedColumn;
+		cachedColumn.setParent(this);
+		importedCachedColumn.setParent(this);
+		cachedColumn.addSPListener(nameSynchronizer);
+	}
 	
 	@Override
 	public int hashCode() {
@@ -221,13 +241,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	/**
 	 * Creates a copy of this instance.
 	 */
-	public ColumnMergeRules duplicate(MatchMakerObject parent,
-			MatchMakerSession session) {
+	public ColumnMergeRules duplicate(MatchMakerObject parent) {
 		logger.debug("Duplicating...");
 		ColumnMergeRules columnRule = new ColumnMergeRules();
 		columnRule.setColumn(getColumn());
 		columnRule.setParent(parent);
-		columnRule.setSession(session);
 		columnRule.setName(getName());
 		columnRule.setActionType(actionType);
 		columnRule.setInPrimaryKey(inPrimaryKey);
@@ -237,36 +255,68 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		return columnRule;
 	}
 
-
+	@Accessor
 	public MergeActionType getActionType() {
 		return actionType;
 	}
 	
+	@Mutator
 	public void setActionType(MergeActionType actionType) {
 		MergeActionType oldValue = this.actionType;
 		this.actionType = actionType;
-		getEventSupport().firePropertyChange("actionType", oldValue, this.actionType);
+		firePropertyChange("actionType", oldValue, this.actionType);
+	}
+	
+	@Override
+	@Mutator
+	public void setName(String newm) {
+		super.setName(newm);
+		getCachedColumn().setName(newm);
+	}
+	
+	@Override
+	@NonProperty
+	public List<SPObject> getChildren() {
+		List<SPObject> children = new ArrayList<SPObject>();
+		children.add(cachedColumn);
+		children.add(importedCachedColumn);
+		return children;
+	}
+	
+	@Override
+	@NonProperty
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 
 	@Override
-	public String getName() {
-		return getColumnName();
+	protected void addChildImpl(SPObject child, int index) {
+		throw new RuntimeException("Cannot add child " + child + " of type " + 
+				child.getClass() + " to this object " + getName() + " of type " + getClass());
 	}
 
+	@Override
+	protected boolean removeChildImpl(SPObject child) {
+		throw new RuntimeException("Cannot remove child " + child + " of type " + 
+				child.getClass() + " to this object " + getName() + " of type " + getClass());
+	}
+
+	@NonProperty
 	public SQLColumn getColumn() {
-			return cachedColumn.getColumn();
+			return cachedColumn.getCachedColumn();
 	}
 
-
+	@NonProperty
 	public String getColumnName() {
 		return cachedColumn.getColumnName();
 	}
 
-
+	@NonProperty
 	public void setColumn(SQLColumn column) {
 		cachedColumn.setColumn(column);
 	}
 
+	@NonProperty
 	public void setColumnName(String columnName) {
 		cachedColumn.setColumnName(columnName);
 	}
@@ -279,76 +329,93 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		buf.append(", ActionType: ").append(getActionType());
 		return buf.toString();
 	}
-	
-	@Override
-	public boolean allowsChildren() {
-		return false;
-	}
 
+	@Accessor
 	public boolean isInPrimaryKey() {
 		return inPrimaryKey;
 	}
 
-
+	@Mutator
 	public void setInPrimaryKey(boolean inPrimaryKey) {
 		boolean oldValue = this.inPrimaryKey;
 		this.inPrimaryKey = inPrimaryKey;
-		getEventSupport().firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
+		firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
 	}
 	
+	@Mutator
 	public void setInPrimaryKeyAndAction(boolean inPrimaryKey) {
 		try {
-			startCompoundEdit();
+			begin("Setting in Primary Key");
 			setInPrimaryKey(inPrimaryKey);
 			if (inPrimaryKey) {
 				setActionType(MergeActionType.NA);
 			} else if (getImportedKeyColumn() == null){
 				setActionType(MergeActionType.USE_MASTER_VALUE);
 			}
-		} finally {
-			endCompoundEdit();
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
 		}
 	}
 
+	@NonProperty
 	public SQLColumn getImportedKeyColumn() {
-		return importedCachedColumn.getColumn();
+		return importedCachedColumn.getCachedColumn();
 	}
 
+	@NonProperty
 	public String getImportedKeyColumnName() {
 		return importedCachedColumn.getColumnName();
 	}
 	
+	@NonProperty
 	public void setImportedKeyColumn(SQLColumn importedKeyColumn) {
 		importedCachedColumn.setColumn(importedKeyColumn);
 	}
 	
+	@NonProperty
 	public void setImportedKeyColumnName(String columnName) {
 		importedCachedColumn.setColumnName(columnName);
 	}
 	
+	@NonProperty
 	public void setImportedKeyColumnAndAction(SQLColumn importedKeyColumn) {
 		if (getImportedKeyColumn() == importedKeyColumn) return;
 		try {
-			startCompoundEdit();
+			begin("Setting imported key column");
 			setImportedKeyColumn(importedKeyColumn);
 			if (importedKeyColumn != null) {
 				setActionType(MergeActionType.NA);
 			} else if (!isInPrimaryKey()) {
 				setActionType(MergeActionType.USE_MASTER_VALUE);
 			}
-		} finally {
-			endCompoundEdit();
+			commit();
+		} catch(RuntimeException e) {
+			rollback(e.getMessage());
+			throw e;
 		}
 	}
 
+	@Accessor
 	public String getUpdateStatement() {
 		return updateStatement;
 	}
 
-
+	@Mutator
 	public void setUpdateStatement(String updateStatement) {
 		String oldValue = this.getUpdateStatement();
 		this.updateStatement = updateStatement;
-		getEventSupport().firePropertyChange("updateStatement", oldValue, this.updateStatement);
+		firePropertyChange("updateStatement", oldValue, this.updateStatement);
+	}
+	
+	@Accessor
+	public ColumnMergeRulesCachableColumn getCachedColumn() {
+		return cachedColumn;
+	}
+	
+	@Accessor
+	public ColumnMergeRulesImportedCachableColumn getImportedCachedColumn() {
+		return importedCachedColumn;
 	}
 }

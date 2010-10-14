@@ -20,18 +20,43 @@
 
 package ca.sqlpower.matchmaker;
 
-public class MergeSettingsTest extends MatchMakerTestCase {
+import ca.sqlpower.object.SPObject;
+
+public class MergeSettingsTest extends MatchMakerTestCase<MergeSettings> {
+
+	public MergeSettingsTest(String name) {
+		super(name);
+	}
 
 	MergeSettings ms;
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		ms = new MergeSettings();
+		Project project = (Project) createNewValueMaker(
+				getRootObject(), null).makeNewValue(Project.class, null, "Parent project");
+		ms = project.getMergeSettings();
 	}
 
 	@Override
-	protected MatchMakerObject getTarget() {
+	protected MergeSettings getTarget() {
 		return ms;
+	}
+
+	@Override
+	protected Class<? extends SPObject> getChildClassType() {
+		return null;
+	}
+
+	@Override
+	public SPObject getSPObjectUnderTest() {
+		return ms;
+	}
+	
+	@Override
+	public void testPersisterCreatesNewObjects() throws Exception {
+		//Since this class is only ever added as a final object to a project
+		//we cannot test if it is correctly added through an add child method
+		//as it is not allowed.
 	}
 
 }

@@ -111,7 +111,7 @@ public class AddressCorrectionEngine extends AbstractEngine {
 			logger.addAppender(fileAppender);
 
 			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
-			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
+			for (MungeProcess mp: getProject().getChildren(MungeProcess.class)) {
 				if (mp.getActive()) {
 					mungeProcesses.add(mp);
 				}

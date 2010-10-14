@@ -20,6 +20,15 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -32,19 +41,19 @@ import java.math.BigDecimal;
  */
 public class NumberConstantMungeStep extends AbstractMungeStep {
 
+	@SuppressWarnings("unchecked")
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
+				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	
     /**
      * The value this step should provide on its output.
      */
-    public static final String VALUE_PARAMETER_NAME = "value";
+	private BigDecimal value;
     
-    /**
-     * The value to set if the step is to return null
-     */
-    public static final String RETURN_NULL = "return null";
-    
+    @Constructor
     public NumberConstantMungeStep() {
         super("Number Constant", false);
-        setParameter(RETURN_NULL, "False");
         addChild(new MungeStepOutput<BigDecimal>("Value", BigDecimal.class));
     }
     
@@ -54,23 +63,21 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
         return Boolean.TRUE;
     }
     
+    @Mutator
     public void setValue(BigDecimal newValue) {
-        setParameter(VALUE_PARAMETER_NAME, newValue.toPlainString());
+    	BigDecimal oldValue = value;
+    	value = newValue;
+    	firePropertyChange("value", oldValue, newValue);
     }
     
+    @Accessor
     public BigDecimal getValue() {
-    	if (!isReturningNull()) {
-    		return new BigDecimal(getParameter(VALUE_PARAMETER_NAME));
-    	} else {
-    		return null;
-    	}
+    	return value;
     }
-    
-    public boolean isReturningNull() {
-    	return getBooleanParameter(RETURN_NULL).booleanValue();
-    }
-    
-    public void setReturningNull(boolean b) {
-    	setParameter(RETURN_NULL, String.valueOf(b));
+
+    @Override
+    protected void copyPropertiesForDuplicate(MungeStep copy) {
+    	NumberConstantMungeStep step = (NumberConstantMungeStep) copy;
+    	step.setValue(getValue());
     }
 }

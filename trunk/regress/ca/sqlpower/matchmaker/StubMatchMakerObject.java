@@ -26,9 +26,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.object.AbstractSPObject;
+import ca.sqlpower.object.SPObject;
 
-public class StubMatchMakerObject implements MatchMakerObject {
+public class StubMatchMakerObject extends AbstractSPObject implements MatchMakerObject {
     private static final Logger logger = Logger.getLogger(StubMatchMakerObject.class);
     List<MatchMakerObject> children = new ArrayList<MatchMakerObject>();
     String name;
@@ -44,11 +45,6 @@ public class StubMatchMakerObject implements MatchMakerObject {
     
     public void addChild(MatchMakerObject child){       
         children.add(child);
-    }
-
-    public void addMatchMakerListener(MatchMakerListener l) {
-        logger.debug("Stub call: StubMatchMakerObject.addMatchMakerListener()");
-
     }
 
     public boolean allowsChildren() {
@@ -80,11 +76,6 @@ public class StubMatchMakerObject implements MatchMakerObject {
 
     public void removeChild(MatchMakerObject child) {
         logger.debug("Stub call: StubMatchMakerObject.removeChild()");
-
-    }
-
-    public void removeMatchMakerListener(MatchMakerListener l) {
-        logger.debug("Stub call: StubMatchMakerObject.removeMatchMakerListener()");
 
     }
 
@@ -126,7 +117,7 @@ public class StubMatchMakerObject implements MatchMakerObject {
         this.allowChildren = allowChildren;
     }
 
-	public MatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession s) {
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
 		logger.debug("Stub call: StubMatchMakerObject.duplicate()");
 		return null;
 	}
@@ -159,5 +150,31 @@ public class StubMatchMakerObject implements MatchMakerObject {
 
 	public void startCompoundEdit() {
 	}
+
+	@Override
+	public void removeDependency(SPObject dependency) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: SPObject.removeDependency()");
+		
+	}
+
+	@Override
+	public List<? extends SPObject> getDependencies() {
+		return null;
+	}
+
+	@Override
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return null;
+	}
+
+	@Override
+	public void moveChild(int from, int to, Class<? extends MatchMakerObject> classType) {
+		}
+
+	@Override
+	protected boolean removeChildImpl(SPObject child) {
+		return false;
+		}
 
 }

@@ -67,9 +67,9 @@ public class MatchMakerSwingSessionTest extends TestCase {
         	
             @Override
             public FolderParent getCurrentFolderParent() {
-            	folders = new FolderParent(this);
-                folders.getChildren().add(folder1);
-                folders.getChildren().add(folder2);
+            	folders = new FolderParent();
+                folders.addChild(folder1);
+                folders.addChild(folder2);
                 return folders;
             }
             
@@ -83,7 +83,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
            
             @Override
             public PlFolder findFolder(String foldername) {
-                for (PlFolder folder : getCurrentFolderParent().getChildren()){
+                for (PlFolder folder : getCurrentFolderParent().getChildren(PlFolder.class)){
                     if (folder.getName().equals(foldername)) return folder;
                 }
                 return null;
@@ -91,7 +91,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
             
             @Override
             public TranslateGroupParent getTranslations() {
-                TranslateGroupParent tgp = new TranslateGroupParent(this);
+                TranslateGroupParent tgp = new TranslateGroupParent();
                 return tgp;
             }
             
