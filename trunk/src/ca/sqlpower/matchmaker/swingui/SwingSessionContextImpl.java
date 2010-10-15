@@ -67,6 +67,7 @@ import ca.sqlpower.swingui.db.DataSourceDialogFactory;
 import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
 import ca.sqlpower.swingui.db.DatabaseConnectionManager;
 import ca.sqlpower.swingui.db.DefaultDataSourceTypeDialogFactory;
+import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.ExceptionReport;
@@ -114,6 +115,12 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * share the same set of database connections).
      */
     private final DatabaseConnectionManager dbConnectionManager;
+
+    /**
+     * This is a lifecycle listener that will be notified of each session created and
+     * destroyed event. This listener is external to this context's implementation.
+     */
+    private SessionLifecycleListener<MatchMakerSession> externalLifecycleListener;
 
     /**
      * This factory just passes the request through to the {@link MMSUtils#showDbcsDialog(Window, SPDataSource, Runnable)}
@@ -209,6 +216,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     	getSessions().add(session);
         session.addSessionLifecycleListener(getSessionLifecycleListener());
+        session.addSessionLifecycleListener(getExternalLifecycleListener());
+        getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
         return session;
     }
 
@@ -217,6 +226,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     		MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createDefaultSession());
     		getSessions().add(session);
     		session.addSessionLifecycleListener(getSessionLifecycleListener());
+    		session.addSessionLifecycleListener(getExternalLifecycleListener());
+    		getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
     		return session;
         } catch (Exception ex) {
             throw new RuntimeException(
@@ -334,6 +345,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
 		getSessions().add(session);
 		session.addSessionLifecycleListener(getSessionLifecycleListener());
+		session.addSessionLifecycleListener(getExternalLifecycleListener());
+		getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
 		session.showGUI();
 	}
 
@@ -594,5 +607,15 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
 	public void removePreferenceChangeListener(PreferenceChangeListener l) {
 		context.removePreferenceChangeListener(l);
+	}
+
+	public void setExternalLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> externalLifecycleListener) {
+			this.externalLifecycleListener = externalLifecycleListener;
+		
+	}
+
+	public SessionLifecycleListener<MatchMakerSession> getExternalLifecycleListener() {
+		return externalLifecycleListener;
 	}
 }
