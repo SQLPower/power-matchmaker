@@ -80,7 +80,7 @@ public class PlFolder extends AbstractMatchMakerObject {
      */
     @Constructor
 	public PlFolder() {
-		this("Some PlFolder");
+		this("Name of your folder");
 	}
 
 	/**
