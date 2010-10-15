@@ -300,11 +300,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	    }
 	};
 
-	private Action newDeDupeAction = null;
+	private Action newDeDupeAction = new NewProjectAction(this, "New De-duping Project", Project.ProjectMode.FIND_DUPES);
 //	TODO: Implement Cross-referencing projects first before re-enabling this action
-//	private Action newXrefAction = null;
-	private Action newCleanseAction = null;
-	private Action newAddressAction = null;
+//	private Action newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
+	private Action newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
+	private Action newAddressAction = new NewProjectAction(this, "New Address Correction Project", Project.ProjectMode.ADDRESS_CORRECTION);;
 	
 	private Action deleteProjectAction = new DeleteProjectAction(this);
 
@@ -493,12 +493,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-		newDeDupeAction = new NewProjectAction(this, "New De-duping Project", Project.ProjectMode.FIND_DUPES);
-//		TODO: Implement Cross-referencing projects first before re-enabling this action
-//		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
-		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
-		newAddressAction = new NewProjectAction(this, "New Address Correction Project", Project.ProjectMode.ADDRESS_CORRECTION);
-		
 		frame.setJMenuBar(menuBar);
 
 		Container projectBarPane = frame.getContentPane();
