@@ -216,8 +216,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     	getSessions().add(session);
         session.addSessionLifecycleListener(getSessionLifecycleListener());
-        session.addSessionLifecycleListener(getExternalLifecycleListener());
-        getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
+        if (getExternalLifecycleListener() != null) {
+        	session.addSessionLifecycleListener(getExternalLifecycleListener());
+        	getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
+        }
         return session;
     }
 
@@ -226,8 +228,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     		MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createDefaultSession());
     		getSessions().add(session);
     		session.addSessionLifecycleListener(getSessionLifecycleListener());
-    		session.addSessionLifecycleListener(getExternalLifecycleListener());
-    		getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
+    		if (getExternalLifecycleListener() != null) {
+    			session.addSessionLifecycleListener(getExternalLifecycleListener());
+    			getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
+    		}
     		return session;
         } catch (Exception ex) {
             throw new RuntimeException(
@@ -345,8 +349,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
 		getSessions().add(session);
 		session.addSessionLifecycleListener(getSessionLifecycleListener());
-		session.addSessionLifecycleListener(getExternalLifecycleListener());
-		getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
+		if (getExternalLifecycleListener() != null) {
+			session.addSessionLifecycleListener(getExternalLifecycleListener());
+			getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
+		}
 		session.showGUI();
 	}
 
