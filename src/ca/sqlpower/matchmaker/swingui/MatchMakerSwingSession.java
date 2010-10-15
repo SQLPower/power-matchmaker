@@ -470,6 +470,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         
         SQLPowerUtils.listenToHierarchy(getCurrentFolderParent(), removeEditorListener);
         SQLPowerUtils.listenToHierarchy(getTranslateGroupParent(), removeEditorListener);
+        
+        buildMenuBar();
 	}
 
 	public void showGUI() {
@@ -497,7 +499,45 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
 		newAddressAction = new NewProjectAction(this, "New Address Correction Project", Project.ProjectMode.ADDRESS_CORRECTION);
 		
-        JMenuBar menuBar = new JMenuBar();
+		frame.setJMenuBar(menuBar);
+
+		Container projectBarPane = frame.getContentPane();
+		projectBarPane.setLayout(new BorderLayout());
+
+		tree = new JTree(new MatchMakerTreeModel(getRootNode(), this));
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
+		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
+		tree.addTreeSelectionListener(matchMakerTreeMouseAndSelectionListener);
+		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
+		tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
+
+        JScrollPane treePane = new JScrollPane(SPSUtils.getBrandedTreePanel(tree));
+        treePane.setMinimumSize(new Dimension(5,5));
+        treePane.setPreferredSize(new Dimension(1,1));
+		splitPane.setLeftComponent(treePane);
+		setCurrentEditorComponent(null);
+
+		JPanel cp = new JPanel(new BorderLayout());
+		cp.add(splitPane, BorderLayout.CENTER);
+		MemoryMonitor memoryMonitor = new MemoryMonitor();
+		memoryMonitor.start();
+		
+		JPanel statusBarPanel = new JPanel(new BorderLayout());
+		JLabel memoryLabel = memoryMonitor.getLabel();
+		memoryLabel.setBorder(new EmptyBorder(0, 20, 0, 20));
+		statusBarPanel.add(statusLabel, BorderLayout.CENTER);
+		statusBarPanel.add(memoryLabel, BorderLayout.EAST);
+        cp.add(statusBarPanel, BorderLayout.SOUTH);
+		projectBarPane.add(cp, BorderLayout.CENTER);
+		
+		frame.setBounds(sessionContext.getFrameBounds());
+		frame.addWindowListener(new MatchMakerFrameWindowListener());
+	}
+
+	private void buildMenuBar() {
+		menuBar = new JMenuBar();
 
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
@@ -583,42 +623,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         helpMenu.add(supportOnTheWebAction);
         
         menuBar.add(helpMenu);
-		
-		frame.setJMenuBar(menuBar);
-
-		Container projectBarPane = frame.getContentPane();
-		projectBarPane.setLayout(new BorderLayout());
-
-		tree = new JTree(new MatchMakerTreeModel(getRootNode(), this));
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
-		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
-		tree.addTreeSelectionListener(matchMakerTreeMouseAndSelectionListener);
-		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
-		tree.setRootVisible(false);
-        tree.setShowsRootHandles(true);
-
-        JScrollPane treePane = new JScrollPane(SPSUtils.getBrandedTreePanel(tree));
-        treePane.setMinimumSize(new Dimension(5,5));
-        treePane.setPreferredSize(new Dimension(1,1));
-		splitPane.setLeftComponent(treePane);
-		setCurrentEditorComponent(null);
-
-		JPanel cp = new JPanel(new BorderLayout());
-		cp.add(splitPane, BorderLayout.CENTER);
-		MemoryMonitor memoryMonitor = new MemoryMonitor();
-		memoryMonitor.start();
-		
-		JPanel statusBarPanel = new JPanel(new BorderLayout());
-		JLabel memoryLabel = memoryMonitor.getLabel();
-		memoryLabel.setBorder(new EmptyBorder(0, 20, 0, 20));
-		statusBarPanel.add(statusLabel, BorderLayout.CENTER);
-		statusBarPanel.add(memoryLabel, BorderLayout.EAST);
-        cp.add(statusBarPanel, BorderLayout.SOUTH);
-		projectBarPane.add(cp, BorderLayout.CENTER);
-		
-		frame.setBounds(sessionContext.getFrameBounds());
-		frame.addWindowListener(new MatchMakerFrameWindowListener());
 	}
     
 	/**
@@ -1401,6 +1405,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	protected UndoAction undoAction = new UndoAction();
 	protected RedoAction redoAction = new RedoAction();
 	protected UndoManager undo;
+
+	private JMenuBar menuBar;
 	
 	/**
 	UndoAction creates an undo menu item with behaviour
@@ -1639,5 +1645,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: MatchMakerSession.getAppUser()");
 		return null;
+	}
+	
+	/**
+	 * Returns the menu bar associated with this swing session.
+	 */
+	public JMenuBar getMenuBar() {
+		return menuBar;
 	}
 }
