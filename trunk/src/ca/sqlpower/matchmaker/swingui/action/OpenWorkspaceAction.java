@@ -20,8 +20,6 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -29,10 +27,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.dao.SPPersistenceException;
-import ca.sqlpower.dao.XMLPersisterReader;
-import ca.sqlpower.matchmaker.enterprise.MatchMakerPersisterSuperConverter;
-import ca.sqlpower.matchmaker.enterprise.MatchMakerSessionPersister;
+import ca.sqlpower.matchmaker.dao.OpenSaveHandler;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 /**
@@ -61,31 +56,17 @@ public class OpenWorkspaceAction extends AbstractAction {
 		JFileChooser openFileChooser = new JFileChooser();
 		FileNameExtensionFilter dqextension = new FileNameExtensionFilter(
 				"DQguru XML Export and Backup", extensionsWithBackups);
+		openFileChooser.setAcceptAllFileFilterUsed(false);
 		openFileChooser.addChoosableFileFilter(dqextension);
 		int chosenReturnType = openFileChooser.showOpenDialog(session.getFrame());
 		if (chosenReturnType != JFileChooser.APPROVE_OPTION) return;
 		
 		MatchMakerSwingSession newSession = session.getContext().createDefaultSession();
 		
-		FileReader reader;
-		try {
-			reader = new FileReader(openFileChooser.getSelectedFile());
-		} catch (FileNotFoundException ex) {
-			throw new RuntimeException(ex);
-		}
-		MatchMakerPersisterSuperConverter converter = new MatchMakerPersisterSuperConverter(session.getContext().getPlDotIni(), newSession.getRootNode());
-		MatchMakerSessionPersister mmPersister = new MatchMakerSessionPersister("XML Import Persister", newSession.getRootNode(), converter);
-		mmPersister.setWorkspaceContainer(newSession);
-		
-		XMLPersisterReader xmlReader = new XMLPersisterReader(reader, mmPersister, newSession.getUpgradePersisterManager(), "matchmaker-project");
-		
-		try {
-			xmlReader.read();
-		} catch (SPPersistenceException ex) {
-			throw new RuntimeException(ex);
-		}
+		OpenSaveHandler.doOpen(openFileChooser.getSelectedFile(), newSession);
 		
 		newSession.showGUI();
+		newSession.setSavePoint(openFileChooser.getSelectedFile());
 	}
 
 }
