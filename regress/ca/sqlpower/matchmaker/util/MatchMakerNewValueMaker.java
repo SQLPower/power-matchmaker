@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import ca.sqlpower.enterprise.client.Group;
+import ca.sqlpower.enterprise.client.User;
 import ca.sqlpower.matchmaker.CachableTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -32,16 +34,16 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
-import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
-import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableIndex;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
+import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
@@ -165,6 +167,18 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         	getRootObject().addChild(parent, 0);
         	parent.setSession(new TestingMatchMakerSession(false));
         	return parent;
+        } else if (valueType == User.class) {
+        	if (oldVal == null) {
+        		return new User("user", "12345");
+        	} else {
+        		return new User("new_" + ((User) oldVal).getUsername(), "12345");
+        	}
+        } else if (valueType == Group.class) {
+            	if (oldVal == null) {
+            		return new Group("testgroup");
+            	} else {
+            		return new Group("new_" + ((Group) oldVal).getName());
+            	}
         } else if (valueType == Class.class) {
         	if (oldVal == String.class) {
         		return Boolean.class;
