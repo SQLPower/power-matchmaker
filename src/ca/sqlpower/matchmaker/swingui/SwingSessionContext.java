@@ -25,9 +25,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import ca.sqlpower.enterprise.client.ProjectLocation;
+import ca.sqlpower.enterprise.client.SPServerInfo;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.enterprise.MatchMakerClientSideSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -129,6 +132,21 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     
     @Override
     public MatchMakerSwingSession createDefaultSession();
+
+    /**
+	 * This method will load the system/security session from the server. It
+	 * also hooks up an updater to retrieve changes to the system workspace on
+	 * the server. If a system session already exists for the given server info
+	 * another session will not be created but the existing one will be
+	 * returned.
+	 */
+	MatchMakerClientSideSession createSecuritySession(SPServerInfo serverInfo);
+
+	/**
+	 * Creates a session that is connected to the server project defined by the
+	 * given project location.
+	 */
+	MatchMakerSwingSession createServerSession(ProjectLocation projectLocation);
     
     
 }

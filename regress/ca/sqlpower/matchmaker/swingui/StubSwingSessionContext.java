@@ -29,7 +29,10 @@ import java.util.prefs.PreferenceChangeListener;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.enterprise.client.ProjectLocation;
+import ca.sqlpower.enterprise.client.SPServerInfo;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.enterprise.MatchMakerClientSideSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -192,5 +195,21 @@ public class StubSwingSessionContext implements SwingSessionContext {
 	public void removePreferenceChangeListener(PreferenceChangeListener l) {
 		logger.debug("Stub call: MatchMakerSessionContext.removePreferenceChangeListener()");
 		
+	}
+	
+	@Override
+	public MatchMakerClientSideSession createSecuritySession(
+			SPServerInfo serverInfo) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubSwingSessionContext.createSecuritySession()");
+		return null;
+	}
+	
+	@Override
+	public MatchMakerSwingSession createServerSession(
+			ProjectLocation projectLocation) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubSwingSessionContext.createServerSession()");
+		return null;
 	}
 }
