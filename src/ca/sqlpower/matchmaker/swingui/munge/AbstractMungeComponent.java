@@ -521,33 +521,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Resets the location and expandedness to the values in the step.
 	 */
 	private void setDefaults() {
-		setExpanded(isExpanded());
-		configureXFromMMO();
-		configureYFromMMO();
+		setExpanded(step.isExpanded());
+		if (step.getPosition() != null) {
+			setLocation(step.getPosition());
+		}
 	}
 	
-	private void configureXFromMMO() {
-		setLocation(getXFromMMO(), getY());
-	}
-	
-	private void configureYFromMMO() {
-		setLocation(getX(), getYFromMMO());
-	}
-
-
-	
-	/**
-	 * Set the x y parameter to the current value if needed.
-	 */
-	public void applyChanges() {
-		MungeStep step = getStep();
-		if (hasUnsavedChanges()) step.setPosition(new Point(getX(), getY()));
-	}
-	
-	public boolean hasUnsavedChanges() {
-		return getXFromMMO() != getX() || getYFromMMO() != getY();
-	}
-
 	/**
 	 * Walks the tree of components rooted at c, setting all of the components
 	 * that can and should be flagged as non-opaque as such.
@@ -657,18 +636,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private boolean isExpanded() {
 		return step.isExpanded();
-	}
-	
-	/**
-	 * note that this is not the true position value, it is the
-	 * positions stored in the MMO, which is not synchronized 
-	 * until a mouse release event is fired.
-	 */
-	private int getXFromMMO() {
-		return step.getPosition().x;
-	}
-	private int getYFromMMO() {
-		return step.getPosition().y;
 	}
 	
 	@Override
@@ -847,7 +814,20 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	/**
-	 * A Set of listeners that detect changes in the MungeSteps and redraws them
+	 * Set the x y parameter to the current value if needed.
+	 */
+	public void applyChanges() {
+		//override this method to apply changes that may not have been saved to the model.
+	}
+	
+	public boolean hasUnsavedChanges() {
+		return false;
+	}
+
+	/**
+	 * A Set of listeners that detect changes in the MungeSteps and redraws
+	 * them. XXX This listener does not get removed when the munge pen goes away
+	 * and cleans up the munge components.
 	 */
 	private class StepEventHandler extends AbstractSPListener {
 
@@ -856,9 +836,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			if (evt.getPropertyName().equals("expanded")) {
 				setExpanded((Boolean)evt.getNewValue());
 			} else if (evt.getPropertyName().equals("position")) {
-				configureXFromMMO();
-				configureYFromMMO();
-				
+				setLocation((Point) evt.getNewValue());
 			} else if (evt.getPropertyName().equals("addInputs")){
 				repaint();
 			} else if (!evt.getPropertyName().equals("inputs")

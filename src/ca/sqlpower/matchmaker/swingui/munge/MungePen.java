@@ -83,6 +83,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.LabelPane;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.matchmaker.swingui.action.AddLabelAction;
+import ca.sqlpower.object.AbstractSPListener;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -220,6 +221,12 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
      * Previewer for the process in this editor.
      */
     private final MungePreviewPanel preview;
+
+	/**
+	 * This listener will add new munge components to the munge pen when new
+	 * munge processes are added to the object tree.
+	 */
+	private MungePenMungeProcessListener mungeProcessListener;
 	
 	/**
 	 * Creates a new empty mungepen.
@@ -252,7 +259,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				}
 			}
 		});
-		process.addSPListener(new MungePenMungeProcessListener());
+		mungeProcessListener = new MungePenMungeProcessListener();
+		process.addSPListener(mungeProcessListener);
 		
 		setDropTarget(new DropTarget(this,this));
 		
@@ -311,6 +319,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 */
 	public void cleanup() {
 		preview.cleanup();
+		process.removeSPListener(mungeProcessListener);
 	}
 	
 	/**
@@ -790,10 +799,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
     ///////////////////////////Listener for MatchMaker Rule Set /////////////////////////////////
 
 	/**
-	 * The class for handling all of the actions fired by the MungeProcess. This takes care of adding and removing 
-	 * MungeCompoents that are no longer in the process. 
+	 * The class for handling all of the actions fired by the MungeProcess. This
+	 * takes care of adding and removing MungeCompoents that are no longer in
+	 * the process.
 	 */
-    private class MungePenMungeProcessListener implements SPListener {
+    private class MungePenMungeProcessListener extends AbstractSPListener {
 		
     	@Override
 		public void childAdded(SPChildEvent e) {
@@ -840,25 +850,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			repaint();
 		}
 
-		@Override
-		public void transactionStarted(TransactionEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void transactionEnded(TransactionEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void transactionRollback(TransactionEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void propertyChanged(PropertyChangeEvent evt) {
-			//no-op
-		}
     }
 	///////////////////////////////////// Listener for the MungeStep /////////////////////////
     
