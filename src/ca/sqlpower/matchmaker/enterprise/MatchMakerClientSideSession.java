@@ -25,8 +25,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,7 @@ import ca.sqlpower.dao.SPPersisterListener;
 import ca.sqlpower.dao.json.SPJSONMessageDecoder;
 import ca.sqlpower.dao.json.SPJSONPersister;
 import ca.sqlpower.dao.session.SessionPersisterSuperConverter;
+import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.diff.DiffChunk;
 import ca.sqlpower.diff.DiffInfo;
 import ca.sqlpower.diff.SimpleDiffChunkJSONConverter;
@@ -69,8 +72,16 @@ import ca.sqlpower.enterprise.TransactionInformation;
 import ca.sqlpower.enterprise.client.ProjectLocation;
 import ca.sqlpower.enterprise.client.SPServerInfo;
 import ca.sqlpower.enterprise.client.User;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.WarningListener;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.object.AbstractPoolingSPListener;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -78,19 +89,19 @@ import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SpecificDataSourceCollection;
+import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
-import ca.sqlpower.util.RunnableDispatcher;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.util.UserPrompter.UserPromptOptions;
 import ca.sqlpower.util.UserPrompter.UserPromptResponse;
 import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.UserPrompterFactory.UserPromptType;
-import ca.sqlpower.util.WorkspaceContainer;
 
-public class MatchMakerClientSideSession implements WorkspaceContainer, RunnableDispatcher {
+public class MatchMakerClientSideSession implements MatchMakerSession {
 
 	private static Logger logger = Logger.getLogger(MatchMakerClientSideSession.class);
 	
@@ -695,5 +706,189 @@ public class MatchMakerClientSideSession implements WorkspaceContainer, Runnable
 	@Override
 	public SPObject getWorkspace() {
 		return delegateSession.getWorkspace();
+	}
+
+	@Override
+	public MatchMakerSessionContext getContext() {
+		return delegateSession.getContext();
+	}
+
+	@Override
+	public SQLDatabase getDatabase() {
+		return delegateSession.getDatabase();
+	}
+
+	@Override
+	public String getAppUser() {
+		return delegateSession.getAppUser();
+	}
+
+	@Override
+	public String getAppUserEmail() {
+		return delegateSession.getAppUserEmail();
+	}
+
+	@Override
+	public String getDBUser() {
+		return delegateSession.getDBUser();
+	}
+
+	@Override
+	public Date getSessionStartTime() {
+		return delegateSession.getSessionStartTime();
+	}
+
+	@Override
+	public UserPrompterFactory createUserPrompterFactory() {
+		return delegateSession.createUserPrompterFactory();
+	}
+
+	@Override
+	public PlFolder findFolder(String foldername) {
+		return delegateSession.findFolder(foldername);
+	}
+
+	@Override
+	public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(
+			Class<T> businessClass) {
+		return delegateSession.getDAO(businessClass);
+	}
+
+	@Override
+	public Connection getConnection() {
+		return delegateSession.getConnection();
+	}
+
+	@Override
+	public boolean isThisProjectNameAcceptable(String name) {
+		return delegateSession.isThisProjectNameAcceptable(name);
+	}
+
+	@Override
+	public long countProjectByName(String name) {
+		return delegateSession.countProjectByName(name);
+	}
+
+	@Override
+	public Project getProjectByName(String name) {
+		return delegateSession.getProjectByName(name);
+	}
+
+	@Override
+	public String createNewUniqueName() {
+		return delegateSession.createNewUniqueName();
+	}
+
+	@Override
+	public void handleWarning(String message) {
+		delegateSession.handleWarning(message);
+	}
+
+	@Override
+	public void addWarningListener(WarningListener l) {
+		delegateSession.addWarningListener(l);
+	}
+
+	@Override
+	public void removeWarningListener(WarningListener l) {
+		delegateSession.removeWarningListener(l);
+	}
+
+	@Override
+	public MMRootNode getRootNode() {
+		return delegateSession.getRootNode();
+	}
+
+	@Override
+	public TranslateGroupParent getTranslations() {
+		return delegateSession.getTranslations();
+	}
+
+	@Override
+	public FolderParent getBackupFolderParent() {
+		return delegateSession.getBackupFolderParent();
+	}
+
+	@Override
+	public FolderParent getCurrentFolderParent() {
+		return delegateSession.getCurrentFolderParent();
+	}
+
+	@Override
+	public SQLTable findPhysicalTableByName(String catalog, String schema,
+			String tableName) throws SQLObjectException {
+		return delegateSession.findPhysicalTableByName(catalog, schema, tableName);
+	}
+
+	@Override
+	public SQLTable findPhysicalTableByName(String spDataSourceName,
+			String catalog, String schema, String tableName)
+			throws SQLObjectException {
+		return delegateSession.findPhysicalTableByName(spDataSourceName, catalog, schema, tableName);
+	}
+
+	@Override
+	public boolean tableExists(String catalog, String schema, String tableName)
+			throws SQLObjectException {
+		return delegateSession.tableExists(catalog, schema, tableName);
+	}
+
+	@Override
+	public boolean tableExists(String spDataSourceName, String catalog,
+			String schema, String tableName) throws SQLObjectException {
+		return delegateSession.tableExists(spDataSourceName, catalog, schema, tableName);
+	}
+
+	@Override
+	public boolean tableExists(SQLTable table) throws SQLObjectException {
+		return delegateSession.tableExists(table);
+	}
+
+	@Override
+	public boolean canSelectTable(SQLTable table) {
+		return delegateSession.canSelectTable(table);
+	}
+
+	@Override
+	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+		return delegateSession.getDatabase(dataSource);
+	}
+
+	@Override
+	public void addSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		delegateSession.addSessionLifecycleListener(listener);
+	}
+
+	@Override
+	public void removeSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		delegateSession.removeSessionLifecycleListener(listener);
+		
+	}
+
+	@Override
+	public void addStatusMessage(String message) {
+		delegateSession.addStatusMessage(message);
+	}
+
+	@Override
+	public void removeStatusMessage() {
+		delegateSession.removeStatusMessage();
+	}
+
+	@Override
+	public List<UserDefinedSQLType> getSQLTypes() {
+		return delegateSession.getSQLTypes();
+	}
+
+	@Override
+	public UserDefinedSQLType getSQLType(int sqlType) {
+		return delegateSession.getSQLType(sqlType);
+	}
+
+	@Override
+	public UpgradePersisterManager getUpgradePersisterManager() {
+		return delegateSession.getUpgradePersisterManager();
 	}
 }
