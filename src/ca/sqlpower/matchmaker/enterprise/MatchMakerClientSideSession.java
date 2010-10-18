@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.enterprise;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -58,6 +59,7 @@ import ca.sqlpower.dao.session.SessionPersisterSuperConverter;
 import ca.sqlpower.diff.DiffChunk;
 import ca.sqlpower.diff.DiffInfo;
 import ca.sqlpower.diff.SimpleDiffChunkJSONConverter;
+import ca.sqlpower.enterprise.AbstractNetworkConflictResolver;
 import ca.sqlpower.enterprise.ClientSideSessionUtils;
 import ca.sqlpower.enterprise.DataSourceCollectionUpdater;
 import ca.sqlpower.enterprise.JSONMessage;
@@ -133,7 +135,7 @@ public class MatchMakerClientSideSession implements WorkspaceContainer, Runnable
 	 * server changes to the {@link #sessionPersister}.
 	 */
 	private final SPJSONPersister jsonPersister;
-	private final NetworkConflictResolver updater;
+	private final MatchMakerNetworkConflictResolver updater;
 	private final SPJSONMessageDecoder jsonMessageDecoder;
 	private final DataSourceCollectionUpdater dataSourceCollectionUpdater;
 	
@@ -173,22 +175,14 @@ public class MatchMakerClientSideSession implements WorkspaceContainer, Runnable
         return ClientSideSessionUtils.createNewServerSession(serviceInfo,
                 name,
                 cookieStore,
-                session.createUserPrompterFactory().createUserPrompter("You do not have sufficient privileges to create a new workspace.", 
-                        UserPromptType.MESSAGE, 
-                        UserPromptOptions.OK, 
-                        UserPromptResponse.OK, 
-                        "OK", "OK"));
+                session.createUserPrompterFactory());
     }
 	
 	public static void deleteServerWorkspace(ProjectLocation projectLocation, MatchMakerSession session) throws URISyntaxException, ClientProtocolException, IOException {
     	
 	    ClientSideSessionUtils.deleteServerWorkspace(projectLocation,
 	            cookieStore,
-	            session.createUserPrompterFactory().createUserPrompter("You do not have sufficient privileges to delete the selected workspace.", 
-                       UserPromptType.MESSAGE, 
-                       UserPromptOptions.OK, 
-                       UserPromptResponse.OK, 
-                       "OK", "OK"));
+	            session.createUserPrompterFactory());
     }
     
     public static void persistRevisionFromServer(ProjectLocation projectLocation, 
@@ -215,6 +209,11 @@ public class MatchMakerClientSideSession implements WorkspaceContainer, Runnable
     throws IOException, URISyntaxException, JSONException {
         return ClientSideSessionUtils.revertServerWorkspace(projectLocation, revisionNo, cookieStore);
     }
+
+	public static ProjectLocation uploadProject(SPServerInfo serviceInfo, String name, File project, UserPrompterFactory session) 
+    throws URISyntaxException, ClientProtocolException, IOException, JSONException {
+	    return ClientSideSessionUtils.uploadProject(serviceInfo, name, project, session, cookieStore);
+	}
     
     public MatchMakerClientSideSession(String name,
 			ProjectLocation projectLocation,
@@ -248,7 +247,7 @@ public class MatchMakerClientSideSession implements WorkspaceContainer, Runnable
 		
 		jsonMessageDecoder = new SPJSONMessageDecoder(sessionPersister);
 		
-		updater = new NetworkConflictResolver(
+		updater = new MatchMakerNetworkConflictResolver(
 		        projectLocation, 
 		        jsonMessageDecoder, 
 		        ClientSideSessionUtils.createHttpClient(projectLocation.getServiceInfo(), cookieStore), 
@@ -331,7 +330,7 @@ public class MatchMakerClientSideSession implements WorkspaceContainer, Runnable
         return updater.getRevision();
     }
     
-    public NetworkConflictResolver getUpdater() {
+    public AbstractNetworkConflictResolver getUpdater() {
         return updater;
     }
 	
