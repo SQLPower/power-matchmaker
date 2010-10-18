@@ -396,7 +396,8 @@ public class Project extends AbstractMatchMakerObject {
 		if (type == ProjectMode.FIND_DUPES){
 			t = buildDedupeResultTable(oldResultTable, si);
 		} else if (getType() == ProjectMode.ADDRESS_CORRECTION) {
-			t = AddressPool.buildAddressCorrectionResultTable(oldResultTable, si);
+			
+			t = AddressPool.buildAddressCorrectionResultTable(oldResultTable, si, getSession());
 		} else {
 			throw new IllegalStateException("Building result table on a project type that does not use result tables! " +
 					"Project Name: " + this.getName() + " Project Type: " + this.getType());
@@ -585,7 +586,7 @@ public class Project extends AbstractMatchMakerObject {
 		if (type == ProjectMode.FIND_DUPES) {
 			builtResultTable = buildDedupeResultTable(resultTable, si);
 		} else if (type == ProjectMode.ADDRESS_CORRECTION){
-			builtResultTable = AddressPool.buildAddressCorrectionResultTable(resultTable, si);
+			builtResultTable = AddressPool.buildAddressCorrectionResultTable(resultTable, si, getSession());
 		} else {
 			throw new IllegalStateException("Checking result table on a project type that does not use result tables! " +
 					"Project Name: " + this.getName() + " Project Type: " + this.getType());
