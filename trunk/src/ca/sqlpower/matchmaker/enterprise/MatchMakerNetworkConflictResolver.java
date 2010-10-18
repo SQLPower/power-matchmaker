@@ -23,13 +23,15 @@ import java.util.List;
 
 import org.apache.http.client.HttpClient;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
+import ca.sqlpower.dao.MessageSender;
 import ca.sqlpower.dao.json.SPJSONMessageDecoder;
 import ca.sqlpower.enterprise.AbstractNetworkConflictResolver;
 import ca.sqlpower.enterprise.client.ProjectLocation;
 import ca.sqlpower.util.RunnableDispatcher;
 
-public class MatchMakerNetworkConflictResolver extends AbstractNetworkConflictResolver {
+public class MatchMakerNetworkConflictResolver extends AbstractNetworkConflictResolver implements MessageSender<JSONObject> {
 
 	private static Logger logger = Logger.getLogger(AbstractNetworkConflictResolver.class);
 	
