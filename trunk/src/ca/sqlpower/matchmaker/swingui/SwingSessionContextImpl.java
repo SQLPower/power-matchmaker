@@ -42,11 +42,16 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
+import org.springframework.security.AccessDeniedException;
 
+import ca.sqlpower.enterprise.AbstractNetworkConflictResolver;
+import ca.sqlpower.enterprise.client.ProjectLocation;
+import ca.sqlpower.enterprise.client.SPServerInfo;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl;
+import ca.sqlpower.matchmaker.enterprise.MatchMakerClientSideSession;
 import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -232,6 +237,25 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     			session.addSessionLifecycleListener(getExternalLifecycleListener());
     			getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
     		}
+    		return session;
+        } catch (Exception ex) {
+            throw new RuntimeException(
+                    "Couldn't create session. See nested exception for details.", ex);
+        }
+    }
+    
+    public MatchMakerSwingSession createServerSession(ProjectLocation projectLocation) {
+    	try {
+    		MatchMakerSession coreSession = context.createDefaultSession();
+    		MatchMakerClientSideSession clientSession = new MatchMakerClientSideSession("", projectLocation, coreSession);
+    		MatchMakerSwingSession session = new MatchMakerSwingSession(this, clientSession);
+    		getSessions().add(session);
+    		session.addSessionLifecycleListener(getSessionLifecycleListener());
+    		if (getExternalLifecycleListener() != null) {
+    			session.addSessionLifecycleListener(getExternalLifecycleListener());
+    			getExternalLifecycleListener().sessionOpening(new SessionLifecycleEvent<MatchMakerSession>(session));
+    		}
+    		clientSession.startUpdaterThread();
     		return session;
         } catch (Exception ex) {
             throw new RuntimeException(
@@ -624,4 +648,58 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	public SessionLifecycleListener<MatchMakerSession> getExternalLifecycleListener() {
 		return externalLifecycleListener;
 	}
+
+	@Override
+	public MatchMakerClientSideSession createSecuritySession(final SPServerInfo serverInfo) {
+        MatchMakerClientSideSession session = null;
+        
+        if (MatchMakerClientSideSession.getSecuritySessions().get(serverInfo.getServerAddress()) == null) {
+            ProjectLocation securityLocation = new ProjectLocation("system", "system", serverInfo);
+             
+            try {
+                final MatchMakerClientSideSession newSecuritySession = 
+                	new MatchMakerClientSideSession(serverInfo.getServerAddress(), 
+                			securityLocation, context.createDefaultSession());
+            
+                newSecuritySession.getUpdater().addListener(new AbstractNetworkConflictResolver.UpdateListener() {
+                    public boolean updatePerformed(AbstractNetworkConflictResolver resolver) {return false;}
+                
+                    public boolean updateException(AbstractNetworkConflictResolver resolver, Throwable t) {
+                        if (t instanceof AccessDeniedException) return false;
+                        
+                        newSecuritySession.close();
+                        MatchMakerClientSideSession.getSecuritySessions().remove(serverInfo.getServerAddress());
+                        final String errorMessage = "Error accessing security session.";
+                        logger.error(errorMessage, t);
+                        //TODO parent this dialog
+                        SPSUtils.showExceptionDialogNoReport(null, errorMessage, t);
+                        //If you try to create a new security session here because creating the first
+                        //one failed the same error message can continue to repeat. 
+                        return true;
+                    }
+
+                    public void preUpdatePerformed(AbstractNetworkConflictResolver resolver) {
+                        //do nothing
+                    }
+                    
+                    public void workspaceDeleted() {
+                        // do nothing
+                    }
+                });
+            
+                newSecuritySession.startUpdaterThread();
+                MatchMakerClientSideSession.getSecuritySessions().put(
+                		serverInfo.getServerAddress(), newSecuritySession);
+                session = newSecuritySession;
+            } catch (AccessDeniedException e) {
+                throw e;
+            } catch (SQLObjectException e) {
+                throw new RuntimeException("Unable to create security session!!!", e);
+            }
+        } else {
+            session = MatchMakerClientSideSession.getSecuritySessions().get(serverInfo.getServerAddress());
+        }
+        
+        return session;
+    }
 }
