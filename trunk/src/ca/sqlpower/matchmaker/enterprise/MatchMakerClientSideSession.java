@@ -52,7 +52,6 @@ import org.olap4j.metadata.Datatype;
 import org.springframework.security.AccessDeniedException;
 
 import ca.sqlpower.architect.ddl.DDLGenerator;
-import ca.sqlpower.architect.enterprise.DomainCategory;
 import ca.sqlpower.dao.SPPersistenceException;
 import ca.sqlpower.dao.SPPersisterListener;
 import ca.sqlpower.dao.json.SPJSONMessageDecoder;
@@ -106,10 +105,7 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
 	private static Logger logger = Logger.getLogger(MatchMakerClientSideSession.class);
 	
 	private static CookieStore cookieStore = new BasicCookieStore();
-	
-	static {
-        securitySessions = new HashMap<String, MatchMakerClientSideSession>();
-    }
+
 	
 	/**
 	 * The prefs node that will store information about the current settings of
@@ -157,7 +153,7 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
 	/**
 	 * Used to store sessions which hold nothing but security info.
 	 */
-	public static Map<String, MatchMakerClientSideSession> securitySessions;
+	public static Map<String, MatchMakerClientSideSession> securitySessions = new HashMap<String, MatchMakerClientSideSession>();
 
 	private final MatchMakerSession delegateSession;
     
@@ -243,7 +239,7 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
                 ddlg.setTargetSchema(prefs.get(this.projectLocation.getUUID() + ".targetSchema", null));
             } catch (Exception e) {
                 delegateSession.createUserPrompterFactory().createUserPrompter("Cannot load DDL settings due to missing class " + ddlgClass, 
-                        UserPromptType.MESSAGE, UserPromptOptions.OK, UserPromptResponse.OK, null, "OK");
+                        UserPromptType.MESSAGE, UserPromptOptions.OK, UserPromptResponse.OK, null, "OK").promptUser("");
                 logger.error("Cannot find DDL Generator for class " + ddlgClass + 
                         ", ddl generator properties are not loaded.");
             }
@@ -283,18 +279,13 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
     	try {
     	    //TODO: Figure out how to de-register the session &c.
 		} catch (Exception e) {
-			try {
-				logger.error(e);
+			logger.error(e);
 				
-				delegateSession.createUserPrompterFactory().createUserPrompter("Cannot access the server to close the server session", 
-						UserPromptType.MESSAGE,
-						UserPromptOptions.OK, 
-						UserPromptResponse.OK, 
-						UserPromptResponse.OK, "OK");
-				
-			} catch (Throwable t) {
-				//do nothing here because we failed on logging the error.
-			}
+			delegateSession.createUserPrompterFactory().createUserPrompter("Cannot access the server to close the server session", 
+					UserPromptType.MESSAGE,
+					UserPromptOptions.OK, 
+					UserPromptResponse.OK, 
+					UserPromptResponse.OK, "OK").promptUser("");
 		}
 		
 		updater.interrupt();
@@ -305,9 +296,6 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
         }
         
         getSystemWorkspace().removeSPListener(deletionListener);
-        for (DomainCategory cat : getSystemWorkspace().getChildren(DomainCategory.class)) {
-            cat.removeSPListener(deletionListener);
-        }
         
         return delegateSession.close();
     }
