@@ -36,6 +36,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.address.AddressResult.StorageState;
@@ -43,10 +44,10 @@ import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.util.MonitorableImpl;
 
 /**
@@ -112,83 +113,84 @@ public class AddressPool extends MonitorableImpl{
 	 * 
 	 * @param resultTable
 	 * @param si
+	 * @param session This is used in getting the UserDefinedSQLTypes from the PlDotIni
 	 * @return A {@link SQLTable} representing the result table.
 	 */
-	public static SQLTable buildAddressCorrectionResultTable(SQLTable resultTable, SQLIndex si) throws SQLObjectException {
+	public static SQLTable buildAddressCorrectionResultTable(SQLTable resultTable, SQLIndex si, MatchMakerSession session) throws SQLObjectException {
 		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
 		
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
-			SQLColumn newCol = new SQLColumn(t, SOURCE_ADDRESS_KEY_COLUMN_BASE+i, idxCol.getType(), idxCol.getPrecision(), idxCol.getScale());
+			SQLColumn newCol = new SQLColumn(t, SOURCE_ADDRESS_KEY_COLUMN_BASE+i, session.getSQLType(idxCol.getType()), idxCol.getPrecision(), idxCol.getScale(), false);
 			t.addColumn(newCol);
 		}
 		
-		SQLColumn inputAddressLine1 = new SQLColumn(t, INPUT_ADDRESS_LINE1, Types.VARCHAR, 70, 0);
+		SQLColumn inputAddressLine1 = new SQLColumn(t, INPUT_ADDRESS_LINE1, session.getSQLType(Types.VARCHAR), 70, 0, false);
 		t.addColumn(inputAddressLine1);
-		SQLColumn inputAddressLine2 = new SQLColumn(t, INPUT_ADDRESS_LINE2, Types.VARCHAR, 70, 0);
+		SQLColumn inputAddressLine2 = new SQLColumn(t, INPUT_ADDRESS_LINE2, session.getSQLType(Types.VARCHAR), 70, 0, false);
 		t.addColumn(inputAddressLine2);
-		SQLColumn inputMunicipality = new SQLColumn(t, INPUT_MUNICIPALITY, Types.VARCHAR, 30, 0);
+		SQLColumn inputMunicipality = new SQLColumn(t, INPUT_MUNICIPALITY, session.getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(inputMunicipality);
-		SQLColumn inputProvince = new SQLColumn(t, INPUT_PROVINCE, Types.VARCHAR, 30, 0);
+		SQLColumn inputProvince = new SQLColumn(t, INPUT_PROVINCE, session.getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(inputProvince);
-		SQLColumn inputCountry = new SQLColumn(t, INPUT_COUNTRY, Types.VARCHAR, 30, 0);
+		SQLColumn inputCountry = new SQLColumn(t, INPUT_COUNTRY, session.getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(inputCountry);
-		SQLColumn inputPostalCode = new SQLColumn(t, INPUT_POSTAL_CODE, Types.VARCHAR, 10, 0);
+		SQLColumn inputPostalCode = new SQLColumn(t, INPUT_POSTAL_CODE, session.getSQLType(Types.VARCHAR), 10, 0, false);
 		t.addColumn(inputPostalCode);
 
-		SQLColumn outputCountry = new SQLColumn(t, OUTPUT_COUNTRY, Types.VARCHAR, 30, 0);
+		SQLColumn outputCountry = new SQLColumn(t, OUTPUT_COUNTRY, session.getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(outputCountry);
-		SQLColumn outputDeliveryInstallationName = new SQLColumn(t, OUTPUT_DELIVERY_INSTALLATION_NAME, Types.VARCHAR, 50, 0);
+		SQLColumn outputDeliveryInstallationName = new SQLColumn(t, OUTPUT_DELIVERY_INSTALLATION_NAME, session.getSQLType(Types.VARCHAR), 50, 0, false);
 		t.addColumn(outputDeliveryInstallationName);
-		SQLColumn outputDeliveryInstallationType = new SQLColumn(t, OUTPUT_DELIVERY_INSTALLATION_TYPE, Types.VARCHAR, 5, 0);
+		SQLColumn outputDeliveryInstallationType = new SQLColumn(t, OUTPUT_DELIVERY_INSTALLATION_TYPE, session.getSQLType(Types.VARCHAR), 5, 0, false);
 		t.addColumn(outputDeliveryInstallationType);
-		SQLColumn outputDirectionPrefix = new SQLColumn(t, OUTPUT_DIRECTION_PREFIX, Types.BOOLEAN, 1, 0);
+		SQLColumn outputDirectionPrefix = new SQLColumn(t, OUTPUT_DIRECTION_PREFIX, session.getSQLType(Types.BOOLEAN), 0, 0, false);
 		t.addColumn(outputDirectionPrefix);
-		SQLColumn outputFailedParsingString = new SQLColumn(t, OUTPUT_FAILED_PARSING_STRING, Types.VARCHAR, 150, 0);
+		SQLColumn outputFailedParsingString = new SQLColumn(t, OUTPUT_FAILED_PARSING_STRING, session.getSQLType(Types.VARCHAR), 150, 0, false);
 		t.addColumn(outputFailedParsingString);
-		SQLColumn outputGeneralDeliveryName = new SQLColumn(t, OUTPUT_GENERAL_DELIVERY_NAME, Types.VARCHAR, 70, 0);
+		SQLColumn outputGeneralDeliveryName = new SQLColumn(t, OUTPUT_GENERAL_DELIVERY_NAME, session.getSQLType(Types.VARCHAR), 70, 0, false);
 		t.addColumn(outputGeneralDeliveryName);
-		SQLColumn outputLockBoxNumber = new SQLColumn(t, OUTPUT_LOCK_BOX_NUMBER, Types.VARCHAR, 5, 0);
+		SQLColumn outputLockBoxNumber = new SQLColumn(t, OUTPUT_LOCK_BOX_NUMBER, session.getSQLType(Types.VARCHAR), 5, 0, false);
 		t.addColumn(outputLockBoxNumber);
-		SQLColumn outputLockBoxType = new SQLColumn(t, OUTPUT_LOCK_BOX_TYPE, Types.VARCHAR, 6, 0);
+		SQLColumn outputLockBoxType = new SQLColumn(t, OUTPUT_LOCK_BOX_TYPE, session.getSQLType(Types.VARCHAR), 6, 0, false);
 		t.addColumn(outputLockBoxType);
-		SQLColumn outputMunicipality = new SQLColumn(t, OUTPUT_MUNICIPALITY, Types.VARCHAR, 30, 0);
+		SQLColumn outputMunicipality = new SQLColumn(t, OUTPUT_MUNICIPALITY, session.getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(outputMunicipality);
-		SQLColumn outputPostalCode = new SQLColumn(t, OUTPUT_POSTAL_CODE, Types.VARCHAR, 10, 0);
+		SQLColumn outputPostalCode = new SQLColumn(t, OUTPUT_POSTAL_CODE, session.getSQLType(Types.VARCHAR), 10, 0, false);
 		t.addColumn(outputPostalCode);
-		SQLColumn outputProvince = new SQLColumn(t, OUTPUT_PROVINCE, Types.VARCHAR, 30, 0);
+		SQLColumn outputProvince = new SQLColumn(t, OUTPUT_PROVINCE, session.getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(outputProvince);
-		SQLColumn outputRuralRouteNumber = new SQLColumn(t, OUTPUT_RURAL_ROUTE_NUMBER, Types.VARCHAR, 5, 0);
+		SQLColumn outputRuralRouteNumber = new SQLColumn(t, OUTPUT_RURAL_ROUTE_NUMBER, session.getSQLType(Types.VARCHAR), 5, 0, false);
 		t.addColumn(outputRuralRouteNumber);
-		SQLColumn outputRuralRouteType = new SQLColumn(t, OUTPUT_RURAL_ROUTE_TYPE, Types.VARCHAR, 2, 0);
+		SQLColumn outputRuralRouteType = new SQLColumn(t, OUTPUT_RURAL_ROUTE_TYPE, session.getSQLType(Types.VARCHAR), 2, 0, false);
 		t.addColumn(outputRuralRouteType);
-		SQLColumn outputStreetDirection = new SQLColumn(t, OUTPUT_STREET_DIRECTION, Types.VARCHAR, 5, 0);
+		SQLColumn outputStreetDirection = new SQLColumn(t, OUTPUT_STREET_DIRECTION, session.getSQLType(Types.VARCHAR), 5, 0, false);
 		t.addColumn(outputStreetDirection);
-		SQLColumn outputStreetName = new SQLColumn(t, OUTPUT_STREET_NAME, Types.VARCHAR, 30, 0);
+		SQLColumn outputStreetName = new SQLColumn(t, OUTPUT_STREET_NAME, session.getSQLType(Types.VARCHAR), 30, 0, false);
 		t.addColumn(outputStreetName);
-		SQLColumn outputStreetNumber = new SQLColumn(t, OUTPUT_STREET_NUMBER, Types.INTEGER, 6, 0);
+		SQLColumn outputStreetNumber = new SQLColumn(t, OUTPUT_STREET_NUMBER, session.getSQLType(Types.INTEGER), 0, 0, false);
 		t.addColumn(outputStreetNumber);
-		SQLColumn outputStreetNumberSuffix = new SQLColumn(t, OUTPUT_STREET_NUMBER_SUFFIX, Types.VARCHAR, 6, 0);
+		SQLColumn outputStreetNumberSuffix = new SQLColumn(t, OUTPUT_STREET_NUMBER_SUFFIX, session.getSQLType(Types.VARCHAR), 6, 0, false);
 		t.addColumn(outputStreetNumberSuffix);
-		SQLColumn outputStreetNumberSuffixSeparate = new SQLColumn(t, OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE, Types.BOOLEAN, 1, 0);
+		SQLColumn outputStreetNumberSuffixSeparate = new SQLColumn(t, OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE, session.getSQLType(Types.BOOLEAN), 0, 0, false);
 		t.addColumn(outputStreetNumberSuffixSeparate);
-		SQLColumn outputStreetType = new SQLColumn(t, OUTPUT_STREET_TYPE, Types.VARCHAR, 11, 0);
+		SQLColumn outputStreetType = new SQLColumn(t, OUTPUT_STREET_TYPE, session.getSQLType(Types.VARCHAR), 11, 0, false);
 		t.addColumn(outputStreetType);
-		SQLColumn outputStreetTypePrefix = new SQLColumn(t, OUTPUT_STREET_TYPE_PREFIX, Types.BOOLEAN, 1, 0);
+		SQLColumn outputStreetTypePrefix = new SQLColumn(t, OUTPUT_STREET_TYPE_PREFIX, session.getSQLType(Types.BOOLEAN), 0, 0, false);
 		t.addColumn(outputStreetTypePrefix);
-		SQLColumn outputSuite = new SQLColumn(t, OUTPUT_SUITE, Types.VARCHAR, 6, 0);
+		SQLColumn outputSuite = new SQLColumn(t, OUTPUT_SUITE, session.getSQLType(Types.VARCHAR), 6, 0, false);
 		t.addColumn(outputSuite);
-		SQLColumn outputSuitePrefix = new SQLColumn(t, OUTPUT_SUITE_PREFIX, Types.BOOLEAN, 1, 0);
+		SQLColumn outputSuitePrefix = new SQLColumn(t, OUTPUT_SUITE_PREFIX, session.getSQLType(Types.VARCHAR), 1, 0, false);
 		t.addColumn(outputSuitePrefix);
-		SQLColumn outputSuiteType = new SQLColumn(t, OUTPUT_SUITE_TYPE, Types.VARCHAR, 15, 0);
+		SQLColumn outputSuiteType = new SQLColumn(t, OUTPUT_SUITE_TYPE, session.getSQLType(Types.VARCHAR), 15, 0, false);
 		t.addColumn(outputSuiteType);
-		SQLColumn outputUnparsedAddress = new SQLColumn(t, OUTPUT_UNPARSED_ADDRESS, Types.VARCHAR, 150, 0);
+		SQLColumn outputUnparsedAddress = new SQLColumn(t, OUTPUT_UNPARSED_ADDRESS, session.getSQLType(Types.VARCHAR), 150, 0, false);
 		t.addColumn(outputUnparsedAddress);
-		SQLColumn outputType = new SQLColumn(t, OUTPUT_TYPE, Types.VARCHAR, 20, 0);
+		SQLColumn outputType = new SQLColumn(t, OUTPUT_TYPE, session.getSQLType(Types.VARCHAR), 20, 0, false);
 		t.addColumn(outputType);
-		SQLColumn outputUrbanBeforeRural = new SQLColumn(t, OUTPUT_URBAN_BEFORE_RURAL, Types.BOOLEAN, 1, 0);
+		SQLColumn outputUrbanBeforeRural = new SQLColumn(t, OUTPUT_URBAN_BEFORE_RURAL, session.getSQLType(Types.BOOLEAN), 0, 0, false);
 		t.addColumn(outputUrbanBeforeRural);
-		SQLColumn valid = new SQLColumn(t, OUTPUT_VALID, Types.BOOLEAN, 1, 0);
+		SQLColumn valid = new SQLColumn(t, OUTPUT_VALID, session.getSQLType(Types.BOOLEAN), 0, 0, false);
 		t.addColumn(valid);
 		
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
