@@ -849,31 +849,6 @@ public class Project extends AbstractMatchMakerObject {
 		return null;
 	}
 
-	@Override
-    public int hashCode() {
-        final int PRIME = 31;
-        int result = 0;
-        result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
-        return result;
-    }
-
-	@Override
-    public boolean equals(Object obj) {
-		if ( !(obj instanceof Project) ) {
-			return false;
-		}
-        if (this == obj) {
-            return true;
-        }
-        final Project other = (Project) obj;
-        if (getName() == null) {
-            if (other.getName() != null)
-                return false;
-        } else if (!getName().equals(other.getName()))
-            return false;
-        return true;
-    }
-	
 	@Accessor
 	public Long getOid() {
 		return oid;
