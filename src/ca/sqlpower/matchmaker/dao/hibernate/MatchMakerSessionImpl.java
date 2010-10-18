@@ -146,11 +146,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
 
-		final Connection con = database.getConnection();
-
 		sessionStartTime = new Date();
-		
-        con.close();
 	}
 
     public MatchMakerSessionContext getContext() {
