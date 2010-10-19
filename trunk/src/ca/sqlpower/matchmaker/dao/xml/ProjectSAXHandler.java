@@ -585,7 +585,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     }
                 }
                 InputDescriptor inDesc = new InputDescriptor(name, type);
-                MungeStepInput in = new MungeStepInput(null, inDesc, step);
+                MungeStepInput in = new MungeStepInput(inDesc, step);
                 if (connected) {
                     in.setCurrent(fromOutput);
                 }
