@@ -52,10 +52,13 @@ public class OpenSaveHandler {
 		
 		XMLPersisterReader xmlReader = new XMLPersisterReader(reader, mmPersister, session.getUpgradePersisterManager(), "matchmaker-project");
 		
+		session.getRootNode().setMagicEnabled(false);
 		try {
 			xmlReader.read();
 		} catch (SPPersistenceException ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			session.getRootNode().setMagicEnabled(true);
 		}
 	}
 	

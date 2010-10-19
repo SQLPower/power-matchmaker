@@ -77,6 +77,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 import ca.sqlpower.object.AbstractSPListener;
+import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
@@ -166,8 +167,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private final JButton hideShow;
 
-	private final int[] connected;
-	
 	/**
 	 * The icon of the nib that is dropping down.
 	 */
@@ -266,10 +265,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		autoScrollTimer.setRepeats(true);
 		
 		dropNibIndex = -1;
-		connected = new int[step.getChildren(MungeStepOutput.class).size()];
-		for (int x = 0; x < connected.length;x++) {
-			connected[x] = 0;
-		}
 		
 		ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
 		toolTipManager.setInitialDelay(0);
@@ -282,20 +277,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		step.addSPListener(new StepEventHandler());
 		setName(step.getName());
 		
-		int borderTop;
-		if (!getStep().canAddInput() && getStep().getMSOInputs().size() == 0) {
-			borderTop = MMM_TOP.getHeight(null);
-		} else {
-			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight() + PLUG_OFFSET;
-		}
-		
-		int borderBottom;
-		if (getStep().getChildren(MungeStepOutput.class).size() == 0) {
-			borderBottom = 0;
-		} else {
-			borderBottom = ConnectorIcon.getNibInstance(Object.class).getIconHeight();
-		}
-		setBorder(BorderFactory.createEmptyBorder(borderTop,1,borderBottom,MMM_TOP.getWidth(null)));
+		resizeBorders();
 		
 		setOpaque(false);
 		setFocusable(true);
@@ -435,6 +417,27 @@ public abstract class AbstractMungeComponent extends JPanel {
 		deOpaquify(this);
 		deOpaquify(inputNames);
 		setDefaults();
+	}
+
+	/**
+	 * This will re-calculate the top and bottom borders depending on the
+	 * children of the step.
+	 */
+	private void resizeBorders() {
+		int borderTop;
+		if (!getStep().canAddInput() && getStep().getMSOInputs().size() == 0) {
+			borderTop = MMM_TOP.getHeight(null);
+		} else {
+			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight() + PLUG_OFFSET;
+		}
+		
+		int borderBottom;
+		if (getStep().getChildren(MungeStepOutput.class).size() == 0) {
+			borderBottom = 0;
+		} else {
+			borderBottom = ConnectorIcon.getNibInstance(Object.class).getIconHeight();
+		}
+		setBorder(BorderFactory.createEmptyBorder(borderTop,1,borderBottom,MMM_TOP.getWidth(null)));
 	}
 	
     /**
@@ -844,6 +847,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 				reload();
 			}
 		}
+		
+		@Override
+		public void childAdded(SPChildEvent e) {
+			resizeBorders();
+		}
+		
+		@Override
+		public void childRemoved(SPChildEvent e) {
+			resizeBorders();
+		}
 	}
 	
 	/**
@@ -1206,7 +1219,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param index The index
 	 */
 	private boolean isOutputConnected(int index) {
-		return connected[index] > 0;
+		return getStep().getMungeStepOutputs().get(index).getUsage() > 0;
 	}
 
 	/**
@@ -1217,13 +1230,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void setConnectOutput(int index, boolean con) {
 		logger.debug("connect "+getStep().getName()+"'s output index: " + index + " -> " + con);
+		MungeStepOutput mso = getStep().getMungeStepOutputs().get(index);
 		if (con) {
-			connected[index]++;
+			mso.incrementUsage();
 		} else {
-			connected[index]--;
-			if (connected[index] < 0) {
-				connected[index] = 0;
-			}
+			mso.decrementUsage();
 		}
 	}
 	

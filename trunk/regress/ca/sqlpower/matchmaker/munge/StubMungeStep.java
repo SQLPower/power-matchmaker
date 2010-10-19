@@ -386,4 +386,10 @@ public class StubMungeStep implements MungeStep {
 	public void setPosition(Point p) {
 		logger.debug("Stub call: MungeStep.setPosition()");
 	}
+
+	@Override
+	public void init() {
+		logger.debug("Stub call: MungeStep.init()");
+		
+	}
 }

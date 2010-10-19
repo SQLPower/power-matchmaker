@@ -153,6 +153,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     public void refresh(Logger logger) throws Exception {
     	//do nothing on default cases.
     }
+    
+    public void init() {
+    	// do nothing, but all real steps must override this if they want connections.
+    }
 	
 	/**
 	 * A method that is called when an step is "run/called". Default is No-op. 
