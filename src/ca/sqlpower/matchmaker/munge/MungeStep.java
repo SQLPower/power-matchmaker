@@ -279,6 +279,13 @@ public interface MungeStep extends MatchMakerObject, Callable<Boolean> {
 	 *         it. False if otherwise.
 	 */
     boolean hasConnectedInputs();
+    
+	/**
+	 * This function should be overwritten by each specific step, and it will be
+	 * called as soon as the step is added to the process and the rest of the
+	 * object tree. It should add input and output connections.
+	 */
+    void init();
 
 	/**
 	 * A MungeStep may have some preconditions that need to be met before it can

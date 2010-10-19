@@ -77,6 +77,11 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	private T data;
 	
 	/**
+	 * The number of connections made with this output.
+	 */
+	private int usage = 0;
+	
+	/**
 	 * Creates a new MungeStepOutput with the given initial name (can be changed
 	 * later) and type (permanently fixed at the given value).
 	 */
@@ -191,5 +196,31 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject
 	@NonProperty
 	public List<? extends SPObject> getChildren() {
 		return Collections.emptyList();
+	}
+
+	@Mutator
+	public void setUsage(int usage) {
+		int oldUsage = this.usage;
+		this.usage = usage;
+		firePropertyChange("usage", oldUsage, usage);
+	}
+
+	@Accessor
+	public int getUsage() {
+		return usage;
+	}
+
+	public void incrementUsage() {
+		setUsage(getUsage() + 1);
+	}
+
+	public void decrementUsage() {
+		if (getUsage() > 0) {
+			setUsage(getUsage() - 1);
+		} else {
+			throw new IllegalStateException("Cannot decrement usage for " + 
+					getParent().getName() + " beyond 0.");
+		}
+		
 	}
 }
