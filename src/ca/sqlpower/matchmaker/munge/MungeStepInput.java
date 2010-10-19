@@ -76,10 +76,9 @@ public class MungeStepInput extends AbstractMatchMakerObject {
 	}
 	
 	@Constructor
-	public MungeStepInput(@ConstructorParameter(propertyName="current") MungeStepOutput current,
+	public MungeStepInput(
 			@ConstructorParameter(parameterType=ParameterType.CHILD, propertyName="descriptor") InputDescriptor descriptor, 
 			@ConstructorParameter(propertyName="parent") MungeStep step) {
-		this.current = current;
 		this.descriptor = descriptor;
 		this.descriptor.addSPListener(nameSetterListener);
 		this.descriptor.setParent(this);

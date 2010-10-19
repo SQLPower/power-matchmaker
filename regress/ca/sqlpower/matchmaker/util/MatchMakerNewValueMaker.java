@@ -198,7 +198,7 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         } else if (valueType == MungeStepInput.class) {
         	MungeStep ms = ((MungeStep) makeNewValue(MungeStep.class, null,
 				"parent step"));
-        	MungeStepInput msi = new MungeStepInput(null, new InputDescriptor("input", Object.class), ms);
+        	MungeStepInput msi = new MungeStepInput(new InputDescriptor("input", Object.class), ms);
         	ms.addChild(msi, 0);
         	return msi;
         } else if (valueType == InputDescriptor.class) {
