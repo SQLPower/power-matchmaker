@@ -353,6 +353,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 				this.resultStep.addInputStep(input);
 			}
 			resultStep.setParent(this);
+			fireChildAdded(MungeResultStep.class, resultStep, getInputSteps().size() + getMungeSteps().size());
 		} else {
 			throw new IllegalArgumentException("The MungeResultStep should be set at the constructor of MungeProcess.");
 		}
