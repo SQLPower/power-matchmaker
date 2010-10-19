@@ -43,6 +43,14 @@ import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
 
+/**
+ * Uses the Google Maps API to extract spatial and address data from an input string.
+ * <p>
+ * Additional information, including details of accuracy values and the meaning
+ * of the status codes is available in <a
+ * href="http://www.google.com/apis/maps/documentation/reference.html"> the
+ * Google Maps API documentation</a>.
+ */
 public class GoogleAddressLookup extends AbstractMungeStep {
 
 	@SuppressWarnings("unchecked")
@@ -67,56 +75,35 @@ public class GoogleAddressLookup extends AbstractMungeStep {
      */
     private long lastLookupTime;
     
-    /**
-     * The status code returned with the Google result.  Even if the lookup fails or the
-     * API key is incorrect, this three-digit status code will still be set.  It will only
-     * come out null if the URL for the geocoder service is incorrect (therefore there
-     * could be no response from the Google Maps Geocoder).
-     * <p>
-     * The meaning of the status codes is available in
-     * <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoStatusCode">
-     * the Google Maps API documentation</a>.
-     */
-    private final MungeStepOutput<BigDecimal> statusCode;
-    
-    private final MungeStepOutput<String> country;
-    private final MungeStepOutput<String> adminArea;
-    private final MungeStepOutput<String> subAdminArea;
-    private final MungeStepOutput<String> locality;
-    private final MungeStepOutput<String> street;
-    private final MungeStepOutput<String> postCode;
-    private final MungeStepOutput<BigDecimal> latitude;
-    private final MungeStepOutput<BigDecimal> longitude;
-    
-    /**
-     * The accuracy constant for the location information.  Constant codes are
-     * documented in
-     * <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoAddressAccuracy">
-     * the Google Maps API documentation</a>.
-     */
-    private final MungeStepOutput<BigDecimal> accuracy;
     
     @Constructor
     public GoogleAddressLookup() {
         super("Google Maps Address Lookup",false);
         
-        super.addInput(new InputDescriptor("Address", String.class));
-        
-        addChild(statusCode = new MungeStepOutput<BigDecimal>("Lookup Status", BigDecimal.class));
-        addChild(country = new MungeStepOutput<String>("Country Code", String.class));
-        addChild(adminArea = new MungeStepOutput<String>("Administrative Area", String.class));
-        addChild(subAdminArea = new MungeStepOutput<String>("Sub-Administrative Area", String.class));
-        addChild(locality = new MungeStepOutput<String>("Locality", String.class));
-        addChild(street = new MungeStepOutput<String>("Street Address", String.class));
-        addChild(postCode = new MungeStepOutput<String>("Postal Code", String.class));
-        addChild(latitude = new MungeStepOutput<BigDecimal>("Latitude", BigDecimal.class));
-        addChild(longitude = new MungeStepOutput<BigDecimal>("Longitude", BigDecimal.class));
-        addChild(accuracy = new MungeStepOutput<BigDecimal>("Accuracy Code", BigDecimal.class));
-        
-        googleMapsApiKey = "";
-        googleGeocoderURL = "http://maps.google.com/maps/geo";
-        rateLimit = 2.0;
     }
+
+	public void init() {
+		super.addInput(new InputDescriptor("Address", String.class));
+		addChild(new MungeStepOutput<BigDecimal>("Lookup Status",
+				BigDecimal.class));
+		addChild(new MungeStepOutput<String>("Country Code", String.class));
+		addChild(new MungeStepOutput<String>("Administrative Area",
+				String.class));
+		addChild(new MungeStepOutput<String>("Sub-Administrative Area",
+				String.class));
+		addChild(new MungeStepOutput<String>("Locality", String.class));
+		addChild(new MungeStepOutput<String>("Street Address", String.class));
+		addChild(new MungeStepOutput<String>("Postal Code", String.class));
+		addChild(new MungeStepOutput<BigDecimal>("Latitude",
+				BigDecimal.class));
+		addChild(new MungeStepOutput<BigDecimal>("Longitude",
+				BigDecimal.class));
+		addChild(new MungeStepOutput<BigDecimal>("Accuracy Code",
+				BigDecimal.class));
+		googleMapsApiKey = "";
+		googleGeocoderURL = "http://maps.google.com/maps/geo";
+		rateLimit = 2.0;
+	}
      
     @Override
     public void doOpen(EngineMode mode, Logger logger) throws Exception {
@@ -131,8 +118,9 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     @Override
     public Boolean doCall() throws Exception {
         // Clear out all the output values in case the request fails!
-        for (MungeStepOutput<?> output : getChildren(MungeStepOutput.class)) {
-            output.setData(null);
+        List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
+        for (MungeStepOutput<?> output : outputs) {
+        	output.setData(null);
         }
         
         String key = googleMapsApiKey;
@@ -146,7 +134,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
 
         JSONObject status = response.getJSONObject("Status");
         int statusCode = status.getInt("code");
-        this.statusCode.setData(BigDecimal.valueOf(statusCode));
+        outputs.get(0).setData(BigDecimal.valueOf(statusCode));
         
         if (!response.has("Placemark")) {
             logger.error("Address lookup for " + address + " failed. Google error code was " + statusCode + ".");
@@ -159,10 +147,10 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         JSONObject placemark = placemarks.getJSONObject(0);
         JSONObject addressDetails = placemark.getJSONObject("AddressDetails");
         JSONObject country = addressDetails.getJSONObject("Country");
-        this.country.setData(country.getString("CountryNameCode"));
+        outputs.get(1).setData(country.getString("CountryNameCode"));
 
         JSONObject adminArea = country.getJSONObject("AdministrativeArea");
-        this.adminArea.setData(adminArea.getString("AdministrativeAreaName"));
+        outputs.get(2).setData(adminArea.getString("AdministrativeAreaName"));
 
         // The topology of Canadian lookup requests changed some time in 2008:
         // The SubAdministrativeArea section vanished, and Locality moved up
@@ -171,36 +159,36 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         // countries still return a SubAdministrativeArea.
         if (adminArea.has("SubAdministrativeArea")) {
             JSONObject subAdminArea = adminArea.getJSONObject("SubAdministrativeArea");
-            this.subAdminArea.setData(subAdminArea.getString("SubAdministrativeAreaName"));
+            outputs.get(3).setData(subAdminArea.getString("SubAdministrativeAreaName"));
 
             if (subAdminArea.has("Locality")) {
                 JSONObject locality = subAdminArea.getJSONObject("Locality");
-                updateLocalityOutputs(locality);
+                updateLocalityOutputs(locality, outputs);
             }
         } else if (adminArea.has("Locality")) {
             JSONObject locality = adminArea.getJSONObject("Locality");
-            updateLocalityOutputs(locality);
+            updateLocalityOutputs(locality, outputs);
         }
         
-        this.accuracy.setData(BigDecimal.valueOf(addressDetails.getInt("Accuracy")));
+        outputs.get(9).setData(BigDecimal.valueOf(addressDetails.getInt("Accuracy")));
         
         JSONObject location = placemark.getJSONObject("Point");
         JSONArray coordinates = location.getJSONArray("coordinates");
-        this.longitude.setData(BigDecimal.valueOf(coordinates.getDouble(0)));
-        this.latitude.setData(BigDecimal.valueOf(coordinates.getDouble(1)));
+        outputs.get(8).setData(BigDecimal.valueOf(coordinates.getDouble(0)));
+        outputs.get(7).setData(BigDecimal.valueOf(coordinates.getDouble(1)));
         
         return Boolean.TRUE;
     }
 
-    private void updateLocalityOutputs(JSONObject locality)
+    private void updateLocalityOutputs(JSONObject locality, List<MungeStepOutput> outs)
             throws JSONException {
-        this.locality.setData(locality.getString("LocalityName"));
+        outs.get(4).setData(locality.getString("LocalityName"));
 
         JSONObject thoroughfare = locality.getJSONObject("Thoroughfare");
-        this.street.setData(thoroughfare.getString("ThoroughfareName"));
+        outs.get(5).setData(thoroughfare.getString("ThoroughfareName"));
 
         JSONObject postalCode = locality.getJSONObject("PostalCode");
-        this.postCode.setData(postalCode.getString("PostalCodeNumber"));
+        outs.get(6).setData(postalCode.getString("PostalCodeNumber"));
     }
 
     /**

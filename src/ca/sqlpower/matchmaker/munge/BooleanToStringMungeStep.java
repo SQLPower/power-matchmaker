@@ -56,12 +56,19 @@ public class BooleanToStringMungeStep extends AbstractMungeStep {
 	@Constructor
 	public BooleanToStringMungeStep() {
 		super("Boolean to String",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("stringOutput", String.class);
+	}
+
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"stringOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("booleanInput", Boolean.class);
+		InputDescriptor desc = new InputDescriptor("booleanInput",
+				Boolean.class);
 		super.addInput(desc);
 		setTrueString("True");
 		setFalseString("False");
+
 	}
 	
 

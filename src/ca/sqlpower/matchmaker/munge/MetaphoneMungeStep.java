@@ -42,9 +42,14 @@ public class MetaphoneMungeStep extends AbstractMungeStep {
 	@Constructor
 	public MetaphoneMungeStep() {
 		super("Metaphone",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("metaphoneOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"metaphoneOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("metaphone", String.class);
+		InputDescriptor desc = new InputDescriptor("metaphone",
+				String.class);
 		super.addInput(desc);
 	}
 	

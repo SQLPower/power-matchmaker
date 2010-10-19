@@ -43,9 +43,14 @@ public class MD5CheckSumMungeStep extends AbstractMungeStep {
 	@Constructor
 	public MD5CheckSumMungeStep(){
 		super("MD5 CheckSum", false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("md5CheckSumOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"md5CheckSumOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("md5CheckSum", String.class);
+		InputDescriptor desc = new InputDescriptor("md5CheckSum",
+				String.class);
 		super.addInput(desc);
 	}
 	

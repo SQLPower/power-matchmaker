@@ -42,9 +42,14 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 	@Constructor
 	public LowerCaseMungeStep() {
 		super("Lower Case",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"lowerCaseOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
+		InputDescriptor desc = new InputDescriptor("lowerCase",
+				String.class);
 		super.addInput(desc);
 	}
 	

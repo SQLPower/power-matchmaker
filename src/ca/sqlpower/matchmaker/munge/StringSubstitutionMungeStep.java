@@ -117,9 +117,14 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	@Constructor
 	public StringSubstitutionMungeStep() {
 		super("String Substitution", false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"stringSubstitutionOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("stringSubstitution", String.class);
+		InputDescriptor desc = new InputDescriptor("stringSubstitution",
+				String.class);
 		setRegex(false);
 		setCaseSensitive(true);
 		super.addInput(desc);

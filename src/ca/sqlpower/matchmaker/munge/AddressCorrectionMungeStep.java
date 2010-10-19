@@ -97,6 +97,10 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public AddressCorrectionMungeStep() {
 		super("Address Correction", false);
 		
+	}
+
+	public void init() {
+
 		addChild(new MungeStepOutput<String>("Address Line 1", String.class));
 		addChild(new MungeStepOutput<String>("Address Line 2", String.class));
 		addChild(new MungeStepOutput<String>("Suite", String.class));
@@ -114,20 +118,21 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		// address's isValid flag in the case of just writing values from the
 		// result table
 		addChild(new MungeStepOutput<Boolean>("Is Valid?", Boolean.class));
-	
+		
 		InputDescriptor input0 = new InputDescriptor("Address Line 1", String.class);
 		InputDescriptor input1 = new InputDescriptor("Address Line 2", String.class);
 		InputDescriptor input2 = new InputDescriptor("Municipality", String.class);
 		InputDescriptor input3 = new InputDescriptor("Province", String.class);
 		InputDescriptor input4 = new InputDescriptor("Country", String.class);
 		InputDescriptor input5 = new InputDescriptor("Postal/ZIP", String.class);
-
+		
 		super.addInput(input0);
 		super.addInput(input1);
 		super.addInput(input2);
 		super.addInput(input3);
 		super.addInput(input4);
 		super.addInput(input5);
+		
 	}
 	
 	@NonBound

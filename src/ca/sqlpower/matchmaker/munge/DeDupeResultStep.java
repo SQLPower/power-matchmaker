@@ -74,6 +74,10 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	@Constructor
 	public DeDupeResultStep() {
 		super("Transformation Results",true);
+	}
+
+
+	public void init() {
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
 		super.addInput(desc);
 	}

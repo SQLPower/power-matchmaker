@@ -334,7 +334,9 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			}
 			mungeSteps.add(index - inputSteps.size(), (MungeStep)step);
 			step.setParent(this);
-			step.init();
+			if(step.isMagicEnabled()) {
+				step.init();
+			}
 			fireChildAdded(MungeStep.class, step, index);
 		}
 	}

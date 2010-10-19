@@ -48,12 +48,16 @@ public class EmptyStringToNullMungeStep extends AbstractMungeStep {
 	@Constructor
     public EmptyStringToNullMungeStep() {
         super("Empty String to Null", false);
-        
-        MungeStepOutput<String> out = new MungeStepOutput<String>("emptyStringToNullOutput", String.class);
-        addChild(out);
-        InputDescriptor desc = new InputDescriptor("inputString", String.class);
-        super.addInput(desc);
     }
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"emptyStringToNullOutput", String.class);
+		addChild(out);
+		InputDescriptor desc = new InputDescriptor("inputString",
+				String.class);
+		super.addInput(desc);
+	}
 
     @Override
     public Boolean doCall() throws Exception {

@@ -42,9 +42,14 @@ public class NumberToStringMungeStep extends AbstractMungeStep {
 	@Constructor
 	public NumberToStringMungeStep() {
 		super("Number to String",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("NumberToStringOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"NumberToStringOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("Number", BigDecimal.class);
+		InputDescriptor desc = new InputDescriptor("Number",
+				BigDecimal.class);
 		super.addInput(desc);
 	}
 	
