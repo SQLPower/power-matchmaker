@@ -438,7 +438,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 					}
 					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
 					add(ioc);
-					modelMap.get(parent).setConnectOutput(parNum, true);
 				}
 			}
 		}

@@ -987,8 +987,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void mousePressed(MouseEvent e) {
 			getPen().moveToFront(AbstractMungeComponent.this);
 			if (!maybeShowPopup(e)) {
-				diff = new Point((int)(e.getPoint().getX() - getX()), (int)(e.getPoint().getY() - getY()));			
-				diff.translate(getX(), getY());
+				diff = new Point((int)(e.getPoint().getX()), (int)(e.getPoint().getY()));			
 				if (!checkForIOConnectors(new Point(e.getX() + getX(),e.getY()+getY()))) {
 					requestFocusInWindow();
 				}
@@ -1009,7 +1008,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 				}
 				mp.repaint();
 			} else {
-				mp.updatePositionsToMMO();
+				step.setPosition(new Point(e.getX()+getX() - diff.x, e.getY()+getY() - diff.y));
 			}
 			mp.normalize();
 			mp.stopConnection();
