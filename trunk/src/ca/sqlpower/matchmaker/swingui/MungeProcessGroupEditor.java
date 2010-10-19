@@ -372,7 +372,7 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 
 	@Override
 	public MatchMakerObject getCurrentEditingMMO() {
-		return null;
+		return project;
 	}
 
 }
