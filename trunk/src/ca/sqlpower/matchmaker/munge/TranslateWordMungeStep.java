@@ -66,9 +66,14 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	public TranslateWordMungeStep() {
 		super("Translate Words",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("translateWordOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"translateWordOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
+		InputDescriptor desc = new InputDescriptor("translateWord",
+				String.class);
 		super.addInput(desc);
 		setRegex(false);
 		setCaseSensitive(true);

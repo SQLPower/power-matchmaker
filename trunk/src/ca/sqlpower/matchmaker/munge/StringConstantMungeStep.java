@@ -81,10 +81,13 @@ public class StringConstantMungeStep extends AbstractMungeStep {
 
 	@Constructor
     public StringConstantMungeStep() {
-        super("String constant", false);
-        setReturnNull(false);
-        addChild(new MungeStepOutput<String>("Value", String.class));
+        super("String Constant", false);
     }
+
+	public void init() {
+		setReturnNull(false);
+		addChild(new MungeStepOutput<String>("Value", String.class));
+	}
     
     @Override
     public Boolean doCall() throws Exception {

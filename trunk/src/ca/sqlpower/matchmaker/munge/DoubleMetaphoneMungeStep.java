@@ -51,9 +51,14 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	@Constructor
 	public DoubleMetaphoneMungeStep() {
 		super("Double Metaphone",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"doubleMetaphoneOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("doubleMetaphone", String.class);
+		InputDescriptor desc = new InputDescriptor("doubleMetaphone",
+				String.class);
 		super.addInput(desc);
 	}
 	

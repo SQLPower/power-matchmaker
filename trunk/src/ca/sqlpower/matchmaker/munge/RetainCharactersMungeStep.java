@@ -69,13 +69,20 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	@Constructor
 	public RetainCharactersMungeStep() {
 		super("Retain Chars",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
-		addChild(out);
-		InputDescriptor desc = new InputDescriptor("retainCharacters", String.class);
-		caseSensitive = true;
-		useRegex = false;
-		retainChars = "";
-		super.addInput(desc);
+	}
+
+	public void init() {
+		if (isMagicEnabled()) {
+			MungeStepOutput<String> out = new MungeStepOutput<String>(
+					"retainCharactersOutput", String.class);
+			addChild(out);
+			InputDescriptor desc = new InputDescriptor("retainCharacters",
+					String.class);
+			caseSensitive = true;
+			useRegex = false;
+			retainChars = "";
+			super.addInput(desc);
+		}
 	}
 	
 	@Override

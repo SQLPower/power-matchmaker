@@ -74,10 +74,13 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	@Constructor
 	public DateToStringMungeStep() {
 		super("Date to String", false);
+	}
+
+	public void init() {
 		setDateFormat(DATE_FORMATS.get(1));
 		setTimeFormat(TIME_FORMATS.get(1));
-
-		MungeStepOutput<String> out = new MungeStepOutput<String>("dateToStringOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"dateToStringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("date", Date.class);
 		super.addInput(desc);

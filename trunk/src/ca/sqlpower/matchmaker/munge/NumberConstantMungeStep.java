@@ -54,8 +54,11 @@ public class NumberConstantMungeStep extends AbstractMungeStep {
     @Constructor
     public NumberConstantMungeStep() {
         super("Number Constant", false);
-        addChild(new MungeStepOutput<BigDecimal>("Value", BigDecimal.class));
     }
+
+	public void init() {
+		addChild(new MungeStepOutput<BigDecimal>("Value", BigDecimal.class));
+	}
     
     @Override
     public Boolean doCall() throws Exception {

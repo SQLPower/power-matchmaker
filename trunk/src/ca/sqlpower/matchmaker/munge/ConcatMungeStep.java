@@ -60,7 +60,9 @@ public class ConcatMungeStep extends AbstractMungeStep {
     @Constructor
 	public ConcatMungeStep() {
 		super("Concat", true);
-		//This might be overriden by hibernate when loading from database.
+	}
+    
+    public void init() {
 		MungeStepOutput<String> out = new MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);
 		InputDescriptor desc1 = new InputDescriptor("concat1", String.class);
@@ -68,7 +70,8 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		super.addInput(desc1);
 		super.addInput(desc2);
 		super.setDefaultInputClass(String.class);
-	}
+    	
+    }
 	
 	public void connectInput(int index, MungeStepOutput o) {
 		if (o != null && o.getType() != getInputDescriptor(index).getType()) {

@@ -44,9 +44,14 @@ public class UpperCaseMungeStep extends AbstractMungeStep {
 	@Constructor
 	public UpperCaseMungeStep() {
 		super("Upper Case",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("upperCaseOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"upperCaseOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("upperCase", String.class);
+		InputDescriptor desc = new InputDescriptor("upperCase",
+				String.class);
 		super.addInput(desc);
 	}
 	

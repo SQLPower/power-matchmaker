@@ -42,9 +42,14 @@ public class RefinedSoundexMungeStep extends AbstractMungeStep {
 	@Constructor
 	public RefinedSoundexMungeStep() {
 		super("Refined Soundex",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("refinedSoundexOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"refinedSoundexOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("refinedSoundex", String.class);
+		InputDescriptor desc = new InputDescriptor("refinedSoundex",
+				String.class);
 		super.addInput(desc);
 	}
 	

@@ -41,9 +41,14 @@ public class TrimSpacesMungeStep extends AbstractMungeStep {
 	@Constructor
 	public TrimSpacesMungeStep() {
 		super("Trim Spaces",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("trimSpacesOutput", String.class);
+	}
+
+	public void init() {
+		MungeStepOutput<String> out = new MungeStepOutput<String>(
+				"trimSpacesOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("trimSpaces", String.class);
+		InputDescriptor desc = new InputDescriptor("trimSpaces",
+				String.class);
 		super.addInput(desc);
 	}
 	
