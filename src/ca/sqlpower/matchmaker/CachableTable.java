@@ -75,13 +75,17 @@ public class CachableTable extends AbstractMatchMakerObject {
      * on behalf of mmo will report.
      */
     public CachableTable(String tableRole) {
-    	this(tableRole, null);
+    	this(tableRole, null, null, null);
     }
     
     @Constructor
     public CachableTable(@ConstructorParameter(propertyName="tableRole") String tableRole,
-    		@ConstructorParameter(propertyName="tableName") String tableName) {
+    		@ConstructorParameter(propertyName="tableName") String tableName,
+    		@ConstructorParameter(propertyName="catalogName") String catalogName,
+    		@ConstructorParameter(propertyName="schemaName") String schemaName) {
     	this.tableName = tableName;
+		this.catalogName = catalogName;
+		this.schemaName = schemaName;
 		if (tableRole == null) throw new NullPointerException("Can't make a cachable table for a null property name");
 		this.tableRole = tableRole;
 		setName("Cachable Table: " + tableRole);
