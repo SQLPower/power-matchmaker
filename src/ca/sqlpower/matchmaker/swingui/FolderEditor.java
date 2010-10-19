@@ -40,6 +40,8 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
+import ca.sqlpower.object.AbstractSPListener;
+import ca.sqlpower.object.SPListener;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
@@ -66,9 +68,61 @@ public class FolderEditor implements DataEntryPanel {
 
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
+	private final JButton refreshButton = new JButton(new AbstractAction("Refresh") {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			nameInSyncWithModel = true;
+			descInSyncWithModel = true;
+			folderName.setText(folder.getName());
+			folderDesc.setText(folder.getFolderDesc());
+			refreshButton.setVisible(false);
+			handler.performFormValidation();
+		}
+	});
 
 	private JTextField folderName = new JTextField(40);
 	private JTextArea folderDesc = new JTextArea(4,40);
+	
+	/**
+	 * If false the model's name was updated from a different editing method than this editor
+	 * and the visible name is no longer matched with the model name. If true the model's name
+	 * and the name visible by this editor are the same.
+	 */
+	private boolean nameInSyncWithModel = true;
+
+	/**
+	 * If false the model's description was updated from a different editing
+	 * method than this editor and the visible description is no longer matched
+	 * with the model name. If true the model's description and the description
+	 * visible by this editor are the same.
+	 */
+	private boolean descInSyncWithModel = true;
+
+	/**
+	 * Updates the name and description text fields as changes come in from
+	 * other areas (like the server).
+	 */
+	private final SPListener folderListener = new AbstractSPListener() {
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
+			if (evt.getPropertyName().equals("name")) {
+				if (folderName.getText().equals(evt.getOldValue())) {
+					folderName.setText((String) evt.getNewValue());
+				} else if (!folderName.getText().equals(evt.getNewValue())) {
+					nameInSyncWithModel = false;
+					handler.performFormValidation();
+				}
+			} else if (evt.getPropertyName().equals("folderDesc")) {
+				if (folderDesc.getText().equals(evt.getOldValue())) {
+					folderDesc.setText((String) evt.getNewValue());
+				} else if (!folderDesc.getText().equals(evt.getNewValue())) {
+					descInSyncWithModel = false;
+					handler.performFormValidation();
+				}
+			}
+		};
+	};
 
 	public FolderEditor(MatchMakerSwingSession swingSession, PlFolder folder) {
 		this.swingSession = swingSession;
@@ -82,6 +136,7 @@ public class FolderEditor implements DataEntryPanel {
 			}
         });
 		handler.resetHasValidated();
+		folder.addSPListener(folderListener);
 	}
 
 	private void buildUI() {
@@ -102,6 +157,8 @@ public class FolderEditor implements DataEntryPanel {
 		CellConstraints cc = new CellConstraints();
 
 		pb.add(status, cc.xy(4,2,"l,c"));
+		pb.add(refreshButton, cc.xy(6, 2, "l, c"));
+		refreshButton.setVisible(false);
 		pb.add(new JLabel("Folder Name:"), cc.xy(2,4,"r,c"));
 		pb.add(new JLabel("Description:"), cc.xy(2,6,"r,c"));
 
@@ -117,10 +174,32 @@ public class FolderEditor implements DataEntryPanel {
 		folderName.setText(folder.getName());
 		folderDesc.setText(folder.getFolderDesc());
 
-		Validator v1 = new FolderNameValidator(swingSession);
+		Validator v1 = new FolderNameValidator(swingSession) {
+			@Override
+			public ValidateResult validate(Object contents) {
+				ValidateResult validate = super.validate(contents);
+				if (!validate.getStatus().equals(Status.FAIL) && !nameInSyncWithModel) {
+					refreshButton.setVisible(true);
+					return ValidateResult.createValidateResult(Status.FAIL, 
+							"An update to the name has occurred which conflicts with the new name");
+				}
+				return validate;
+			}
+		};
         handler.addValidateObject(folderName,v1);
 
-        Validator v2 = new AlwaysOKValidator();
+        Validator v2 = new AlwaysOKValidator() {
+        	@Override
+        	public ValidateResult validate(Object contents) {
+        		ValidateResult validate = super.validate(contents);
+				if (!validate.getStatus().equals(Status.FAIL) && !descInSyncWithModel) {
+					refreshButton.setVisible(true);
+					return ValidateResult.createValidateResult(Status.FAIL, 
+							"An update to the description has occurred which conflicts with the new description");
+				}
+				return validate;
+        	}
+        };
         handler.addValidateObject(folderDesc,v2);
 	}
 
@@ -199,6 +278,7 @@ public class FolderEditor implements DataEntryPanel {
         dao.save(folder);
         handler.resetHasValidated();
 
+        cleanup();
 		return true;
 	}
 
@@ -235,6 +315,11 @@ public class FolderEditor implements DataEntryPanel {
 
 	public void discardChanges() {
 		logger.error("Cannot discard changes");
+		cleanup();
 	}
+	
 
+	private void cleanup() {
+		folder.removeSPListener(folderListener);
+	}
 }
