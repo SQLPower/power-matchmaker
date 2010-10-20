@@ -57,7 +57,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * An DataEntryPanel for displaying and editing information about a folder such as
  * its name and description.
  */
-public class FolderEditor implements DataEntryPanel {
+public class FolderEditor implements DataEntryPanel, CleanupModel {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 	private JPanel panel;
@@ -94,9 +94,9 @@ public class FolderEditor implements DataEntryPanel {
 				refreshActionStatus();
 			}
         });
-		handler.resetHasValidated();
 		nameUpdateManager = new FieldUpdateManager(folderName, folder, "name", handler, this, refreshButton);
 		descUpdateManager = new FieldUpdateManager(folderDesc, folder, "folderDesc", handler, this, refreshButton);
+		handler.resetHasValidated();
 	}
 
 	private void buildUI() {
@@ -222,7 +222,6 @@ public class FolderEditor implements DataEntryPanel {
         dao.save(folder);
         handler.resetHasValidated();
 
-        cleanup();
 		return true;
 	}
 
@@ -259,11 +258,9 @@ public class FolderEditor implements DataEntryPanel {
 
 	public void discardChanges() {
 		logger.error("Cannot discard changes");
-		cleanup();
 	}
 	
-
-	private void cleanup() {
+	public void cleanup() {
 		nameUpdateManager.cleanup();
 		descUpdateManager.cleanup();
 	}

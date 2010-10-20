@@ -73,7 +73,7 @@ public abstract class AbstractUIUpdateManager {
 		@Override
 		public void focusLost(FocusEvent e) {
 			if (!handler.getWorstValidationStatus().getStatus().equals(Status.FAIL)) {
-//				dep.applyChanges();
+				dep.applyChanges();
 			}
 		}
 		
