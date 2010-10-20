@@ -737,88 +737,43 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             if (splashScreen == null){
                 splashScreen = new NoEditEditorPane(new MatchMakerSplashScreen(this).getSplashScreen());
             }
-            boolean save = false, doit = true;
 
             if (oldPane != null) {
             	if (oldPane.hasUnsavedChanges()) {
-            		String[] options = { "Save", "Discard Changes", "Cancel" };
-            		final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
-            		int ret = JOptionPane.showOptionDialog(
-            				frame,
-            				String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
-            				"Warning", JOptionPane.OK_CANCEL_OPTION,
-            				JOptionPane.QUESTION_MESSAGE, null, options,
-            				options[0]);
-
-            		switch (ret) {
-            		case JOptionPane.CLOSED_OPTION:
-            			save = false;
-            			doit = false;
-            			break;
-            		case O_SAVE:
-            			save = true;
-            			doit = false;
-            			break;
-            		case O_DISCARD:
-            			save = false;
-            			doit = true;
-            			break;
-            		case O_CANCEL:
-            			save = false;
-            			doit = false;
-            			//The treepath should never be null if it reaches here
-            			//since prompting this means that the right side of the splitpane
-            			//must have at least been replaced once.
-            			tree.setSelectionPath(lastTreePath);
-            			break;
-            		}
-            		if (save) {
-            			doit = oldPane.applyChanges();
-            			logger.debug("Last tree path was " + lastTreePath);
-            			logger.debug("Apply changes() in setCurrentEditorComponenet()! save is " + save + " and doit is " + doit);
-            			if (!doit){
-            				tree.setSelectionPath(lastTreePath);
-            			}
-            			logger.debug("Tree has selection path " + tree.getSelectionPath());
-            		} else if (doit) {
-            			oldPane.discardChanges();
-            			doit = true;
-            		}
+            		oldPane.applyChanges();
             	}
             }
-            if (doit) {
-            	// clears the undo stack and the listeners to the match
-            	// maker object
-            	if (oldPane instanceof CleanupModel) {
-            		((CleanupModel) oldPane).cleanup();
-            	}
+            // clears the undo stack and the listeners to the match
+            // maker object
+            if (oldPane instanceof CleanupModel) {
+            	((CleanupModel) oldPane).cleanup();
+            }
 
-            	//TODO change this to a InitModel
-            	if (pane instanceof AbstractUndoableEditorPane) {
-            		((AbstractUndoableEditorPane) pane).initUndo();
-            	}
-            		
-                //Remebers the treepath to the last node that it clicked on
-                if (pane != null){
-                    lastTreePath = tree.getSelectionPath();
-                    // If this line is not here, the divider would refuse to
-                    // move and the left component would not be visible.
-                    pane.getPanel().setMinimumSize(new Dimension(5,5));
-                    splitPane.setRightComponent(pane.getPanel());
-                    oldPane = pane;
-                } else {
-                    // If this line is not here, the divider would refuse to
-                    // move and the left component would not be visible.
-                    splashScreen.getPanel().setMinimumSize(new Dimension(5,5));
-                	splitPane.setRightComponent(splashScreen.getPanel());
-                    oldPane = splashScreen;
-                }
-                
-                // If this line was not here, the left component would get 
-                // forced to its minimum size. This sets the divider to remain
-                // at the location that has been set before the editor change.
-    			splitPane.setDividerLocation(splitPane.getDividerLocation());
-            } 
+            //TODO change this to a InitModel
+            if (pane instanceof AbstractUndoableEditorPane) {
+            	((AbstractUndoableEditorPane) pane).initUndo();
+            }
+
+            //Remebers the treepath to the last node that it clicked on
+            if (pane != null){
+            	lastTreePath = tree.getSelectionPath();
+            	// If this line is not here, the divider would refuse to
+            	// move and the left component would not be visible.
+            	pane.getPanel().setMinimumSize(new Dimension(5,5));
+            	splitPane.setRightComponent(pane.getPanel());
+            	oldPane = pane;
+            } else {
+            	// If this line is not here, the divider would refuse to
+            	// move and the left component would not be visible.
+            	splashScreen.getPanel().setMinimumSize(new Dimension(5,5));
+            	splitPane.setRightComponent(splashScreen.getPanel());
+            	oldPane = splashScreen;
+            }
+
+            // If this line was not here, the left component would get 
+            // forced to its minimum size. This sets the divider to remain
+            // at the location that has been set before the editor change.
+            splitPane.setDividerLocation(splitPane.getDividerLocation());
             
         } finally {
             editorComponentUpdateInProgress = false;
