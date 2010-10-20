@@ -50,8 +50,6 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -518,14 +516,6 @@ public class EngineSettingsPanel implements DataEntryPanel {
 			recordsToProcess.setValue(engineSettings.getProcessCount());
 		}
 		
-		recordsToProcess.addChangeListener(new ChangeListener() {
-			public void stateChanged (ChangeEvent e) {
-				int intNewVal = (Integer)recordsToProcess.getValue();
-				logger.debug("New value of spiner = " + intNewVal);
-				engineSettings.setProcessCount(intNewVal);
-			}
-		});
-		
 		spinnerUpdateManager = new SpinnerUpdateManager(recordsToProcess, engineSettings, "processCount", handler, this, refreshButton);
 
 		debugMode = new JCheckBox("Debug Mode (Changes will be rolled back)", engineSettings.getDebug());
@@ -624,6 +614,8 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		CellConstraints cc = new CellConstraints();
 		
 		pb.add(status, cc.xyw(4, 2, 6, "l,c"));
+		pb.add(refreshButton, cc.xy(6, 2, "l, c"));
+		refreshButton.setVisible(false);
 
 		int y = 4;
 		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));

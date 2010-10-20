@@ -196,8 +196,37 @@ public class MatchMakerTreeModel implements TreeModel {
 		SQLPowerUtils.listenToHierarchy(rootNode, listener);
 		SQLPowerUtils.listenToShallowHierarchy(cacheLisener, current);
 		
-		setupTreeForNode(rootNode);
+		setupTreeForNode(rootNode, false);
 	}
+
+    /**
+     * Creates the list of action nodes associated with the given match
+     * in this tree.  The responses from this method are cached, so once a list of
+     * actions has been returned for a particular project, the same list will be returned
+     * for all future requests. This is needed separately because when you persist a project
+     * from the server to a client, it's property type gets persisted after it, so the
+     * actionNodes need to be remade.
+     * 
+     * @param project The project the action nodes belong to. (It's their parent in the tree)
+     * @return The unique list of action nodes for the given project.
+     */
+    private void createActionNodes(Project project) {
+        List<ProjectActionNode> actionNodes = new ArrayList<ProjectActionNode>();
+        if (project.getType() == ProjectMode.FIND_DUPES) {
+            for (ProjectActionType type : DE_DUP_ACTIONS) {
+                actionNodes.add(new ProjectActionNode(type, project));
+            }
+        } else if (project.getType() == ProjectMode.CLEANSE) {
+        	for (ProjectActionType type : CLEANSING_ACTIONS) {
+        		actionNodes.add(new ProjectActionNode(type, project));
+        	}
+        } else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
+        	for (ProjectActionType type: ADDRESSS_CORRECTION_ACTIONS) {
+        		actionNodes.add(new ProjectActionNode(type, project));
+        	}
+        }
+        projectActionCache.put(project, actionNodes);
+    }
 
     /**
      * Returns (and possibly creates) the list of action nodes associated with the given match
@@ -209,25 +238,11 @@ public class MatchMakerTreeModel implements TreeModel {
      * @return The unique list of action nodes for the given project.
      */
     private List<ProjectActionNode> getActionNodes(Project project) {
-        List<ProjectActionNode> actionNodes = projectActionCache.get(project);
-        if (actionNodes == null) {
-            actionNodes = new ArrayList<ProjectActionNode>();
-            if (project.getType() == ProjectMode.FIND_DUPES) {
-	            for (ProjectActionType type : DE_DUP_ACTIONS) {
-	                actionNodes.add(new ProjectActionNode(type, project));
-	            }
-            } else if (project.getType() == ProjectMode.CLEANSE) {
-            	for (ProjectActionType type : CLEANSING_ACTIONS) {
-            		actionNodes.add(new ProjectActionNode(type, project));
-            	}
-            } else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
-            	for (ProjectActionType type: ADDRESSS_CORRECTION_ACTIONS) {
-            		actionNodes.add(new ProjectActionNode(type, project));
-            	}
-            }
-            projectActionCache.put(project, actionNodes);
+    	if (projectActionCache.get(project) == null)
+        {
+            createActionNodes(project);
         }
-        return actionNodes;
+        return projectActionCache.get(project);
     }
     
 	public Object getChild(Object parent, int index) {
@@ -428,12 +443,12 @@ public class MatchMakerTreeModel implements TreeModel {
 	 * Recursively walks the tree doing any necessary setup for each node.
 	 * At current this just adds folders for Project objects.
 	 */
-	private void setupTreeForNode(SPObject node) {
+	private void setupTreeForNode(SPObject node, boolean recreateFolders) {
 	    if (node instanceof Project) {
-	        createFolders((Project) node);
+	        createFolders((Project) node, recreateFolders);
 	    } 
         for (SPObject child : node.getChildren()) {
-            setupTreeForNode(child);
+            setupTreeForNode(child, false);
         }
 	}
 	
@@ -441,8 +456,8 @@ public class MatchMakerTreeModel implements TreeModel {
      * Creates all of the folders the given table should contain for its children
      * and adds them to the {@link #foldersInTables} map.
      */
-    private void createFolders(final Project p) {
-        if (foldersInTables.get(p) == null) {
+    private void createFolders(final Project p, boolean recreate) {
+        if (foldersInTables.get(p) == null || recreate) {
             List<FolderNode> folderList = new ArrayList<FolderNode>();
             foldersInTables.put(p, folderList);
             
@@ -508,7 +523,7 @@ public class MatchMakerTreeModel implements TreeModel {
 			
 			if (e.getChild() instanceof Project && foldersInTables.get(e.getChild()) == null) {
 				Project project = (Project) e.getChild();
-				createFolders(project);
+				createFolders(project, false);
 
 				List<FolderNode> folderList = foldersInTables.get(project);
 				int[] positions = new int[folderList.size()];
@@ -518,7 +533,7 @@ public class MatchMakerTreeModel implements TreeModel {
 				final TreeModelEvent ev = new TreeModelEvent(project, getPathForNode((MatchMakerObject)project), positions, folderList.toArray());
 				fireTreeNodesInserted(ev);
 			} else {
-				setupTreeForNode((SPObject) e.getChild());
+				setupTreeForNode((SPObject) e.getChild(), false);
 
 			}
 			SQLPowerUtils.listenToHierarchy(e.getChild(), listener);
@@ -591,10 +606,13 @@ public class MatchMakerTreeModel implements TreeModel {
 		public void propertyChanged(PropertyChangeEvent e) {
             logger.debug("Got PropertyChanged event. property="+
                     e.getPropertyName()+"; source="+e.getSource());
+            if(e.getSource() instanceof Project && e.getPropertyName().equals("type")) {
+            	createActionNodes((Project)e.getSource());
+            	setupTreeForNode((Project)e.getSource(), true);
+            }
 			TreePath paths = getPathForNode((MatchMakerObject)e.getSource());
 			TreeModelEvent evt = new TreeModelEvent(e.getSource(), paths);
 			fireTreeNodesChanged(evt);
-			
 		}
 	}
 
