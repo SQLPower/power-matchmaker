@@ -81,7 +81,7 @@ public class FolderEditor implements DataEntryPanel {
 
 	private JTextField folderName = new JTextField(40);
 	private JTextArea folderDesc = new JTextArea(4,40);
-	private FieldUpdateManager descUpdateManager;
+	private AbstractUpdateManager descUpdateManager;
 	
 	public FolderEditor(MatchMakerSwingSession swingSession, PlFolder folder) {
 		this.swingSession = swingSession;
@@ -169,7 +169,7 @@ public class FolderEditor implements DataEntryPanel {
 	/**
 	 * Watches for changes to the name field in the UI and model and keeps them in sync.
 	 */
-	private FieldUpdateManager nameUpdateManager;
+	private AbstractUpdateManager nameUpdateManager;
 
 	public boolean applyChanges() {
         List<String> fail = handler.getFailResults();
