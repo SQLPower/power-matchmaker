@@ -28,28 +28,25 @@ import ca.sqlpower.object.SPObject;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
-public class SpinnerUpdateManager extends AbstractUpdateManager {
+public class SpinnerUpdateManager extends AbstractUIUpdateManager {
 
 	JSpinner spinner;
 	
 	public SpinnerUpdateManager(JSpinner spinner, SPObject spo,
 			String propertyName, FormValidationHandler handler,
 			DataEntryPanel dep, JButton refreshButton) {
-		super(spo, propertyName, handler, dep, refreshButton);
+		super(spinner, spo, propertyName, handler, dep, refreshButton);
 		
 		this.spinner = spinner;
-		spinner.addFocusListener(focusListener);
-		setValidator(spinner);
 	}
 	
-	protected void checkVal(PropertyChangeEvent evt) {
-		if (spinner.getValue().equals(evt.getOldValue())) {
+	protected boolean updateUI(PropertyChangeEvent evt) {
+		if (spinner.getValue().equals(evt.getOldValue()) ||
+				spinner.getValue().equals(evt.getNewValue())) {
 			spinner.setValue(evt.getNewValue());
-		} else if (!spinner.getValue().equals(evt.getNewValue())) {
-			modelAndUiInSync = false;
-			handler.performFormValidation();
-			refreshButton.setVisible(true);
+			return true;
 		}
+		return false;
 	}
 
 }

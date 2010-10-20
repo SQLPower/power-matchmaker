@@ -41,9 +41,9 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  * This class attaches listeners to a model object and a UI field to keep the
  * two in sync and notify the user if they become out of sync.
  */
-public abstract class AbstractUpdateManager {
+public abstract class AbstractUIUpdateManager {
 	
-	private static Logger logger = Logger.getLogger(AbstractUpdateManager.class);
+	private static Logger logger = Logger.getLogger(AbstractUIUpdateManager.class);
 
 	/**
 	 * A listener on spo for property propertyName. If the property changes,
@@ -51,13 +51,16 @@ public abstract class AbstractUpdateManager {
 	 */
 	protected final SPListener propertyChangeListener = new AbstractSPListener() {
 		public void propertyChanged(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals(propertyName)) {
-				checkVal(evt);
+			if (evt.getPropertyName().equals(propertyName) &&
+					!updateUI(evt)) {
+				modelAndUiInSync = false;
+				handler.performFormValidation();
+				refreshButton.setVisible(true);
 			}
 		};
 	};
 	
-	protected boolean modelAndUiInSync = true;
+	private boolean modelAndUiInSync = true;
 
 	/**
 	 * This listener will be attached to the text component. When the text
@@ -65,7 +68,7 @@ public abstract class AbstractUpdateManager {
 	 * after the user has stopped making modifications for several seconds. When
 	 * focus is lost the property will also be persisted.
 	 */
-	protected final FocusListener focusListener = new FocusListener() {
+	private final FocusListener focusListener = new FocusListener() {
 		
 		@Override
 		public void focusLost(FocusEvent e) {
@@ -85,12 +88,12 @@ public abstract class AbstractUpdateManager {
 	 * data entry panel may become invalid because its state is inconsistent
 	 * with its model.
 	 */
-	protected final String propertyName;
+	private final String propertyName;
 	
 	/**
 	 * The object we are monitoring for changes to update the UI with.
 	 */
-	protected final SPObject spo;
+	private final SPObject spo;
 
 	/**
 	 * This button is used to refresh the UI based on the model. If set this
@@ -98,13 +101,14 @@ public abstract class AbstractUpdateManager {
 	 * If null then no button's visibility will change when the UI and model
 	 * come out of sync.
 	 */
-	protected final JButton refreshButton;
+	private final JButton refreshButton;
 
-	protected final FormValidationHandler handler;
+	private final FormValidationHandler handler;
 
-	protected final DataEntryPanel dep;
+	private final DataEntryPanel dep;
 
-	public AbstractUpdateManager(SPObject spo, 
+	public AbstractUIUpdateManager(JComponent ui,
+			SPObject spo, 
 			final String propertyName,
 			FormValidationHandler handler, 
 			DataEntryPanel dep, 
@@ -115,6 +119,8 @@ public abstract class AbstractUpdateManager {
 		this.refreshButton = refreshButton;
 		this.dep = dep;
 		spo.addSPListener(propertyChangeListener);
+		ui.addFocusListener(focusListener);
+		setValidator(ui);
 	}
 	
 	protected void setValidator(JComponent comp) {
@@ -145,6 +151,19 @@ public abstract class AbstractUpdateManager {
 	public void cleanup() {
 		spo.removeSPListener(propertyChangeListener);
 	}
-	
-	protected abstract void checkVal(PropertyChangeEvent evt);
+
+	/**
+	 * This method will update the UI according to the new value in the event.
+	 * If the UI is updated correctly then this method will return true. If the
+	 * UI cannot be updated due to changes made by the user that are not saved
+	 * this method will return false and an error message will be displayed to
+	 * the user.
+	 * 
+	 * @param evt
+	 *            The event that changed the model object that the UI component
+	 *            must now update to.
+	 * @return True if the UI was successfully updated. False if the UI could
+	 *         not be updated.
+	 */
+	protected abstract boolean updateUI(PropertyChangeEvent evt);
 }

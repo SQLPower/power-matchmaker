@@ -28,27 +28,25 @@ import ca.sqlpower.object.SPObject;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
-public class FieldUpdateManager extends AbstractUpdateManager {
+public class FieldUpdateManager extends AbstractUIUpdateManager {
 
 	private final JTextComponent textComp;
 
 	public FieldUpdateManager(JTextComponent textComp, SPObject spo, String propertyName,
 			FormValidationHandler handler, DataEntryPanel dep,
 			JButton refreshButton) {
-		super(spo, propertyName, handler, dep, refreshButton);
+		super(textComp, spo, propertyName, handler, dep, refreshButton);
 		this.textComp = textComp;
-		setValidator(textComp);
 	}
 
 	@Override
-	protected void checkVal(PropertyChangeEvent evt) {
-		if (textComp.getText().equals(evt.getOldValue())) {
+	protected boolean updateUI(PropertyChangeEvent evt) {
+		if (textComp.getText().equals(evt.getOldValue())
+				|| textComp.getText().equals(evt.getNewValue())) {
 			textComp.setText(evt.getNewValue().toString());
-		} else if (!textComp.getText().equals(evt.getNewValue())) {
-			modelAndUiInSync = false;
-			handler.performFormValidation();
-			refreshButton.setVisible(true);
+			return true;
 		}
+		return false;
 	}
 
 }

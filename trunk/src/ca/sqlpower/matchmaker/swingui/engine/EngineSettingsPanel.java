@@ -67,7 +67,7 @@ import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.swingui.AbstractUpdateManager;
+import ca.sqlpower.matchmaker.swingui.AbstractUIUpdateManager;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SpinnerUpdateManager;
@@ -240,7 +240,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	/**
 	 * Listens to changes in the model so as to keep the UI in sync.
 	 */
-	private AbstractUpdateManager spinnerUpdateManager;
+	private AbstractUIUpdateManager spinnerUpdateManager;
 	
 	/**
 	 * The collection of components that show the user what the engine is doing.
