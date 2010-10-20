@@ -22,29 +22,30 @@ package ca.sqlpower.matchmaker.swingui;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.JButton;
-import javax.swing.text.JTextComponent;
+import javax.swing.JSpinner;
 
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
-public class FieldUpdateManager extends AbstractUpdateManager {
+public class SpinnerUpdateManager extends AbstractUpdateManager {
 
-	private final JTextComponent textComp;
-
-	public FieldUpdateManager(JTextComponent textComp, SPObject spo, String propertyName,
-			FormValidationHandler handler, DataEntryPanel dep,
-			JButton refreshButton) {
+	JSpinner spinner;
+	
+	public SpinnerUpdateManager(JSpinner spinner, SPObject spo,
+			String propertyName, FormValidationHandler handler,
+			DataEntryPanel dep, JButton refreshButton) {
 		super(spo, propertyName, handler, dep, refreshButton);
-		this.textComp = textComp;
-		setValidator(textComp);
+		
+		this.spinner = spinner;
+		spinner.addFocusListener(focusListener);
+		setValidator(spinner);
 	}
-
-	@Override
+	
 	protected void checkVal(PropertyChangeEvent evt) {
-		if (textComp.getText().equals(evt.getOldValue())) {
-			textComp.setText(evt.getNewValue().toString());
-		} else if (!textComp.getText().equals(evt.getNewValue())) {
+		if (spinner.getValue().equals(evt.getOldValue())) {
+			spinner.setValue(evt.getNewValue());
+		} else if (!spinner.getValue().equals(evt.getNewValue())) {
 			modelAndUiInSync = false;
 			handler.performFormValidation();
 			refreshButton.setVisible(true);

@@ -50,6 +50,8 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -60,13 +62,15 @@ import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.swingui.AbstractUpdateManager;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.SpinnerUpdateManager;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.swingui.BrowseFileAction;
@@ -234,6 +238,11 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	private FormValidationHandler handler;
 	
 	/**
+	 * Listens to changes in the model so as to keep the UI in sync.
+	 */
+	private AbstractUpdateManager spinnerUpdateManager;
+	
+	/**
 	 * The collection of components that show the user what the engine is doing.
 	 */
 	private final EngineOutputPanel engineOutputPanel;
@@ -303,6 +312,17 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	private Date expiryDate;
 
 	private EngineListener engineListener;
+
+	private final JButton refreshButton = new JButton(new AbstractAction("Refresh") {
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			recordsToProcess.setValue(engineSettings.getProcessCount());
+			refreshButton.setVisible(false);
+			spinnerUpdateManager.clearWarnings();
+			handler.performFormValidation();
+		}
+	});
 	
 	public EngineSettingsPanel(final MatchMakerSwingSession swingSession, Project project, JFrame parentFrame, 
 			EngineType engineType) {
@@ -497,6 +517,16 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		if (engineSettings.getProcessCount() != null) {
 			recordsToProcess.setValue(engineSettings.getProcessCount());
 		}
+		
+		recordsToProcess.addChangeListener(new ChangeListener() {
+			public void stateChanged (ChangeEvent e) {
+				int intNewVal = (Integer)recordsToProcess.getValue();
+				logger.debug("New value of spiner = " + intNewVal);
+				engineSettings.setProcessCount(intNewVal);
+			}
+		});
+		
+		spinnerUpdateManager = new SpinnerUpdateManager(recordsToProcess, engineSettings, "processCount", handler, this, refreshButton);
 
 		debugMode = new JCheckBox("Debug Mode (Changes will be rolled back)", engineSettings.getDebug());
 		itemListener = new ItemListener() {
@@ -843,6 +873,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		handler.removePropertyChangeListener(propertyChangeListener);
 		debugMode.removeItemListener(itemListener);
 		messageLevel.removeActionListener(messageLevelActionListener);
+		spinnerUpdateManager.cleanup();
 //		engine.removeEngineListener(engineListener);
 	}
 }
