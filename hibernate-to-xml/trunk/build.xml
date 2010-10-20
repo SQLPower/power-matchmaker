@@ -310,7 +310,7 @@
     		<attribute name="Class-Path" value="${dqguru.jar.classpath}" />
     	</manifest>
 
-    	<jar destfile="${staging.dir}/dqguru.jar" update="no"
+    	<jar destfile="${staging.dir}/repository-export.jar" update="no"
     				basedir="${build}" 
     				includes="ca/** org/** icons/** log4j.properties default_database_types.ini"
     				manifest="${build}/manifest">
