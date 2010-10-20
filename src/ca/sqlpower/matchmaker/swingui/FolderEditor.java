@@ -119,6 +119,7 @@ public class FolderEditor implements DataEntryPanel {
 		pb.add(status, cc.xy(4,2,"l,c"));
 		pb.add(refreshButton, cc.xy(6, 2, "l, c"));
 		refreshButton.setVisible(false);
+		
 		pb.add(new JLabel("Folder Name:"), cc.xy(2,4,"r,c"));
 		pb.add(new JLabel("Description:"), cc.xy(2,6,"r,c"));
 
