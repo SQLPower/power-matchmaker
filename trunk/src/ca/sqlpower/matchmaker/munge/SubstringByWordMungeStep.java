@@ -81,15 +81,15 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	@Constructor
 	public SubstringByWordMungeStep() {
 		super("Substring by Word",false);
-	}
-
-	public void init() {
 		setDelimiter(" ");
 		setResultDelim(" ");
 		setRegex(false);
 		setCaseSensitive(true);
 		setBegIndex(0);
 		setEndIndex(0);
+	}
+
+	public void init() {
 		MungeStepOutput<String> out = new MungeStepOutput<String>(
 				"substringOutput", String.class);
 		addChild(out);

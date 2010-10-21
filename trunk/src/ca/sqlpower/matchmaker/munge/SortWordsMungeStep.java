@@ -111,13 +111,13 @@ public class SortWordsMungeStep extends AbstractMungeStep {
 	@Constructor
     public SortWordsMungeStep() {
         super("Sort Words", false);
+        setDelimiter("\\p{Space}+");
+        setResultDelim(" ");
+        setRegex(true);
+        setCaseSensitive(false);
     }
 
 	public void init() {
-		setDelimiter("\\p{Space}+");
-		setResultDelim(" ");
-		setRegex(true);
-		setCaseSensitive(false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>(
 				"sortedWordsOutput", String.class);
 		addChild(out);

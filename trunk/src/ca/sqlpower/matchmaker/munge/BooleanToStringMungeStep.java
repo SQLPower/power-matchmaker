@@ -56,6 +56,8 @@ public class BooleanToStringMungeStep extends AbstractMungeStep {
 	@Constructor
 	public BooleanToStringMungeStep() {
 		super("Boolean to String",false);
+		setTrueString("True");
+		setFalseString("False");
 	}
 
 
@@ -66,8 +68,6 @@ public class BooleanToStringMungeStep extends AbstractMungeStep {
 		InputDescriptor desc = new InputDescriptor("booleanInput",
 				Boolean.class);
 		super.addInput(desc);
-		setTrueString("True");
-		setFalseString("False");
 
 	}
 	

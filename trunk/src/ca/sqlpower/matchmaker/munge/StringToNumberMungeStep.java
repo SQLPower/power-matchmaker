@@ -50,10 +50,10 @@ public class StringToNumberMungeStep extends AbstractMungeStep {
 	@Constructor
 	public StringToNumberMungeStep() {
 		super("String to Number",false);
+		allowMalformed = false;
 	}
 
 	public void init() {
-		allowMalformed = false;
 		MungeStepOutput<BigDecimal> out = new MungeStepOutput<BigDecimal>(
 				"StringToNumberOutput", BigDecimal.class);
 		addChild(out);

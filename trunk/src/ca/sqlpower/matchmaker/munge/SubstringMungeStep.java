@@ -56,11 +56,11 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	@Constructor
 	public SubstringMungeStep() {
 		super("Substring",false);
+		setBegIndex(0);
+		setEndIndex(0);
 	}
 
 	public void init() {
-		setBegIndex(0);
-		setEndIndex(0);
 		MungeStepOutput<String> out = new MungeStepOutput<String>(
 				"substringOutput", String.class);
 		addChild(out);
