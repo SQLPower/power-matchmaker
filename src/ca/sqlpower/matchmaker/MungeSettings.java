@@ -362,7 +362,7 @@ public class MungeSettings extends MatchMakerSettings {
 		return Collections.emptyList();
 	}
 
-	@Transient @Accessor
+	@NonProperty
 	@Override
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
