@@ -28,8 +28,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -66,9 +68,11 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.AbstractUIUpdateManager;
+import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SpinnerUpdateManager;
+import ca.sqlpower.object.AbstractSPListener;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.swingui.BrowseFileAction;
@@ -94,7 +98,36 @@ import com.sleepycat.je.DatabaseException;
  * A panel that provides a GUI for setting the parameters for running the MatchMakerEngine,
  * as well as running the MatchMakerEngine itself and displaying its output on the GUI.
  */
-public class EngineSettingsPanel implements DataEntryPanel {
+public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
+	
+	/**
+	 * These class keeps the checkBoxes synchronized across multiple clients. Everytime you make
+	 * a new one, you must add it to the list updaters.
+	 */
+	private class CheckBoxModelUpdater extends AbstractSPListener {
+		private final JCheckBox checkBox;
+		private final String propertyName;
+		public CheckBoxModelUpdater(JCheckBox checkBox, String propertyName) {
+			this.checkBox = checkBox;
+			this.propertyName = propertyName;
+			
+		}
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
+			if(evt.getPropertyName().equals(propertyName)) {
+				if(evt.getNewValue() instanceof Boolean) {
+					checkBox.setSelected((Boolean)evt.getNewValue());
+				} else {
+					throw new RuntimeException("The argument should be a boolean value, not a " + evt.getNewValue().getClass());
+				}
+			}
+		}
+	};
+	
+	/**
+	 * This is this list of all the checkbox updaters so that we can easily remove them.
+	 */
+	private List<CheckBoxModelUpdater> updaters = new ArrayList<CheckBoxModelUpdater>();
 
 	private static final String ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS = 
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
@@ -328,6 +361,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		this.parentFrame = parentFrame;
 		this.project = project;
 		this.type = engineType;
+		
 		handler = new FormValidationHandler(status);
 		engineStatusListener = new SPListener() {
 			@Override
@@ -519,6 +553,8 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		spinnerUpdateManager = new SpinnerUpdateManager(recordsToProcess, engineSettings, "processCount", handler, this, refreshButton);
 
 		debugMode = new JCheckBox("Debug Mode (Changes will be rolled back)", engineSettings.getDebug());
+		updaters.add(new CheckBoxModelUpdater(debugMode, "debug"));
+		engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 		itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (((JCheckBox) e.getSource()).isSelected()) {
@@ -541,6 +577,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 					}
 					recordsToProcess.setValue(new Integer(0));
 				}
+				engineSettings.setDebug(debugMode.isSelected());
 			}
 		};
 		debugMode.addItemListener(itemListener);
@@ -551,6 +588,14 @@ public class EngineSettingsPanel implements DataEntryPanel {
 			} else {
 				clearMatchPool = new JCheckBox("Clear address pool" , ((MungeSettings)engineSettings).isClearMatchPool());
 			}
+			itemListener = new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
+				}
+			};
+			clearMatchPool.addItemListener(itemListener);
+			updaters.add(new CheckBoxModelUpdater(clearMatchPool, "clearMatchPool"));
+			engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 			if (debugMode.isSelected()) {
 				clearMatchPool.setSelected(false);
 				// See comment just above about why this is disabled
@@ -560,10 +605,26 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		
 		if (engineSettings instanceof MungeSettings) {
 			useBatchExecute = new JCheckBox("Batch execute SQL statments", ((MungeSettings)engineSettings).isUseBatchExecution());
+			itemListener = new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					((MungeSettings)engineSettings).setUseBatchExecution(useBatchExecute.isSelected());
+				}
+			};
+			useBatchExecute.addItemListener(itemListener);
+			updaters.add(new CheckBoxModelUpdater(useBatchExecute, "useBatchExecution"));
+			engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 		}
 
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			autoWriteAutoValidatedAddresses = new JCheckBox("Immediately commit auto-corrected addresses", ((MungeSettings)engineSettings).isAutoWriteAutoValidatedAddresses());
+			itemListener = new ItemListener() {
+				public void itemStateChanged(ItemEvent e) {
+					((MungeSettings)engineSettings).setAutoWriteAutoValidatedAddresses(autoWriteAutoValidatedAddresses.isSelected());
+				}
+			};
+			autoWriteAutoValidatedAddresses.addItemListener(itemListener);
+			updaters.add(new CheckBoxModelUpdater(autoWriteAutoValidatedAddresses,"autoWriteAutoValidatedAddresses"));
+			engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 		}
 		
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
@@ -627,9 +688,9 @@ public class EngineSettingsPanel implements DataEntryPanel {
 
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.CLEANSE_ENGINE) {
 			y += 2;
-
+			
 			pb.add(new JLabel("Tranformations to run: "), cc.xy(2, y, "r,t"));
-			MungeProcessSelectionList selectionButton = new MungeProcessSelectionList(project) {
+			final MungeProcessSelectionList selectionButton = new MungeProcessSelectionList(project) {
 				@Override
 				public boolean getValue(MungeProcess mp) {
 					return mp.getActive();
@@ -640,6 +701,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 					mp.setActive(value);
 				}
 			};
+			
 			pb.add(selectionButton, cc.xyw(4, y, 2, "l,c"));
 		}
 
@@ -866,6 +928,9 @@ public class EngineSettingsPanel implements DataEntryPanel {
 		debugMode.removeItemListener(itemListener);
 		messageLevel.removeActionListener(messageLevelActionListener);
 		spinnerUpdateManager.cleanup();
+		for(CheckBoxModelUpdater cbmu : updaters) {
+			engineSettings.removeSPListener(cbmu);
+		}
 //		engine.removeEngineListener(engineListener);
 	}
 }
