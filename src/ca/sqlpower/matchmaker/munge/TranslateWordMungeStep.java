@@ -66,6 +66,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	public TranslateWordMungeStep() {
 		super("Translate Words",false);
+		setRegex(false);
+		setCaseSensitive(true);
 	}
 
 	public void init() {
@@ -75,8 +77,6 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		InputDescriptor desc = new InputDescriptor("translateWord",
 				String.class);
 		super.addInput(desc);
-		setRegex(false);
-		setCaseSensitive(true);
 	}
 	
 	@Override

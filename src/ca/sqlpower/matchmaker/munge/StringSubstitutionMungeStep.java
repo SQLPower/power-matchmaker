@@ -117,6 +117,8 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	@Constructor
 	public StringSubstitutionMungeStep() {
 		super("String Substitution", false);
+		setRegex(false);
+		setCaseSensitive(true);
 	}
 
 	public void init() {
@@ -125,8 +127,6 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("stringSubstitution",
 				String.class);
-		setRegex(false);
-		setCaseSensitive(true);
 		super.addInput(desc);
 	}
 	

@@ -127,13 +127,13 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 	@Constructor
 	public StringToDateMungeStep() {
 		super("String to Date",false);
-	}
-
-	public void init() {
 		setIgnoreError(false);
 		setDateFormat(DATE_FORMATS.get(1));
 		setTimeFormat(TIME_FORMATS.get(1));
 		setOutputFormat(OUTPUT_FORMATS.get(0));
+	}
+
+	public void init() {
 		MungeStepOutput<Date> out = new MungeStepOutput<Date>(
 				"stringToDateOutput", Date.class);
 		addChild(out);

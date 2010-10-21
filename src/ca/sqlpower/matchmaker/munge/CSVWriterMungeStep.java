@@ -85,18 +85,18 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 	@Constructor
 	public CSVWriterMungeStep() {
 		super("CSV Writer", true);
-	}
-
-	public void init() {
-		InputDescriptor desc = new InputDescriptor("csvWriter",
-				String.class);
-		super.addInput(desc);
 		super.setDefaultInputClass(String.class);
 		setSeparator(CSVWriter.DEFAULT_SEPARATOR);
 		setFilePath("csvwriter.csv");
 		setClearFile(true);
 		setQuoteChar(CSVWriter.DEFAULT_QUOTE_CHARACTER);
 		setEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER);
+	}
+
+	public void init() {
+		InputDescriptor desc = new InputDescriptor("csvWriter",
+				String.class);
+		super.addInput(desc);
 	}
 
 	public Boolean doCall() throws Exception {

@@ -60,6 +60,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
     @Constructor
 	public ConcatMungeStep() {
 		super("Concat", true);
+		super.setDefaultInputClass(String.class);
 	}
     
     public void init() {
@@ -69,7 +70,6 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		InputDescriptor desc2 = new InputDescriptor("concat2", String.class);
 		super.addInput(desc1);
 		super.addInput(desc2);
-		super.setDefaultInputClass(String.class);
     	
     }
 	

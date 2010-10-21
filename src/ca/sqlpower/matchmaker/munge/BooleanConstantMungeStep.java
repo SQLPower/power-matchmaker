@@ -49,12 +49,12 @@ public class BooleanConstantMungeStep extends AbstractMungeStep {
 	@Constructor
 	public BooleanConstantMungeStep() {
 		super("Boolean Constant", false);
+		setConstant(true);
 
 	}
 
 
 	public void init() {
-		setConstant(true);
 		addChild(new MungeStepOutput<Boolean>("boolean out", Boolean.class));
 	}
 	

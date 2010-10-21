@@ -68,12 +68,12 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	@Constructor
 	public WordCountMungeStep() {
 		super("Word Count",false);
-	}
-
-	public void init() {
 		setDelimiter(" ");
 		setRegex(false);
 		setCaseSensitive(true);
+	}
+
+	public void init() {
 		MungeStepOutput<BigDecimal> out = new MungeStepOutput<BigDecimal>(
 				"wordCountOutput", BigDecimal.class);
 		addChild(out);

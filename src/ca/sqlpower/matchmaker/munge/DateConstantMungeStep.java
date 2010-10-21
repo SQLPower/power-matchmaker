@@ -86,13 +86,13 @@ public class DateConstantMungeStep extends AbstractMungeStep {
     @Constructor
     public DateConstantMungeStep() throws Exception {
         super("Date Constant", false);
+        returnNull = false;
+        useCurrentTime = false;
+        dateFormat = FORMAT.get(0);
+        setValueAsDate(Calendar.getInstance().getTime());
     }
 
 	public void init() {
-		returnNull = false;
-		useCurrentTime = false;
-		dateFormat = FORMAT.get(0);
-		setValueAsDate(Calendar.getInstance().getTime());
 		addChild(new MungeStepOutput<Date>("Value", Date.class));
 	}
     
