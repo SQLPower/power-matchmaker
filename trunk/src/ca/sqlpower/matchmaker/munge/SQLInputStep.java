@@ -349,6 +349,9 @@ public class SQLInputStep extends AbstractMungeStep {
     		outputStep = new CleanseResultStep();
     	} else {
     		outputStep = new DeDupeResultStep();
+    		if (outputStep.isMagicEnabled()) {
+    			outputStep.init();
+    		}
     	}
         return outputStep;
     }
