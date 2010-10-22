@@ -73,6 +73,7 @@ import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SpinnerUpdateManager;
+import ca.sqlpower.object.AbstractPoolingSPListener;
 import ca.sqlpower.object.AbstractSPListener;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
@@ -188,6 +189,11 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 	 * The session this panel belongs to.
 	 */
 	private MatchMakerSwingSession swingSession;
+	
+	/**
+	 * A listener to keep the UI in synch with the model
+	 */
+	private SPListener activeListener;
 
 	/**
 	 * The file path to which the engine logs will be written to.
@@ -710,6 +716,42 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 				}
 			};
 			
+			
+			activeListener = new AbstractPoolingSPListener() {
+				
+				boolean begun = false;
+				boolean activeProperty = false;
+				
+				protected void transactionStartedImpl(TransactionEvent e) {
+					begun = true;
+					activeProperty = false;
+					logger.debug("debug = true on " + e.getSource());
+				};
+				
+				@Override
+				protected void finalCommitImpl(TransactionEvent e) {
+					begun = false;
+					if(activeProperty) {
+						selectionButton.checkModel();
+					}
+					logger.debug("debug = false on " + e.getSource());
+				}
+				
+				@Override
+				protected void propertyChangeImpl(PropertyChangeEvent evt) {
+					logger.debug("checking property with name " + evt.getPropertyName());
+					if(evt.getPropertyName().equals("active") && begun) {
+						activeProperty = true;
+					}
+				}
+			};
+			
+			engineSettings.addSPListener(activeListener);
+			swingSession.getRootNode().addSPListener(activeListener);
+			for(MungeProcess mp : project.getMungeProcesses()) {
+				mp.addSPListener(activeListener);
+			}
+			
 			pb.add(selectionButton, cc.xyw(4, y, 2, "l,c"));
 		}
 
@@ -942,6 +984,11 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		spinnerUpdateManager.cleanup();
 		for(CheckBoxModelUpdater cbmu : updaters) {
 			engineSettings.removeSPListener(cbmu);
+		}
+		engineSettings.removeSPListener(activeListener);
+		swingSession.getRootNode().removeSPListener(activeListener);
+		for(MungeProcess mp : project.getMungeProcesses()) {
+			mp.removeSPListener(activeListener);
 		}
 //		engine.removeEngineListener(engineListener);
 	}
