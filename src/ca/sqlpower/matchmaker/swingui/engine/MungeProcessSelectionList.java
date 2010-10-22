@@ -164,7 +164,7 @@ public abstract class MungeProcessSelectionList extends JButton {
 		row += 2;
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList = new JList(mps.toArray());
-		processesList.setSelectedIndices(getSelectedIndices());
+		setIndices();
 		
 		processesList.addListSelectionListener(new ListSelectionListener() {
 			
@@ -198,7 +198,7 @@ public abstract class MungeProcessSelectionList extends JButton {
 		}
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList.setListData(mps.toArray());
-		processesList.setSelectedIndices(getSelectedIndices());
+		setIndices();
 		setPopupButtonText();
 	}
 	
@@ -206,47 +206,44 @@ public abstract class MungeProcessSelectionList extends JButton {
 	 * Used to keep the UI in synch with the model
 	 */
 	public void checkModel() {
-		processesList.setSelectedIndices(getSelectedIndices());
+		setIndices();
 		setPopupButtonText();
+	}
+	
+	public void setIndices() {
+		
+		boolean indices[] = getSelectedIndices();
+		for(int i = 0; i < mps.size(); i++) {
+			if(!indices[i] && (indices[i] != processesList.isSelectedIndex(i))) processesList.removeSelectionInterval(i, i);
+		}
+		for(int i = 0; i < mps.size(); i++) {
+			if(!indices[i] && (indices[i] != processesList.isSelectedIndex(i))) processesList.addSelectionInterval(i, i);
+		}
 	}
 	
 	/** 
 	 * Returns an int[] of the active munge processes.
 	 */
-	private int[] getSelectedIndices() {
-		int count = 0;
+	private boolean[] getSelectedIndices() {
 		int index = 0;
-		int[] indices;
+		boolean[] indices;
 		
-		// This determines the size required for the array
-		for (MungeProcess mp : mps) {
-			if (getValue(mp)) {
-				count++;
-			} 
-		}
-		indices = new int[count];
-		count = 0;
+		indices = new boolean[mps.size()];
 		
-		// This fills in the array with the active indices.
-		// A List.toArray() was not used instead because it
-		// returns a Integer[] instead of a int[].
 		for (MungeProcess mp : mps) {
-			if (getValue(mp)) {
-				indices[count++] = index;
-			} 
-			index++;
+			indices[index++] = getValue(mp);
 		}
 		return indices;
 	}
 	
 	public void applyChanges() {
 		int index = 0;
-		project.getMungeSettings().begin("Commiting the active properties to munge steps");
 		for (MungeProcess mp : mps) {
-			setValue(mp, processesList.isSelectedIndex(index));
+			if(processesList.isSelectedIndex(index) != getValue(mp)) {
+				setValue(mp, processesList.isSelectedIndex(index));
+			}
 			index++;
 		}
-		project.getMungeSettings().commit();
 		setPopupButtonText();
 	}
 	

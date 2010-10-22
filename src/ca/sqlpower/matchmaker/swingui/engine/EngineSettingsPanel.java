@@ -73,7 +73,6 @@ import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SpinnerUpdateManager;
-import ca.sqlpower.object.AbstractPoolingSPListener;
 import ca.sqlpower.object.AbstractSPListener;
 import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
@@ -724,28 +723,9 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 			};
 			
 			
-			activeListener = new AbstractPoolingSPListener() {
-				
-				boolean begun = false;
-				boolean activeProperty = false;
-				
-				protected void transactionStartedImpl(TransactionEvent e) {
-					begun = true;
-					activeProperty = false;
-					logger.debug("debug = true on " + e.getSource());
-				};
-				
+			activeListener = new AbstractSPListener() {
 				@Override
-				protected void finalCommitImpl(TransactionEvent e) {
-					begun = false;
-					if(activeProperty) {
-						selectionButton.refreshList();
-					}
-					logger.debug("debug = false on " + e.getSource());
-				}
-				
-				@Override
-				protected void propertyChangeImpl(PropertyChangeEvent evt) {
+				public void propertyChanged(PropertyChangeEvent evt) {
 					logger.debug("checking property with name " + evt.getPropertyName());
 					if(evt.getPropertyName().equals("active")) {
 						selectionButton.checkModel();
@@ -753,8 +733,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 				}
 			};
 			
-			engineSettings.addSPListener(activeListener);
-			swingSession.getRootNode().addSPListener(activeListener);
 			for(MungeProcess mp : project.getMungeProcesses()) {
 				mp.addSPListener(activeListener);
 			}
