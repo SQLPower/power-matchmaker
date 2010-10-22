@@ -112,6 +112,10 @@ public class SaveWorkspaceAsAction extends AbstractAction {
 	 * @return Whether the save was successful.
 	 */
 	public static boolean doSaveAs(File selectedFile, MatchMakerSwingSession session) {
-		return OpenSaveHandler.doSaveAs(selectedFile, session);
+		boolean b = OpenSaveHandler.doSaveAs(selectedFile, session);
+		if (b) {
+			session.setUnsaved(false);
+		}
+		return b;
 	}
 }
