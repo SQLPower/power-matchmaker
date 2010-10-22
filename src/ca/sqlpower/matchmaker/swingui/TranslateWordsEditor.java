@@ -115,7 +115,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 		
 		row += 2;
 		internalPB.add(new JLabel ("Group Name:"), cc.xy(2,row,"r,t"));
-		groupName.setText(mmo.getName());
+		setGroupName();
 		internalPB.add(groupName, cc.xy(4,row,"f,f"));
 		
 		row += 2;
@@ -165,7 +165,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 		externalPB.add(internalPB.getPanel(), cc.xyw(2,2,4,"f,f"));
 		
         
-        MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getTranslations(),
+        MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getRootNode().getTranslateGroupParent(),
                                     null, "translate group name", 35, mmo);
         handler.addValidateObject(groupName, mmoValidator);
         TranslateWordValidator wordValidator = new TranslateWordValidator(translateWordsTable);
@@ -358,6 +358,21 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 
 	@Override
 	public void undoEventFired(PropertyChangeEvent evt) {
+		groupName.setText(mmo.getName());
+	}
+	
+	public void setGroupName() {
+		List<String> names = new ArrayList<String>();
+		for(MatchMakerTranslateGroup tg : swingSession.getRootNode().getTranslateGroupParent().getTranslateGroups()) {
+			names.add(tg.getName());
+		}
+		if(names.contains(mmo.getName())) {
+			int i = 1;
+			while(names.contains(mmo.getName() + i)) {
+				i++;
+			}
+			mmo.setName(mmo.getName() + i);
+		}
 		groupName.setText(mmo.getName());
 	}
 }
