@@ -194,6 +194,13 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 	 * A listener to keep the UI in synch with the model
 	 */
 	private SPListener activeListener;
+	
+	/**
+	 * A listener to keep the UI in synch with the model
+	 */
+	private SPListener newMungeProcessListener;
+	
+	
 
 	/**
 	 * The file path to which the engine logs will be written to.
@@ -732,7 +739,7 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 				protected void finalCommitImpl(TransactionEvent e) {
 					begun = false;
 					if(activeProperty) {
-						selectionButton.checkModel();
+						selectionButton.refreshList();
 					}
 					logger.debug("debug = false on " + e.getSource());
 				}
@@ -740,8 +747,8 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 				@Override
 				protected void propertyChangeImpl(PropertyChangeEvent evt) {
 					logger.debug("checking property with name " + evt.getPropertyName());
-					if(evt.getPropertyName().equals("active") && begun) {
-						activeProperty = true;
+					if(evt.getPropertyName().equals("active")) {
+						selectionButton.checkModel();
 					}
 				}
 			};
@@ -751,6 +758,18 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 			for(MungeProcess mp : project.getMungeProcesses()) {
 				mp.addSPListener(activeListener);
 			}
+			
+			newMungeProcessListener = new AbstractSPListener() {
+				@Override
+				public void childAdded(SPChildEvent e) {
+					selectionButton.refreshList();
+				}
+				@Override
+				public void childRemoved(SPChildEvent e) {
+					selectionButton.refreshList();
+				}
+			};
+			project.addSPListener(newMungeProcessListener);
 			
 			pb.add(selectionButton, cc.xyw(4, y, 2, "l,c"));
 		}
@@ -990,6 +1009,7 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		for(MungeProcess mp : project.getMungeProcesses()) {
 			mp.removeSPListener(activeListener);
 		}
+		project.removeSPListener(newMungeProcessListener);
 //		engine.removeEngineListener(engineListener);
 	}
 }

@@ -33,8 +33,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.apache.log4j.Logger;
 
@@ -123,32 +123,6 @@ public abstract class MungeProcessSelectionList extends JButton {
 		}
 		popupMenu = new JPopupMenu("Choose Processes");
 		
-		popupMenu.addPopupMenuListener(new PopupMenuListener(){
-
-			public void popupMenuCanceled(PopupMenuEvent e) {
-				// not used
-			}
-
-			/**
-			 * Saves the selections and updates the text on the button.
-			 */
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				int index = 0;
-				project.getMungeSettings().begin("Commiting the active properties to munge steps");
-				for (MungeProcess mp : mps) {
-					setValue(mp, processesList.isSelectedIndex(index));
-					index++;
-				}
-				project.getMungeSettings().commit();
-				setPopupButtonText();
-			}
-
-			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-				// not used
-			}
-			
-		});
-		
 		popupMenu.setBorder(BorderFactory.createRaisedBevelBorder());
 		
 		final JButton selectAll = new JButton("Select All");
@@ -191,6 +165,15 @@ public abstract class MungeProcessSelectionList extends JButton {
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList = new JList(mps.toArray());
 		processesList.setSelectedIndices(getSelectedIndices());
+		
+		processesList.addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				applyChanges();
+			}
+		});
+		
 		processesPane = new JScrollPane(processesList);
 		processesPane.setPreferredSize(new Dimension(160, 100));
 		menu.add(processesPane, cc.xy(2, row));
@@ -208,7 +191,7 @@ public abstract class MungeProcessSelectionList extends JButton {
 	/**
 	 * Refreshes the list so it will contain newly created Munge Processes.
 	 */
-	private void refreshList() {
+	public void refreshList() {
 		mps.clear();
 		for(MungeProcess mp : project.getMungeProcesses()) {
 			mps.add(mp);
@@ -254,6 +237,17 @@ public abstract class MungeProcessSelectionList extends JButton {
 			index++;
 		}
 		return indices;
+	}
+	
+	public void applyChanges() {
+		int index = 0;
+		project.getMungeSettings().begin("Commiting the active properties to munge steps");
+		for (MungeProcess mp : mps) {
+			setValue(mp, processesList.isSelectedIndex(index));
+			index++;
+		}
+		project.getMungeSettings().commit();
+		setPopupButtonText();
 	}
 	
 	/**
