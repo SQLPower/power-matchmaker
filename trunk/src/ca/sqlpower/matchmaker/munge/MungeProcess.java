@@ -287,11 +287,11 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 */
 	public void addChild(SPObject spo) {
 		if(spo instanceof SQLInputStep) {
-			addChild(spo, inputSteps.size());
+			addChild(spo, inputSteps.size() + (resultStep == null? 0 : 1));
 		} else if(spo instanceof MungeResultStep) {
-			addChild(spo, inputSteps.size() + mungeSteps.size());
+			addChild(spo, 0);
 		} else if(spo instanceof MungeStep){
-			addChild(spo, inputSteps.size() + mungeSteps.size());
+			addChild(spo, inputSteps.size() + mungeSteps.size() + (resultStep == null? 0 : 1));
 		} else {
 			throw new RuntimeException("Trying to add a child of incorrect type: " + spo.getClass());
 		}
@@ -309,22 +309,27 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	
 	public void addMungeStep(MungeStep step, int index) {
 		if (step instanceof SQLInputStep) {
-			if (index > inputSteps.size()) {
+			if (index > inputSteps.size() + (resultStep == null? 0 : 1) || 
+					index < (resultStep == null? 0 : 1)) {
 				throw new IllegalArgumentException("The input step " + step + 
 						" must be inserted before position " + inputSteps.size() + 
 						" instead of at " + index + " as it must come before the other steps.");
 			}
-			inputSteps.add(index, (SQLInputStep)step);
+			inputSteps.add(index - (resultStep == null? 0 : 1), (SQLInputStep) step);
 			for(AddressCorrectionMungeStep s : getChildren(AddressCorrectionMungeStep.class)) {
 				s.setInputStep((SQLInputStep)step);
 			}
 			step.setParent(this);
+			if (resultStep != null) {
+				resultStep.addInputStep((SQLInputStep) step);
+			}
 			fireChildAdded(SQLInputStep.class, step, index);
 		} else {
-			int endPosition = inputSteps.size() + mungeSteps.size();
-			if (index < inputSteps.size() || index > endPosition) {
+			int endPosition = inputSteps.size() + mungeSteps.size() + (resultStep == null? 0 : 1);
+			if (index < inputSteps.size() + (resultStep == null? 0 : 1) || index > endPosition) {
 				throw new IllegalArgumentException("The input step " + step + 
-						" must be inserted after position " + inputSteps.size() + " and before " + endPosition + 
+						" must be inserted after position " + (inputSteps.size() + (resultStep == null? 0 : 1)) + 
+						" and before " + endPosition + 
 						" instead of at " + index + " as it must come in the other steps.");
 			}
 			if (step instanceof AddressCorrectionMungeStep) {
@@ -332,9 +337,9 @@ public class MungeProcess extends AbstractMatchMakerObject {
 					((AddressCorrectionMungeStep)step).setInputStep(input);
 				}
 			}
-			mungeSteps.add(index - inputSteps.size(), (MungeStep)step);
+			mungeSteps.add(index - (inputSteps.size() + (resultStep == null? 0 : 1)), (MungeStep)step);
 			step.setParent(this);
-			if(step.isMagicEnabled()) {
+			if (step.isMagicEnabled()) {
 				step.init();
 			}
 			fireChildAdded(MungeStep.class, step, index);
@@ -355,7 +360,7 @@ public class MungeProcess extends AbstractMatchMakerObject {
 				this.resultStep.addInputStep(input);
 			}
 			resultStep.setParent(this);
-			fireChildAdded(MungeResultStep.class, resultStep, getInputSteps().size() + getMungeSteps().size());
+			fireChildAdded(MungeResultStep.class, resultStep, 0);
 		} else {
 			throw new IllegalArgumentException("The MungeResultStep should be set at the constructor of MungeProcess.");
 		}
@@ -371,14 +376,14 @@ public class MungeProcess extends AbstractMatchMakerObject {
 			int index = inputSteps.indexOf(step);
 			boolean removed = inputSteps.remove(step);
 			if (removed) {
-				fireChildRemoved(SQLInputStep.class, step, index);
+				fireChildRemoved(SQLInputStep.class, step, index + (resultStep == null? 0 : 1));
 			}
 			return removed;
 		} else if (step instanceof MungeStep) {
 			int index = mungeSteps.indexOf(step);
 			boolean removed = mungeSteps.remove(step);
 			if (removed) {
-				fireChildRemoved(MungeStep.class, step, index + inputSteps.size());
+				fireChildRemoved(MungeStep.class, step, index + inputSteps.size() + (resultStep == null? 0 : 1));
 			}
 			return removed;
 		}
@@ -432,11 +437,11 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	@NonProperty
 	public List<SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
-		children.addAll(inputSteps);
-		children.addAll(mungeSteps);
 		if (resultStep != null) {
 			children.add(resultStep);
 		}
+		children.addAll(inputSteps);
+		children.addAll(mungeSteps);
 		return Collections.unmodifiableList(children);
 	}
 
@@ -446,12 +451,12 @@ public class MungeProcess extends AbstractMatchMakerObject {
 	 * of the munge steps.
 	 */
 	public int mungeProcessChildPositionOffset(Class<? extends SPObject> childType) {
-        if (SQLInput.class.isAssignableFrom(childType)) return 0;
-        if (MungeResultStep.class.isAssignableFrom(childType)) {
-        	return getInputSteps().size() + getMungeSteps().size();
-        }
+		if (MungeResultStep.class.isAssignableFrom(childType)) {
+			return 0;
+		}
+        if (SQLInput.class.isAssignableFrom(childType)) return (resultStep == null? 0 : 1);
         if (MungeStep.class.isAssignableFrom(childType)) {
-        	return getInputSteps().size();
+        	return getInputSteps().size() + (resultStep == null? 0 : 1);
         }
         throw new IllegalArgumentException(childType.getName() + 
                 " is not a valid child type of " + getClass().getName());
