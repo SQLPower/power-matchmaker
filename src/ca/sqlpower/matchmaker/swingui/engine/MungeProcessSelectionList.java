@@ -134,10 +134,12 @@ public abstract class MungeProcessSelectionList extends JButton {
 			 */
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 				int index = 0;
+				project.getMungeSettings().begin("Commiting the active properties to munge steps");
 				for (MungeProcess mp : mps) {
 					setValue(mp, processesList.isSelectedIndex(index));
 					index++;
 				}
+				project.getMungeSettings().commit();
 				setPopupButtonText();
 			}
 
@@ -213,6 +215,14 @@ public abstract class MungeProcessSelectionList extends JButton {
 		}
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList.setListData(mps.toArray());
+		processesList.setSelectedIndices(getSelectedIndices());
+		setPopupButtonText();
+	}
+	
+	/**
+	 * Used to keep the UI in synch with the model
+	 */
+	public void checkModel() {
 		processesList.setSelectedIndices(getSelectedIndices());
 		setPopupButtonText();
 	}
