@@ -60,6 +60,7 @@ import ca.sqlpower.matchmaker.swingui.munge.CleanseResultMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungeResultMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.SQLInputMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
+import ca.sqlpower.matchmaker.util.MMOSaveChangesListener;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -232,6 +233,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     	try {
     		MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createDefaultSession());
     		getSessions().add(session);
+    		new MMOSaveChangesListener(session);
     		session.addSessionLifecycleListener(getSessionLifecycleListener());
     		if (getExternalLifecycleListener() != null) {
     			session.addSessionLifecycleListener(getExternalLifecycleListener());
@@ -372,6 +374,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		sessionDelegate = context.createDefaultSession();
 		MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
 		getSessions().add(session);
+		new MMOSaveChangesListener(session);
 		session.addSessionLifecycleListener(getSessionLifecycleListener());
 		if (getExternalLifecycleListener() != null) {
 			session.addSessionLifecycleListener(getExternalLifecycleListener());
