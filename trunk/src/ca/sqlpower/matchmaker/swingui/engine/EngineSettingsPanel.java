@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -129,6 +130,12 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 	 */
 	private List<CheckBoxModelUpdater> updaters = new ArrayList<CheckBoxModelUpdater>();
 
+	/**
+	 * Pref nodes for the log file settings.
+	 */
+	private final String LOG_FILE = "engineLogFile";
+	private final String APPEND_TO_LOG = "engineAppendToLog";
+	
 	private static final String ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS = 
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
 		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23             24   25 	 26   27
@@ -362,6 +369,7 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		this.project = project;
 		this.type = engineType;
 		
+		
 		handler = new FormValidationHandler(status);
 		engineStatusListener = new SPListener() {
 			@Override
@@ -423,6 +431,11 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		} else {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
+
+		Preferences p = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
+		Preferences prefs = p.node(project.getUUID());
+		engineSettings.setLog(new File(prefs.get(LOG_FILE, project.getName() + ".log")));
+		engineSettings.setAppendToLog(Boolean.parseBoolean(prefs.get(APPEND_TO_LOG, "false")));
 		
 		if (type == EngineType.MERGE_ENGINE ||
 			type == EngineType.CLEANSE_ENGINE ||
@@ -529,11 +542,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 					return ValidateResult.createValidateResult(Status.OK, "");
 				}
 			});
-		}
-		
-		
-		if (engineSettings.getLog() == null) {
-			engineSettings.setLog(new File(project.getName() + ".log"));
 		}
 
 		File logFile = engineSettings.getLog();
@@ -895,6 +903,10 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());
+		Preferences p = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
+		Preferences prefs = p.node(project.getUUID());
+		prefs.put(LOG_FILE, engineSettings.getLog().getAbsolutePath());
+		prefs.put(APPEND_TO_LOG, Boolean.toString(engineSettings.getAppendToLog()));
 		if (recordsToProcess.getValue().equals(new Integer(0))) {
 			engineSettings.setProcessCount(null);
 		} else {

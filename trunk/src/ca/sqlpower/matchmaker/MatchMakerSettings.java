@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonBound;
 
 /**
  * The Project (Object) settings that are common to both the match and the merge
@@ -137,16 +138,16 @@ public abstract class MatchMakerSettings extends
 	 */
 	private Date lastRunDate;
 
+	@NonBound
 	@Accessor
 	public boolean getAppendToLog() {
 		return appendToLog;
 	}
 
+	@NonBound
 	@Mutator
 	public void setAppendToLog(boolean appendToLog) {
-		boolean oldValue = this.appendToLog;
 		this.appendToLog = appendToLog;
-		firePropertyChange("appendToLog", oldValue, appendToLog);
 	}
 
 	@Accessor
@@ -189,16 +190,17 @@ public abstract class MatchMakerSettings extends
 		firePropertyChange("sendEmail", oldValue, sendEMail);
 	}
 
+	@NonBound
 	@Accessor
 	public File getLog() {
 		return log;
 	}
 
+	@NonBound
 	@Mutator
 	public void setLog(File log) {
 		File oldValue = this.log;
 		this.log = log;
-		firePropertyChange("log", oldValue, this.log);
 	}
 
 	@Accessor
