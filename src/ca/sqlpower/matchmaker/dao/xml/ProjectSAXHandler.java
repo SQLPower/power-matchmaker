@@ -238,6 +238,8 @@ public class ProjectSAXHandler extends DefaultHandler {
                 project.setSession(session);
                 projects.add(project);
                 
+               project.setMagicEnabled(false);
+                
                 String id = null;
 
                 for (int i = 0; i < attributes.getLength(); i++) {
@@ -1003,6 +1005,7 @@ public class ProjectSAXHandler extends DefaultHandler {
         }
 
         if (qName.equals("project")) {
+        	project.setMagicEnabled(true);
             project = null;
         } else if (qName.equals("munge-process") && parentIs("project")) {
             for (AbstractMungeStep step : steps) {
