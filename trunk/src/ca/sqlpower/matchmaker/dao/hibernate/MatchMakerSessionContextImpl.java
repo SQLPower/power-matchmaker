@@ -31,6 +31,7 @@ import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.enterprise.ClientSideSessionUtils;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -164,9 +165,10 @@ public class MatchMakerSessionContextImpl implements MatchMakerSessionContext {
         public void sessionClosing(SessionLifecycleEvent<MatchMakerSession> e) {
             getSessions().remove(e.getSource());
             e.getSource().removeSessionLifecycleListener(this);
-            if (getSessions().isEmpty()) {
-                System.exit(0);
+            for (MatchMakerSession s : getSessions()) {
+            	if (!s.getRootNode().getUUID().equals(ClientSideSessionUtils.SYSTEM_UUID)) return;
             }
+            System.exit(0);
         }
 
 		public void sessionOpening(SessionLifecycleEvent<MatchMakerSession> e) {
