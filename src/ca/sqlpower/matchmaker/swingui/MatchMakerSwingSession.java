@@ -460,7 +460,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		});
 
-        frame = new JFrame("SQL Power DQguru: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
+        frame = new JFrame("SQL Power DQguru");
         statusLabel = new JLabel();
         warningDialog = new JDialog(frame, "DQguru Warnings");
         warningTextArea = new JTextArea(6, 40);
