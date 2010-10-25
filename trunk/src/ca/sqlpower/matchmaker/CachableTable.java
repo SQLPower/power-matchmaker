@@ -32,6 +32,7 @@ import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
@@ -254,6 +255,9 @@ public class CachableTable extends AbstractMatchMakerObject {
 					table = SQLObjectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
 				} else {
 					logger.debug("     Found!");
+				}
+				for(SQLColumn c : table.getColumns()) {
+					c.setType(getSession().getSQLType(c.getType()));
 				}
 				this.table = table;
 				return table;
