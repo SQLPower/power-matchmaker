@@ -50,6 +50,8 @@ public abstract class MungeProcessSelectionList extends JButton {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessSelectionList.class);
 	
+	private boolean fireEvents = true;
+	
 	/**
 	 * The actual JList of munge processes.
 	 */
@@ -164,13 +166,15 @@ public abstract class MungeProcessSelectionList extends JButton {
 		row += 2;
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList = new JList(mps.toArray());
+		fireEvents = false;
 		setIndices();
+		fireEvents = true;
 		
 		processesList.addListSelectionListener(new ListSelectionListener() {
 			
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
-				applyChanges();
+				if(fireEvents) applyChanges();
 			}
 		});
 		
@@ -198,7 +202,9 @@ public abstract class MungeProcessSelectionList extends JButton {
 		}
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList.setListData(mps.toArray());
+		fireEvents = false;
 		setIndices();
+		fireEvents = true;
 		setPopupButtonText();
 	}
 	
@@ -211,38 +217,52 @@ public abstract class MungeProcessSelectionList extends JButton {
 	}
 	
 	public void setIndices() {
-		
-		boolean indices[] = getSelectedIndices();
-		for(int i = 0; i < mps.size(); i++) {
-			if(!indices[i] && (indices[i] != processesList.isSelectedIndex(i))) processesList.removeSelectionInterval(i, i);
-		}
-		for(int i = 0; i < mps.size(); i++) {
-			if(!indices[i] && (indices[i] != processesList.isSelectedIndex(i))) processesList.addSelectionInterval(i, i);
-		}
+		processesList.setSelectedIndices(getSelectedIndices());
 	}
 	
 	/** 
 	 * Returns an int[] of the active munge processes.
 	 */
-	private boolean[] getSelectedIndices() {
+	private int[] getSelectedIndices() {
+		int count = 0;
 		int index = 0;
-		boolean[] indices;
+		int[] indices;
 		
-		indices = new boolean[mps.size()];
-		
+		// This determines the size required for the array
 		for (MungeProcess mp : mps) {
-			indices[index++] = getValue(mp);
+			if (getValue(mp)) {
+				count++;
+			} 
+		}
+		indices = new int[count];
+		count = 0;
+		
+		// This fills in the array with the active indices.
+		// A List.toArray() was not used instead because it
+		// returns a Integer[] instead of a int[].
+		for (MungeProcess mp : mps) {
+			if (getValue(mp)) {
+				indices[count++] = index;
+			} 
+			index++;
 		}
 		return indices;
 	}
 	
 	public void applyChanges() {
 		int index = 0;
-		for (MungeProcess mp : mps) {
-			if(processesList.isSelectedIndex(index) != getValue(mp)) {
-				setValue(mp, processesList.isSelectedIndex(index));
+		try {
+			project.getMungeSettings().begin("Updating which Transformations are active.");
+			for (MungeProcess mp : mps) {
+				if(processesList.isSelectedIndex(index) != getValue(mp)) {
+					setValue(mp, processesList.isSelectedIndex(index));
+				}
+				index++;
 			}
-			index++;
+			project.getMungeSettings().commit();
+		} catch (Exception e) {
+			project.getMungeSettings().rollback("Rolling back");
+			throw new RuntimeException(e);
 		}
 		setPopupButtonText();
 	}
