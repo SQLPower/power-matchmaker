@@ -50,6 +50,11 @@ public abstract class MungeProcessSelectionList extends JButton {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessSelectionList.class);
 	
+	/**
+	 * A flag for knowing when the UI should fire events to change the model if it is updated. Since the model
+	 * also fires events to update the UI, without this, we can get into a sticky infinite loop and get
+	 * a stack overflow error. 
+	 */
 	private boolean fireEvents = true;
 	
 	/**
