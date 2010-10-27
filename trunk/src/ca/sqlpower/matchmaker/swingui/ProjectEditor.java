@@ -48,17 +48,18 @@ import javax.swing.MutableComboBoxModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
 import ca.sqlpower.sqlobject.SQLCatalog;
+import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObject;
@@ -170,6 +171,13 @@ public class ProjectEditor implements MatchMakerEditorPane {
         		SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
 				refreshIndexComboBoxAndAction(sourceTable);
 				if (sourceTable != null) {
+					try {
+						for(SQLColumn c : sourceTable.getColumns()) {
+							c.setType(swingSession.getSQLType(c.getType()));
+						}
+					} catch (SQLObjectException evt) {
+						throw new RuntimeException(evt);
+					}
 					String trimmedResultTableName;
 					if (project.getType() == ProjectMode.FIND_DUPES) {
 						trimmedResultTableName = sourceTable.getName() + "_match_pool";
@@ -273,6 +281,13 @@ public class ProjectEditor implements MatchMakerEditorPane {
 				JOptionPane.showMessageDialog(panel,
 						"You have to select a source table and save before picking columns" );
 				return;
+			}
+			try {
+				for(SQLColumn c : sourceTable.getColumns()) {
+					c.setType(swingSession.getSQLType(c.getType()));
+				}
+			} catch (SQLObjectException evt) {
+				throw new RuntimeException(evt);
 			}
 			try {
 				MatchMakerIndexBuilder indexBuilder = new MatchMakerIndexBuilder(sourceTable, (MutableComboBoxModel)indexComboBox.getModel(),swingSession);
@@ -543,6 +558,13 @@ public class ProjectEditor implements MatchMakerEditorPane {
         if (sourceTable == null || sourceTableIndex == null) {
         	throw new IllegalStateException("Source table/index not found.");
         }
+		try {
+			for(SQLColumn c : sourceTable.getColumns()) {
+				c.setType(swingSession.getSQLType(c.getType()));
+			}
+		} catch (SQLObjectException evt) {
+			throw new RuntimeException(evt);
+		}
         project.setSourceTable(sourceTable);
         project.setSourceTableIndex(sourceTableIndex);
         project.setFilter(filterPanel.getFilterTextArea().getText());
