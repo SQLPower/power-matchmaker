@@ -43,9 +43,9 @@ public class PotentialMatchRecordTest extends TestCase {
 		MungeProcess mungeProcess = new MungeProcess();
 		mungeProcess.setName("mungeprocess");
 		project.addChild(mungeProcess);
-		MatchPool pool = new MatchPool(project);
-		SourceTableRecord str1 = new SourceTableRecord(session, project, Collections.singletonList("str1"));
-		SourceTableRecord str2 = new SourceTableRecord(session, project, Collections.singletonList("str2"));
+		MatchPool pool = project.getMatchPool();
+		SourceTableRecord str1 = new SourceTableRecord(project, Collections.singletonList("str1"));
+		SourceTableRecord str2 = new SourceTableRecord(project, Collections.singletonList("str2"));
 		pmr = new PotentialMatchRecord(mungeProcess, MatchType.UNMATCH, str1, str2, false);
 		pool.addPotentialMatch(pmr);
 	}
@@ -56,8 +56,8 @@ public class PotentialMatchRecordTest extends TestCase {
 		pmr.setMatchStatus(MatchType.NOMATCH);
 		assertSame(StoreState.DIRTY, pmr.getStoreState());
 		pmr.setStoreState(StoreState.CLEAN);
-		pmr.setMaster(pmr.getOriginalLhs());
-		pmr.setMaster(pmr.getOriginalRhs());
+		pmr.setMasterRecord(pmr.getReferencedRecord());
+		pmr.setMasterRecord(pmr.getDirectRecord());
 		assertSame(StoreState.DIRTY, pmr.getStoreState());
 	}
 	
@@ -67,26 +67,26 @@ public class PotentialMatchRecordTest extends TestCase {
 		pmr.setMatchStatus(MatchType.NOMATCH);
 		assertSame(StoreState.NEW, pmr.getStoreState());
 		pmr.setStoreState(StoreState.NEW);
-		pmr.setMaster(pmr.getOriginalLhs());
-		pmr.setMaster(pmr.getOriginalRhs());
+		pmr.setMasterRecord(pmr.getReferencedRecord());
+		pmr.setMasterRecord(pmr.getDirectRecord());
 		assertSame(StoreState.NEW, pmr.getStoreState());
 	}
 	
 	public void testIsMatch() {
-		pmr.setMaster(pmr.getOriginalLhs());
+		pmr.setMasterRecord(pmr.getReferencedRecord());
 		pmr.setMatchStatus(MatchType.MATCH);
 		assertTrue(pmr.isMatch());
 		
 		pmr.setMatchStatus(MatchType.AUTOMATCH);
 		assertTrue(pmr.isMatch());
 		
-		pmr.setMaster(pmr.getOriginalRhs());
+		pmr.setMasterRecord(pmr.getDirectRecord());
 		assertTrue(pmr.isMatch());
 		
 		pmr.setMatchStatus(MatchType.MATCH);
 		assertTrue(pmr.isMatch());
 		
-		pmr.setMaster(null);
+		pmr.setMasterRecord(null);
 		pmr.setMatchStatus(MatchType.UNMATCH);
 		assertFalse(pmr.isMatch());
 		

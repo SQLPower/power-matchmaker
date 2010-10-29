@@ -56,14 +56,14 @@ public class MMTestUtils {
 			MungeProcess mungeProcessOne,
 			MungeProcess mungeProcessTwo) {
 		
-		MatchPool pool = new MatchPool(m);
+		MatchPool pool = m.getMatchPool();
 		
 		//The graph for a
-		SourceTableRecord node1 = new SourceTableRecord(session, m, "a1");
+		SourceTableRecord node1 = new SourceTableRecord(m, "a1");
 		pool.addSourceTableRecord(node1);
-		SourceTableRecord node2 = new SourceTableRecord(session, m, "a2");
+		SourceTableRecord node2 = new SourceTableRecord(m, "a2");
 		pool.addSourceTableRecord(node2);
-		SourceTableRecord node3 = new SourceTableRecord(session, m, "a3");
+		SourceTableRecord node3 = new SourceTableRecord(m, "a3");
 		pool.addSourceTableRecord(node3);
 		SourceTableRecord node4;
 		SourceTableRecord node5;
@@ -76,305 +76,305 @@ public class MMTestUtils {
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for b
-		node1 = new SourceTableRecord(session, m, "b1");
+		node1 = new SourceTableRecord(m, "b1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "b2");
+		node2 = new SourceTableRecord(m, "b2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "b3");
+		node3 = new SourceTableRecord(m, "b3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node1);
+		pmr.setMasterRecord(node1);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for c
-		node1 = new SourceTableRecord(session, m, "c1");
+		node1 = new SourceTableRecord(m, "c1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "c2");
+		node2 = new SourceTableRecord(m, "c2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "c3");
+		node3 = new SourceTableRecord(m, "c3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for d
-		node1 = new SourceTableRecord(session, m, "d1");
+		node1 = new SourceTableRecord(m, "d1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "d2");
+		node2 = new SourceTableRecord(m, "d2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "d3");
+		node3 = new SourceTableRecord(m, "d3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for e
-		node1 = new SourceTableRecord(session, m, "e1");
+		node1 = new SourceTableRecord(m, "e1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "e2");
+		node2 = new SourceTableRecord(m, "e2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "e3");
+		node3 = new SourceTableRecord(m, "e3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for f
-		node1 = new SourceTableRecord(session, m, "f1");
+		node1 = new SourceTableRecord(m, "f1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "f2");
+		node2 = new SourceTableRecord(m, "f2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "f3");
+		node3 = new SourceTableRecord(m, "f3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node1);
+		pmr.setMasterRecord(node1);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for g
-		node1 = new SourceTableRecord(session, m, "g1");
+		node1 = new SourceTableRecord(m, "g1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "g2");
+		node2 = new SourceTableRecord(m, "g2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "g3");
+		node3 = new SourceTableRecord(m, "g3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "g4");
+		node4 = new SourceTableRecord(m, "g4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for h
-		node1 = new SourceTableRecord(session, m, "h1");
+		node1 = new SourceTableRecord(m, "h1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "h2");
+		node2 = new SourceTableRecord(m, "h2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "h3");
+		node3 = new SourceTableRecord(m, "h3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "h4");
+		node4 = new SourceTableRecord(m, "h4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node1);
+		pmr.setMasterRecord(node1);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for i
-		node1 = new SourceTableRecord(session, m, "i1");
+		node1 = new SourceTableRecord(m, "i1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "i2");
+		node2 = new SourceTableRecord(m, "i2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "i3");
+		node3 = new SourceTableRecord(m, "i3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node3, node1, false);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for j
-		node1 = new SourceTableRecord(session, m, "j1");
+		node1 = new SourceTableRecord(m, "j1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "j2");
+		node2 = new SourceTableRecord(m, "j2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "j3");
+		node3 = new SourceTableRecord(m, "j3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "j4");
+		node4 = new SourceTableRecord(m, "j4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node4, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for k
-		node1 = new SourceTableRecord(session, m, "k1");
+		node1 = new SourceTableRecord(m, "k1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "k2");
+		node2 = new SourceTableRecord(m, "k2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "k3");
+		node3 = new SourceTableRecord(m, "k3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "k4");
+		node4 = new SourceTableRecord(m, "k4");
 		pool.addSourceTableRecord(node4);
-		node5 = new SourceTableRecord(session, m, "k5");
+		node5 = new SourceTableRecord(m, "k5");
 		pool.addSourceTableRecord(node5);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node5, node4, false);
-		pmr.setMaster(node5);
+		pmr.setMasterRecord(node5);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node5, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for l
-		node1 = new SourceTableRecord(session, m, "l1");
+		node1 = new SourceTableRecord(m, "l1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "l2");
+		node2 = new SourceTableRecord(m, "l2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "l3");
+		node3 = new SourceTableRecord(m, "l3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "l4");
+		node4 = new SourceTableRecord(m, "l4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for m
-		node1 = new SourceTableRecord(session, m, "m1");
+		node1 = new SourceTableRecord(m, "m1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "m2");
+		node2 = new SourceTableRecord(m, "m2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "m3");
+		node3 = new SourceTableRecord(m, "m3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "m4");
+		node4 = new SourceTableRecord(m, "m4");
 		pool.addSourceTableRecord(node4);
-		node5 = new SourceTableRecord(session, m, "m5");
+		node5 = new SourceTableRecord(m, "m5");
 		pool.addSourceTableRecord(node5);
-		node6 = new SourceTableRecord(session, m, "m6");
+		node6 = new SourceTableRecord(m, "m6");
 		pool.addSourceTableRecord(node6);
-		node7 = new SourceTableRecord(session, m, "m7");
+		node7 = new SourceTableRecord(m, "m7");
 		pool.addSourceTableRecord(node7);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node5, false);
-		pmr.setMaster(node5);
+		pmr.setMasterRecord(node5);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node5, node6, false);
-		pmr.setMaster(node6);
+		pmr.setMasterRecord(node6);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node6, node7, false);
-		pmr.setMaster(node7);
+		pmr.setMasterRecord(node7);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node6, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node4, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "n1");
+		node1 = new SourceTableRecord(m, "n1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "n2");
+		node2 = new SourceTableRecord(m, "n2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "n3");
+		node3 = new SourceTableRecord(m, "n3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "n4");
+		node4 = new SourceTableRecord(m, "n4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "o1");
+		node1 = new SourceTableRecord(m, "o1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "o2");
+		node2 = new SourceTableRecord(m, "o2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "o3");
+		node3 = new SourceTableRecord(m, "o3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node1, node3, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "p1");
+		node1 = new SourceTableRecord(m, "p1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "p2");
+		node2 = new SourceTableRecord(m, "p2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "p3");
+		node3 = new SourceTableRecord(m, "p3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "p4");
+		node4 = new SourceTableRecord(m, "p4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node4, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node3, node1, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "q1");
+		node1 = new SourceTableRecord(m, "q1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "q2");
+		node2 = new SourceTableRecord(m, "q2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "q3");
+		node3 = new SourceTableRecord(m, "q3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "q4");
+		node4 = new SourceTableRecord(m, "q4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node3, node4, false);
 		pool.addPotentialMatch(pmr);
@@ -383,35 +383,35 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node3, node1, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "r1");
+		node1 = new SourceTableRecord(m, "r1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "r2");
+		node2 = new SourceTableRecord(m, "r2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "r3");
+		node3 = new SourceTableRecord(m, "r3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "r4");
+		node4 = new SourceTableRecord(m, "r4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node4, false);
-		pmr.setMaster(node1);
+		pmr.setMasterRecord(node1);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "s1");
+		node1 = new SourceTableRecord(m, "s1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "s2");
+		node2 = new SourceTableRecord(m, "s2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "s3");
+		node3 = new SourceTableRecord(m, "s3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "s4");
+		node4 = new SourceTableRecord(m, "s4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node1, node2, false);
@@ -419,24 +419,24 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node4, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node3, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "t1");
+		node1 = new SourceTableRecord(m, "t1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "t2");
+		node2 = new SourceTableRecord(m, "t2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "t3");
+		node3 = new SourceTableRecord(m, "t3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "t4");
+		node4 = new SourceTableRecord(m, "t4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
@@ -445,11 +445,11 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node3, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "u1");
+		node1 = new SourceTableRecord(m, "u1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "u2");
+		node2 = new SourceTableRecord(m, "u2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "u3");
+		node3 = new SourceTableRecord(m, "u3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node2, false);
@@ -459,13 +459,13 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node1, node3, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "v1");
+		node1 = new SourceTableRecord(m, "v1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "v2");
+		node2 = new SourceTableRecord(m, "v2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "v3");
+		node3 = new SourceTableRecord(m, "v3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "v4");
+		node4 = new SourceTableRecord(m, "v4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.NOMATCH, node1, node2, false);
@@ -473,7 +473,7 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node3, false);
 		pool.addPotentialMatch(pmr);
@@ -481,41 +481,41 @@ public class MMTestUtils {
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for cycle
-		node1 = new SourceTableRecord(session, m, "cycle1");
+		node1 = new SourceTableRecord(m, "cycle1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "cycle2");
+		node2 = new SourceTableRecord(m, "cycle2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "cycle3");
+		node3 = new SourceTableRecord(m, "cycle3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node2);
+		pmr.setMasterRecord(node2);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
-		pmr.setMaster(node3);
+		pmr.setMasterRecord(node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node3, node1, false);
-		pmr.setMaster(node1);
+		pmr.setMasterRecord(node1);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for the unicycle
-		node1 = new SourceTableRecord(session, m, "unicycle");
+		node1 = new SourceTableRecord(m, "unicycle");
 		pool.addSourceTableRecord(node1);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node1, node1, false);
-		pmr.setMaster(node1);
+		pmr.setMasterRecord(node1);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for the loner
-		node1 = new SourceTableRecord(session, m, "loner");
+		node1 = new SourceTableRecord(m, "loner");
 		pool.addSourceTableRecord(node1);
 		
 		//Here is where AutoMatch graphs start. Rule Sets matter in these ones.
-		node1 = new SourceTableRecord(session, m, "w1");
+		node1 = new SourceTableRecord(m, "w1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "w2");
+		node2 = new SourceTableRecord(m, "w2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "w3");
+		node3 = new SourceTableRecord(m, "w3");
 		pool.addSourceTableRecord(node3);
 		
 		pmr = new PotentialMatchRecord(mungeProcessTwo, MatchType.UNMATCH, node1, node2, false);
@@ -523,13 +523,13 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "x1");
+		node1 = new SourceTableRecord(m, "x1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "x2");
+		node2 = new SourceTableRecord(m, "x2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "x3");
+		node3 = new SourceTableRecord(m, "x3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "x4");
+		node4 = new SourceTableRecord(m, "x4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node2, false);
@@ -539,13 +539,13 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node3, node4, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "y1");
+		node1 = new SourceTableRecord(m, "y1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "y2");
+		node2 = new SourceTableRecord(m, "y2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "y3");
+		node3 = new SourceTableRecord(m, "y3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "y4");
+		node4 = new SourceTableRecord(m, "y4");
 		pool.addSourceTableRecord(node4);		
 
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node1, node2, false);
@@ -555,22 +555,22 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, node3, node4, false);
 		pool.addPotentialMatch(pmr);
 		
-		node1 = new SourceTableRecord(session, m, "z1");
+		node1 = new SourceTableRecord(m, "z1");
 		pool.addSourceTableRecord(node1);
-		node2 = new SourceTableRecord(session, m, "z2");
+		node2 = new SourceTableRecord(m, "z2");
 		pool.addSourceTableRecord(node2);
-		node3 = new SourceTableRecord(session, m, "z3");
+		node3 = new SourceTableRecord(m, "z3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "z4");
+		node4 = new SourceTableRecord(m, "z4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(mungeProcessTwo, MatchType.MATCH, node1, node2, false);
-		pmr.setMaster(node1);
+		pmr.setMasterRecord(node1);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessOne, MatchType.MATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(mungeProcessTwo, MatchType.MATCH, node3, node4, false);
-		pmr.setMaster(node4);
+		pmr.setMasterRecord(node4);
 		pool.addPotentialMatch(pmr);
 		
 		return pool;
