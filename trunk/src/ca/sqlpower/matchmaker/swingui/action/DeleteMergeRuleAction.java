@@ -50,7 +50,6 @@ public class DeleteMergeRuleAction extends AbstractAction {
 			return;
 		Project project = mergeRule.getParent();
 		project.removeTableMergeRules(mergeRule);
-		swingSession.save(project);
 	}
 
 }

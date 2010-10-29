@@ -880,7 +880,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 					new Callable<Boolean>() {
 						public Boolean call() throws Exception {
 							boolean returnValue =  avsp.applyChanges();
-							swingSession.save(project);
 							return returnValue;
 						}
 					},
@@ -964,8 +963,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		} else {
 			engineSettings.setProcessCount((Integer) recordsToProcess.getValue());
 		}
-
-		swingSession.save(project);
 		return true;
 	}
 	

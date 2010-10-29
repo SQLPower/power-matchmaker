@@ -45,7 +45,6 @@ import ca.sqlpower.graph.DijkstrasAlgorithm;
 import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -940,8 +939,6 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 			syntheticMungeProcess = new MungeProcess();
 			syntheticMungeProcess.setName(MungeProcess.SYNTHETIC_MATCHES);
 			getProject().addChild(syntheticMungeProcess);
-			MatchMakerDAO<Project> dao = getSession().getDAO(Project.class);
-			dao.save(getProject());
 		}
 		
 		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticMungeProcess, MatchType.UNMATCH, record1, record2, true);

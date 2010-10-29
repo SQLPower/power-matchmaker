@@ -150,7 +150,6 @@ public class ImportProjectAction extends AbstractAction {
 
 		    folder.addChild(project);
 		    logger.debug("Saving Project:" + project.getName());
-		    swingSession.save(project);
 		}
 
 	}

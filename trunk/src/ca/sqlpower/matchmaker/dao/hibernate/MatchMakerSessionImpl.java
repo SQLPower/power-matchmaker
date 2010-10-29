@@ -38,16 +38,13 @@ import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerUpgradePersisterManager;
-import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
@@ -98,13 +95,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	private PLUser appUser;
 	private String dbUser;
 	private Date sessionStartTime;
-	
-	/**
-	 * This DAO will be used to save the project on every major change.
-	 */
-	// TODO: Make this actually do something
-	//private ProjectDAOXML projectDAOXML = new ProjectDAOXML(new ByteArrayOutputStream());
-	private TimedGeneralDAO timedGeneralDAO = new TimedGeneralDAO(null);
 	
 	/**
      * The factory that creates user prompters for this session. Defaults to a
@@ -211,11 +201,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
         return null;
     }
 
-    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-    	// TODO: This is where the proper XML parser should always be returned.
-        return timedGeneralDAO;
-    }
-
     /**
      * Returns the database connection to the MatchMaker repository database.
      * The returned connection will be in Auto-Commit mode, but you can turn
@@ -288,12 +273,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
      * list that was previously retrieved by a call to this method.
      */
 	public FolderParent getCurrentFolderParent() {
-		if (rootNode.getCurrentFolderParent().getChildren().isEmpty()) {
-			MatchMakerDAO folderDAO = (MatchMakerDAO) getDAO(PlFolder.class);
-			for(Object f :folderDAO.findAll()) {
-				rootNode.getCurrentFolderParent().addChild((PlFolder)f);
-			}
-		}
 		return rootNode.getCurrentFolderParent();
 	}
 	

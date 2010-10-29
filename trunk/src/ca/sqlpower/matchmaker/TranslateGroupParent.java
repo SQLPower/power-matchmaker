@@ -62,7 +62,6 @@ public class TranslateGroupParent extends AbstractMatchMakerObject {
         if(isInUseInBusinessModel(child)) {
         	throw new IllegalStateException("The translate group \""+child.getName()+"\" is in use and can't be deleted");
         }
-        getSession().getDAO(MatchMakerTranslateGroup.class).delete(child);
         try {
         	super.removeChild(child);
         } catch (ObjectDependentException e) {

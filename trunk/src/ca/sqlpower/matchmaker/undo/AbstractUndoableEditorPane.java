@@ -62,7 +62,6 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject> imp
 	 */
 	public boolean applyChanges() {
 		logger.debug("saving object: " + mmo);
-		swingSession.save(mmo);
 		undo.setHasChanged(false);
 		return true;
 	}

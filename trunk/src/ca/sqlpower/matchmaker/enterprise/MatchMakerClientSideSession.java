@@ -73,14 +73,12 @@ import ca.sqlpower.enterprise.client.SPServerInfo;
 import ca.sqlpower.enterprise.client.User;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MMRootNode;
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.object.AbstractPoolingSPListener;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -734,12 +732,6 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
 	@Override
 	public PlFolder findFolder(String foldername) {
 		return delegateSession.findFolder(foldername);
-	}
-
-	@Override
-	public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(
-			Class<T> businessClass) {
-		return delegateSession.getDAO(businessClass);
 	}
 
 	@Override

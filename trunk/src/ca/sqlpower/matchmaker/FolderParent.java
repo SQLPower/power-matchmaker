@@ -73,7 +73,6 @@ public class FolderParent extends AbstractMatchMakerObject {
      * firing the proper events 
      */
     public void addNewChild(PlFolder child) {
-        this.getSession().getDAO(PlFolder.class).save(child);
         addChild(child);
     }
 
@@ -81,7 +80,6 @@ public class FolderParent extends AbstractMatchMakerObject {
      * Removes from the parent list and deletes the object from the database
      */
     public void deleteAndRemoveChild(PlFolder child) {
-    	this.getSession().getDAO(PlFolder.class).delete(child);
 		try {
 			removeChild(child);
 		} catch (ObjectDependentException e) {

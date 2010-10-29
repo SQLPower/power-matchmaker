@@ -224,7 +224,6 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 				} catch (ObjectDependentException ex) {
 					throw new RuntimeException();
 				}
-				swingSession.save(project);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
 					selectedRow = mungeProcessTable.getRowCount() - 1;
 				}
@@ -353,7 +352,6 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 	}
 
 	public boolean applyChanges() {
-		swingSession.save(project);
 		return true;
 	}
 
