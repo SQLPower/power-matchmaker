@@ -426,9 +426,9 @@ public abstract class AbstractMergeProcessorOnBetterDataModelTest extends TestCa
     	
     	runProcessor();
 		
-    	MatchPool matchPool = new MatchPool(project);
+    	MatchPool matchPool = project.getMatchPool();
     	matchPool.findAll(new ArrayList<SQLColumn>());
-    	for (PotentialMatchRecord pm : matchPool.getPotentialMatches()) {
+    	for (PotentialMatchRecord pm : matchPool.getPotentialMatchRecords()) {
     		assertFalse("MatchType not set as MERGED for " + pm, pm.isMatch());
     		assertFalse("Match result with status 'UNMATCH' for duplicate not deleted after merge for: " + pm, pm.getMatchStatus() == MatchType.UNMATCH);
     	}

@@ -132,14 +132,10 @@ public class MatchResultVisualizerTest extends TestCase {
 		visualizer = new MatchResultVisualizer(project, null);
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("lhs");
-		lhs = new SourceTableRecord(session,
-									project, 
-									keyList);
+		lhs = new SourceTableRecord(project, keyList);
 		keyList.clear();
 		keyList.add("rhs");
-		rhs = new SourceTableRecord(session,
-									project, 
-									keyList);
+		rhs = new SourceTableRecord(project, keyList);
 		pmr = new PotentialMatchRecord(new MungeProcess(),
 										MatchType.UNMATCH,
 										lhs,
@@ -226,7 +222,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	 */
 	public void testMasterGetActions() {
 		pmr.setMatchStatus(MatchType.MATCH);
-		pmr.setMaster(rhs);
+		pmr.setMasterRecord(rhs);
 		List<Action> actions = visualizer.getActions(lhs, rhs);
 		
 		boolean unMatchExists = false;
@@ -255,7 +251,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	 */
 	public void testDuplicateGetActions() {
 		pmr.setMatchStatus(MatchType.MATCH);
-		pmr.setMaster(lhs);
+		pmr.setMasterRecord(lhs);
 		List<Action> actions = visualizer.getActions(lhs, rhs);
 		
 		boolean unMatchExists = false;
