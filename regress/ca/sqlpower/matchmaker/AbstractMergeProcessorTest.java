@@ -38,8 +38,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SQL;
@@ -116,11 +114,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 				} catch (SQLObjectException e) {
 					throw new SQLObjectRuntimeException(e);
 				}
-			}
-
-			@Override
-			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-				return new StubMatchMakerDAO<T>(businessClass);
 			}
 		};
 		

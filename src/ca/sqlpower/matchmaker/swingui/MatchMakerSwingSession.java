@@ -85,19 +85,14 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
-import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
@@ -950,10 +945,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return sessionImpl.findFolder(foldername);
     }
 
-    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-        return sessionImpl.getDAO(businessClass);
-    }
-
     public Connection getConnection() {
         return sessionImpl.getConnection();
     }
@@ -972,41 +963,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	public long countProjectByName(String name) {
 		return sessionImpl.countProjectByName(name);
-	}
-
-	/**
-	 * persist the match maker object to the database
-	 *
-	 * XXX Push this into the match maker session interface
-	 * @param mmo
-	 */
-	public void save(MatchMakerObject mmo) {
-		if (mmo instanceof Project){
-			Project project = (Project)mmo;
-			MatchMakerDAO dao = (MatchMakerDAO) getDAO(Project.class);
-			dao.save(project);
-		} else if (mmo instanceof TableMergeRules) {
-			Project project = (Project) ((TableMergeRules)mmo).getParent();
-			MatchMakerDAO dao = (MatchMakerDAO) getDAO(Project.class);
-			dao.save(project);
-		} else if (mmo instanceof PlFolder){
-			MatchMakerDAO dao = (MatchMakerDAO) getDAO(PlFolder.class);
-			dao.save((PlFolder) mmo);
-		} else if (mmo instanceof MungeProcess) {
-			MungeProcess cg = (MungeProcess)mmo;
-			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MungeProcess.class);
-			dao.save(cg);
-		} else if (mmo instanceof MatchMakerTranslateGroup) {
-			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup)mmo;
-			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MatchMakerTranslateGroup.class);
-			dao.save(tg);
-		} else if (mmo instanceof MatchPool) {
-			MatchPool tg = (MatchPool)mmo;
-			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MatchPool.class);
-			dao.save(tg);
-		} else {
-			throw new UnsupportedOperationException("We do not yet support " + mmo.getClass() + " persistance");
-		}
 	}
 
 	/**
@@ -1080,7 +1036,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		}
 		destination.addChild(objectToMove,destination.getChildren(objectToMove.getClass()).size());
-		save(destination);
 	}
 
     /**

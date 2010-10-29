@@ -36,7 +36,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerUpgradePersisterManager;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -133,13 +132,6 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     public PlFolder findFolder(String foldername) {
         for (PlFolder folder : folders){
             if (folder.getName().equals(foldername)) return folder;
-        }
-        return null;
-    }
-
-    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-        if (businessClass == PlFolder.class){
-            return (MatchMakerDAO<T>) new PlFolderDAOStup();
         }
         return null;
     }

@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
@@ -98,13 +97,6 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
      * @return the folder with that matches with the foldername, returns null if no results are avaiable
      */
     public PlFolder findFolder(String foldername);
-
-    /**
-     * Returns the DAO Object for the given business class
-     * @param <T> the business class of the DAO Object
-     * @return the object that is of the business class
-     */
-    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass);
 
     /**
      * Get a connection to the current database

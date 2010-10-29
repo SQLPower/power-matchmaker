@@ -31,8 +31,6 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
@@ -69,11 +67,6 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 				} catch (SQLObjectException e) {
 					throw new SQLObjectRuntimeException(e);
 				}
-			}
-
-			@Override
-			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-				return new StubMatchMakerDAO<T>(businessClass);
 			}
 		};
 		session.setDatabase(db);

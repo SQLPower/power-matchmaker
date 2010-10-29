@@ -135,8 +135,6 @@ public class NewMungeProcessAction extends AbstractAction {
 			addressStep.setPosition(new Point(x, DISTANCE_BETWEEN_INPUT_AND_RESULT_STEP / 2));
 			process.addChild(addressStep);
 		}
-		
-    	swingSession.save(process);
 	}
 
 }

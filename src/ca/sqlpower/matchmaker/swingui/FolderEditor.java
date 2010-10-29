@@ -39,7 +39,6 @@ import javax.swing.tree.TreeModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
@@ -218,8 +217,6 @@ public class FolderEditor implements DataEntryPanel, CleanupModel {
             }
         }
 
-        TimedGeneralDAO dao = (TimedGeneralDAO)swingSession.getDAO(PlFolder.class);
-        dao.save(folder);
         handler.resetHasValidated();
 
 		return true;

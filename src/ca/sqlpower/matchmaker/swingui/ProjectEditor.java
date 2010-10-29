@@ -27,7 +27,6 @@ import java.awt.event.ItemListener;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
@@ -53,7 +52,6 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.dao.TimedGeneralDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
@@ -682,13 +680,10 @@ public class ProjectEditor implements MatchMakerEditorPane {
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
         if (project.getParent() != selectedFolder) {
             swingSession.move(project,selectedFolder);
-        	swingSession.save(selectedFolder);
         } 
         
         logger.debug(project.getResultTable());
         logger.debug("saving");
-        swingSession.save(project);
-
 		return true;
     }
 	
@@ -819,22 +814,6 @@ public class ProjectEditor implements MatchMakerEditorPane {
 					return ValidateResult.createValidateResult(Status.FAIL,
 							"Project result table has the same name as the source table");
 				}
-			}
-			
-			TimedGeneralDAO dao = (TimedGeneralDAO) swingSession.getDAO(Project.class);
-			SPDataSource ds = (SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem();
-			String catalogName = getSelectedCatalogName();
-			String schemaName = getSelectedSchemaName();
-			String tableName = value;
-			Set<String> projectsUsingResultTable =
-			    dao.getProjectNamesUsingResultTable(
-			            ds.getName(), catalogName, schemaName, tableName);
-			projectsUsingResultTable.remove(project.getName());
-
-			logger.debug("name of project with selected resulting table" + projectsUsingResultTable);
-			if (!projectsUsingResultTable.isEmpty()) {
-			    return ValidateResult.createValidateResult(Status.FAIL,
-			            "Output table \""+tableName+"\" is in use by another project.");
 			}
 
 			return ValidateResult.createValidateResult(Status.OK, "");
