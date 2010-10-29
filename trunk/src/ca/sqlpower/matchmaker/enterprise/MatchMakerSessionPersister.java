@@ -19,13 +19,20 @@
 
 package ca.sqlpower.matchmaker.enterprise;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.dao.PersistedSPObject;
+import ca.sqlpower.dao.SPPersistenceException;
 import ca.sqlpower.dao.SPSessionPersister;
 import ca.sqlpower.dao.helper.AbstractSPPersisterHelper;
 import ca.sqlpower.dao.session.SessionPersisterSuperConverter;
 import ca.sqlpower.matchmaker.MMRootNode;
+import ca.sqlpower.matchmaker.ReferenceMatchRecord;
 import ca.sqlpower.object.SPObject;
-import org.apache.log4j.Logger;
 
 public class MatchMakerSessionPersister extends SPSessionPersister {
 
@@ -66,5 +73,25 @@ public class MatchMakerSessionPersister extends SPSessionPersister {
         matchMakerProject.getTranslateGroupParent().setUUID(TGPUUID);
         persistedTGP.setLoaded(true);
 	}
-
+	
+	/**
+	 * We override this because we need to put ReferenceMatchRecords come after PotentialMatchRecords,
+	 * no matter where they are in the list, but they are only in MatchMaker so we do it here.
+	 */
+	@Override
+	protected void commitObjects() throws SPPersistenceException {
+		
+		Collections.sort(persistedObjects, persistedObjectComparator);
+		
+		List<PersistedSPObject> referenceMatchKeys = new ArrayList<PersistedSPObject>();
+		for (int i = 0; i < persistedObjects.size(); i++) {
+			if (persistedObjects.get(i).getType().equals(ReferenceMatchRecord.class.getName())) {
+				referenceMatchKeys.add(persistedObjects.get(i));
+			}
+		}
+		persistedObjects.removeAll(referenceMatchKeys);
+		persistedObjects.addAll(referenceMatchKeys);
+		
+		super.commitObjects();
+	}
 }
