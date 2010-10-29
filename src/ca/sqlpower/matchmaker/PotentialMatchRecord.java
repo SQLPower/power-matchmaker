@@ -19,9 +19,18 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.object.SPObject;
+import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
+import ca.sqlpower.object.annotation.ConstructorParameter;
+import ca.sqlpower.object.annotation.Mutator;
+import ca.sqlpower.object.annotation.NonProperty;
 
 
 /**
@@ -31,8 +40,14 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
  * instances of this class are directed edges in the graph, and instances
  * of SourceTableRecord are nodes.
  */
-public class PotentialMatchRecord {
-
+public class PotentialMatchRecord extends AbstractMatchMakerObject{
+	
+	/**
+	 * Defines an absolute ordering of the child types of this class.
+	 */
+	public static final List<Class<? extends SPObject>> allowedChildTypes = 
+		Collections.emptyList();
+	
 	private static final Logger logger = Logger.getLogger(PotentialMatchRecord.class);
 	
     /**
@@ -60,14 +75,16 @@ public class PotentialMatchRecord {
     private MasterSide master;
     
     /**
-     * One of the two records originally identified as a potential duplicate.
+     * One of the two records originally identified as a potential duplicate. This
+     * record is the one that is reference by a PotentialMatchDuplicate.
      */
-    private final SourceTableRecord originalLhs;
+    private final SourceTableRecord referencedRecord;
     
     /**
-     * One of the two records originally identified as a potential duplicate.
+     * One of the two records originally identified as a potential duplicate. This
+     * record is the one that is directly under the SourceTableRecord.
      */
-    private final SourceTableRecord originalRhs;
+    private final SourceTableRecord directRecord;
 
     /**
      * This variable defines whether or not this potential match record is 
@@ -87,8 +104,8 @@ public class PotentialMatchRecord {
      * the master.
      */
     public static enum MasterSide {
-        LEFT_HAND_SIDE,
-        RIGHT_HAND_SIDE,
+        DIRECT_SIDE,
+        REFERENCED_SIDE,
         NEITHER;
     }
     
@@ -200,45 +217,46 @@ public class PotentialMatchRecord {
 	 *            the MungeProcess that makes this edge exist
 	 * @param matchStatus
 	 *            the status of the relationship
-	 * @param originalLhs
+	 * @param referencedRecord
 	 *            one of the SourceTableRecordd attached to this edge
-	 * @param originalRhs
+	 * @param directRecord
 	 *            the other SourceTableRecord attached to this edge
 	 * @param synthetic
 	 *            a flag that denotes whether or not this edge was created by
 	 *            the engine; true means NOT created by the engine
 	 */
+    @Constructor
     public PotentialMatchRecord(
-            MungeProcess mungeProcess,
-            MatchType matchStatus,
-            SourceTableRecord originalLhs,
-            SourceTableRecord originalRhs,
-            boolean synthetic) {
+            @ConstructorParameter(propertyName="mungeProcess") MungeProcess mungeProcess,
+            @ConstructorParameter(propertyName="matchStatus") MatchType matchStatus,
+            @ConstructorParameter(propertyName="referencedRecord") SourceTableRecord referencedRecord,
+            @ConstructorParameter(propertyName="directRecord") SourceTableRecord directRecord,
+            @ConstructorParameter(propertyName="synthetic") boolean synthetic) {
         this.mungeProcess = mungeProcess;
         this.matchStatus = matchStatus;
-        this.originalLhs = originalLhs;
-        this.originalRhs = originalRhs;
+        this.referencedRecord = referencedRecord;
+        this.directRecord = directRecord;
         this.synthetic = synthetic;
         master = MasterSide.NEITHER;
         this.storeState = StoreState.NEW;
+        setName("PotentialMatchRecord");
     }
 
     /**
-	 * The current storage state of this match record. Exposed as
-	 * package-private because both the match pool and unit tests need
-	 * to know.
+	 * The current storage state of this match record.
 	 */
-    StoreState getStoreState() {
+    @Accessor
+    public StoreState getStoreState() {
     	return storeState;
     }
 
     /**
-	 * Modifies the current storage state of this match record. Exposed as
-	 * package-private because both the match pool and unit tests need
-	 * to be able to change it.
+	 * Modifies the current storage state of this match record.
 	 */
-    void setStoreState(StoreState newState) {
+    public void setStoreState(StoreState newState) {
+    	StoreState old = newState;
     	storeState = newState;
+    	firePropertyChange("storeState", old, newState);
     }
     
     /**
@@ -260,6 +278,7 @@ public class PotentialMatchRecord {
      * AUTOMATCH edge cases, as well as detect if the PotentialMatchRecord is in an inconsistent state
      * (such as being set as a Match edge but not have a master defined)
      */
+    @Accessor
     public MatchType getMatchStatus() {
         return matchStatus;
     }
@@ -268,30 +287,37 @@ public class PotentialMatchRecord {
      * If the match status is no match or unmatch, sets the master as undecided
      * @param matchStatus the type of Match this represents
      */
+    @Mutator
     public void setMatchStatus(MatchType matchStatus) {
         if (this.matchStatus == matchStatus) return;
+        MatchType old = this.matchStatus;
     	this.matchStatus = matchStatus;
+    	firePropertyChange("matchStatus", old, matchStatus);
     	logger.debug("matchStatus was set to " + matchStatus);
         if (matchStatus == MatchType.NOMATCH || matchStatus == MatchType.UNMATCH){
-            master = MasterSide.NEITHER;
+        	setMaster(MasterSide.NEITHER);
         }
         markDirty();
     }
 
+    @Accessor
     public MungeProcess getMungeProcess() {
         return mungeProcess;
     }
 
-    public SourceTableRecord getOriginalLhs() {
-        return originalLhs;
+    @Accessor
+    public SourceTableRecord getReferencedRecord() {
+        return referencedRecord;
     }
 
-    public SourceTableRecord getOriginalRhs() {
-        return originalRhs;
+    @Accessor
+    public SourceTableRecord getDirectRecord() {
+        return directRecord;
     }
 
+    @NonProperty
     public MatchPool getPool() {
-        return pool;
+        return (MatchPool)getParent();
     }
 
     /**
@@ -316,20 +342,21 @@ public class PotentialMatchRecord {
 	 * 			  Should be set to true if this method is being called from
 	 * 			  an AutoMatch method. Otherwise, set to false.
 	 */
-    public void setMaster(SourceTableRecord newMaster, boolean isAutoMatch){
+    @NonProperty
+    public void setMasterRecord(SourceTableRecord newMaster, boolean isAutoMatch){
     	MasterSide oldMaster = master;
         if (newMaster == null){
-            master = MasterSide.NEITHER;
+        	setMaster(MasterSide.NEITHER);
             setMatchStatus(MatchType.UNMATCH);
-        } else if (originalRhs.equals(newMaster)) {
-            master = MasterSide.RIGHT_HAND_SIDE;
+        } else if (directRecord.equals(newMaster)) {
+            setMaster(MasterSide.REFERENCED_SIDE);
             if (!isAutoMatch) {
             	setMatchStatus(MatchType.MATCH);
             } else {
             	setMatchStatus(MatchType.AUTOMATCH);
             }
-        } else if (originalLhs.equals(newMaster)) {
-            master = MasterSide.LEFT_HAND_SIDE;
+        } else if (referencedRecord.equals(newMaster)) {
+        	setMaster(MasterSide.DIRECT_SIDE);
             if (!isAutoMatch) {
             	setMatchStatus(MatchType.MATCH);
             } else {
@@ -344,30 +371,44 @@ public class PotentialMatchRecord {
         }
     }
     
+    /**
+     * Set the value of the master property
+     */
+    @Mutator
+    public void setMaster(MasterSide s) {
+    	MasterSide old = master;
+    	master = s;
+    	firePropertyChange("master", old, s);
+    }
+    
     /** 
-     * Similar to {@link #setMaster(SourceTableRecord, boolean)} except the isAutoMatch
+     * Similar to {@link #setMasterRecord(SourceTableRecord, boolean)} except the isAutoMatch
      * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
      */
-    public void setMaster(SourceTableRecord newMaster) {
-    	setMaster(newMaster, false);
+    @NonProperty
+    public void setMasterRecord(SourceTableRecord newMaster) {
+    	setMasterRecord(newMaster, false);
     }
-    
-    public boolean isRhsMaster() {
-        if (master == MasterSide.RIGHT_HAND_SIDE) {
+
+    @NonProperty
+    public boolean isReferencedMaster() {
+        if (master == MasterSide.REFERENCED_SIDE) {
             return true;
         } else {
             return false;
         }
     }
     
-    public boolean isLhsMaster() {
-        if (master == MasterSide.LEFT_HAND_SIDE) {
+    @NonProperty
+    public boolean isDirectMaster() {
+        if (master == MasterSide.DIRECT_SIDE) {
             return true;
         } else {
             return false;
         }
     }
-    
+
+    @NonProperty
     public boolean isMasterUndecided() {
         if (master == MasterSide.NEITHER) {
             return true;
@@ -388,6 +429,7 @@ public class PotentialMatchRecord {
      * MasterSide.NEITHER and matchStatus is set to MasterType.MATCH or MasterType.AUTOMATCH
      * @return
      */
+    @NonProperty
     public boolean isMatch() {
     	logger.debug("master is " + master);
     	if (master != MasterSide.NEITHER) {
@@ -413,16 +455,28 @@ public class PotentialMatchRecord {
      * @return the master SourceTableRecord or null if no master has been specified
      * @throws IllegalStateException if the master is not en element of MasterSide
      */
-    public SourceTableRecord getMaster() {
+    @NonProperty
+    public SourceTableRecord getMasterRecord() {
         if(master == MasterSide.NEITHER){
             return null;
-        } else if (master == MasterSide.LEFT_HAND_SIDE){
-            return originalLhs;
-        } else if (master == MasterSide.RIGHT_HAND_SIDE){
-            return originalRhs;
+        } else if (master == MasterSide.DIRECT_SIDE){
+            return referencedRecord;
+        } else if (master == MasterSide.REFERENCED_SIDE){
+            return directRecord;
         } else {
             throw new IllegalStateException("Invalid master state: " + master);
         }
+    }
+    
+    /**
+     * Returns the SourceTableRecord that is the master indicated by this record.
+     *  
+     * @return the master SourceTableRecord or null if no master has been specified
+     * @throws IllegalStateException if the master is not en element of MasterSide
+     */
+    @Accessor
+    public MasterSide getMaster() {
+        return master;
     }
     
     /**
@@ -436,10 +490,10 @@ public class PotentialMatchRecord {
         if (master == MasterSide.NEITHER){
             return null;
         } else {
-            if (master == MasterSide.LEFT_HAND_SIDE){
-                return originalRhs;
-            } else if (master == MasterSide.RIGHT_HAND_SIDE){
-                return originalLhs;
+            if (master == MasterSide.DIRECT_SIDE){
+                return directRecord;
+            } else if (master == MasterSide.REFERENCED_SIDE){
+                return referencedRecord;
             } else {
                 throw new IllegalStateException("Invalid master state: " + master);
             }
@@ -448,16 +502,13 @@ public class PotentialMatchRecord {
     
     @Override
     public String toString() {
-        return "PotentialMatch: origLhs="+originalLhs+
-        "; origRhs="+originalRhs+
+        return "PotentialMatch: origLhs="+referencedRecord+
+        "; origRhs="+directRecord+
         "; matchStatus="+matchStatus+
         "; masterSide="+master;
     }
 
-	public void setPool(MatchPool matchPool) {
-		this.pool = matchPool;
-	}
-
+	@Accessor
 	public boolean isSynthetic() {
 		return synthetic;
 	}
@@ -479,8 +530,8 @@ public class PotentialMatchRecord {
 			return false;
 		}
 		PotentialMatchRecord other = (PotentialMatchRecord)obj;
-		if ((originalLhs == null ? other.originalLhs == null : originalLhs.equals(other.originalLhs))
-				&& (originalRhs == null ? other.originalRhs == null : originalRhs.equals(other.originalRhs))) {
+		if ((referencedRecord == null ? other.referencedRecord == null : referencedRecord.equals(other.referencedRecord))
+				&& (directRecord == null ? other.directRecord == null : directRecord.equals(other.directRecord))) {
 			return true;
 		} else {
 			return false;
@@ -490,8 +541,25 @@ public class PotentialMatchRecord {
 	@Override
 	public int hashCode() {
 		int result = 17;
-		result = 37*result + (originalLhs == null ? 0 : originalLhs.hashCode());
-		result = 37*result + (originalRhs == null ? 0 : originalRhs.hashCode());
+		result = 37*result + (referencedRecord == null ? 0 : referencedRecord.hashCode());
+		result = 37*result + (directRecord == null ? 0 : directRecord.hashCode());
 		return result;
+	}
+
+	@Override
+	public MatchMakerObject duplicate(MatchMakerObject parent) {
+		return null;
+	}
+
+	@Override
+	@NonProperty
+	public List<? extends SPObject> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	@NonProperty
+	public List<Class<? extends SPObject>> getAllowedChildTypes() {
+		return allowedChildTypes;
 	}
 }

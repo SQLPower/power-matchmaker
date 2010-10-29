@@ -99,7 +99,6 @@ public class SourceTableNodeRenderer extends DefaultTableCellRenderer implements
             if (!first) {
                 labelParts.add(new LabelPart(Color.BLACK, SEPARATOR, fm.stringWidth(SEPARATOR)));
             }
-            
             String label;
             Color color;
             if (value == null) {

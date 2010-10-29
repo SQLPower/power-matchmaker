@@ -155,7 +155,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 			indexValueList.add(o.getData());
 		}
 		
-		SourceTableRecord source = new SourceTableRecord(getSession(), getProject(), indexValueList);
+		SourceTableRecord source = new SourceTableRecord(getProject(), indexValueList);
 		result.setSourceTableRecord(source);
 		
 		logger.debug("Adding MungeResult " + result);

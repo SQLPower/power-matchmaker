@@ -87,6 +87,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
+import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -133,8 +134,8 @@ import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.MemoryMonitor;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
-import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.SwingUIUserPrompterFactory.NonModalSwingUIUserPrompterFactory;
+import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
@@ -999,8 +1000,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup)mmo;
 			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MatchMakerTranslateGroup.class);
 			dao.save(tg);
+		} else if (mmo instanceof MatchPool) {
+			MatchPool tg = (MatchPool)mmo;
+			MatchMakerDAO dao = (MatchMakerDAO) getDAO(MatchPool.class);
+			dao.save(tg);
 		} else {
-			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
+			throw new UnsupportedOperationException("We do not yet support " + mmo.getClass() + " persistance");
 		}
 	}
 
