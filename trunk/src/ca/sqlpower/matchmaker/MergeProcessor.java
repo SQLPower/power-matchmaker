@@ -169,7 +169,7 @@ public class MergeProcessor extends AbstractProcessor {
 				        " of " + monitorableHelper.getJobSize() + " *****");
 				
 				ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
-				ResultRow masterKeyValues = new ResultRow(sourceTableMergeRule, pm.getMaster().getKeyValues());
+				ResultRow masterKeyValues = new ResultRow(sourceTableMergeRule, pm.getMasterRecord().getKeyValues());
 				
 				engineLogger.debug("Duplicate record: " + dupKeyValues + "; master record: " + masterKeyValues);
 				
@@ -216,8 +216,8 @@ public class MergeProcessor extends AbstractProcessor {
 				// from the pool as we are looping through the pool
 				SourceTableRecord str = pm.getDuplicate();
 				List<PotentialMatchRecord> toBeDeleted = new ArrayList<PotentialMatchRecord>();
-				for (PotentialMatchRecord pmr : pool.getPotentialMatches()) {
-					if (pmr.getOriginalLhs().equals(str) || pmr.getOriginalRhs().equals(str)) {
+				for (PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
+					if (pmr.getReferencedRecord().equals(str) || pmr.getDirectRecord().equals(str)) {
 						if (pmr.getMatchStatus() != MatchType.MERGED) {
 							engineLogger.debug("Removing match pool record: " + pmr);
 							toBeDeleted.add(pmr);
@@ -244,7 +244,8 @@ public class MergeProcessor extends AbstractProcessor {
 	private void initVariables() throws SQLException, SQLObjectException {
 		//Initialize the match pool
 		engineLogger.info("Loading match pool...");
-		pool = new MatchPool(project);
+		pool = project.getMatchPool();
+		pool.clearRecords();
 		pool.findAll(new ArrayList<SQLColumn>());
 		
 		engineLogger.debug("Found " + pool.getSourceTableRecords().size() + " source table records in pool");
@@ -280,7 +281,7 @@ public class MergeProcessor extends AbstractProcessor {
             sb.append("\nPlanned processing order ([duplicate key] into [master key]):");
             for (PotentialMatchRecord pmr : pmProcessOrder) {
                 sb.append("\n    ").append(pmr.getDuplicate().getKeyValues())
-                .append(" into ").append(pmr.getMaster().getKeyValues());
+                .append(" into ").append(pmr.getMasterRecord().getKeyValues());
             }
             engineLogger.debug(sb.toString());
         }

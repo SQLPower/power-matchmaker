@@ -73,7 +73,8 @@ public class Project extends AbstractMatchMakerObject {
 		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
 				Arrays.asList(MungeProcess.class, TableMergeRules.class,
 						CachableTable.class, TableIndex.class, 
-						MungeSettings.class, MergeSettings.class)));
+						MungeSettings.class, MergeSettings.class,
+						MatchPool.class)));
     
     List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
     List<TableMergeRules> tableMergeRules = new ArrayList<TableMergeRules>();
@@ -205,12 +206,18 @@ public class Project extends AbstractMatchMakerObject {
      */
     private final AtomicReference<Monitorable> runningEngine = new AtomicReference<Monitorable>();
     
+    /**
+     * The matchpool used to hold all of the validate object
+     */
+    private final MatchPool matchPool;
+    
 	public Project() {
 	    this(new CachableTable("sourceTable"), 
 	    		new CachableTable("resultTable"), 
 	    		new CachableTable("xrefTable"),
 	    		new MungeSettings(),
-	    		new MergeSettings());
+	    		new MergeSettings(),
+	    		new MatchPool());
 	}
     
 	@Constructor
@@ -224,7 +231,9 @@ public class Project extends AbstractMatchMakerObject {
     		@ConstructorParameter(parameterType=ParameterType.CHILD, 
     	    		propertyName="mungeSettings") MungeSettings mungeSettings,
     	    @ConstructorParameter(parameterType=ParameterType.CHILD, 
-    	       		propertyName="mungeSettings") MergeSettings mergeSettings) {
+    	       		propertyName="mungeSettings") MergeSettings mergeSettings,
+    	    	    @ConstructorParameter(parameterType=ParameterType.CHILD, 
+    	    	       		propertyName="matchPool") MatchPool matchPool) {
 		
 		setName("A new Project");
 		
@@ -245,6 +254,10 @@ public class Project extends AbstractMatchMakerObject {
         this.mergeSettings = mergeSettings;
         mergeSettings.setParent(this);
         this.mergeSettings.setName("Merge Settings");
+        
+        this.matchPool = matchPool;
+        this.matchPool.setParent(this);
+        this.matchPool.setName("MatchPool");
     }
 	
 	public void addChild(SPObject spo) {
@@ -1271,7 +1284,13 @@ public class Project extends AbstractMatchMakerObject {
 		children.add(sourceTableIndex);
 		children.add(mungeSettings);
 		children.add(mergeSettings);
+		children.add(matchPool);
 		return Collections.unmodifiableList(children);
+	}
+	
+	@NonProperty
+	public MatchPool getMatchPool() {
+		return matchPool;
 	}
 
 	@Override

@@ -192,10 +192,10 @@ public class AutoMatcher extends MonitorableImpl {
 		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 			if (pmr.getMungeProcess() == mungeProcess 
 					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
-				if (record == pmr.getOriginalLhs() && !visited.contains(pmr.getOriginalRhs())) {
-					ret.add(pmr.getOriginalRhs());
-				} else if (record == pmr.getOriginalRhs() && !visited.contains(pmr.getOriginalLhs())) {
-					ret.add(pmr.getOriginalLhs());
+				if (record == pmr.getReferencedRecord() && !visited.contains(pmr.getDirectRecord())) {
+					ret.add(pmr.getDirectRecord());
+				} else if (record == pmr.getDirectRecord() && !visited.contains(pmr.getReferencedRecord())) {
+					ret.add(pmr.getReferencedRecord());
 				}
 			}
 			setProgress(visited.size());

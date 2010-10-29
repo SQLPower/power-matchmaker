@@ -200,7 +200,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			jobSize = rowCount * mungeProcesses.size() * 2 + rowCount;
 			
-			MatchPool pool = new MatchPool(getProject());
+			MatchPool pool = getProject().getMatchPool();
 			// Fill pool with pre-existing matches
 			pool.findAll(null);
 			
@@ -212,7 +212,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			// then it would be as if clear match pool wasn't selected in the first place, 
 			// so I don't see the point in allowing it in debug mode for now.
 			if (!inDebugMode && getProject().getMungeSettings().isClearMatchPool()) {
-				int clearJobSize = pool.getPotentialMatches().size() + pool.getOrphanedMatches().size();
+				int clearJobSize = pool.getPotentialMatchRecords().size();
 				jobSize += clearJobSize;
 				progressMessage = "Clearing Match Pool";
 				logger.info(progressMessage);
@@ -226,16 +226,23 @@ public class MatchEngineImpl extends AbstractEngine {
             
 			progressMessage = "Searching for matches";
 			logger.info(progressMessage);
-			mungeAndMatch(rowCount, mungeProcesses, pool);
-			logger.info("Match Engine found a total of " + pool.getNumberOfPotentialMatches() + " matches");
-			
-			progressMessage = "Storing matches";
-			setCurrentProcessor(pool);
-			logger.info(progressMessage);
-			pool.store(getProject().getMungeSettings().isUseBatchExecution(), inDebugMode);
-            checkCancelled();
-            progress += rowCount;
-            setCurrentProcessor(null);
+			try {
+				pool.begin("Running match engine");
+				mungeAndMatch(rowCount, mungeProcesses, pool);
+				logger.info("Match Engine found a total of " + pool.getNumberOfPotentialMatches() + " matches");
+				
+				progressMessage = "Storing matches";
+				setCurrentProcessor(pool);
+				logger.info(progressMessage);
+				pool.store(getProject().getMungeSettings().isUseBatchExecution(), inDebugMode);
+	            checkCancelled();
+	            progress += rowCount;
+	            setCurrentProcessor(null);
+	            pool.commit();
+			} catch(Exception ex) {
+				pool.rollback("rolling back engine");
+				throw new RuntimeException(ex);
+			}
             
             if (inDebugMode) {
             	logger.info("In Debug Mode, so rolling back changes");
@@ -277,7 +284,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			munger = new MungeProcessor(currentProcess, logger);
 			setCurrentProcessor(munger);
 			progressMessage = "Running transformation " + currentProcess.getName();
-			logger.debug(getMessage());
+			logger.info(getMessage());
 			munger.call(rowCount);
 			progress += munger.getProgress();
 			setCurrentProcessor(null);
@@ -287,7 +294,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			matcher = new MatchProcessor(pool, currentProcess, results, logger);
 			setCurrentProcessor(matcher);
 			progressMessage = "Matching transformation " + currentProcess.getName();
-			logger.debug(getMessage());
+			logger.info(getMessage());
 			matcher.call();
             checkCancelled();
 			progress += matcher.getProgress();

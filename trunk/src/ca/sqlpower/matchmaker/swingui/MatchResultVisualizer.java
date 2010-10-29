@@ -29,6 +29,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -69,10 +70,10 @@ import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.AutoMatcher;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.SourceTableRecordDisplayComparator;
-import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
@@ -82,6 +83,9 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.DefaultGraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
+import ca.sqlpower.object.AbstractSPListener;
+import ca.sqlpower.object.SPListener;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -100,7 +104,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * The MatchResultVisualizer produces graphical representations of the matches
  * in a Match Result Table.
  */
-public class MatchResultVisualizer extends NoEditEditorPane {
+public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool> {
     
     private static final Logger logger = Logger.getLogger(MatchResultVisualizer.class);
 
@@ -384,15 +388,22 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         
         public void actionPerformed(ActionEvent e){
             try {
+            	pool.begin("setting a no-match");
 				pool.defineNoMatch(record1, record2);
 				pool.store();
+				pool.commit();
             } catch (SQLObjectException ex) {
+    			pool.rollback("rolling back no-match setting");
             	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"define " + record1 + " and " + record2 + " to not be duplicates.", ex);
             } catch (SQLException ex) {
+    			pool.rollback("rolling back no-match setting");
             	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
-            }
+            } catch (Exception ex) {
+    			pool.rollback("rolling back no-match setting");
+    			throw new RuntimeException(ex);
+    		}
             selectionListener.nodeSelected(record1);
             graph.repaint();
         }
@@ -447,15 +458,22 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         
         public void actionPerformed(ActionEvent e) {
             try {
+            	pool.begin("setting a master");
 				pool.defineMaster(master, duplicate);
 				pool.store();
+				pool.commit();
 			} catch (SQLObjectException ex) {
+				pool.rollback("rolling back master setting");
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + master + " to be the master of " + duplicate, ex);
 			} catch (SQLException ex) {
+				pool.rollback("rolling back master setting");
             	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
-            }
+			} catch (Exception ex) {
+				pool.rollback("rolling back master setting");
+				throw new RuntimeException(ex);
+			}
             selectionListener.nodeSelected(duplicate);
             graph.repaint();
         }
@@ -682,6 +700,8 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     
     private JButton autoMatchButton;
     
+    private SPListener updaterListener;
+    
     /**
      * The node on the graph that is currently selected.
      */
@@ -710,7 +730,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     private final Preferences matchValidationPrefs;
     
     public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, SQLObjectException {
-    	super();
+    	super(session, project.getMatchPool());
         this.project = project;
         
 		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
@@ -833,8 +853,20 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			shownColumns = null;
 		}
         
-        pool = new MatchPool(project);
+        pool = project.getMatchPool();
+        pool.clearRecords();
         pool.findAll(displayColumns);
+        for(PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
+        	updaterListener = new AbstractSPListener() {
+        		@Override
+        		public void propertyChanged(PropertyChangeEvent evt) {
+        			if(evt.getPropertyName().equals("master") || evt.getPropertyName().equals("matchStatus")) {
+        				graph.repaint();
+        			}
+        		}
+        	};
+        	pmr.addSPListener(updaterListener);
+        }
         graphModel = new MatchPoolGraphModel(pool);
         graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
         graph.setNodeRenderer(new SourceTableNodeRenderer());
@@ -1184,5 +1216,12 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 				return types.indexOf(o1) - types.indexOf(o2);
 			}			
 		}
+	}
+
+	@Override
+	public void undoEventFired(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: AbstractUndoableEditorPane<MatchPool>.undoEventFired()");
+		
 	}
 }

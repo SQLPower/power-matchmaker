@@ -85,6 +85,10 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject> imp
 		return panel;
 	}
 
+	public void setPanel(JPanel p) {
+		panel = p;
+	}
+
 	public void cleanup() {
 		undo.cleanup();
 	}
