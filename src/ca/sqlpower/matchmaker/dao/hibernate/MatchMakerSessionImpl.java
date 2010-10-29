@@ -54,6 +54,7 @@ import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
@@ -346,7 +347,10 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     				schema,
     				tableName);
     		if (table == null) return null;
-    		table.getColumns();
+    		for(SQLColumn c : table.getColumns()) {
+    			c.setType(getSQLType(c.getType()));
+    		}
+    		
     		table.getImportedKeys();
     		return table;
     	} finally {
