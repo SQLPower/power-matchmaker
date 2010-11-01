@@ -108,7 +108,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         super.setUp();
         project = new Project();
         session = new TestingMatchMakerSession();
-		session.setDatabase(new SQLDatabase());
+		session.setDatabase(db);
         project.setSession(session);
         parentFolder = new PlFolder();
         parentFolder.addChild(project);
@@ -118,20 +118,6 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     protected Project getTarget() {
         return project;
     }
-
-
-	public void testEqual() {
-		Project m1 = new Project();
-		Project m2 = new Project();
-		assertTrue("Project1 <> project2", (m1 != m2) );
-		assertTrue("Project1 equals project2", m1.equals(m2) );
-		m1.setName("project1");
-		m2.setName("project2");
-		assertFalse("Project1 should not equals project2", m1.equals(m2) );
-		m1.setName("project");
-		m2.setName("project");
-		assertTrue("Project1 should equals project2", m1.equals(m2) );
-	}
 
     public void testMatchMakerFolderFiresEventForMungeProcesses(){
         MatchMakerEventCounter l = new MatchMakerEventCounter();
@@ -169,6 +155,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTableIndex(idx);
     	
     	project.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
+    	SQLTable sqt = new SQLTable(db, true);
+    	project.setResultTable(sqt);
+    	db.addChild(sqt);
     	SQLTable resultTable = project.createResultTable();
     	
     	int i = 0;
@@ -248,6 +237,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTableIndex(idx);
     	
     	project.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
+    	SQLTable sqt = new SQLTable(db, true);
+    	project.setResultTable(sqt);
+    	db.addChild(sqt);
     	SQLTable resultTable = project.createResultTable();
     	
     	List<SQLIndex> indices = resultTable.getChildren(SQLIndex.class);
