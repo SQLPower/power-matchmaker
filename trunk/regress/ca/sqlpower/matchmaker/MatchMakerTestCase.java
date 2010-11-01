@@ -154,6 +154,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("open");
         propertiesToIgnoreForDuplication.add("expanded");
         propertiesToIgnoreForDuplication.add("position");
+        propertiesToIgnoreForDuplication.add("inputCount");
         
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");
