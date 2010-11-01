@@ -126,7 +126,6 @@ public class MergeSettings extends MatchMakerSettings {
 		settings.setLog(getLog()==null?null:new File(getLog().getPath()));
 		settings.setName(getName()==null?null:new String(getName()));
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
-		settings.setSendEmail(getSendEmail());
 		settings.setVisible(isVisible());
 	}
 	

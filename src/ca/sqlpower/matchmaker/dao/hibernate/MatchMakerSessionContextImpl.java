@@ -130,12 +130,11 @@ public class MatchMakerSessionContextImpl implements MatchMakerSessionContext {
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSession createSession(JDBCDataSource ds, String username,
-			String password) throws PLSecurityException, SQLException,
+    public MatchMakerSession createSession() throws PLSecurityException, SQLException,
 			SQLObjectException, MatchMakerConfigurationException {
 
         try {
-            MatchMakerSession session = new MatchMakerSessionImpl(this, ds);
+            MatchMakerSession session = new MatchMakerSessionImpl(this);
             sessions.add(session);
             session.addSessionLifecycleListener(sessionLifecycleListener);
             return session;
@@ -145,11 +144,9 @@ public class MatchMakerSessionContextImpl implements MatchMakerSessionContext {
     }
     
     public MatchMakerSession createDefaultSession() {
-        ensureHSQLDBIsSetup();
-        JDBCDataSource ds = makeDefaultDataSource();
         
         try {
-            return createSession(ds, ds.getUser(), ds.getPass());
+            return createSession();
         } catch (Exception ex) {
             throw new RuntimeException(
                     "Couldn't create session. See nested exception for details.", ex);
@@ -175,43 +172,32 @@ public class MatchMakerSessionContextImpl implements MatchMakerSessionContext {
 		}
     };
 
-    /**
-     * Finds the default repository schema entry in this context's data source
-     * collection, or if it's not found, creates a new repository data source
-     * and adds it to the collection.
-     */
+	/**
+	 * Creates a new hsqldb infile database and adds it to the list.
+	 */
     private JDBCDataSource makeDefaultDataSource() {
-        JDBCDataSource ds = getPlDotIni().getDataSource(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
-        if (ds == null) {
-            ds = new JDBCDataSource(getPlDotIni());
-            ds.setName(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
-            ds.setPlSchema("public");
-            ds.setUser("sa");
-            ds.setPass("");
-            ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository;shutdown=true");
+        JDBCDataSource ds = new JDBCDataSource(getPlDotIni());
+        ds.setName(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
+        ds.setPlSchema("public");
+        ds.setUser("sa");
+        ds.setPass("");
+        ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository;shutdown=true");
 
-            // find HSQLDB parent type
-            JDBCDataSourceType hsqldbType = null;
-            for (JDBCDataSourceType type : getPlDotIni().getDataSourceTypes()) {
-                if ("HSQLDB".equals(type.getName())) {
-                    hsqldbType = type;
-                    break;
-                }
+        // find HSQLDB parent type
+        JDBCDataSourceType hsqldbType = null;
+        for (JDBCDataSourceType type : getPlDotIni().getDataSourceTypes()) {
+            if ("HSQLDB".equals(type.getName())) {
+                hsqldbType = type;
+                break;
             }
-            if (hsqldbType == null) {
-                throw new RuntimeException("HSQLDB Database type is missing in pl.ini");
-            }
-            ds.setParentType(hsqldbType);
-            
-            getPlDotIni().addDataSource(ds);
-        } else if (ds.getName().equalsIgnoreCase(DEFAULT_REPOSITORY_DATA_SOURCE_NAME)) {
-        	if (!ds.getUrl().contains("shutdown=true")) {
-        		getPlDotIni().removeDataSource(ds);
-        		ds.setUrl(ds.getUrl() + ";shutdown=true");
-        		getPlDotIni().addDataSource(ds);
-        	}
         }
-        return ds;
+        if (hsqldbType == null) {
+            throw new RuntimeException("HSQLDB Database type is missing in pl.ini");
+        }
+        ds.setParentType(hsqldbType);
+        
+        getPlDotIni().addDataSource(ds);
+    return ds;
     }
 
     public DataSourceCollection<JDBCDataSource> getPlDotIni() {

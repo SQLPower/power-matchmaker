@@ -51,7 +51,6 @@ public abstract class MatchMakerSettings extends
         result = PRIME * result + ((lastRunDate == null) ? 0 : lastRunDate.hashCode());
         result = PRIME * result + ((log == null) ? 0 : log.hashCode());
         result = PRIME * result + ((processCount == null) ? 0 : processCount.hashCode());
-        result = PRIME * result + ((sendEmail == true) ? 4567 : 5678);
         return result;
     }
 
@@ -101,8 +100,6 @@ public abstract class MatchMakerSettings extends
             return false;
         }
 
-        if (sendEmail != other.sendEmail ) return false;
-
         return true;
     }
 
@@ -116,9 +113,6 @@ public abstract class MatchMakerSettings extends
 
 	/** Log for the engine using this setting */
 	private File log;
-
-	/** Send an email when the job is done */
-	private boolean sendEmail = false;
 
 	/**
 	 * Description of the process
@@ -178,18 +172,6 @@ public abstract class MatchMakerSettings extends
 		firePropertyChange("processCount", oldValue, processCount);
 	}
 
-	@Accessor
-	public boolean getSendEmail() {
-		return sendEmail;
-	}
-
-	@Mutator
-	public void setSendEmail(boolean sendEMail) {
-		boolean oldValue = this.sendEmail;
-		this.sendEmail = sendEMail;
-		firePropertyChange("sendEmail", oldValue, sendEMail);
-	}
-
 	@NonBound
 	@Accessor
 	public File getLog() {
@@ -242,7 +224,6 @@ public abstract class MatchMakerSettings extends
         buf.append("lastRunDate->"+lastRunDate +", ");
         buf.append("log->"+log+", ");
         buf.append("processCount->"+processCount+", ");
-        buf.append("sendEmail->"+sendEmail+"]");
         return buf.toString();
     }
 

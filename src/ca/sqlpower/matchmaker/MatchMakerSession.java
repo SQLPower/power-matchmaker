@@ -19,7 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.sql.Connection;
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -59,11 +59,6 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
     public MatchMakerSessionContext getContext();
 
 	/**
-	 * The database connection to the PL Schema for this session.
-	 */
-	public SQLDatabase getDatabase();
-
-	/**
 	 * The PL Schema user for this session.  Often but not necessarily
 	 * the same as the DB User.
 	 */
@@ -83,6 +78,19 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 * The time this session was created.
 	 */
 	public Date getSessionStartTime();
+
+	/**
+	 * Returns the default save location for this session, probably where it was
+	 * last saved. Opening from this location is probably pointless since the
+	 * same session already exists.
+	 */
+	public File getSavePoint();
+	
+	/**
+	 * Sets the default save location for this session; this will likely only be called
+	 * after a successful save to or load from a local file.
+	 */
+	public void setSavePoint(File savePoint);
 	
 	/**
 	 * The prompter factory for this session. The returned factory will communicate with
@@ -97,11 +105,6 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
      * @return the folder with that matches with the foldername, returns null if no results are avaiable
      */
     public PlFolder findFolder(String foldername);
-
-    /**
-     * Get a connection to the current database
-     */
-    public Connection getConnection();
 
     /**
 	 * check to see if there is any project under given name
@@ -183,18 +186,6 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 */
 	public FolderParent getCurrentFolderParent();
 	
-	
-	/**
-     * find the sql table that exists in the session's database 
-     * (i.e. not just in memory)
-     * @param catalog	catalog of the table
-     * @param schema	schema of the table
-     * @param tableName name of the table
-     * @return SQLTable if found or null if not
-     * session's database
-     */
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException;
-    
     /**
      * find the sql table that exists in the given spDataSource
      * (i.e. not just in memory), throws an error if the dsName
@@ -207,15 +198,7 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
      * @return SQLTable if found or null if not
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;
-
-    
-	/**
-     * Returns true if the SQL table exists
-     * in the session's database; false otherwise.
-     */
-    public boolean tableExists(String catalog, String schema, String tableName) throws SQLObjectException;
-    
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;  
     
     /**
      * Returns true if the SQLTable exists in the database 

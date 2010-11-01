@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -54,7 +55,6 @@ import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
@@ -81,7 +81,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 
     private final MatchMakerSessionContext context;
-	private final SQLDatabase database;
 
 	/**
 	 * The security manager is used to define a logged in user and their email
@@ -106,6 +105,11 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     private UserPrompterFactory userPrompterFactory = new DefaultUserPrompterFactory();
 	
     /**
+     * The last place the objects in this session were saved to.
+     */
+    private File savePoint;
+    
+    /**
      * This node is the root node of all MatchMakerObjects and everything stems from this.
      * Its children are the FolderParents and the TranslateGroupParents
      */
@@ -123,8 +127,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
      * @throws MatchMakerConfigurationException If there are some user settings that are
      * not set up properly. 
      */
-	public MatchMakerSessionImpl(MatchMakerSessionContext context,
-			JDBCDataSource ds) throws PLSecurityException,
+	public MatchMakerSessionImpl(MatchMakerSessionContext context) throws PLSecurityException,
 			SQLException, SQLObjectException,
 			MatchMakerConfigurationException {
 		
@@ -134,8 +137,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
 
         this.context = context;
-		database = new SQLDatabase(ds);
-		dbUser = ds.getUser();
 
 		sessionStartTime = new Date();
 	}
@@ -143,13 +144,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     public MatchMakerSessionContext getContext() {
         return context;
     }
-
-	public SQLDatabase getDatabase() {
-		if (databases.get(database.getDataSource()) == null) {
-			databases.put(database.getDataSource(),database);
-		}
-		return database;
-	}
 
 	public String getAppUser() {
 		return appUser.getUserId();
@@ -199,25 +193,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
             if (folder.getName().equals(foldername)) return folder;
         }
         return null;
-    }
-
-    /**
-     * Returns the database connection to the MatchMaker repository database.
-     * The returned connection will be in Auto-Commit mode, but you can turn
-     * auto-commit off if you like (almost always a good idea).
-     * 
-     * @throws SQLObjectRuntimeException If it fails to connect to the database
-     */
-    public Connection getConnection() {
-    	try {
-            Connection con = database.getConnection();
-            con.setAutoCommit(true);
-            return con;
-    	} catch (SQLException ex) {
-    	    throw new RuntimeException(ex);
-        } catch (SQLObjectException ex) {
-            throw new SQLObjectRuntimeException(ex);
-        }
     }
 
     public Project getProjectByName(String name) {
@@ -305,7 +280,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     	JDBCDataSource ds = null;
     	
     	if (spDataSourceName == null || spDataSourceName.length() == 0) {
-    		ds = getDatabase().getDataSource();
+    		return null;
     	} else {
     		for (SPDataSource spd : context.getDataSources()) {
     			if (spd.getName().equals(spDataSourceName)) {
@@ -337,15 +312,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     	}
     }
     
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
-    	return findPhysicalTableByName(getDatabase().getDataSource().getName(), catalog, schema, tableName);
-    }
-
-    public boolean tableExists(String catalog, String schema,
-    		String tableName) throws SQLObjectException {
-    	return tableExists(null, catalog, schema, tableName);
-    }
-    
     public boolean tableExists(String spDataSourceName, String catalog, String schema,
     		String tableName) throws SQLObjectException {
         logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
@@ -354,7 +320,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
         JDBCDataSource ds = null;
         
         if (spDataSourceName == null || spDataSourceName.length() == 0) {
-            ds = getDatabase().getDataSource();
+            return false;
         } else {
             for (SPDataSource spd : context.getDataSources()) {
                 if (spd.getName().equals(spDataSourceName)) {
@@ -446,9 +412,6 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	 * Call this method to close the hibernate resources and database connection.
 	 */
 	public boolean close() {
-		//if (hSession.isConnected()) hSession.close();
-		//if (database.isConnected()) database.disconnect();
-
 		fireSessionClosing();
 		
 		return true;
@@ -540,4 +503,14 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	public UpgradePersisterManager getUpgradePersisterManager() {
 		return upgradeManager;
 	}
+
+	public void setSavePoint(File savePoint) {
+			this.savePoint = savePoint;
+		
+	}
+
+	public File getSavePoint() {
+		return savePoint;
+	}
+
 }

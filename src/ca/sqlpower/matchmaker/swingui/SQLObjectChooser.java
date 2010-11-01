@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -193,14 +194,16 @@ public class SQLObjectChooser {
 	 *            contain.
 	 */
 	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner) {
-		this(session, owner, session.getDatabase().getDataSource());
+		this(session, owner, null);
 	}
 
 	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner, final JDBCDataSource defaultDS) {
 		this.session = session;
+		if (session.getContext().getPlDotIni().getConnections().size() > 0) {
 			
-		db = session.getDatabase(defaultDS);
-		dataSource = defaultDS;
+			dataSource = session.getContext().getPlDotIni().getConnections().get(0);
+		}
+		db = session.getDatabase(dataSource);
         dataSourceComboBox.setModel(new ConnectionComboBoxModel(session.getContext().getPlDotIni()));
 		dataSourceComboBox.setSelectedItem(dataSource);
 
@@ -220,27 +223,29 @@ public class SQLObjectChooser {
 		schemaTerm.setEnabled(false);
 
         try {
-            db.populate();
-            if (db.isCatalogContainer()) {
-                List<SQLCatalog> catalogs = db.getChildren(SQLCatalog.class);
-                setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
-                if ( catalogs != null && catalogs.size() > 0 ) {
-                    catalogTerm.setText(catalogs.get(0).getNativeTerm());
-                    catalogTerm.setEnabled(true);
-                }
-            } else if (db.isSchemaContainer()) {
+        	if (db != null && db.getDataSource() != null) {
+        		db.populate();
+        		if (db.isCatalogContainer()) {
+        			List<SQLCatalog> catalogs = db.getChildren(SQLCatalog.class);
+        			setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
+        			if ( catalogs != null && catalogs.size() > 0 ) {
+        				catalogTerm.setText(catalogs.get(0).getNativeTerm());
+        				catalogTerm.setEnabled(true);
+        			}
+        		} else if (db.isSchemaContainer()) {
 
-                List<SQLSchema> schemas = db.getChildren(SQLSchema.class);
-                
-                setComboBoxStateAndItem(schemaComboBox, schemas, -1);
-                if ( schemas != null && schemas.size() > 0 ) {
-                    schemaTerm.setText(schemas.get(0).getNativeTerm());
-                    schemaTerm.setEnabled(true);
-                }
-            } else {
-                List<SQLTable> tables = db.getChildren(SQLTable.class);
-                setComboBoxStateAndItem(tableComboBox, tables, -1);
-            }
+        			List<SQLSchema> schemas = db.getChildren(SQLSchema.class);
+
+        			setComboBoxStateAndItem(schemaComboBox, schemas, -1);
+        			if ( schemas != null && schemas.size() > 0 ) {
+        				schemaTerm.setText(schemas.get(0).getNativeTerm());
+        				schemaTerm.setEnabled(true);
+        			}
+        		} else {
+        			List<SQLTable> tables = db.getChildren(SQLTable.class);
+        			setComboBoxStateAndItem(tableComboBox, tables, -1);
+        		}
+        	}
         } catch (SQLObjectException ex) {
             throw new SQLObjectRuntimeException(ex);
         }
@@ -272,11 +277,20 @@ public class SQLObjectChooser {
 	private void validate() throws SQLObjectException {
 
 		if (dataSourceComboBox.getSelectedItem() == null) {
+			try {
+				session.getDatabase(dataSource).getConnection().close();
+				db.disconnect();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			dataSource = null;
 			catalog = null;
 			schema = null;
 			table = null;
 			db = null;
+			
 
 			catalogComboBox.removeAllItems();
 			schemaComboBox.removeAllItems();
@@ -293,6 +307,7 @@ public class SQLObjectChooser {
 			schemaTerm.setText("Schema");
 			schemaTerm.setEnabled(false);
 
+			
 		} else {
 			if (dataSource != dataSourceComboBox.getSelectedItem()) {
 
@@ -310,6 +325,10 @@ public class SQLObjectChooser {
 				catalogTerm.setEnabled(false);
 				schemaTerm.setText("Schema");
 				schemaTerm.setEnabled(false);
+				
+				
+				db.disconnect();
+				
 
 				dataSource = (JDBCDataSource) dataSourceComboBox
 						.getSelectedItem();
