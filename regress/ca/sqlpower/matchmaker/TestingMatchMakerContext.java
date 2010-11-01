@@ -34,6 +34,7 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
@@ -142,5 +143,11 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 
 	public void removePreferenceChangeListener(PreferenceChangeListener l) {
 		prefs.removePreferenceChangeListener(l);
+	}
+
+	@Override
+	public MatchMakerSession createSession() throws PLSecurityException,
+			SQLException, SQLObjectException, MatchMakerConfigurationException {
+		return null;
 	}
 }

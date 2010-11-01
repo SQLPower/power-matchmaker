@@ -66,7 +66,7 @@ public class HibernateSessionContextTest extends TestCase {
     }
     
 	public void testCreateSession() throws Exception {
-		MatchMakerSession session = ctx.createSession(ds, ds.getUser(), ds.getPass());
+		MatchMakerSession session = ctx.createSession();
 		assertNotNull(session);
 	}
     
@@ -78,7 +78,7 @@ public class HibernateSessionContextTest extends TestCase {
     public void testDataSourceNotModifiedByLogin() {
         Map<String, String> originalProps = new HashMap<String, String>(ds.getPropertiesMap());
         try {
-            ctx.createSession(ds, "cows", "moo");
+            ctx.createSession();
         } catch (Exception ex) {
             // the username/password is wrong, so the login will fail. That's not what we're testing
         }
@@ -86,7 +86,7 @@ public class HibernateSessionContextTest extends TestCase {
     }
     
     public void testGetHibernateSessionFactory() throws Exception{
-        MatchMakerSession mmSession = ctx.createSession(ds, ds.getUser(), ds.getPass());
+        MatchMakerSession mmSession = ctx.createSession();
         //we're testing this since the purpose of the getHibernateSessionFactory is to
         //initialize the PlFolder
         assertNotNull(mmSession.getCurrentFolderParent().getChildren());

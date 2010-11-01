@@ -146,7 +146,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     }
     
     public void testCreateResultTable() throws SQLObjectException {
-    	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
+    	SQLTable sourceTable = new SQLTable(db, "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
@@ -225,7 +225,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     }
     
     public void testCreateResultTableIndex() throws SQLObjectException {
-    	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
+    	SQLTable sourceTable = new SQLTable(db, "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
