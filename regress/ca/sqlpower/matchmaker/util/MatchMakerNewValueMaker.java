@@ -32,6 +32,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -226,7 +227,9 @@ public class MatchMakerNewValueMaker extends GenericNewValueMaker {
         		return PoolFilterSetting.EVERYTHING;
         	} else {
         		return PoolFilterSetting.VALID_OR_INVALID;
-        	}
+        	} 
+        } else if (valueType == MatchPool.class) {
+            	return new MatchPool();
         } else if (valueType == AddressDatabase.class) {
         	/*
         	 * FIXME This needs to be fixed somehow not to return null
