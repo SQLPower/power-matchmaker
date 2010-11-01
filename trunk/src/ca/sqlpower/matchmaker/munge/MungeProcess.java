@@ -306,6 +306,19 @@ public class MungeProcess extends AbstractMatchMakerObject {
 		}
 
 	}
+
+	/**
+	 * Adds a munge step to the end of the current list of munge steps. The
+	 * munge steps passed into this method can be any step that provides a
+	 * transformation, it cannot be an input or result step.
+	 */
+	public void addTransformationMungeStep(MungeStep step) {
+		if (step instanceof SQLInputStep || step instanceof MungeResultStep) {
+			throw new IllegalArgumentException("This method cannot take steps that " +
+					"are input or output steps. Received step " + step);
+		}
+		addMungeStep(step, (resultStep == null? 0 : 1) + inputSteps.size());
+	}
 	
 	public void addMungeStep(MungeStep step, int index) {
 		if (step instanceof SQLInputStep) {

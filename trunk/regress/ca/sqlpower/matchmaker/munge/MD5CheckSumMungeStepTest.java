@@ -34,7 +34,7 @@ public class MD5CheckSumMungeStepTest extends AbstractMungeStepTest<MD5CheckSumM
 		MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
 	}
 
 	@Override

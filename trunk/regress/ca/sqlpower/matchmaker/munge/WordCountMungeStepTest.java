@@ -41,7 +41,7 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
         MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
 	}
 	
 	public WordCountMungeStepTest(String name) {

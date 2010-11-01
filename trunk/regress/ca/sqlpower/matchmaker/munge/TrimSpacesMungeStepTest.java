@@ -42,7 +42,7 @@ public class TrimSpacesMungeStepTest extends MatchMakerTestCase<TrimSpacesMungeS
 		MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
 	}
 	
 	public void testEmptyString() throws Exception{

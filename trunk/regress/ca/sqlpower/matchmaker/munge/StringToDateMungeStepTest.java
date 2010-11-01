@@ -63,7 +63,7 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 		MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
 	}
 	
 	public void testDate() throws Exception {
