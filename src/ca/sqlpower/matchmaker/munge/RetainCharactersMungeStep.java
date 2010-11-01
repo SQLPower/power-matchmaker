@@ -70,8 +70,8 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	public RetainCharactersMungeStep() {
 		super("Retain Chars",false);
 		caseSensitive = true;
-		useRegex = false;
-		retainChars = "";
+		useRegex = true;
+		retainChars = ".*";
 	}
 
 	public void init() {
