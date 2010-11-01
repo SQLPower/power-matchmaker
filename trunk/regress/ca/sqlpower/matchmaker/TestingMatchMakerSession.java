@@ -20,6 +20,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -432,5 +433,15 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: MatchMakerSession.getAppUser()");
 		return null;
+	}
+
+	@Override
+	public File getSavePoint() {
+		return null;
+	}
+
+	@Override
+	public void setSavePoint(File savePoint) {
+		
 	}
 }

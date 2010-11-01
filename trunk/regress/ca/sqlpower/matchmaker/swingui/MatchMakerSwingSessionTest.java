@@ -127,12 +127,5 @@ public class MatchMakerSwingSessionTest extends TestCase {
         assertEquals("Got the wrong folder", folder1, session.findFolder("Test Folder"));
         assertEquals("Got the wrong folder", folder2, session.findFolder("Test Folder2"));
     }  
-    
-    public void testConnectionCloses() {
-    	//opens the connection
-    	session.getConnection();
-    	assertTrue("Test is not very usefull if the connection starts closed!",session.getDatabase().isConnected());
-    	session.close();
-    	assertFalse("Database connection is not closed! ", session.getDatabase().isConnected());
-    }
+
 }

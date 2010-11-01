@@ -20,6 +20,7 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.io.File;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -450,5 +451,16 @@ public class TestingMatchMakerHibernateSession implements MatchMakerSession {
 	@Override
 	public UpgradePersisterManager getUpgradePersisterManager() {
 		return new MatchMakerUpgradePersisterManager();
+	}
+
+	@Override
+	public File getSavePoint() {
+
+		return null;
+	}
+
+	@Override
+	public void setSavePoint(File savePoint) {
+
 	}
 }

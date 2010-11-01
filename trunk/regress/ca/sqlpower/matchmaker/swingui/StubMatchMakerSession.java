@@ -20,6 +20,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.io.File;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
@@ -261,5 +262,15 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	public UpgradePersisterManager getUpgradePersisterManager() {
 		logger.debug("Stub call: MatchMakerSession.getUpgradePersisterManager()");
 		return null;
+	}
+
+	@Override
+	public File getSavePoint() {
+		return null;
+	}
+
+	@Override
+	public void setSavePoint(File savePoint) {
+		
 	}
 }
