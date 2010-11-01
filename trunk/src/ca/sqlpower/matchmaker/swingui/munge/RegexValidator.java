@@ -44,6 +44,10 @@ public class RegexValidator implements Validator {
     public ValidateResult validate(Object contents) {
     	try {
     		String regex = (String) contents;
+    		if (regex.equals("")) {
+    			return ValidateResult.createValidateResult(Status.FAIL, 
+    					"Empty Retain Characters field is not permitted.");
+    		}
     		Pattern p = Pattern.compile(regex);
     	} catch (PatternSyntaxException e) {
     		return ValidateResult.createValidateResult(Status.FAIL, 

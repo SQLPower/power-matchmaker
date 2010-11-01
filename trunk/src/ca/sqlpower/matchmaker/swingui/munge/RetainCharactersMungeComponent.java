@@ -61,7 +61,10 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 		useRegex.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				temp.setUseRegex(useRegex.isSelected());
+				boolean selected = useRegex.isSelected();
+				temp.setUseRegex(selected);
+				delimiters.setText(selected ? ".*" : "");
+				temp.setRetainChars(delimiters.getText());
 			}
 			
 		});
