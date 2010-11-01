@@ -86,16 +86,7 @@ public class MatchEngineImpl extends AbstractEngine {
         	throw new EngineSettingException(
         			"PreCondition failed: session context must not be null");
         }
-        
-        if ( session.getDatabase() == null ) {
-        	throw new EngineSettingException(
-        			"PreCondition failed: database of the session must not be null");
-        }
-        if ( session.getDatabase().getDataSource() == null ) {
-        	throw new EngineSettingException(
-        			"PreCondition failed: data source of the session must not be null");
-        }
-        
+
         if (!project.doesSourceTableExist()) {
             throw new SourceTableException(
                     "PreCondition failed: Your project source table \""+
@@ -123,23 +114,6 @@ public class MatchEngineImpl extends AbstractEngine {
 					"PreCondition failed: project result table structure incorrect");
 		}
         
-        if (settings.getSendEmail()) {
-        	// First checks for email settings
-        	if (!validateEmailSetting(context)) {
-        		throw new EngineSettingException("PreCondition failed: " +
-        			 	"missing email setting information, " +
-        			 	"the email sender requires smtp host name!");
-        	}
-        	
-        	// Then tries to set up the emails for each status
-        	try {
-				setupEmail(context);
-			} catch (Exception e) {
-				throw new EngineSettingException("PreCondition failed: " +
-						"error while setting up for sending emails.", e);
-			}
-        }
-                
         if (!canWriteLogFile(settings)) {
             throw new EngineSettingException("The log file is not writable.");
         }
@@ -179,12 +153,6 @@ public class MatchEngineImpl extends AbstractEngine {
 			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
 			logger.addAppender(fileAppender);
-			
-			if (getProject().getMungeSettings().getSendEmail()) {
-				String emailSubject = "Project " + getProject().getName() + " Match Engine";
-				emailAppender = new EmailAppender(email, emailSubject, greenUsers, yellowUsers, redUsers);
-				logger.addAppender(emailAppender);
-			}
 			
 			progressMessage = "Starting Match Engine";
 			logger.info(progressMessage);

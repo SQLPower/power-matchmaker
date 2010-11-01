@@ -34,8 +34,8 @@ import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.diff.DiffChunk;
 import ca.sqlpower.diff.DiffType;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
-import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.address.AddressPool;
+import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.object.ObjectDependentException;
@@ -43,19 +43,18 @@ import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.ConstructorParameter;
-import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.object.annotation.Transient;
+import ca.sqlpower.object.annotation.ConstructorParameter.ParameterType;
 import ca.sqlpower.sqlobject.SQLColumn;
-import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.UserDefinedSQLType;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -558,12 +557,6 @@ public class Project extends AbstractMatchMakerObject {
 					"for the project, you will need session and database " +
 					"connection to check the result table");
 		}
-		SQLDatabase db = session.getDatabase();
-		if ( db == null ) {
-			throw new IllegalStateException("Database has not been setup " +
-					"for the project session, you will need database " +
-					"connection to check the result table");
-		}
 		SQLIndex si = getSourceTableIndex();
 		if (si.isEmpty()) {
 			throw new IllegalStateException("No unique index specified " +
@@ -589,6 +582,10 @@ public class Project extends AbstractMatchMakerObject {
 				resultTable.getCatalogName(),
 				resultTable.getSchemaName(),
 				resultTable.getName());
+		
+		for(SQLColumn c : table.getColumns()) {
+			c.setType(getSession().getSQLType(c.getType()));
+			}
 		
 		if (table == null) {
 			throw new IllegalStateException(
@@ -651,12 +648,7 @@ public class Project extends AbstractMatchMakerObject {
 					"for the project, you will need session and database " +
 					"connection to check the result table");
 		}
-		SQLDatabase db = session.getDatabase();
-		if (db == null) {
-			throw new IllegalStateException("Database has not been setup " +
-					"for the project session, you will need database " +
-					"connection to check the result table");
-		}
+
 		SQLTable sourceTable = getSourceTable();
 		if (sourceTable == null) {
 			throw new IllegalStateException("No source table specified " +
@@ -667,6 +659,10 @@ public class Project extends AbstractMatchMakerObject {
 				sourceTable.getCatalogName(),
 				sourceTable.getSchemaName(),
 				sourceTable.getName());
+		
+		for(SQLColumn c : table.getColumns()) {
+			c.setType(getSession().getSQLType(c.getType()));
+			}
 		
 		if (table == null) {
 			throw new IllegalStateException(
@@ -717,7 +713,7 @@ public class Project extends AbstractMatchMakerObject {
 				UserDefinedSQLType compareToType = compareToColumn.getUserDefinedSQLType();
 				UserDefinedSQLType type = column.getUserDefinedSQLType();
 				
-				if(compareToType.equals(type)) {
+				if (compareToType.equals(type)) {
 					continue;
 				}
 				

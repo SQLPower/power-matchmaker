@@ -719,8 +719,6 @@ public class ProjectSAXHandler extends DefaultHandler {
             ms.setLog(new File(aval));  // XXX windows vs unix problems
         } else if (aname.equals("process-count")) {
             ms.setProcessCount(Integer.parseInt(aval));
-        } else if (aname.equals("send-email")) {
-            ms.setSendEmail(Boolean.valueOf(aval));
         } else {
             return false;
         }

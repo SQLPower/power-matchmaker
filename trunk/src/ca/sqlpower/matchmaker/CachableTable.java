@@ -76,14 +76,16 @@ public class CachableTable extends AbstractMatchMakerObject {
      * on behalf of mmo will report.
      */
     public CachableTable(String tableRole) {
-    	this(tableRole, null, null, null);
+    	this(null, tableRole, null, null, null);
     }
     
     @Constructor
-    public CachableTable(@ConstructorParameter(propertyName="tableRole") String tableRole,
+    public CachableTable(@ConstructorParameter(propertyName="spDataSourceName") String spDataSourceName,
+    		@ConstructorParameter(propertyName="tableRole") String tableRole,
     		@ConstructorParameter(propertyName="tableName") String tableName,
     		@ConstructorParameter(propertyName="catalogName") String catalogName,
     		@ConstructorParameter(propertyName="schemaName") String schemaName) {
+    	this.dsName = spDataSourceName;
     	this.tableName = tableName;
 		this.catalogName = catalogName;
 		this.schemaName = schemaName;
@@ -243,7 +245,7 @@ public class CachableTable extends AbstractMatchMakerObject {
 			
 			SQLDatabase db = null;
 			if (getJDBCDataSource() == null) {
-				db = getSession().getDatabase();
+				return null;
 			} else {
 				db = getSession().getDatabase(getJDBCDataSource());
 			}

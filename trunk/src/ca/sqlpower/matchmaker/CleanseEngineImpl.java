@@ -81,16 +81,7 @@ public class CleanseEngineImpl extends AbstractEngine {
         	throw new EngineSettingException(
         			"PreCondition failed: session context must not be null");
         }
-        
-        if ( session.getDatabase() == null ) {
-        	throw new EngineSettingException(
-        			"PreCondition failed: database of the session must not be null");
-        }
-        if ( session.getDatabase().getDataSource() == null ) {
-        	throw new EngineSettingException(
-        			"PreCondition failed: data source of the session must not be null");
-        }
-        
+
         if (!project.doesSourceTableExist()) {
             throw new SourceTableException(
                     "PreCondition failed: Your project source table \""+
@@ -106,23 +97,6 @@ public class CleanseEngineImpl extends AbstractEngine {
         if (!session.canSelectTable(project.getSourceTable())) {
             throw new EngineSettingException(
             "PreCondition failed: can not select project source table");
-        }
-
-        if (settings.getSendEmail()) {
-        	// First checks the email settings
-        	if (!validateEmailSetting(context)) {
-        		throw new EngineSettingException(
-        				"missing email setting information," +
-        				" the email sender requires smtp host name!");
-        	}
-        	
-        	// Then tries to setup the emails to each status
-        	try {
-				setupEmail(context);
-			} catch (Exception e) {
-				throw new EngineSettingException("PreCondition failed: " +
-						"error while setting up for sending emails.", e);
-			}
         }
 
         if (!canWriteLogFile(settings)) {
@@ -162,12 +136,6 @@ public class CleanseEngineImpl extends AbstractEngine {
 			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
 			logger.addAppender(fileAppender);
-			
-			if (getProject().getMungeSettings().getSendEmail()) {
-				String emailSubject = "Project " + getProject().getName() + " Match Engine";
-				emailAppender = new EmailAppender(email, emailSubject, greenUsers, yellowUsers, redUsers);
-				logger.addAppender(emailAppender);
-			}
 			
 			progressMessage = "Starting Cleanse Engine";
 			logger.info(progressMessage);

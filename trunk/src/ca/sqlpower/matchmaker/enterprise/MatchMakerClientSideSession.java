@@ -25,7 +25,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -93,9 +92,9 @@ import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.SQLPowerUtils;
+import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.UserPrompter.UserPromptOptions;
 import ca.sqlpower.util.UserPrompter.UserPromptResponse;
-import ca.sqlpower.util.UserPrompterFactory;
 import ca.sqlpower.util.UserPrompterFactory.UserPromptType;
 
 public class MatchMakerClientSideSession implements MatchMakerSession {
@@ -700,11 +699,6 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
 	}
 
 	@Override
-	public SQLDatabase getDatabase() {
-		return delegateSession.getDatabase();
-	}
-
-	@Override
 	public String getAppUser() {
 		return delegateSession.getAppUser();
 	}
@@ -732,11 +726,6 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
 	@Override
 	public PlFolder findFolder(String foldername) {
 		return delegateSession.findFolder(foldername);
-	}
-
-	@Override
-	public Connection getConnection() {
-		return delegateSession.getConnection();
 	}
 
 	@Override
@@ -795,22 +784,10 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
 	}
 
 	@Override
-	public SQLTable findPhysicalTableByName(String catalog, String schema,
-			String tableName) throws SQLObjectException {
-		return delegateSession.findPhysicalTableByName(catalog, schema, tableName);
-	}
-
-	@Override
 	public SQLTable findPhysicalTableByName(String spDataSourceName,
 			String catalog, String schema, String tableName)
 			throws SQLObjectException {
 		return delegateSession.findPhysicalTableByName(spDataSourceName, catalog, schema, tableName);
-	}
-
-	@Override
-	public boolean tableExists(String catalog, String schema, String tableName)
-			throws SQLObjectException {
-		return delegateSession.tableExists(catalog, schema, tableName);
 	}
 
 	@Override
@@ -870,5 +847,16 @@ public class MatchMakerClientSideSession implements MatchMakerSession {
 	@Override
 	public UpgradePersisterManager getUpgradePersisterManager() {
 		return delegateSession.getUpgradePersisterManager();
+	}
+
+	@Override
+	public File getSavePoint() {
+		logger.warn("Tried to get a savePoint on an enterprise session...");
+		return null;
+	}
+
+	@Override
+	public void setSavePoint(File savePoint) {
+		delegateSession.setSavePoint(savePoint);
 	}
 }

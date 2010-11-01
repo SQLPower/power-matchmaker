@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,9 +88,9 @@ import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -129,8 +128,8 @@ import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.MemoryMonitor;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
-import ca.sqlpower.swingui.SwingUIUserPrompterFactory.NonModalSwingUIUserPrompterFactory;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
+import ca.sqlpower.swingui.SwingUIUserPrompterFactory.NonModalSwingUIUserPrompterFactory;
 import ca.sqlpower.swingui.event.SessionLifecycleEvent;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.BrowserUtil;
@@ -740,7 +739,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             }
 
             if (oldPane != null) {
-            	if (oldPane.hasUnsavedChanges()) {
+            	if (oldPane.hasUnsavedChanges() && !(oldPane instanceof ProjectEditor)) {
+            		// TODO: Do any panels require this check?
             		oldPane.applyChanges();
             	}
             }
@@ -933,20 +933,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return sessionImpl.getDBUser();
     }
 
-    public SQLDatabase getDatabase() {
-        return sessionImpl.getDatabase();
-    }
-
     public Date getSessionStartTime() {
         return sessionImpl.getSessionStartTime();
     }
 
     public PlFolder findFolder(String foldername) {
         return sessionImpl.findFolder(foldername);
-    }
-
-    public Connection getConnection() {
-        return sessionImpl.getConnection();
     }
 
 	public Project getProjectByName(String name) {
@@ -1063,19 +1055,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
     }
     
-    /**
-     * Returns the default save location for this workspace. Opening from this location
-     * is probably pointless since the same session already exists.
-     */
     public File getSavePoint() {
-		return savePoint;
+		return sessionImpl.getSavePoint();
 	}
 
-    /**
-     * Sets the default save location for this workspace.
-     */
 	public void setSavePoint(File savePoint) {
-		this.savePoint = savePoint;
+		sessionImpl.setSavePoint(savePoint);
 	}
 
 	/**
@@ -1097,18 +1082,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             return color;
         }
     }
-    
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException {
-    	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
-	}
 
     public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException {
     	return sessionImpl.findPhysicalTableByName(spDataSourceName, catalog, schema, tableName);
-	}
-    
-    public boolean tableExists(String catalog, String schema,
-    		String tableName) throws SQLObjectException {
-    	return sessionImpl.tableExists(catalog, schema, tableName);
 	}
     
     public boolean tableExists(String spDataSourceName, String catalog, String schema,

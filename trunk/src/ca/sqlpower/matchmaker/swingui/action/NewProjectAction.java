@@ -79,9 +79,6 @@ public final class NewProjectAction extends AbstractAction {
 			count++;
 		}
 		project.setName("New Project " + count);
-		final String dsName = swingSession.getDatabase().getDataSource().getName();
-		project.setSourceTableSPDatasource(dsName);
-		project.setResultTableSPDatasource(dsName);
 		
 		try {
 			AbstractAction cancelAction = new AbstractAction("Cancel") {

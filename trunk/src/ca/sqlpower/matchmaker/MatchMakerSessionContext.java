@@ -91,8 +91,7 @@ public interface MatchMakerSessionContext {
      * @throws SQLObjectException If some SQLObject operations fail
      * @throws MatchMakerConfigurationException  If there is a user-fixable configuration problem.
      */
-    public MatchMakerSession createSession(JDBCDataSource ds, String username,
-			String password) throws PLSecurityException, SQLException,
+    public MatchMakerSession createSession() throws PLSecurityException, SQLException,
 			SQLObjectException, MatchMakerConfigurationException;
 
     /**

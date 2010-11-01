@@ -797,8 +797,7 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
         buttonPanel.add(resetClusterButton);
         
         String prefNodePath = "ca/sqlpower/matchmaker/projectSettings/$" +
-        						project.getSession().getDatabase().getDataSource().getName() +
-        						"/$" + project.getOid() + "/matchValidation";
+        						project.getUUID() + "/matchValidation";
         matchValidationPrefs = Preferences.userRoot().node(prefNodePath);
 
         try {

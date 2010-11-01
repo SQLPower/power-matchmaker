@@ -216,10 +216,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
-    public MatchMakerSwingSession createSession(JDBCDataSource ds,
-			String username, String password) throws PLSecurityException,
+    public MatchMakerSwingSession createSession() throws PLSecurityException,
 			SQLException, SQLObjectException, MatchMakerConfigurationException {
-    	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
+    	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession());
     	getSessions().add(session);
         session.addSessionLifecycleListener(getSessionLifecycleListener());
         if (getExternalLifecycleListener() != null) {

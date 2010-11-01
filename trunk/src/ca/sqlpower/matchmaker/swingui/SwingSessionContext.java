@@ -44,8 +44,7 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
 public interface SwingSessionContext extends MatchMakerSessionContext {
 
     //////// MatchMakerSessionContext implementation //////////
-    public MatchMakerSwingSession createSession(JDBCDataSource ds,
-			String username, String password) throws PLSecurityException,
+    public MatchMakerSwingSession createSession() throws PLSecurityException,
 			SQLException, SQLObjectException, MatchMakerConfigurationException;
 
     public List<JDBCDataSource> getDataSources();
