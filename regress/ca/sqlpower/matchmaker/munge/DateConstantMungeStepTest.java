@@ -44,7 +44,7 @@ public class DateConstantMungeStepTest extends MatchMakerTestCase<DateConstantMu
         MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
     }
     
     private void setFormat(int x){

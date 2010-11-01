@@ -43,7 +43,7 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 		MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
 	}
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
@@ -153,12 +153,11 @@ public class SubstringByWordMungeStepTest extends MatchMakerTestCase<SubstringBy
 	protected SubstringByWordMungeStep getTarget() {
 		return step;
 	}
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: PersistedSPObjectTest.getChildClassType()");
-		return null;
-	}
+	
+    @Override
+    protected Class<? extends SPObject> getChildClassType() {
+    	return null;
+    }
 	
 	@Override
 	public void testAllowedChildTypesField() throws Exception {

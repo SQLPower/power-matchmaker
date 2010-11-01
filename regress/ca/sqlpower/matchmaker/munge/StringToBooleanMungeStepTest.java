@@ -43,7 +43,7 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 		MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
 	}
 	
 	private void setCaseSensitive(boolean cs) {

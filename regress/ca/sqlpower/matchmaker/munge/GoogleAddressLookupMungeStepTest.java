@@ -53,7 +53,7 @@ public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleA
         MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
-        process.addMungeStep(step, process.getMungeSteps().size());
+        process.addTransformationMungeStep(step);
     }
 
     public void testSimpleLookupCanada() throws Exception {
