@@ -11,7 +11,7 @@
 	<property name="lib" value="lib"/>
 	<property name="buildlib" value="buildlib"/>
 	<property name="generated" value="generated"/>
-	<property name="resources" value="src/main/icons"/>
+	<property name="resources" value="src"/>
 	<property name="src.apt" value="src/apt/java"/>
 	
 	<!-- The staging directory is a temp dir that is used as a base for all
@@ -191,6 +191,13 @@
 		<move todir="${build}">
             <fileset dir="${build_tmp}"/>
         </move>
+		
+		<copy todir="${build}" flatten="false">
+            <fileset dir="${resources}">
+                <include name="icons/**/*"/>
+                <include name="ca/sqlpower/matchmaker/swingui/munge/munge_component.properties"/>
+            </fileset>
+        </copy>
 		
 	</target>
 
@@ -486,24 +493,28 @@
 		</junitreport>
 	</target>
 	
-	
-	<target name="stage" depends="getAppVersion, compile, userguide">
-		<mkdir dir="${dist.base}" />
+	<target name="build.stage">
         <mkdir dir="${staging.dir}"/>
         <mkdir dir="${staging.dir}/lib"/>
         <mkdir dir="${staging.dir}/jdbc"/>
     	<mkdir dir="${staging.dir}/doc"/>
-		
+
     	<copy todir="${staging.dir}/lib">
-    	    <fileset dir="lib" includes="*.jar"/>
+    		<fileset dir="${lib}">
+    			<include name="*.jar"/>
+    		</fileset>
+    		<fileset dir="${buildlib}">
+    			<include name="sqlpower_library.jar"/>
+    		</fileset>
+    		<fileset dir="${sqlpower.library.home}/lib/main">
+    			<include name="*.jar"/>
+    		</fileset>
     		<fileset dir="${build}" includes="dqguruhelp.jar" />
     	</copy>
-		
-    	<copy todir="${staging.dir}/doc">
-        	<fileset dir="${build}/doc" includes="*-${app.version}.pdf"/>
-    	   	<fileset dir="${build}/doc" includes="*.txt"/>
-    	</copy>
 
+	</target>
+	
+	<target name="build.manifest" depends="build.stage">
 		<manifestclasspath property="dqguru.jar.classpath" jarfile="${staging.dir}/dqguru.jar">
     		<classpath>
 	    		<pathelement path="${staging.dir}/jdbc"/>
@@ -517,11 +528,15 @@
     		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"/>
     		<attribute name="Class-Path" value="${dqguru.jar.classpath}" />
     	</manifest>
+	</target>
+	
+	<target name="stage" depends="getAppVersion, compile, userguide, build.manifest">
 
     	<jar destfile="${staging.dir}/dqguru.jar" update="no"
     				basedir="${build}" 
     				includes="ca/** org/** icons/** log4j.properties default_database_types.ini"
     				manifest="${build}/manifest">
+			<fileset dir="${src}" includes="ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"/>
     	</jar>
 		
 		<manifest file="${build}/dqguruenginerunner_manifest">
@@ -1060,8 +1075,11 @@
 		</propertyfile>
 	</target>
 
-	<target name ="jar" depends="compile, compile-tests" description="Builds the embedable JAR">
-		<jar jarfile="dist/dqguru.jar" basedir="${build}"/>
-		<jar jarfile="dist/dqguru-tests.jar" basedir="${build.tests}"/>
+	<target name ="jar" depends="compile, compile-tests, build.manifest" description="Builds the embedable JAR">
+		<jar jarfile="dist/dqguru.jar" manifest="${build}/manifest">
+			<fileset dir="${build}"/>
+			<fileset dir="${src}" includes="ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"/>
+		</jar>
+		<jar jarfile="dist/dqguru-tests.jar" basedir="${build.tests}" manifest="${build}/manifest"/>
 	</target>
 </project>
