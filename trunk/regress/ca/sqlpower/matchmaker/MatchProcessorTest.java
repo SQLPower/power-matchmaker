@@ -180,8 +180,8 @@ public class MatchProcessorTest extends TestCase {
 		assertEquals(3, pmrs.size());
 		
 		for (PotentialMatchRecord pmr: pmrs) {
-			SourceTableRecord lhs = pmr.getReferencedRecord();
-			SourceTableRecord rhs = pmr.getDirectRecord();
+			SourceTableRecord lhs = pmr.getOrigLHS();
+			SourceTableRecord rhs = pmr.getOrigRHS();
 			
 			if (lhs != dup1 && lhs != dup2 && lhs != dup3 &&
 					rhs != dup1 && rhs != dup2 && rhs != dup3) {

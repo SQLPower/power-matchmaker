@@ -20,7 +20,9 @@
 package ca.sqlpower.matchmaker;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -38,6 +40,7 @@ import ca.sqlpower.matchmaker.munge.MungeResult;
  */
 public class MatchProcessor extends AbstractProcessor {
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(MatchProcessor.class);
 	
 	/**
@@ -77,11 +80,14 @@ public class MatchProcessor extends AbstractProcessor {
 		int dataIndex = 0;
 		int matchCount = 0;
 		
+		Set<SourceTableRecord> sourceTableRecords = new HashSet<SourceTableRecord>();
+		Set<PotentialMatchRecord> potentialMatchRecords = new HashSet<PotentialMatchRecord>();
+		
 		for (MungeResult data: matchData) {
             checkCancelled();
 			monitorableHelper.incrementProgress();
 			dataIndex++;
-			for (int i=dataIndex; i<matchData.size(); i++){
+			for (int i=dataIndex; i<matchData.size(); i++) {
 				if (data.compareTo(matchData.get(i)) == 0) {
 					boolean nullMatch = false;
 					for (int j = 0; j < data.getMungedData().length; j++) {
@@ -101,10 +107,11 @@ public class MatchProcessor extends AbstractProcessor {
 								mungeProcess, MatchType.UNMATCH, data
 										.getSourceTableRecord(), matchData.get(
 										i).getSourceTableRecord(), false);
-						pool.addSourceTableRecord(data.getSourceTableRecord());
-						pool.addSourceTableRecord(matchData.get(i)
-								.getSourceTableRecord());
-						pool.addPotentialMatch(pmr);
+						SourceTableRecord src1 = data.getSourceTableRecord();
+						SourceTableRecord src2 = matchData.get(i).getSourceTableRecord();
+						sourceTableRecords.add(src1);
+						sourceTableRecords.add(src2);
+						potentialMatchRecords.add(pmr);
 					}
 				} else {
 					// If data doesn't match perfectly, then there should be 
@@ -114,6 +121,11 @@ public class MatchProcessor extends AbstractProcessor {
 			}
 		}
 		
+		//Sort the new matches into match clusters then add them to the match pool
+		List<MatchCluster> matchClusters = MatchPool.sortMatches(sourceTableRecords, potentialMatchRecords);
+		
+		pool.mergeInClusters(matchClusters);
+
 		engineLogger.info("Transformation '" + mungeProcess.getName() + "' found " + matchCount + " matches");
 		
 		return Boolean.TRUE;

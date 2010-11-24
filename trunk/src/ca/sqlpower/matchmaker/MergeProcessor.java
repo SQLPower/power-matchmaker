@@ -160,6 +160,8 @@ public class MergeProcessor extends AbstractProcessor {
 
 			initVariables();
 			
+			pool.begin("Starting the merge engine");
+			
 			for (PotentialMatchRecord pm : pmProcessOrder) {
                 checkCancelled();
 				monitorableHelper.incrementProgress();
@@ -207,6 +209,7 @@ public class MergeProcessor extends AbstractProcessor {
 										+ rows);
 					}
 				}
+				
 				//clean up match pool
 				pm.setMatchStatus(MatchType.MERGED);
 				
@@ -217,7 +220,7 @@ public class MergeProcessor extends AbstractProcessor {
 				SourceTableRecord str = pm.getDuplicate();
 				List<PotentialMatchRecord> toBeDeleted = new ArrayList<PotentialMatchRecord>();
 				for (PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
-					if (pmr.getReferencedRecord().equals(str) || pmr.getDirectRecord().equals(str)) {
+					if (pmr.getOrigLHS().equals(str) || pmr.getOrigRHS().equals(str)) {
 						if (pmr.getMatchStatus() != MatchType.MERGED) {
 							engineLogger.debug("Removing match pool record: " + pmr);
 							toBeDeleted.add(pmr);
@@ -225,13 +228,17 @@ public class MergeProcessor extends AbstractProcessor {
 					}
 				}
 				for (PotentialMatchRecord pmr : toBeDeleted) {
-					pool.removePotentialMatch(pmr);
+					pmr.setMatchStatus(MatchType.DELETE);
 				}
 			}
 
             checkCancelled();
-
-			pool.store(true, project.getMergeSettings().getDebug());
+            
+            pool.setUseBatchUpdates(true);
+            pool.setDebug(project.getMergeSettings().getDebug());
+            pool.commit();
+        	pool.clearRecords();
+        	pool.clearCache();
 			return Boolean.TRUE;
 		} finally {
 		    monitorableHelper.setFinished(true);
@@ -246,9 +253,9 @@ public class MergeProcessor extends AbstractProcessor {
 		engineLogger.info("Loading match pool...");
 		pool = project.getMatchPool();
 		pool.clearRecords();
-		pool.findAll(new ArrayList<SQLColumn>());
+		pool.find(new ArrayList<SQLColumn>());
 		
-		engineLogger.debug("Found " + pool.getSourceTableRecords().size() + " source table records in pool");
+		engineLogger.debug("Found " + pool.getAllSourceTableRecords().size() + " source table records in pool");
 		
 		//Topological sort so that chains of matches are merged in the right order
 		engineLogger.info("Sorting matches...");

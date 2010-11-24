@@ -76,10 +76,10 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
     			adjacentNodes.add(pmr.getDuplicate());
     		} else if (pmr.getDuplicate() == node){
     			adjacentNodes.add(pmr.getMasterRecord());
-    		} else if (additionalPMRs.contains(pmr) && pmr.getReferencedRecord() == node) {
-    			adjacentNodes.add(pmr.getDirectRecord());
-    		} else if (additionalPMRs.contains(pmr) && pmr.getDirectRecord() == node){
-    			adjacentNodes.add(pmr.getReferencedRecord());
+    		} else if (additionalPMRs.contains(pmr) && pmr.getOrigLHS() == node) {
+    			adjacentNodes.add(pmr.getOrigRHS());
+    		} else if (additionalPMRs.contains(pmr) && pmr.getOrigRHS() == node){
+    			adjacentNodes.add(pmr.getOrigLHS());
     		} else {
     			// edge belongs to some other nodes in the graph
     		}
@@ -112,7 +112,7 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
     }
 
     public Collection<SourceTableRecord> getNodes() {
-        return pool.getSourceTableRecords();
+        return pool.getAllSourceTableRecords();
     }
 
     /**
