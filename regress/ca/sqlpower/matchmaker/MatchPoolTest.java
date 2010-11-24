@@ -164,20 +164,20 @@ public class MatchPoolTest extends TestCase {
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
-		pool.findAll(new ArrayList<SQLColumn>());
+		pool.find(new ArrayList<SQLColumn>());
 		List<PotentialMatchRecord> matches = pool.getPotentialMatchRecords();
 		assertEquals(1, matches.size());
 		for (PotentialMatchRecord pmr : matches) {
 			assertNotNull(pmr);
-			assertNotNull(pmr.getReferencedRecord());
-			assertNotNull(pmr.getReferencedRecord().getKeyValues());
-			assertEquals(1, pmr.getReferencedRecord().getKeyValues().size());
+			assertNotNull(pmr.getOrigLHS());
+			assertNotNull(pmr.getOrigLHS().getKeyValues());
+			assertEquals(1, pmr.getOrigLHS().getKeyValues().size());
 			assertEquals("Munge_Process_One", pmr.getMungeProcess().getName());
 		}
 		int originalMatchCount = matches.size();
 		
 		// Now we test if subsequent calls to findAll adds duplicate PotentialMatchRecords
-		pool.findAll(new ArrayList<SQLColumn>());
+		pool.find(new ArrayList<SQLColumn>());
 		assertEquals("Number of PotentialMatchRecords should be the same", originalMatchCount, matches.size());
 	}
 
@@ -192,8 +192,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
-		pool.findAll(new ArrayList<SQLColumn>());
-		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
+		pool.find(new ArrayList<SQLColumn>());
+		Collection<SourceTableRecord> nodes = pool.getAllSourceTableRecords();
 		assertEquals(3, nodes.size());
 
 		boolean foundOne = false;
@@ -221,8 +221,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
-		pool.findAll(new ArrayList<SQLColumn>());
-		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
+		pool.find(new ArrayList<SQLColumn>());
+		Collection<SourceTableRecord> nodes = pool.getAllSourceTableRecords();
 		assertEquals(3, nodes.size());
 
 		// FIXME need to be able to retrieve a particular PMR by key values
@@ -241,8 +241,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "3");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
-		pool.findAll(null);
-		assertEquals(2, pool.getSourceTableRecords().size());
+		pool.find(null);
+		assertEquals(2, pool.getAllSourceTableRecords().size());
 		assertEquals(1, pool.getPotentialMatchRecords().size());
 	}
 	
@@ -253,12 +253,13 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testReplaceOrphanedMatch() throws Exception {
 		this.pool = project.getMatchPool();
+		pool.begin("Testing Records");
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
-		pool.findAll(null);
+		pool.find(null);
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("1");
@@ -272,7 +273,7 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pool.getPotentialMatchRecords().contains(overwrite));
 		assertEquals(2, pool.getPotentialMatchRecords().size());
 		// Store should work without exception
-		pool.store();
+		pool.commit();
 		
 	}
 	
@@ -281,7 +282,7 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.MERGED);
-		pool.findAll(null);
+		pool.find(null);
 		
 		List<Object> keyList1 = new ArrayList<Object>();
 		keyList1.add("1");
@@ -295,8 +296,8 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pool.getPotentialMatchRecords().contains(overwrite));
 		assertEquals(1, pool.getPotentialMatchRecords().size());
 		for (PotentialMatchRecord pmr :pool.getPotentialMatchRecords()) {
-			assertEquals(keyList1, pmr.getReferencedRecord().getKeyValues());
-			assertEquals(keyList2, pmr.getDirectRecord().getKeyValues());
+			assertEquals(keyList1, pmr.getOrigLHS().getKeyValues());
+			assertEquals(keyList2, pmr.getOrigRHS().getKeyValues());
 			assertEquals(pmr.getMatchStatus(), PotentialMatchRecord.MatchType.UNMATCH);
 		}
 		// Store should work without exception
@@ -309,7 +310,7 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
-		pool.findAll(null);
+		pool.find(null);
 		mungeProcessOne.setMatchPriority(Integer.valueOf("2"));
 		mungeProcessTwo.setMatchPriority(Integer.valueOf("1"));
 		
@@ -361,17 +362,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == a1
-					&& potentialMatch.getDirectRecord() == a2) {
+			if (potentialMatch.getOrigLHS() == a1
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a1) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a3
-					&& potentialMatch.getDirectRecord() == a2) {
+			} else if (potentialMatch.getOrigLHS() == a3
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a3) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a3) {
 				pmrA2ToA3 = potentialMatch;
 			}
 
@@ -411,17 +412,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == a1
-					&& potentialMatch.getDirectRecord() == a2) {
+			if (potentialMatch.getOrigLHS() == a1
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a1) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a3
-					&& potentialMatch.getDirectRecord() == a2) {
+			} else if (potentialMatch.getOrigLHS() == a3
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a3) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a3) {
 				pmrA2ToA3 = potentialMatch;
 			}
 
@@ -463,17 +464,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrC1ToC2 = null;
 		PotentialMatchRecord pmrC2ToC3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == c1
-					&& potentialMatch.getDirectRecord() == c2) {
+			if (potentialMatch.getOrigLHS() == c1
+					&& potentialMatch.getOrigRHS() == c2) {
 				pmrC1ToC2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == c2
-					&& potentialMatch.getDirectRecord() == c1) {
+			} else if (potentialMatch.getOrigLHS() == c2
+					&& potentialMatch.getOrigRHS() == c1) {
 				pmrC1ToC2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == c3
-					&& potentialMatch.getDirectRecord() == c2) {
+			} else if (potentialMatch.getOrigLHS() == c3
+					&& potentialMatch.getOrigRHS() == c2) {
 				pmrC2ToC3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == c2
-					&& potentialMatch.getDirectRecord() == c3) {
+			} else if (potentialMatch.getOrigLHS() == c2
+					&& potentialMatch.getOrigRHS() == c3) {
 				pmrC2ToC3 = potentialMatch;
 			}
 
@@ -514,17 +515,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrF1ToF2 = null;
 		PotentialMatchRecord pmrF2ToF3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == f1
-					&& potentialMatch.getDirectRecord() == f2) {
+			if (potentialMatch.getOrigLHS() == f1
+					&& potentialMatch.getOrigRHS() == f2) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == f2
-					&& potentialMatch.getDirectRecord() == f1) {
+			} else if (potentialMatch.getOrigLHS() == f2
+					&& potentialMatch.getOrigRHS() == f1) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == f3
-					&& potentialMatch.getDirectRecord() == f2) {
+			} else if (potentialMatch.getOrigLHS() == f3
+					&& potentialMatch.getOrigRHS() == f2) {
 				pmrF2ToF3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == f2
-					&& potentialMatch.getDirectRecord() == f3) {
+			} else if (potentialMatch.getOrigLHS() == f2
+					&& potentialMatch.getOrigRHS() == f3) {
 				pmrF2ToF3 = potentialMatch;
 			}
 
@@ -566,17 +567,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrF1ToF2 = null;
 		PotentialMatchRecord pmrF2ToF3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == f1
-					&& potentialMatch.getDirectRecord() == f2) {
+			if (potentialMatch.getOrigLHS() == f1
+					&& potentialMatch.getOrigRHS() == f2) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == f2
-					&& potentialMatch.getDirectRecord() == f1) {
+			} else if (potentialMatch.getOrigLHS() == f2
+					&& potentialMatch.getOrigRHS() == f1) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == f3
-					&& potentialMatch.getDirectRecord() == f2) {
+			} else if (potentialMatch.getOrigLHS() == f3
+					&& potentialMatch.getOrigRHS() == f2) {
 				pmrF2ToF3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == f2
-					&& potentialMatch.getDirectRecord() == f3) {
+			} else if (potentialMatch.getOrigLHS() == f2
+					&& potentialMatch.getOrigRHS() == f3) {
 				pmrF2ToF3 = potentialMatch;
 			}
 
@@ -617,17 +618,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == b1
-					&& potentialMatch.getDirectRecord() == b2) {
+			if (potentialMatch.getOrigLHS() == b1
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b1) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b3
-					&& potentialMatch.getDirectRecord() == b2) {
+			} else if (potentialMatch.getOrigLHS() == b3
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b3) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -673,23 +674,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrG2ToG3 = null;
 		PotentialMatchRecord pmrG3ToG4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == g1
-					&& potentialMatch.getDirectRecord() == g2) {
+			if (potentialMatch.getOrigLHS() == g1
+					&& potentialMatch.getOrigRHS() == g2) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g2
-					&& potentialMatch.getDirectRecord() == g1) {
+			} else if (potentialMatch.getOrigLHS() == g2
+					&& potentialMatch.getOrigRHS() == g1) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g3
-					&& potentialMatch.getDirectRecord() == g2) {
+			} else if (potentialMatch.getOrigLHS() == g3
+					&& potentialMatch.getOrigRHS() == g2) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g2
-					&& potentialMatch.getDirectRecord() == g3) {
+			} else if (potentialMatch.getOrigLHS() == g2
+					&& potentialMatch.getOrigRHS() == g3) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g3
-					&& potentialMatch.getDirectRecord() == g4) {
+			} else if (potentialMatch.getOrigLHS() == g3
+					&& potentialMatch.getOrigRHS() == g4) {
 				pmrG3ToG4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g4
-					&& potentialMatch.getDirectRecord() == g3) {
+			} else if (potentialMatch.getOrigLHS() == g4
+					&& potentialMatch.getOrigRHS() == g3) {
 				pmrG3ToG4 = potentialMatch;
 			}
 
@@ -738,23 +739,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == h1
-					&& potentialMatch.getDirectRecord() == h2) {
+			if (potentialMatch.getOrigLHS() == h1
+					&& potentialMatch.getOrigRHS() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h2
-					&& potentialMatch.getDirectRecord() == h1) {
+			} else if (potentialMatch.getOrigLHS() == h2
+					&& potentialMatch.getOrigRHS() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h3
-					&& potentialMatch.getDirectRecord() == h2) {
+			} else if (potentialMatch.getOrigLHS() == h3
+					&& potentialMatch.getOrigRHS() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h2
-					&& potentialMatch.getDirectRecord() == h3) {
+			} else if (potentialMatch.getOrigLHS() == h2
+					&& potentialMatch.getOrigRHS() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h3
-					&& potentialMatch.getDirectRecord() == h4) {
+			} else if (potentialMatch.getOrigLHS() == h3
+					&& potentialMatch.getOrigRHS() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h4
-					&& potentialMatch.getDirectRecord() == h3) {
+			} else if (potentialMatch.getOrigLHS() == h4
+					&& potentialMatch.getOrigRHS() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
 
@@ -806,23 +807,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == h1
-					&& potentialMatch.getDirectRecord() == h2) {
+			if (potentialMatch.getOrigLHS() == h1
+					&& potentialMatch.getOrigRHS() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h2
-					&& potentialMatch.getDirectRecord() == h1) {
+			} else if (potentialMatch.getOrigLHS() == h2
+					&& potentialMatch.getOrigRHS() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h3
-					&& potentialMatch.getDirectRecord() == h2) {
+			} else if (potentialMatch.getOrigLHS() == h3
+					&& potentialMatch.getOrigRHS() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h2
-					&& potentialMatch.getDirectRecord() == h3) {
+			} else if (potentialMatch.getOrigLHS() == h2
+					&& potentialMatch.getOrigRHS() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h3
-					&& potentialMatch.getDirectRecord() == h4) {
+			} else if (potentialMatch.getOrigLHS() == h3
+					&& potentialMatch.getOrigRHS() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h4
-					&& potentialMatch.getDirectRecord() == h3) {
+			} else if (potentialMatch.getOrigLHS() == h4
+					&& potentialMatch.getOrigRHS() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
 
@@ -872,23 +873,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrG2ToG3 = null;
 		PotentialMatchRecord pmrG3ToG4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == g1
-					&& potentialMatch.getDirectRecord() == g2) {
+			if (potentialMatch.getOrigLHS() == g1
+					&& potentialMatch.getOrigRHS() == g2) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g2
-					&& potentialMatch.getDirectRecord() == g1) {
+			} else if (potentialMatch.getOrigLHS() == g2
+					&& potentialMatch.getOrigRHS() == g1) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g3
-					&& potentialMatch.getDirectRecord() == g2) {
+			} else if (potentialMatch.getOrigLHS() == g3
+					&& potentialMatch.getOrigRHS() == g2) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g2
-					&& potentialMatch.getDirectRecord() == g3) {
+			} else if (potentialMatch.getOrigLHS() == g2
+					&& potentialMatch.getOrigRHS() == g3) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g3
-					&& potentialMatch.getDirectRecord() == g4) {
+			} else if (potentialMatch.getOrigLHS() == g3
+					&& potentialMatch.getOrigRHS() == g4) {
 				pmrG3ToG4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == g4
-					&& potentialMatch.getDirectRecord() == g3) {
+			} else if (potentialMatch.getOrigLHS() == g4
+					&& potentialMatch.getOrigRHS() == g3) {
 				pmrG3ToG4 = potentialMatch;
 			}
 
@@ -937,23 +938,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == cycle1
-					&& potentialMatch.getDirectRecord() == cycle2) {
+			if (potentialMatch.getOrigLHS() == cycle1
+					&& potentialMatch.getOrigRHS() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle2
-					&& potentialMatch.getDirectRecord() == cycle1) {
+			} else if (potentialMatch.getOrigLHS() == cycle2
+					&& potentialMatch.getOrigRHS() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle3
-					&& potentialMatch.getDirectRecord() == cycle2) {
+			} else if (potentialMatch.getOrigLHS() == cycle3
+					&& potentialMatch.getOrigRHS() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle2
-					&& potentialMatch.getDirectRecord() == cycle3) {
+			} else if (potentialMatch.getOrigLHS() == cycle2
+					&& potentialMatch.getOrigRHS() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle3
-					&& potentialMatch.getDirectRecord() == cycle1) {
+			} else if (potentialMatch.getOrigLHS() == cycle3
+					&& potentialMatch.getOrigRHS() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle1
-					&& potentialMatch.getDirectRecord() == cycle3) {
+			} else if (potentialMatch.getOrigLHS() == cycle1
+					&& potentialMatch.getOrigRHS() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
 
@@ -1023,29 +1024,29 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrJ3ToJ4 = null;
 		PotentialMatchRecord pmrJ4ToJ2 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == j2
-					&& potentialMatch.getDirectRecord() == j1) {
+			if (potentialMatch.getOrigLHS() == j2
+					&& potentialMatch.getOrigRHS() == j1) {
 				pmrJ1ToJ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == j1
-					&& potentialMatch.getDirectRecord() == j2) {
+			} else if (potentialMatch.getOrigLHS() == j1
+					&& potentialMatch.getOrigRHS() == j2) {
 				pmrJ1ToJ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == j2
-					&& potentialMatch.getDirectRecord() == j3) {
+			} else if (potentialMatch.getOrigLHS() == j2
+					&& potentialMatch.getOrigRHS() == j3) {
 				pmrJ2ToJ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == j3
-					&& potentialMatch.getDirectRecord() == j2) {
+			} else if (potentialMatch.getOrigLHS() == j3
+					&& potentialMatch.getOrigRHS() == j2) {
 				pmrJ2ToJ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == j4
-					&& potentialMatch.getDirectRecord() == j3) {
+			} else if (potentialMatch.getOrigLHS() == j4
+					&& potentialMatch.getOrigRHS() == j3) {
 				pmrJ3ToJ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == j3
-					&& potentialMatch.getDirectRecord() == j4) {
+			} else if (potentialMatch.getOrigLHS() == j3
+					&& potentialMatch.getOrigRHS() == j4) {
 				pmrJ3ToJ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == j2
-					&& potentialMatch.getDirectRecord() == j4) {
+			} else if (potentialMatch.getOrigLHS() == j2
+					&& potentialMatch.getOrigRHS() == j4) {
 				pmrJ4ToJ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == j4
-					&& potentialMatch.getDirectRecord() == j2) {
+			} else if (potentialMatch.getOrigLHS() == j4
+					&& potentialMatch.getOrigRHS() == j2) {
 				pmrJ4ToJ2 = potentialMatch;
 			}
 
@@ -1122,35 +1123,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrK4ToK5 = null;
 		PotentialMatchRecord pmrK5ToK3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == k2
-					&& potentialMatch.getDirectRecord() == k1) {
+			if (potentialMatch.getOrigLHS() == k2
+					&& potentialMatch.getOrigRHS() == k1) {
 				pmrK1ToK2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k1
-					&& potentialMatch.getDirectRecord() == k2) {
+			} else if (potentialMatch.getOrigLHS() == k1
+					&& potentialMatch.getOrigRHS() == k2) {
 				pmrK1ToK2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k2
-					&& potentialMatch.getDirectRecord() == k3) {
+			} else if (potentialMatch.getOrigLHS() == k2
+					&& potentialMatch.getOrigRHS() == k3) {
 				pmrK2ToK3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k3
-					&& potentialMatch.getDirectRecord() == k2) {
+			} else if (potentialMatch.getOrigLHS() == k3
+					&& potentialMatch.getOrigRHS() == k2) {
 				pmrK2ToK3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k4
-					&& potentialMatch.getDirectRecord() == k3) {
+			} else if (potentialMatch.getOrigLHS() == k4
+					&& potentialMatch.getOrigRHS() == k3) {
 				pmrK3ToK4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k3
-					&& potentialMatch.getDirectRecord() == k4) {
+			} else if (potentialMatch.getOrigLHS() == k3
+					&& potentialMatch.getOrigRHS() == k4) {
 				pmrK3ToK4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k5
-					&& potentialMatch.getDirectRecord() == k4) {
+			} else if (potentialMatch.getOrigLHS() == k5
+					&& potentialMatch.getOrigRHS() == k4) {
 				pmrK4ToK5 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k4
-					&& potentialMatch.getDirectRecord() == k5) {
+			} else if (potentialMatch.getOrigLHS() == k4
+					&& potentialMatch.getOrigRHS() == k5) {
 				pmrK4ToK5 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k5
-					&& potentialMatch.getDirectRecord() == k3) {
+			} else if (potentialMatch.getOrigLHS() == k5
+					&& potentialMatch.getOrigRHS() == k3) {
 				pmrK5ToK3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == k3
-					&& potentialMatch.getDirectRecord() == k5) {
+			} else if (potentialMatch.getOrigLHS() == k3
+					&& potentialMatch.getOrigRHS() == k5) {
 				pmrK5ToK3 = potentialMatch;
 			}
 
@@ -1219,23 +1220,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrL2ToL3 = null;
 		PotentialMatchRecord pmrL2ToL4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == l2
-					&& potentialMatch.getDirectRecord() == l1) {
+			if (potentialMatch.getOrigLHS() == l2
+					&& potentialMatch.getOrigRHS() == l1) {
 				pmrL1ToL2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == l1
-					&& potentialMatch.getDirectRecord() == l2) {
+			} else if (potentialMatch.getOrigLHS() == l1
+					&& potentialMatch.getOrigRHS() == l2) {
 				pmrL1ToL2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == l2
-					&& potentialMatch.getDirectRecord() == l3) {
+			} else if (potentialMatch.getOrigLHS() == l2
+					&& potentialMatch.getOrigRHS() == l3) {
 				pmrL2ToL3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == l3
-					&& potentialMatch.getDirectRecord() == l2) {
+			} else if (potentialMatch.getOrigLHS() == l3
+					&& potentialMatch.getOrigRHS() == l2) {
 				pmrL2ToL3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == l4
-					&& potentialMatch.getDirectRecord() == l2) {
+			} else if (potentialMatch.getOrigLHS() == l4
+					&& potentialMatch.getOrigRHS() == l2) {
 				pmrL2ToL4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == l2
-					&& potentialMatch.getDirectRecord() == l4) {
+			} else if (potentialMatch.getOrigLHS() == l2
+					&& potentialMatch.getOrigRHS() == l4) {
 				pmrL2ToL4 = potentialMatch;
 			}
 
@@ -1308,47 +1309,47 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrM6ToM4 = null;
 		PotentialMatchRecord pmrM4ToM3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == m2
-					&& potentialMatch.getDirectRecord() == m1) {
+			if (potentialMatch.getOrigLHS() == m2
+					&& potentialMatch.getOrigRHS() == m1) {
 				pmrM1ToM2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m1
-					&& potentialMatch.getDirectRecord() == m2) {
+			} else if (potentialMatch.getOrigLHS() == m1
+					&& potentialMatch.getOrigRHS() == m2) {
 				pmrM1ToM2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m2
-					&& potentialMatch.getDirectRecord() == m3) {
+			} else if (potentialMatch.getOrigLHS() == m2
+					&& potentialMatch.getOrigRHS() == m3) {
 				pmrM2ToM3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m3
-					&& potentialMatch.getDirectRecord() == m2) {
+			} else if (potentialMatch.getOrigLHS() == m3
+					&& potentialMatch.getOrigRHS() == m2) {
 				pmrM2ToM3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m5
-					&& potentialMatch.getDirectRecord() == m3) {
+			} else if (potentialMatch.getOrigLHS() == m5
+					&& potentialMatch.getOrigRHS() == m3) {
 				pmrM3ToM5 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m3
-					&& potentialMatch.getDirectRecord() == m5) {
+			} else if (potentialMatch.getOrigLHS() == m3
+					&& potentialMatch.getOrigRHS() == m5) {
 				pmrM3ToM5 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m5
-					&& potentialMatch.getDirectRecord() == m6) {
+			} else if (potentialMatch.getOrigLHS() == m5
+					&& potentialMatch.getOrigRHS() == m6) {
 				pmrM5ToM6 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m6
-					&& potentialMatch.getDirectRecord() == m5) {
+			} else if (potentialMatch.getOrigLHS() == m6
+					&& potentialMatch.getOrigRHS() == m5) {
 				pmrM5ToM6 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m6
-					&& potentialMatch.getDirectRecord() == m7) {
+			} else if (potentialMatch.getOrigLHS() == m6
+					&& potentialMatch.getOrigRHS() == m7) {
 				pmrM6ToM7 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m7
-					&& potentialMatch.getDirectRecord() == m6) {
+			} else if (potentialMatch.getOrigLHS() == m7
+					&& potentialMatch.getOrigRHS() == m6) {
 				pmrM6ToM7 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m6
-					&& potentialMatch.getDirectRecord() == m4) {
+			} else if (potentialMatch.getOrigLHS() == m6
+					&& potentialMatch.getOrigRHS() == m4) {
 				pmrM6ToM4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m4
-					&& potentialMatch.getDirectRecord() == m6) {
+			} else if (potentialMatch.getOrigLHS() == m4
+					&& potentialMatch.getOrigRHS() == m6) {
 				pmrM6ToM4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m4
-					&& potentialMatch.getDirectRecord() == m3) {
+			} else if (potentialMatch.getOrigLHS() == m4
+					&& potentialMatch.getOrigRHS() == m3) {
 				pmrM4ToM3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == m3
-					&& potentialMatch.getDirectRecord() == m4) {
+			} else if (potentialMatch.getOrigLHS() == m3
+					&& potentialMatch.getOrigRHS() == m4) {
 				pmrM4ToM3 = potentialMatch;
 			}
 
@@ -1440,23 +1441,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrI2ToI3 = null;
 		PotentialMatchRecord pmrI3ToI1 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == i1
-					&& potentialMatch.getDirectRecord() == i2) {
+			if (potentialMatch.getOrigLHS() == i1
+					&& potentialMatch.getOrigRHS() == i2) {
 				pmrI1ToI2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == i2
-					&& potentialMatch.getDirectRecord() == i1) {
+			} else if (potentialMatch.getOrigLHS() == i2
+					&& potentialMatch.getOrigRHS() == i1) {
 				pmrI1ToI2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == i3
-					&& potentialMatch.getDirectRecord() == i2) {
+			} else if (potentialMatch.getOrigLHS() == i3
+					&& potentialMatch.getOrigRHS() == i2) {
 				pmrI2ToI3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == i2
-					&& potentialMatch.getDirectRecord() == i3) {
+			} else if (potentialMatch.getOrigLHS() == i2
+					&& potentialMatch.getOrigRHS() == i3) {
 				pmrI2ToI3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == i3
-					&& potentialMatch.getDirectRecord() == i1) {
+			} else if (potentialMatch.getOrigLHS() == i3
+					&& potentialMatch.getOrigRHS() == i1) {
 				pmrI3ToI1 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == i1
-					&& potentialMatch.getDirectRecord() == i3) {
+			} else if (potentialMatch.getOrigLHS() == i1
+					&& potentialMatch.getOrigRHS() == i3) {
 				pmrI3ToI1 = potentialMatch;
 			}
 
@@ -1510,23 +1511,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrA2ToA3 = null;
 		PotentialMatchRecord pmrA1ToA3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == a1
-					&& potentialMatch.getDirectRecord() == a2) {
+			if (potentialMatch.getOrigLHS() == a1
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a1) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a3
-					&& potentialMatch.getDirectRecord() == a2) {
+			} else if (potentialMatch.getOrigLHS() == a3
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a3) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a3) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a3
-					&& potentialMatch.getDirectRecord() == a1) {
+			} else if (potentialMatch.getOrigLHS() == a3
+					&& potentialMatch.getOrigRHS() == a1) {
 				pmrA1ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a1
-					&& potentialMatch.getDirectRecord() == a3) {
+			} else if (potentialMatch.getOrigLHS() == a1
+					&& potentialMatch.getOrigRHS() == a3) {
 				pmrA1ToA3 = potentialMatch;
 			}
 
@@ -1565,17 +1566,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == b1
-					&& potentialMatch.getDirectRecord() == b2) {
+			if (potentialMatch.getOrigLHS() == b1
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b1) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b3
-					&& potentialMatch.getDirectRecord() == b2) {
+			} else if (potentialMatch.getOrigLHS() == b3
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b3) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -1616,23 +1617,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == cycle1
-					&& potentialMatch.getDirectRecord() == cycle2) {
+			if (potentialMatch.getOrigLHS() == cycle1
+					&& potentialMatch.getOrigRHS() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle2
-					&& potentialMatch.getDirectRecord() == cycle1) {
+			} else if (potentialMatch.getOrigLHS() == cycle2
+					&& potentialMatch.getOrigRHS() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle3
-					&& potentialMatch.getDirectRecord() == cycle2) {
+			} else if (potentialMatch.getOrigLHS() == cycle3
+					&& potentialMatch.getOrigRHS() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle2
-					&& potentialMatch.getDirectRecord() == cycle3) {
+			} else if (potentialMatch.getOrigLHS() == cycle2
+					&& potentialMatch.getOrigRHS() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle3
-					&& potentialMatch.getDirectRecord() == cycle1) {
+			} else if (potentialMatch.getOrigLHS() == cycle3
+					&& potentialMatch.getOrigRHS() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle1
-					&& potentialMatch.getDirectRecord() == cycle3) {
+			} else if (potentialMatch.getOrigLHS() == cycle1
+					&& potentialMatch.getOrigRHS() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
 
@@ -1676,17 +1677,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == b1
-					&& potentialMatch.getDirectRecord() == b2) {
+			if (potentialMatch.getOrigLHS() == b1
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b1) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b3
-					&& potentialMatch.getDirectRecord() == b2) {
+			} else if (potentialMatch.getOrigLHS() == b3
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b3) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -1726,23 +1727,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrA2ToA3 = null;
 		PotentialMatchRecord pmrA1ToA3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == a1
-					&& potentialMatch.getDirectRecord() == a2) {
+			if (potentialMatch.getOrigLHS() == a1
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a1) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a3
-					&& potentialMatch.getDirectRecord() == a2) {
+			} else if (potentialMatch.getOrigLHS() == a3
+					&& potentialMatch.getOrigRHS() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a2
-					&& potentialMatch.getDirectRecord() == a3) {
+			} else if (potentialMatch.getOrigLHS() == a2
+					&& potentialMatch.getOrigRHS() == a3) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a3
-					&& potentialMatch.getDirectRecord() == a1) {
+			} else if (potentialMatch.getOrigLHS() == a3
+					&& potentialMatch.getOrigRHS() == a1) {
 				pmrA1ToA3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == a1
-					&& potentialMatch.getDirectRecord() == a3) {
+			} else if (potentialMatch.getOrigLHS() == a1
+					&& potentialMatch.getOrigRHS() == a3) {
 				pmrA1ToA3 = potentialMatch;
 			}
 
@@ -1785,23 +1786,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == cycle1
-					&& potentialMatch.getDirectRecord() == cycle2) {
+			if (potentialMatch.getOrigLHS() == cycle1
+					&& potentialMatch.getOrigRHS() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle2
-					&& potentialMatch.getDirectRecord() == cycle1) {
+			} else if (potentialMatch.getOrigLHS() == cycle2
+					&& potentialMatch.getOrigRHS() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle3
-					&& potentialMatch.getDirectRecord() == cycle2) {
+			} else if (potentialMatch.getOrigLHS() == cycle3
+					&& potentialMatch.getOrigRHS() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle2
-					&& potentialMatch.getDirectRecord() == cycle3) {
+			} else if (potentialMatch.getOrigLHS() == cycle2
+					&& potentialMatch.getOrigRHS() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle3
-					&& potentialMatch.getDirectRecord() == cycle1) {
+			} else if (potentialMatch.getOrigLHS() == cycle3
+					&& potentialMatch.getOrigRHS() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == cycle1
-					&& potentialMatch.getDirectRecord() == cycle3) {
+			} else if (potentialMatch.getOrigLHS() == cycle1
+					&& potentialMatch.getOrigRHS() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
 
@@ -1849,17 +1850,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == b1
-					&& potentialMatch.getDirectRecord() == b2) {
+			if (potentialMatch.getOrigLHS() == b1
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b1) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b3
-					&& potentialMatch.getDirectRecord() == b2) {
+			} else if (potentialMatch.getOrigLHS() == b3
+					&& potentialMatch.getOrigRHS() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == b2
-					&& potentialMatch.getDirectRecord() == b3) {
+			} else if (potentialMatch.getOrigLHS() == b2
+					&& potentialMatch.getOrigRHS() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -1898,17 +1899,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrE1ToE2 = null;
 		PotentialMatchRecord pmrE2ToE3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == e1
-					&& potentialMatch.getDirectRecord() == e2) {
+			if (potentialMatch.getOrigLHS() == e1
+					&& potentialMatch.getOrigRHS() == e2) {
 				pmrE1ToE2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == e2
-					&& potentialMatch.getDirectRecord() == e1) {
+			} else if (potentialMatch.getOrigLHS() == e2
+					&& potentialMatch.getOrigRHS() == e1) {
 				pmrE1ToE2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == e3
-					&& potentialMatch.getDirectRecord() == e2) {
+			} else if (potentialMatch.getOrigLHS() == e3
+					&& potentialMatch.getOrigRHS() == e2) {
 				pmrE2ToE3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == e2
-					&& potentialMatch.getDirectRecord() == e3) {
+			} else if (potentialMatch.getOrigLHS() == e2
+					&& potentialMatch.getOrigRHS() == e3) {
 				pmrE2ToE3 = potentialMatch;
 			}
 
@@ -1947,17 +1948,17 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrO1ToO3 = null;
 		PotentialMatchRecord pmrO2ToO3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == o1
-					&& potentialMatch.getDirectRecord() == o3) {
+			if (potentialMatch.getOrigLHS() == o1
+					&& potentialMatch.getOrigRHS() == o3) {
 				pmrO1ToO3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == o3
-					&& potentialMatch.getDirectRecord() == o1) {
+			} else if (potentialMatch.getOrigLHS() == o3
+					&& potentialMatch.getOrigRHS() == o1) {
 				pmrO1ToO3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == o3
-					&& potentialMatch.getDirectRecord() == o2) {
+			} else if (potentialMatch.getOrigLHS() == o3
+					&& potentialMatch.getOrigRHS() == o2) {
 				pmrO2ToO3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == o2
-					&& potentialMatch.getDirectRecord() == o3) {
+			} else if (potentialMatch.getOrigLHS() == o2
+					&& potentialMatch.getOrigRHS() == o3) {
 				pmrO2ToO3 = potentialMatch;
 			}
 
@@ -2003,35 +2004,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrP2ToP3 = null;
 		PotentialMatchRecord pmrP4ToP3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == p1
-					&& potentialMatch.getDirectRecord() == p3) {
+			if (potentialMatch.getOrigLHS() == p1
+					&& potentialMatch.getOrigRHS() == p3) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p3
-					&& potentialMatch.getDirectRecord() == p1) {
+			} else if (potentialMatch.getOrigLHS() == p3
+					&& potentialMatch.getOrigRHS() == p1) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p3
-					&& potentialMatch.getDirectRecord() == p2) {
+			} else if (potentialMatch.getOrigLHS() == p3
+					&& potentialMatch.getOrigRHS() == p2) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p2
-					&& potentialMatch.getDirectRecord() == p3) {
+			} else if (potentialMatch.getOrigLHS() == p2
+					&& potentialMatch.getOrigRHS() == p3) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p1
-					&& potentialMatch.getDirectRecord() == p2) {
+			} else if (potentialMatch.getOrigLHS() == p1
+					&& potentialMatch.getOrigRHS() == p2) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p2
-					&& potentialMatch.getDirectRecord() == p1) {
+			} else if (potentialMatch.getOrigLHS() == p2
+					&& potentialMatch.getOrigRHS() == p1) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p1
-					&& potentialMatch.getDirectRecord() == p4) {
+			} else if (potentialMatch.getOrigLHS() == p1
+					&& potentialMatch.getOrigRHS() == p4) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p4
-					&& potentialMatch.getDirectRecord() == p1) {
+			} else if (potentialMatch.getOrigLHS() == p4
+					&& potentialMatch.getOrigRHS() == p1) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p3
-					&& potentialMatch.getDirectRecord() == p4) {
+			} else if (potentialMatch.getOrigLHS() == p3
+					&& potentialMatch.getOrigRHS() == p4) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p4
-					&& potentialMatch.getDirectRecord() == p3) {
+			} else if (potentialMatch.getOrigLHS() == p4
+					&& potentialMatch.getOrigRHS() == p3) {
 				pmrP4ToP3 = potentialMatch;
 			}
 
@@ -2162,35 +2163,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q3) {
+			if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -2245,35 +2246,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrR2ToR3 = null;
 		PotentialMatchRecord pmrR4ToR3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == r1
-					&& potentialMatch.getDirectRecord() == r3) {
+			if (potentialMatch.getOrigLHS() == r1
+					&& potentialMatch.getOrigRHS() == r3) {
 				pmrR1ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r3
-					&& potentialMatch.getDirectRecord() == r1) {
+			} else if (potentialMatch.getOrigLHS() == r3
+					&& potentialMatch.getOrigRHS() == r1) {
 				pmrR1ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r3
-					&& potentialMatch.getDirectRecord() == r2) {
+			} else if (potentialMatch.getOrigLHS() == r3
+					&& potentialMatch.getOrigRHS() == r2) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r2
-					&& potentialMatch.getDirectRecord() == r3) {
+			} else if (potentialMatch.getOrigLHS() == r2
+					&& potentialMatch.getOrigRHS() == r3) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r1
-					&& potentialMatch.getDirectRecord() == r2) {
+			} else if (potentialMatch.getOrigLHS() == r1
+					&& potentialMatch.getOrigRHS() == r2) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r2
-					&& potentialMatch.getDirectRecord() == r1) {
+			} else if (potentialMatch.getOrigLHS() == r2
+					&& potentialMatch.getOrigRHS() == r1) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r1
-					&& potentialMatch.getDirectRecord() == r4) {
+			} else if (potentialMatch.getOrigLHS() == r1
+					&& potentialMatch.getOrigRHS() == r4) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r4
-					&& potentialMatch.getDirectRecord() == r1) {
+			} else if (potentialMatch.getOrigLHS() == r4
+					&& potentialMatch.getOrigRHS() == r1) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r3
-					&& potentialMatch.getDirectRecord() == r4) {
+			} else if (potentialMatch.getOrigLHS() == r3
+					&& potentialMatch.getOrigRHS() == r4) {
 				pmrR4ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r4
-					&& potentialMatch.getDirectRecord() == r3) {
+			} else if (potentialMatch.getOrigLHS() == r4
+					&& potentialMatch.getOrigRHS() == r3) {
 				pmrR4ToR3 = potentialMatch;
 			}
 
@@ -2339,29 +2340,29 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrR2ToR3 = null;
 		PotentialMatchRecord pmrR4ToR3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == r3
-					&& potentialMatch.getDirectRecord() == r2) {
+			if (potentialMatch.getOrigLHS() == r3
+					&& potentialMatch.getOrigRHS() == r2) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r2
-					&& potentialMatch.getDirectRecord() == r3) {
+			} else if (potentialMatch.getOrigLHS() == r2
+					&& potentialMatch.getOrigRHS() == r3) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r1
-					&& potentialMatch.getDirectRecord() == r2) {
+			} else if (potentialMatch.getOrigLHS() == r1
+					&& potentialMatch.getOrigRHS() == r2) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r2
-					&& potentialMatch.getDirectRecord() == r1) {
+			} else if (potentialMatch.getOrigLHS() == r2
+					&& potentialMatch.getOrigRHS() == r1) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r1
-					&& potentialMatch.getDirectRecord() == r4) {
+			} else if (potentialMatch.getOrigLHS() == r1
+					&& potentialMatch.getOrigRHS() == r4) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r4
-					&& potentialMatch.getDirectRecord() == r1) {
+			} else if (potentialMatch.getOrigLHS() == r4
+					&& potentialMatch.getOrigRHS() == r1) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r3
-					&& potentialMatch.getDirectRecord() == r4) {
+			} else if (potentialMatch.getOrigLHS() == r3
+					&& potentialMatch.getOrigRHS() == r4) {
 				pmrR4ToR3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == r4
-					&& potentialMatch.getDirectRecord() == r3) {
+			} else if (potentialMatch.getOrigLHS() == r4
+					&& potentialMatch.getOrigRHS() == r3) {
 				pmrR4ToR3 = potentialMatch;
 			}
 
@@ -2423,29 +2424,29 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n2) {
+			if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -2508,35 +2509,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n2) {
+			if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -2599,23 +2600,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n2) {
+			if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN4ToN3 = potentialMatch;
 			}
 
@@ -2673,35 +2674,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n2) {
+			if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -2766,35 +2767,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q3) {
+			if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -2848,35 +2849,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q3) {
+			if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -2933,35 +2934,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n2) {
+			if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n3
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n3
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n3) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n1
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n1
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n1) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n2
-					&& potentialMatch.getDirectRecord() == n4) {
+			} else if (potentialMatch.getOrigLHS() == n2
+					&& potentialMatch.getOrigRHS() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == n4
-					&& potentialMatch.getDirectRecord() == n2) {
+			} else if (potentialMatch.getOrigLHS() == n4
+					&& potentialMatch.getOrigRHS() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -3027,41 +3028,41 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrP2ToP4 = null;
 		PotentialMatchRecord pmrP4ToP3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == p1
-					&& potentialMatch.getDirectRecord() == p3) {
+			if (potentialMatch.getOrigLHS() == p1
+					&& potentialMatch.getOrigRHS() == p3) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p3
-					&& potentialMatch.getDirectRecord() == p1) {
+			} else if (potentialMatch.getOrigLHS() == p3
+					&& potentialMatch.getOrigRHS() == p1) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p3
-					&& potentialMatch.getDirectRecord() == p2) {
+			} else if (potentialMatch.getOrigLHS() == p3
+					&& potentialMatch.getOrigRHS() == p2) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p2
-					&& potentialMatch.getDirectRecord() == p3) {
+			} else if (potentialMatch.getOrigLHS() == p2
+					&& potentialMatch.getOrigRHS() == p3) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p1
-					&& potentialMatch.getDirectRecord() == p2) {
+			} else if (potentialMatch.getOrigLHS() == p1
+					&& potentialMatch.getOrigRHS() == p2) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p2
-					&& potentialMatch.getDirectRecord() == p1) {
+			} else if (potentialMatch.getOrigLHS() == p2
+					&& potentialMatch.getOrigRHS() == p1) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p1
-					&& potentialMatch.getDirectRecord() == p4) {
+			} else if (potentialMatch.getOrigLHS() == p1
+					&& potentialMatch.getOrigRHS() == p4) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p4
-					&& potentialMatch.getDirectRecord() == p1) {
+			} else if (potentialMatch.getOrigLHS() == p4
+					&& potentialMatch.getOrigRHS() == p1) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p3
-					&& potentialMatch.getDirectRecord() == p4) {
+			} else if (potentialMatch.getOrigLHS() == p3
+					&& potentialMatch.getOrigRHS() == p4) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p4
-					&& potentialMatch.getDirectRecord() == p3) {
+			} else if (potentialMatch.getOrigLHS() == p4
+					&& potentialMatch.getOrigRHS() == p3) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p2
-					&& potentialMatch.getDirectRecord() == p4) {
+			} else if (potentialMatch.getOrigLHS() == p2
+					&& potentialMatch.getOrigRHS() == p4) {
 				pmrP2ToP4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == p4
-					&& potentialMatch.getDirectRecord() == p2) {
+			} else if (potentialMatch.getOrigLHS() == p4
+					&& potentialMatch.getOrigRHS() == p2) {
 				pmrP2ToP4 = potentialMatch;
 			}
 
@@ -3121,35 +3122,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrS2ToS3 = null;
 		PotentialMatchRecord pmrS4ToS3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == s1
-					&& potentialMatch.getDirectRecord() == s3) {
+			if (potentialMatch.getOrigLHS() == s1
+					&& potentialMatch.getOrigRHS() == s3) {
 				pmrS1ToS3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s3
-					&& potentialMatch.getDirectRecord() == s1) {
+			} else if (potentialMatch.getOrigLHS() == s3
+					&& potentialMatch.getOrigRHS() == s1) {
 				pmrS1ToS3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s3
-					&& potentialMatch.getDirectRecord() == s2) {
+			} else if (potentialMatch.getOrigLHS() == s3
+					&& potentialMatch.getOrigRHS() == s2) {
 				pmrS2ToS3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s2
-					&& potentialMatch.getDirectRecord() == s3) {
+			} else if (potentialMatch.getOrigLHS() == s2
+					&& potentialMatch.getOrigRHS() == s3) {
 				pmrS2ToS3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s1
-					&& potentialMatch.getDirectRecord() == s2) {
+			} else if (potentialMatch.getOrigLHS() == s1
+					&& potentialMatch.getOrigRHS() == s2) {
 				pmrS1ToS2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s2
-					&& potentialMatch.getDirectRecord() == s1) {
+			} else if (potentialMatch.getOrigLHS() == s2
+					&& potentialMatch.getOrigRHS() == s1) {
 				pmrS1ToS2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s1
-					&& potentialMatch.getDirectRecord() == s4) {
+			} else if (potentialMatch.getOrigLHS() == s1
+					&& potentialMatch.getOrigRHS() == s4) {
 				pmrS1ToS4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s4
-					&& potentialMatch.getDirectRecord() == s1) {
+			} else if (potentialMatch.getOrigLHS() == s4
+					&& potentialMatch.getOrigRHS() == s1) {
 				pmrS1ToS4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s3
-					&& potentialMatch.getDirectRecord() == s4) {
+			} else if (potentialMatch.getOrigLHS() == s3
+					&& potentialMatch.getOrigRHS() == s4) {
 				pmrS4ToS3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == s4
-					&& potentialMatch.getDirectRecord() == s3) {
+			} else if (potentialMatch.getOrigLHS() == s4
+					&& potentialMatch.getOrigRHS() == s3) {
 				pmrS4ToS3 = potentialMatch;
 			}
 
@@ -3212,35 +3213,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q3) {
+			if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q2) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q2
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q2
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q1
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q1
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q1) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q3
-					&& potentialMatch.getDirectRecord() == q4) {
+			} else if (potentialMatch.getOrigLHS() == q3
+					&& potentialMatch.getOrigRHS() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == q4
-					&& potentialMatch.getDirectRecord() == q3) {
+			} else if (potentialMatch.getOrigLHS() == q4
+					&& potentialMatch.getOrigRHS() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -3312,29 +3313,29 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrT2ToT3 = null;
 		PotentialMatchRecord pmrT4ToT3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == t1
-					&& potentialMatch.getDirectRecord() == t3) {
+			if (potentialMatch.getOrigLHS() == t1
+					&& potentialMatch.getOrigRHS() == t3) {
 				pmrT1ToT3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == t3
-					&& potentialMatch.getDirectRecord() == t1) {
+			} else if (potentialMatch.getOrigLHS() == t3
+					&& potentialMatch.getOrigRHS() == t1) {
 				pmrT1ToT3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == t3
-					&& potentialMatch.getDirectRecord() == t2) {
+			} else if (potentialMatch.getOrigLHS() == t3
+					&& potentialMatch.getOrigRHS() == t2) {
 				pmrT2ToT3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == t2
-					&& potentialMatch.getDirectRecord() == t3) {
+			} else if (potentialMatch.getOrigLHS() == t2
+					&& potentialMatch.getOrigRHS() == t3) {
 				pmrT2ToT3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == t1
-					&& potentialMatch.getDirectRecord() == t2) {
+			} else if (potentialMatch.getOrigLHS() == t1
+					&& potentialMatch.getOrigRHS() == t2) {
 				pmrT1ToT2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == t2
-					&& potentialMatch.getDirectRecord() == t1) {
+			} else if (potentialMatch.getOrigLHS() == t2
+					&& potentialMatch.getOrigRHS() == t1) {
 				pmrT1ToT2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == t3
-					&& potentialMatch.getDirectRecord() == t4) {
+			} else if (potentialMatch.getOrigLHS() == t3
+					&& potentialMatch.getOrigRHS() == t4) {
 				pmrT4ToT3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == t4
-					&& potentialMatch.getDirectRecord() == t3) {
+			} else if (potentialMatch.getOrigLHS() == t4
+					&& potentialMatch.getOrigRHS() == t3) {
 				pmrT4ToT3 = potentialMatch;
 			}
 
@@ -3382,23 +3383,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrU1ToU3 = null;
 		PotentialMatchRecord pmrU2ToU3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == u1
-					&& potentialMatch.getDirectRecord() == u3) {
+			if (potentialMatch.getOrigLHS() == u1
+					&& potentialMatch.getOrigRHS() == u3) {
 				pmrU1ToU3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == u3
-					&& potentialMatch.getDirectRecord() == u1) {
+			} else if (potentialMatch.getOrigLHS() == u3
+					&& potentialMatch.getOrigRHS() == u1) {
 				pmrU1ToU3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == u3
-					&& potentialMatch.getDirectRecord() == u2) {
+			} else if (potentialMatch.getOrigLHS() == u3
+					&& potentialMatch.getOrigRHS() == u2) {
 				pmrU2ToU3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == u2
-					&& potentialMatch.getDirectRecord() == u3) {
+			} else if (potentialMatch.getOrigLHS() == u2
+					&& potentialMatch.getOrigRHS() == u3) {
 				pmrU2ToU3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == u1
-					&& potentialMatch.getDirectRecord() == u2) {
+			} else if (potentialMatch.getOrigLHS() == u1
+					&& potentialMatch.getOrigRHS() == u2) {
 				pmrU1ToU2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == u2
-					&& potentialMatch.getDirectRecord() == u1) {
+			} else if (potentialMatch.getOrigLHS() == u2
+					&& potentialMatch.getOrigRHS() == u1) {
 				pmrU1ToU2 = potentialMatch;
 			}
 
@@ -3456,35 +3457,35 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrV2ToV3 = null;
 		PotentialMatchRecord pmrV4ToV3 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == v1
-					&& potentialMatch.getDirectRecord() == v3) {
+			if (potentialMatch.getOrigLHS() == v1
+					&& potentialMatch.getOrigRHS() == v3) {
 				pmrV1ToV3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v3
-					&& potentialMatch.getDirectRecord() == v1) {
+			} else if (potentialMatch.getOrigLHS() == v3
+					&& potentialMatch.getOrigRHS() == v1) {
 				pmrV1ToV3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v3
-					&& potentialMatch.getDirectRecord() == v2) {
+			} else if (potentialMatch.getOrigLHS() == v3
+					&& potentialMatch.getOrigRHS() == v2) {
 				pmrV2ToV3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v2
-					&& potentialMatch.getDirectRecord() == v3) {
+			} else if (potentialMatch.getOrigLHS() == v2
+					&& potentialMatch.getOrigRHS() == v3) {
 				pmrV2ToV3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v1
-					&& potentialMatch.getDirectRecord() == v2) {
+			} else if (potentialMatch.getOrigLHS() == v1
+					&& potentialMatch.getOrigRHS() == v2) {
 				pmrV1ToV2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v2
-					&& potentialMatch.getDirectRecord() == v1) {
+			} else if (potentialMatch.getOrigLHS() == v2
+					&& potentialMatch.getOrigRHS() == v1) {
 				pmrV1ToV2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v1
-					&& potentialMatch.getDirectRecord() == v4) {
+			} else if (potentialMatch.getOrigLHS() == v1
+					&& potentialMatch.getOrigRHS() == v4) {
 				pmrV1ToV4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v4
-					&& potentialMatch.getDirectRecord() == v1) {
+			} else if (potentialMatch.getOrigLHS() == v4
+					&& potentialMatch.getOrigRHS() == v1) {
 				pmrV1ToV4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v3
-					&& potentialMatch.getDirectRecord() == v4) {
+			} else if (potentialMatch.getOrigLHS() == v3
+					&& potentialMatch.getOrigRHS() == v4) {
 				pmrV4ToV3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == v4
-					&& potentialMatch.getDirectRecord() == v3) {
+			} else if (potentialMatch.getOrigLHS() == v4
+					&& potentialMatch.getOrigRHS() == v3) {
 				pmrV4ToV3 = potentialMatch;
 			}
 
@@ -3566,23 +3567,23 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
 		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getReferencedRecord() == h1
-					&& potentialMatch.getDirectRecord() == h2) {
+			if (potentialMatch.getOrigLHS() == h1
+					&& potentialMatch.getOrigRHS() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h2
-					&& potentialMatch.getDirectRecord() == h1) {
+			} else if (potentialMatch.getOrigLHS() == h2
+					&& potentialMatch.getOrigRHS() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h3
-					&& potentialMatch.getDirectRecord() == h2) {
+			} else if (potentialMatch.getOrigLHS() == h3
+					&& potentialMatch.getOrigRHS() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h2
-					&& potentialMatch.getDirectRecord() == h3) {
+			} else if (potentialMatch.getOrigLHS() == h2
+					&& potentialMatch.getOrigRHS() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h3
-					&& potentialMatch.getDirectRecord() == h4) {
+			} else if (potentialMatch.getOrigLHS() == h3
+					&& potentialMatch.getOrigRHS() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getReferencedRecord() == h4
-					&& potentialMatch.getDirectRecord() == h3) {
+			} else if (potentialMatch.getOrigLHS() == h4
+					&& potentialMatch.getOrigRHS() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
 
@@ -3705,7 +3706,7 @@ public class MatchPoolTest extends TestCase {
 	 * in the database.
 	 */
 	public void testStoreUpdatesOnMatch() throws Exception {
-		pool.store();
+		pool.begin("Testing match pool");
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
@@ -3717,7 +3718,7 @@ public class MatchPoolTest extends TestCase {
 				a1, a2);
 		pmrA1ToA2.setMasterRecord(a1);
 
-		pool.store();
+		pool.commit();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3732,7 +3733,7 @@ public class MatchPoolTest extends TestCase {
 	 * stored in the database.
 	 */
 	public void testStoreUpdatesOnNoMatch() throws Exception {
-		pool.store();
+		pool.begin("testing match pool");	
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
@@ -3744,7 +3745,7 @@ public class MatchPoolTest extends TestCase {
 				a1, a2);
 		pmrA1ToA2.setMatchStatus(MatchType.NOMATCH);
 
-		pool.store();
+		pool.commit();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3759,7 +3760,7 @@ public class MatchPoolTest extends TestCase {
 	 * stored in the database.
 	 */
 	public void testStoreUpdatesOnUnmatch() throws Exception {
-		pool.store();
+		pool.begin("testing match pool");
 		
 		SourceTableRecord b1 = pool.getSourceTableRecord(Collections.singletonList("b1"));
 		SourceTableRecord b2 = pool.getSourceTableRecord(Collections.singletonList("b2"));
@@ -3767,7 +3768,7 @@ public class MatchPoolTest extends TestCase {
 				b1, b2);
 		b1b2.setMatchStatus(MatchType.UNMATCH);
 
-		pool.store();
+		pool.commit();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3784,7 +3785,8 @@ public class MatchPoolTest extends TestCase {
 	public void testStoreOnEmptyMatchPool() throws Exception {
 		MatchPool emptyPool = project.getMatchPool();
 		try {
-			emptyPool.store();
+			emptyPool.begin("empty pool");
+			emptyPool.commit();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			// Expecting no exception to get thrown
 			fail("store() threw ArrayIndexOutOfBoundsException on an empty MatchPool");
@@ -3796,7 +3798,7 @@ public class MatchPoolTest extends TestCase {
 	 * removed from the database.
 	 */
 	public void testStoreDropsRemovedRecords() throws Exception {
-		pool.store();
+		pool.begin("Testing match pool");
 		
 		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
 		SourceTableRecord a2 = pool.getSourceTableRecord(Collections.singletonList("a2"));
@@ -3808,7 +3810,7 @@ public class MatchPoolTest extends TestCase {
 		pool.removePotentialMatch(a1a2);
 		pool.removePotentialMatch(a2a3);
 
-		pool.store();
+		pool.commit();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3827,6 +3829,7 @@ public class MatchPoolTest extends TestCase {
 	 * potential record is stored in the database.
 	 */
 	public void testStoreNewRecordMatched() throws Exception {
+		pool.begin("Testing match pool");
 		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
 		SourceTableRecord a3 = pool.getSourceTableRecord(Collections.singletonList("a3"));
 		PotentialMatchRecord a1a3 = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, 
@@ -3834,7 +3837,7 @@ public class MatchPoolTest extends TestCase {
 		a1a3.setMatchStatus(MatchType.MATCH);
 		pool.addPotentialMatch(a1a3);
 
-		pool.store();
+		pool.commit();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -4185,15 +4188,15 @@ public class MatchPoolTest extends TestCase {
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "4", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.MERGED);
-		pool.findAll(null);
+		pool.find(null);
 		
 		assertTrue(pool.getPotentialMatchRecords().size() != 0);
-		assertTrue(pool.getSourceTableRecords().size() != 0);
+		assertTrue(pool.getAllSourceTableRecords().size() != 0);
 		
 		pool.clear();
-		pool.findAll(null);
+		pool.find(null);
 		
 		assertEquals(0, pool.getPotentialMatchRecords().size());
-		assertEquals(0, pool.getSourceTableRecords().size());
+		assertEquals(0, pool.getAllSourceTableRecords().size());
 	}
 }

@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
+import ca.sqlpower.matchmaker.MatchCluster;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -141,9 +142,11 @@ public class MatchResultVisualizerTest extends TestCase {
 										lhs,
 										rhs,
 										false);
-		visualizer.getPool().addSourceTableRecord(lhs);
-		visualizer.getPool().addSourceTableRecord(rhs);
-		visualizer.getPool().addPotentialMatch(pmr);
+		MatchCluster mc = new MatchCluster();
+		mc.addSourceTableRecord(lhs);
+		mc.addSourceTableRecord(rhs);
+		mc.addPotentialMatchRecord(pmr);
+		visualizer.getPool().addMatchCluster(mc);
 	}
 	
 	protected void tearDown() throws Exception {

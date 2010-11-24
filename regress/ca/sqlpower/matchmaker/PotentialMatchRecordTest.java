@@ -47,7 +47,10 @@ public class PotentialMatchRecordTest extends TestCase {
 		SourceTableRecord str1 = new SourceTableRecord(project, Collections.singletonList("str1"));
 		SourceTableRecord str2 = new SourceTableRecord(project, Collections.singletonList("str2"));
 		pmr = new PotentialMatchRecord(mungeProcess, MatchType.UNMATCH, str1, str2, false);
-		pool.addPotentialMatch(pmr);
+		MatchCluster mc = new MatchCluster();
+		mc.addSourceTableRecord(str1);
+		mc.addSourceTableRecord(str2);
+		mc.addPotentialMatchRecord(pmr);
 	}
 	
 	public void testDirtyAfterPropertyChange() {
@@ -56,8 +59,8 @@ public class PotentialMatchRecordTest extends TestCase {
 		pmr.setMatchStatus(MatchType.NOMATCH);
 		assertSame(StoreState.DIRTY, pmr.getStoreState());
 		pmr.setStoreState(StoreState.CLEAN);
-		pmr.setMasterRecord(pmr.getReferencedRecord());
-		pmr.setMasterRecord(pmr.getDirectRecord());
+		pmr.setMasterRecord(pmr.getOrigLHS());
+		pmr.setMasterRecord(pmr.getOrigRHS());
 		assertSame(StoreState.DIRTY, pmr.getStoreState());
 	}
 	
@@ -67,20 +70,20 @@ public class PotentialMatchRecordTest extends TestCase {
 		pmr.setMatchStatus(MatchType.NOMATCH);
 		assertSame(StoreState.NEW, pmr.getStoreState());
 		pmr.setStoreState(StoreState.NEW);
-		pmr.setMasterRecord(pmr.getReferencedRecord());
-		pmr.setMasterRecord(pmr.getDirectRecord());
+		pmr.setMasterRecord(pmr.getOrigLHS());
+		pmr.setMasterRecord(pmr.getOrigRHS());
 		assertSame(StoreState.NEW, pmr.getStoreState());
 	}
 	
 	public void testIsMatch() {
-		pmr.setMasterRecord(pmr.getReferencedRecord());
+		pmr.setMasterRecord(pmr.getOrigLHS());
 		pmr.setMatchStatus(MatchType.MATCH);
 		assertTrue(pmr.isMatch());
 		
 		pmr.setMatchStatus(MatchType.AUTOMATCH);
 		assertTrue(pmr.isMatch());
 		
-		pmr.setMasterRecord(pmr.getDirectRecord());
+		pmr.setMasterRecord(pmr.getOrigRHS());
 		assertTrue(pmr.isMatch());
 		
 		pmr.setMatchStatus(MatchType.MATCH);

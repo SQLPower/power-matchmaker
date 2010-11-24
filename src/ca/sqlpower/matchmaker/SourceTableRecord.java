@@ -54,8 +54,7 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
 	 */
     @SuppressWarnings("unchecked")
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(PotentialMatchRecord.class, ReferenceMatchRecord.class)));
+		Collections.emptyList();
     
     /**
      * The Project object this SourceTableRecord belongs to.
@@ -84,18 +83,6 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      * hash code over and over.
      */
     private final int computedHashCode;
-    
-    /**
-     * All of the PotentialMatchRecords that reference this source table record.
-     */
-    private final List<PotentialMatchRecord> potentialMatches =
-        new ArrayList<PotentialMatchRecord>();
-    
-    /**
-     * All of the PotentialMatchRecords that reference this source table record.
-     */
-    private final List<ReferenceMatchRecord> referenceMatches =
-        new ArrayList<ReferenceMatchRecord>();
     
     @Accessor
     public List<Object> getKeyValues() {
@@ -131,7 +118,7 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
     }
 
     /**
-     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Project, List, List)}
+     * Works exactly like {@link #SourceTableRecord(Project, List, List)}
      * but takes key values as a variable length argument list.  Mostly useful in setting up test
      * cases.
      */
@@ -142,7 +129,7 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
     }
 
     /**
-     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Project, List, List)}
+     * Works exactly like {@link #SourceTableRecord(Project, List, List)}
      * except the displayValues is initialized as an empty ArrayList.
      */
     public SourceTableRecord(
@@ -293,61 +280,6 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
         return computedHashCode;
     }
     
-    @Override
-    protected void addChildImpl(SPObject child, int index) {
-    	if(child instanceof PotentialMatchRecord) {
-    		addPotentialMatch((PotentialMatchRecord)child, index);
-    	} else if(child instanceof ReferenceMatchRecord) {
-    		addReferenceMatch((ReferenceMatchRecord)child, index);
-    	}
-    }
-    
-    public void addPotentialMatch(PotentialMatchRecord pmr){
-        addChild(pmr, potentialMatches.size());
-    }
-    
-    public void addReferenceMatch(ReferenceMatchRecord rmr){
-        addChild(rmr, referenceMatches.size());
-    }
-    
-    public void addPotentialMatch(PotentialMatchRecord pmr, int index){
-    	potentialMatches.add(index, pmr);
-    	fireChildAdded(PotentialMatchRecord.class, pmr, index);
-    }
-    
-    public void addReferenceMatch(ReferenceMatchRecord rmr, int index){
-        referenceMatches.add(rmr);
-    	fireChildAdded(ReferenceMatchRecord.class, rmr, index);
-    }
-    
-    public boolean removePotentialMatch(PotentialMatchRecord pmr){
-    	if(potentialMatches.contains(pmr)) {
-    		int index = potentialMatches.indexOf(pmr);
-    		boolean removed = potentialMatches.remove(pmr);
-    		if(removed) {
-    			fireChildRemoved(PotentialMatchRecord.class, pmr, index);
-    		}
-    		return removed;
-    	}
-    	else {
-    		for(ReferenceMatchRecord rmr : referenceMatches) {
-    			if(pmr == rmr.getPotentialMatchRecord()) {
-    				return removeReferenceMatch(rmr);
-    			}
-    		}
-    		return false;
-    	}
-    }
-    
-    public boolean removeReferenceMatch(ReferenceMatchRecord rmr){
-        int index = referenceMatches.indexOf(rmr);
-    	boolean removed = referenceMatches.remove(rmr);
-    	if(removed) {
-    		fireChildRemoved(ReferenceMatchRecord.class, rmr, index);
-    	}
-    	return removed;
-    }
-    
     /**
      * Returns a list of all the PotentialMatchRecords that were originally associtated
      * with this source table record by the match engine.  The original associations are
@@ -357,15 +289,10 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      * this database record.
      */
 	@NonProperty
-    public List<PotentialMatchRecord> getOriginalMatchEdges(){
-    	List<PotentialMatchRecord> matchEdges = new ArrayList<PotentialMatchRecord>();
-    	matchEdges.addAll(potentialMatches);
-    	for(ReferenceMatchRecord rmr : referenceMatches) {
-    		matchEdges.add(rmr.getPotentialMatchRecord());
-    	}
-        return matchEdges;
+    public List<PotentialMatchRecord> getOriginalMatchEdges() {
+    	return getCluster().getOriginalMatchEdges(this);
     }
-
+	
     /**
      * Returns the edge (PotentialMatchRecord) that makes this node (SourceTableRecord)
      * adjacent to the given other node.  For this method, adjacency is defined as
@@ -377,18 +304,7 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      */
 	@NonProperty
     public PotentialMatchRecord getMatchRecordByOriginalAdjacentSourceTableRecord(SourceTableRecord adjacent) {
-        for (PotentialMatchRecord pmr : potentialMatches) {
-            if (pmr.getReferencedRecord() == adjacent || pmr.getDirectRecord() == adjacent) {
-                return pmr;
-            }
-        }
-        for (ReferenceMatchRecord rmr : referenceMatches) {
-        	PotentialMatchRecord pmr = rmr.getPotentialMatchRecord();
-            if (pmr.getReferencedRecord() == adjacent || pmr.getDirectRecord() == adjacent) {
-                return pmr;
-            }
-        }
-        return null;
+    	return getCluster().getMatchRecordByOriginalAdjacentSourceTableRecord(this, adjacent);
     }
     
     /**
@@ -403,23 +319,12 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      */
 	@NonProperty
     public PotentialMatchRecord getMatchRecordByValidatedSourceTableRecord(SourceTableRecord adjacent) {
-        for (PotentialMatchRecord pmr : potentialMatches) {
-            if (pmr.getMasterRecord() == adjacent || pmr.getDuplicate() == adjacent) {
-                return pmr;
-            }
-        }
-        for (ReferenceMatchRecord rmr : referenceMatches) {
-        	PotentialMatchRecord pmr = rmr.getPotentialMatchRecord();
-            if (pmr.getMasterRecord() == adjacent || pmr.getDuplicate() == adjacent) {
-                return pmr;
-            }
-        }
-        return null;
+    	return getCluster().getMatchRecordByValidatedSourceTableRecord(this, adjacent);
     }
     
     @Override
     public String toString() {
-        return "SourceTableRecord@"+System.identityHashCode(this)+" key="+keyValues;
+        return "STR " + "key=" + keyValues;
     }
 
     @Transient
@@ -442,15 +347,17 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
 	@Override
 	@NonProperty
 	public List<? extends SPObject> getChildren() {
-		List<SPObject> children = new ArrayList<SPObject>();
-		children.addAll(potentialMatches);
-		children.addAll(referenceMatches);
-		return children;
+		return Collections.emptyList();
 	}
 
 	@Override
 	@NonProperty
 	public List<Class<? extends SPObject>> getAllowedChildTypes() {
 		return allowedChildTypes;
+	}
+
+	@NonProperty
+	public MatchCluster getCluster() {
+		return (MatchCluster) getParent();
 	}
 }

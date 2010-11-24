@@ -83,14 +83,14 @@ public class AutoMatcher extends MonitorableImpl {
 	    Set<SourceTableRecord> visited = new HashSet<SourceTableRecord>();
 	    try {
 	        setStarted(true);
-	        setJobSize(pool.getSourceTableRecords().size());
+	        setJobSize(pool.getAllSourceTableRecords().size());
 	        setFinished(false);
 	        if (mungeProcess == null) {
 	            throw new IllegalArgumentException("Auto-Match invoked with an " +
 	            "invalid munge process");
 	        }
 
-	        Collection<SourceTableRecord> records = pool.getSourceTableRecords();
+	        Collection<SourceTableRecord> records = pool.getAllSourceTableRecords();
 
 	        logger.debug("Auto-Matching with " + records.size() + " records.");
 
@@ -192,10 +192,10 @@ public class AutoMatcher extends MonitorableImpl {
 		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 			if (pmr.getMungeProcess() == mungeProcess 
 					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
-				if (record == pmr.getReferencedRecord() && !visited.contains(pmr.getDirectRecord())) {
-					ret.add(pmr.getDirectRecord());
-				} else if (record == pmr.getDirectRecord() && !visited.contains(pmr.getReferencedRecord())) {
-					ret.add(pmr.getReferencedRecord());
+				if (record == pmr.getOrigLHS() && !visited.contains(pmr.getOrigRHS())) {
+					ret.add(pmr.getOrigRHS());
+				} else if (record == pmr.getOrigRHS() && !visited.contains(pmr.getOrigLHS())) {
+					ret.add(pmr.getOrigLHS());
 				}
 			}
 			setProgress(visited.size());

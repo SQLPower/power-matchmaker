@@ -78,13 +78,13 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
      * One of the two records originally identified as a potential duplicate. This
      * record is the one that is reference by a PotentialMatchDuplicate.
      */
-    private final SourceTableRecord referencedRecord;
+    private SourceTableRecord origLHS;
     
     /**
      * One of the two records originally identified as a potential duplicate. This
      * record is the one that is directly under the SourceTableRecord.
      */
-    private final SourceTableRecord directRecord;
+    private SourceTableRecord origRHS;
 
     /**
      * This variable defines whether or not this potential match record is 
@@ -104,8 +104,8 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
      * the master.
      */
     public static enum MasterSide {
-        DIRECT_SIDE,
-        REFERENCED_SIDE,
+        RHS,
+        LHS,
         NEITHER;
     }
     
@@ -141,7 +141,13 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
          * This is the property that defines that no user setting of the match record
          * has been done yet. This should be shown as a dashed line.
          */
-        UNMATCH("UNMATCH");
+        UNMATCH("UNMATCH"),
+        
+        /**
+         * This flag denotes that this potential match record should be deleted and not
+         * rewritten back to the database.
+         */
+        DELETE("DELETE");
         
         /**
          * Returns the MatchType instance that corresponds with the given
@@ -217,9 +223,9 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
 	 *            the MungeProcess that makes this edge exist
 	 * @param matchStatus
 	 *            the status of the relationship
-	 * @param referencedRecord
+	 * @param origLHS
 	 *            one of the SourceTableRecordd attached to this edge
-	 * @param directRecord
+	 * @param origRHS
 	 *            the other SourceTableRecord attached to this edge
 	 * @param synthetic
 	 *            a flag that denotes whether or not this edge was created by
@@ -229,13 +235,13 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
     public PotentialMatchRecord(
             @ConstructorParameter(propertyName="mungeProcess") MungeProcess mungeProcess,
             @ConstructorParameter(propertyName="matchStatus") MatchType matchStatus,
-            @ConstructorParameter(propertyName="referencedRecord") SourceTableRecord referencedRecord,
-            @ConstructorParameter(propertyName="directRecord") SourceTableRecord directRecord,
+            @ConstructorParameter(propertyName="origLHS") SourceTableRecord origLHS,
+            @ConstructorParameter(propertyName="origRHS") SourceTableRecord origRHS,
             @ConstructorParameter(propertyName="synthetic") boolean synthetic) {
         this.mungeProcess = mungeProcess;
         this.matchStatus = matchStatus;
-        this.referencedRecord = referencedRecord;
-        this.directRecord = directRecord;
+        this.origLHS = origLHS;
+        this.origRHS = origRHS;
         this.synthetic = synthetic;
         master = MasterSide.NEITHER;
         this.storeState = StoreState.NEW;
@@ -253,10 +259,25 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
     /**
 	 * Modifies the current storage state of this match record.
 	 */
+    @Mutator
     public void setStoreState(StoreState newState) {
     	StoreState old = newState;
     	storeState = newState;
     	firePropertyChange("storeState", old, newState);
+    }
+    
+    @Mutator
+    public void setDirectRecord(SourceTableRecord src) {
+    	SourceTableRecord old = origRHS;
+    	origRHS = src;
+    	firePropertyChange("directRecord", old, src);
+    }
+    
+    @Mutator
+    public void setReferenceRecord(SourceTableRecord src) {
+    	SourceTableRecord old = origLHS;
+    	origLHS = src;
+    	firePropertyChange("directRecord", old, src);
     }
     
     /**
@@ -306,13 +327,27 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
     }
 
     @Accessor
-    public SourceTableRecord getReferencedRecord() {
-        return referencedRecord;
+    public SourceTableRecord getOrigLHS() {
+        return origLHS;
     }
 
     @Accessor
-    public SourceTableRecord getDirectRecord() {
-        return directRecord;
+    public SourceTableRecord getOrigRHS() {
+        return origRHS;
+    }
+
+    @Mutator
+    public void setOrigLHS(SourceTableRecord src) {
+        SourceTableRecord old = origLHS;
+        origLHS = src;
+        firePropertyChange("origLHS", old, src);
+    }
+
+    @Mutator
+    public void setOrigRHS(SourceTableRecord src) {
+        SourceTableRecord old = origRHS;
+        origRHS = src;
+        firePropertyChange("origRHS", old, src);
     }
 
     @NonProperty
@@ -348,15 +383,15 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
         if (newMaster == null){
         	setMaster(MasterSide.NEITHER);
             setMatchStatus(MatchType.UNMATCH);
-        } else if (directRecord.equals(newMaster)) {
-            setMaster(MasterSide.REFERENCED_SIDE);
+        } else if (origRHS.equals(newMaster)) {
+            setMaster(MasterSide.LHS);
             if (!isAutoMatch) {
             	setMatchStatus(MatchType.MATCH);
             } else {
             	setMatchStatus(MatchType.AUTOMATCH);
             }
-        } else if (referencedRecord.equals(newMaster)) {
-        	setMaster(MasterSide.DIRECT_SIDE);
+        } else if (origLHS.equals(newMaster)) {
+        	setMaster(MasterSide.RHS);
             if (!isAutoMatch) {
             	setMatchStatus(MatchType.MATCH);
             } else {
@@ -392,7 +427,7 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
 
     @NonProperty
     public boolean isReferencedMaster() {
-        if (master == MasterSide.REFERENCED_SIDE) {
+        if (master == MasterSide.LHS) {
             return true;
         } else {
             return false;
@@ -401,7 +436,7 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
     
     @NonProperty
     public boolean isDirectMaster() {
-        if (master == MasterSide.DIRECT_SIDE) {
+        if (master == MasterSide.RHS) {
             return true;
         } else {
             return false;
@@ -459,10 +494,10 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
     public SourceTableRecord getMasterRecord() {
         if(master == MasterSide.NEITHER){
             return null;
-        } else if (master == MasterSide.DIRECT_SIDE){
-            return referencedRecord;
-        } else if (master == MasterSide.REFERENCED_SIDE){
-            return directRecord;
+        } else if (master == MasterSide.RHS){
+            return origLHS;
+        } else if (master == MasterSide.LHS){
+            return origRHS;
         } else {
             throw new IllegalStateException("Invalid master state: " + master);
         }
@@ -486,14 +521,15 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
      * master and duplicate has not been setup yet
      * @throws IllegalStateException if the master is not en element of MasterSide
      */
+    @NonProperty
     public SourceTableRecord getDuplicate() {
         if (master == MasterSide.NEITHER){
             return null;
         } else {
-            if (master == MasterSide.DIRECT_SIDE){
-                return directRecord;
-            } else if (master == MasterSide.REFERENCED_SIDE){
-                return referencedRecord;
+            if (master == MasterSide.RHS){
+                return origRHS;
+            } else if (master == MasterSide.LHS){
+                return origLHS;
             } else {
                 throw new IllegalStateException("Invalid master state: " + master);
             }
@@ -502,8 +538,8 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
     
     @Override
     public String toString() {
-        return "PotentialMatch: origLhs="+referencedRecord+
-        "; origRhs="+directRecord+
+        return "PotentialMatch: origLhs="+origLHS.getKeyValues()+
+        "; origRhs="+origRHS.getKeyValues()+
         "; matchStatus="+matchStatus+
         "; masterSide="+master;
     }
@@ -530,8 +566,11 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
 			return false;
 		}
 		PotentialMatchRecord other = (PotentialMatchRecord)obj;
-		if ((referencedRecord == null ? other.referencedRecord == null : referencedRecord.equals(other.referencedRecord))
-				&& (directRecord == null ? other.directRecord == null : directRecord.equals(other.directRecord))) {
+		if ((origLHS == null ? other.origLHS == null : origLHS.equals(other.origLHS))
+				&& (origRHS == null ? other.origRHS == null : origRHS.equals(other.origRHS))) {
+			return true;
+		} else if ((origLHS == null ? other.origRHS == null : origLHS.equals(other.origRHS))
+				&& (origRHS == null ? other.origLHS == null : origRHS.equals(other.origLHS))) {
 			return true;
 		} else {
 			return false;
@@ -541,8 +580,8 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
 	@Override
 	public int hashCode() {
 		int result = 17;
-		result = 37*result + (referencedRecord == null ? 0 : referencedRecord.hashCode());
-		result = 37*result + (directRecord == null ? 0 : directRecord.hashCode());
+		result = 37*result + (origLHS == null ? 0 : origLHS.hashCode());
+		result = 37*result + (origRHS == null ? 0 : origRHS.hashCode());
 		return result;
 	}
 

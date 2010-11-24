@@ -57,6 +57,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
@@ -150,13 +151,9 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 							"Reset Entire Match Pool",
 							JOptionPane.YES_NO_OPTION,
 							JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) return;
-			try {
-				pool.resetPool();
-				pool.store();
-    		}catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
-            			"store changes to the database.", ex);
-            }
+			pool.begin("Reseting the match pool.");
+			pool.resetPool();
+			pool.commit();
     		graph.repaint();
     	}
     };
@@ -169,12 +166,6 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
     private final Action resetClusterAction = new AbstractAction("Reset Cluster") {
 		public void actionPerformed(ActionEvent e) {
 			graphModel.resetCluster(selectedNode);
-			try {
-				pool.store();
-			} catch (SQLException ex) {
-	        	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
-	        			"store changes to the database.", ex);
-	        }
 			graph.repaint();
 		}
     };
@@ -185,6 +176,12 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 	 * has been selected.
 	 */
     private JButton resetClusterButton;
+
+    /**
+	 * A button associated with refreshAction so that we can reload the MatchScreen with the new
+	 * number of matches to display.
+	 */
+    private JButton refreshButton;
     
     /**
      * Warning! Will throw a ClassCastException if the node renderer in graph
@@ -215,7 +212,7 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
     			
     			try {
     				MatchResultVisualizer.this.displayColumns = chosenColumns;
-					MatchResultVisualizer.this.getPool().findAll(chosenColumns);
+					MatchResultVisualizer.this.getPool().find(chosenColumns);
     				MatchResultVisualizer.this.getPanel().repaint();
     				MatchResultVisualizer.this.doAutoLayout();
     			} catch (SQLObjectException ex) {
@@ -390,16 +387,11 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
             try {
             	pool.begin("setting a no-match");
 				pool.defineNoMatch(record1, record2);
-				pool.store();
 				pool.commit();
             } catch (SQLObjectException ex) {
     			pool.rollback("rolling back no-match setting");
             	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"define " + record1 + " and " + record2 + " to not be duplicates.", ex);
-            } catch (SQLException ex) {
-    			pool.rollback("rolling back no-match setting");
-            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
-            			"store changes to the database.", ex);
             } catch (Exception ex) {
     			pool.rollback("rolling back no-match setting");
     			throw new RuntimeException(ex);
@@ -427,14 +419,10 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
         public void actionPerformed(ActionEvent e){
             try {
 				pool.defineUnmatched(record1, record2);
-				pool.store();
 			} catch (SQLObjectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying to " +
 						"unmatch " + record1 + " and " + record2, ex);
-			} catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
-            			"store changes to the database.", ex);
-            }
+			}
             selectionListener.nodeSelected(record1);
             graph.repaint();
         }
@@ -458,24 +446,16 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
         
         public void actionPerformed(ActionEvent e) {
             try {
-            	pool.begin("setting a master");
 				pool.defineMaster(master, duplicate);
-				pool.store();
-				pool.commit();
 			} catch (SQLObjectException ex) {
 				pool.rollback("rolling back master setting");
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + master + " to be the master of " + duplicate, ex);
-			} catch (SQLException ex) {
-				pool.rollback("rolling back master setting");
-            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
-            			"store changes to the database.", ex);
 			} catch (Exception ex) {
 				pool.rollback("rolling back master setting");
 				throw new RuntimeException(ex);
 			}
             selectionListener.nodeSelected(duplicate);
-            graph.repaint();
         }
     }
     
@@ -498,16 +478,11 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
         public void actionPerformed(ActionEvent e) {
             try {
 				pool.defineMaster(master, duplicate);
-				pool.store();
             } catch (SQLObjectException ex) {
 				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + duplicate + " to be a duplicate of " + master, ex);
-			} catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
-            			"store changes to the database.", ex);
             }
             selectionListener.nodeSelected(master);
-            graph.repaint();
         }
     }
     
@@ -589,7 +564,7 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 		public void cleanup() throws Exception {
 			if (getDoStuffException() != null) {
 				pool.clearRecords();
-				pool.findAll(displayColumns);
+				pool.find(displayColumns);
 				if (!(getDoStuffException() instanceof CancellationException)) {
 					MMSUtils.showExceptionDialog(getPanel(), "Error during auto-match", getDoStuffException());
 					logger.error("Error during auto-match", getDoStuffException());
@@ -600,8 +575,11 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 
 		@Override
 		public void doStuff() throws Exception {
+			pool.begin("Doing automatch");
 			autoMatcher.doAutoMatch(mungeProcess);
-			pool.store();
+			pool.setDebug(false);
+			pool.setUseBatchUpdates(false);
+			pool.commit();
 		}
 
 		@Override
@@ -642,6 +620,23 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 		}
     }
     
+    private final Action refreshAction = new AbstractAction("Refresh Matches") {
+    	
+    	public void actionPerformed(ActionEvent e) {
+            try {
+            	pool.setLimit(Integer.parseInt(limitField.getText()));
+                pool.clearRecords();
+				pool.find(displayColumns);
+				setViewLabelText();
+				refreshGraph();
+			} catch (SQLException ex) {
+				throw new RuntimeException(ex);
+			} catch (SQLObjectException ex) {
+				throw new RuntimeException(ex);
+			}
+    	}
+    };
+    
     /**
      * This is the match whose result table we're visualizing.
      */
@@ -650,7 +645,7 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
     /**
      * The visual component that actually displays the match results graph.
      */
-    private final GraphViewer<SourceTableRecord, PotentialMatchRecord> graph;
+    private GraphViewer<SourceTableRecord, PotentialMatchRecord> graph;
 
     /**
      * The component that is used to layout the RecordViewer objects.
@@ -702,6 +697,17 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
     
     private SPListener updaterListener;
     
+    private JTextField limitField;
+    
+    private final JButton nextSet;
+    
+    private final JButton previousSet;
+    
+    /**
+     * Displays to the user what number of matches we are currently viewing.
+     */
+    private final JLabel viewLabel;
+    
     /**
      * The node on the graph that is currently selected.
      */
@@ -728,12 +734,16 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 	 * /ca/sqlpower/matchmaker/projectSettings/$<repository connection name>/$<project oid>/matchValidation";
 	 */
     private final Preferences matchValidationPrefs;
+
+	private final MatchMakerSwingSession session;
     
     public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, SQLObjectException {
     	super(session, project.getMatchPool());
         this.project = project;
-        
-		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
+		this.session = session;
+        this.pool = project.getMatchPool();
+		
+        if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
         	String errorText =
         	    "The DQguru has detected changes in the source table structure.\n" +
         	    "Your project will require modifications before the engines can run properly.\n" +
@@ -752,11 +762,14 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 			}
         }
         
+        pool.clearRecords();
+        pool.find(displayColumns);
+        
         FormLayout topLayout = new FormLayout("pref", "pref, pref");
         JPanel topPanel = new JPanel (topLayout);
         PanelBuilder pb = new PanelBuilder(topLayout, topPanel);
         CellConstraints cc = new CellConstraints();
-        JPanel buttonPanel = new JPanel(new GridLayout(4,1));
+        JPanel buttonPanel = new JPanel(new GridLayout(8,1));
         buttonPanel.add(new JButton(chooseDisplayedValueAction));
         
         selectionButton = new MungeProcessSelectionList(project) {
@@ -777,8 +790,9 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 				graph.setSelectedNode(null);
 				graph.setFocusedNode(null);
 				pool.clearRecords();
+				pool.clearCache();
 		        try {
-					pool.findAll(displayColumns);
+					pool.find(displayColumns);
 				} catch (SQLObjectException ex) {
     				MMSUtils.showExceptionDialog(getPanel(), ex.getMessage(), ex);
     			} catch (SQLException sqlEx) {
@@ -787,6 +801,7 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 				((DefaultGraphLayoutCache)graph.getLayoutCache()).clearNodes();
 				updateAutoMatchComboBox();
 				doAutoLayout();
+				graph.repaint();
 			}
 		});        
         
@@ -795,6 +810,69 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
         resetClusterButton = new JButton(resetClusterAction);
         resetClusterButton.setEnabled(selectedNode != null);
         buttonPanel.add(resetClusterButton);
+        JPanel limitPanel = new JPanel(new GridLayout(1,2));
+        limitPanel.add(new JLabel("# of clusters to view: "));
+        limitField = new JTextField(20);
+        
+        limitPanel.add(limitField);
+        buttonPanel.add(limitPanel);
+        refreshButton = new JButton(refreshAction);
+        buttonPanel.add(refreshButton);
+        JPanel setPanel = new JPanel(new GridLayout(1,2));
+        previousSet = new JButton(new AbstractAction("Previous Set") {
+        	@Override
+        	public void actionPerformed(ActionEvent arg0) {
+            	pool.setLimit(Integer.parseInt(limitField.getText()));
+        		int limit = pool.getLimit();
+        		int n = pool.getCurrentMatchNumber();
+        		if (n < limit) {
+        			n = 0;
+        		} else {
+        			n = n - limit;
+        		}        		
+        		try {
+            		pool.setCurrentMatchNumber(n);
+            		pool.clearRecords();
+					pool.find(displayColumns);
+					setViewLabelText();
+					refreshGraph();
+				} catch (SQLException ex) {
+					throw new RuntimeException(ex);
+				} catch (SQLObjectException ex) {
+					throw new RuntimeException(ex);
+				}
+        	}
+        });
+        if (pool.getLimit() == 0) {
+        	previousSet.setEnabled(false);
+        }
+        setPanel.add(previousSet);
+        nextSet = new JButton(new AbstractAction("Next Set") {
+        	@Override
+        	public void actionPerformed(ActionEvent arg0) {
+            	pool.setLimit(Integer.parseInt(limitField.getText()));
+        		int limit = pool.getLimit();
+        		int n = pool.getCurrentMatchNumber();
+        		n += limit;
+        		try {
+            		pool.setCurrentMatchNumber(n);
+            		pool.clearRecords();
+					pool.find(displayColumns);
+					setViewLabelText();
+					refreshGraph();
+				} catch (SQLException ex) {
+					throw new RuntimeException(ex);
+				} catch (SQLObjectException ex) {
+					throw new RuntimeException(ex);
+				}
+        	}
+        });
+        setPanel.add(nextSet);
+        buttonPanel.add(setPanel);
+        viewLabel = new JLabel();
+        setViewLabelText();
+        buttonPanel.add(viewLabel);
+        buttonPanel.setPreferredSize(new Dimension(350,200));
         
         String prefNodePath = "ca/sqlpower/matchmaker/projectSettings/$" +
         						project.getUUID() + "/matchValidation";
@@ -852,9 +930,6 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 			shownColumns = null;
 		}
         
-        pool = project.getMatchPool();
-        pool.clearRecords();
-        pool.findAll(displayColumns);
         for(PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
         	updaterListener = new AbstractSPListener() {
         		@Override
@@ -882,6 +957,7 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
         autoMatchPanel.add(mungeProcessComboBox);
 
         pb.add(buttonPanel, cc.xy(1,1));
+        limitField.setText(pool.getLimit()+"");
         pb.add(autoMatchPanel, cc.xy(1, 2));
         doAutoLayout();
         
@@ -1050,9 +1126,52 @@ public class MatchResultVisualizer extends AbstractUndoableEditorPane<MatchPool>
 	}
 	
 	/**
+	 * Whenever we load a new set of matches in the visualizer we need to call this.
+	 */
+	private void refreshGraph() {
+		graph.setLayoutCache(new DefaultGraphLayoutCache<SourceTableRecord, PotentialMatchRecord>());
+		doAutoLayout();
+        for(PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
+        	updaterListener = new AbstractSPListener() {
+        		@Override
+        		public void propertyChanged(PropertyChangeEvent evt) {
+        			if(evt.getPropertyName().equals("master") || evt.getPropertyName().equals("matchStatus")) {
+        				graph.repaint();
+        			}
+        		}
+        	};
+        	pmr.addSPListener(updaterListener);
+        }
+		graph.repaint();
+	}
+	
+	private void setViewLabelText() {
+		int viewTo = (pool.getCurrentMatchNumber() + pool.getLimit());
+		int cmn = pool.getCurrentMatchNumber();
+		if (pool.getClusterCount() == 0) {
+			nextSet.setEnabled(false);
+			previousSet.setEnabled(false);
+		} else if (viewTo >= pool.getClusterCount()) {
+			viewTo = pool.getClusterCount();
+			nextSet.setEnabled(false);
+			previousSet.setEnabled(true);
+		} else if (cmn == 0) {
+			nextSet.setEnabled(true);
+			previousSet.setEnabled(false);
+		} else {
+			previousSet.setEnabled(true);
+			nextSet.setEnabled(true);
+		}
+		
+		viewLabel.setText("Viewing " + ((cmn == 0) ? 0 : (cmn + 1)) + " to " +
+        		 viewTo + " out of " +
+        		pool.getClusterCount());
+	}
+	
+	/**
 	 * Updates the match table based on shownColumns and the current selectedNode.
 	 */
-	private void updateMatchTable(){
+	private void updateMatchTable() {
 		try {
             recordViewerPanel.removeAll();
             recordViewerColumnHeader.removeAll();

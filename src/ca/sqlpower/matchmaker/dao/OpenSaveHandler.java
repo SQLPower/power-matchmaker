@@ -24,6 +24,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
@@ -32,9 +35,11 @@ import ca.sqlpower.dao.SPPersisterListener;
 import ca.sqlpower.dao.XMLPersister;
 import ca.sqlpower.dao.XMLPersisterReader;
 import ca.sqlpower.matchmaker.MMRootNode;
+import ca.sqlpower.matchmaker.MatchCluster;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.enterprise.MatchMakerPersisterSuperConverter;
 import ca.sqlpower.matchmaker.enterprise.MatchMakerSessionPersister;
+import ca.sqlpower.object.SPFilterPersister;
 
 public class OpenSaveHandler {
 	private static Logger logger = Logger.getLogger(OpenSaveHandler.class);
@@ -70,8 +75,6 @@ public class OpenSaveHandler {
 		MMRootNode rootNode = session.getRootNode();
 		File tempOutFile = new File(tempString);
 		FileOutputStream fileOutputStream;
-		String cannotWriteFile = "A temporary file could not be written to " +
-				selectedFile.getParentFile() + ".";
 		
 		try {
 			while (tempOutFile.exists()) {
@@ -90,10 +93,23 @@ public class OpenSaveHandler {
 		
 		XMLPersister xmlPersister = new XMLPersister(fileOutputStream, MMRootNode.class.getName(), "matchmaker-project");
 		XMLPersister.setUpgradePersisterManager(session.getUpgradePersisterManager());
+		
+		Callable<Boolean> filterOn = new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				return Boolean.TRUE;
+			}
+		};
+		
+		Set<String> filterObjects = new HashSet<String>();
+		filterObjects.add(MatchCluster.class.getName());
+		
+		SPFilterPersister filter = new SPFilterPersister(xmlPersister, filterOn, filterObjects);
+		
 		MatchMakerPersisterSuperConverter converter = new MatchMakerPersisterSuperConverter(session.getContext().getPlDotIni(), rootNode);
-		SPPersisterListener spPersisterListener = new SPPersisterListener(xmlPersister, converter);
+		SPPersisterListener spPersisterListener = new SPPersisterListener(filter, converter);
 		try {
-			spPersisterListener.persistObjectInterleaveProperties(rootNode, 0, true, xmlPersister);
+			spPersisterListener.persistObjectInterleaveProperties(rootNode, 0, true, filter);
 		} catch (SPPersistenceException ex) {
 			throw new RuntimeException("Couldn't persist state", ex);
 		}

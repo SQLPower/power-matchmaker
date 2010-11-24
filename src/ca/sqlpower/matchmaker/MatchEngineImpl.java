@@ -169,8 +169,9 @@ public class MatchEngineImpl extends AbstractEngine {
 			jobSize = rowCount * mungeProcesses.size() * 2 + rowCount;
 			
 			MatchPool pool = getProject().getMatchPool();
-			// Fill pool with pre-existing matches
-			pool.findAll(null);
+			
+			pool.clearRecords();
+			pool.clearCache();
 			
 			// I've currently disabled the clear match pool option in debug mode because
 			// changes should be rolled back, but if the clearing of the match
@@ -188,6 +189,9 @@ public class MatchEngineImpl extends AbstractEngine {
 				pool.clear();
 				progress += clearJobSize;
 				setCurrentProcessor(null);
+			} else {
+				// Fill pool with pre-existing matches
+				pool.findOld(null);
 			}
 			
 			checkCancelled();
@@ -202,11 +206,14 @@ public class MatchEngineImpl extends AbstractEngine {
 				progressMessage = "Storing matches";
 				setCurrentProcessor(pool);
 				logger.info(progressMessage);
-				pool.store(getProject().getMungeSettings().isUseBatchExecution(), inDebugMode);
 	            checkCancelled();
 	            progress += rowCount;
 	            setCurrentProcessor(null);
+	            pool.setUseBatchUpdates(getProject().getMungeSettings().isUseBatchExecution());
+	            pool.setDebug(getProject().getMungeSettings().getDebug());
 	            pool.commit();
+	        	pool.clearRecords();
+	        	pool.setCurrentMatchNumber(0);
 			} catch(Exception ex) {
 				pool.rollback("rolling back engine");
 				throw new RuntimeException(ex);

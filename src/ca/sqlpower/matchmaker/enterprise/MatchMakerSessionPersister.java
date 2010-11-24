@@ -31,7 +31,7 @@ import ca.sqlpower.dao.SPSessionPersister;
 import ca.sqlpower.dao.helper.AbstractSPPersisterHelper;
 import ca.sqlpower.dao.session.SessionPersisterSuperConverter;
 import ca.sqlpower.matchmaker.MMRootNode;
-import ca.sqlpower.matchmaker.ReferenceMatchRecord;
+import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.object.SPObject;
 
 public class MatchMakerSessionPersister extends SPSessionPersister {
@@ -75,23 +75,25 @@ public class MatchMakerSessionPersister extends SPSessionPersister {
 	}
 	
 	/**
-	 * We override this because we need to put ReferenceMatchRecords come after PotentialMatchRecords,
-	 * no matter where they are in the list, but they are only in MatchMaker so we do it here.
+	 * We override this because we need to put PotentialMatchRecords after
+	 * SourceTableRecords, no matter where they are in the list, but they are only in MatchMaker so
+	 * we do it here.
 	 */
 	@Override
 	protected void commitObjects() throws SPPersistenceException {
 		
 		Collections.sort(persistedObjects, persistedObjectComparator);
 		
-		List<PersistedSPObject> referenceMatchKeys = new ArrayList<PersistedSPObject>();
+		List<PersistedSPObject> potentialMatchKeys = new ArrayList<PersistedSPObject>();
+		
 		for (int i = 0; i < persistedObjects.size(); i++) {
-			if (persistedObjects.get(i).getType().equals(ReferenceMatchRecord.class.getName())) {
-				referenceMatchKeys.add(persistedObjects.get(i));
+			if (persistedObjects.get(i).getType().equals(PotentialMatchRecord.class.getName())) {
+				potentialMatchKeys.add(persistedObjects.get(i));
 			}
 		}
-		persistedObjects.removeAll(referenceMatchKeys);
-		persistedObjects.addAll(referenceMatchKeys);
+		persistedObjects.removeAll(potentialMatchKeys);
+		persistedObjects.addAll(potentialMatchKeys);
 		
-		super.commitObjects();
+		super.commitSortedObjects();
 	}
 }

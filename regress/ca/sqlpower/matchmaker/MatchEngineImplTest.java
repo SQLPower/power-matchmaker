@@ -131,19 +131,19 @@ public class MatchEngineImplTest extends TestCase {
 		engine.call();
 
 		MatchPool pool = project.getMatchPool();
-		pool.findAll(null);
-		assertEquals(2, pool.getSourceTableRecords().size());
+		pool.find(null);
+		assertEquals(2, pool.getAllSourceTableRecords().size());
 		assertEquals(1, pool.getPotentialMatchRecords().size());
-		for (SourceTableRecord s: pool.getSourceTableRecords()) {
+		for (SourceTableRecord s: pool.getAllSourceTableRecords()) {
 			assertTrue(s.getKeyValues().get(0).equals("1") ||
 					s.getKeyValues().get(0).equals("4"));
 		}
 		
 		for (PotentialMatchRecord p: pool.getPotentialMatchRecords()) {
-			assertTrue(p.getReferencedRecord().getKeyValues().get(0).equals("1") ||
-					p.getReferencedRecord().getKeyValues().get(0).equals("4"));
-			assertTrue(p.getDirectRecord().getKeyValues().get(0).equals("1") ||
-					p.getDirectRecord().getKeyValues().get(0).equals("4"));
+			assertTrue(p.getOrigLHS().getKeyValues().get(0).equals("1") ||
+					p.getOrigLHS().getKeyValues().get(0).equals("4"));
+			assertTrue(p.getOrigRHS().getKeyValues().get(0).equals("1") ||
+					p.getOrigRHS().getKeyValues().get(0).equals("4"));
 			assertEquals(null, p.getMasterRecord());
 			assertEquals(MatchType.UNMATCH, p.getMatchStatus());
 		}
@@ -167,8 +167,8 @@ public class MatchEngineImplTest extends TestCase {
 		engine.call();
 		
 		MatchPool pool = project.getMatchPool();
-		pool.findAll(null);
-		assertEquals(2, pool.getSourceTableRecords().size());
+		pool.find(null);
+		assertEquals(2, pool.getAllSourceTableRecords().size());
 		assertEquals(1, pool.getPotentialMatchRecords().size());
 	}
 }
