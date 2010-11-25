@@ -112,7 +112,7 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
             }
         });
 		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(from, useRegex, validator);
+		getHandler().addValidateObject(from, useRegex, validator, true, "");
 		
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow,4dlu", // columns

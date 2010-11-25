@@ -124,8 +124,8 @@ public class StringToBooleanMungeComponent extends AbstractMungeComponent {
 		});
 		
 		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(trueList, useRegex, validator);
-		getHandler().addValidateObject(falseList, useRegex, validator);
+		getHandler().addValidateObject(trueList, useRegex, validator, true, "");
+		getHandler().addValidateObject(falseList, useRegex, validator, true, "");
 		
 		content.setLayout(new GridLayout(8,1));
 		content.add(new JLabel("True List (regex or comma seperated values):"));

@@ -103,7 +103,7 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
             }
         });
 		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(delimiter, useRegex, validator);
+		getHandler().addValidateObject(delimiter, useRegex, validator, true, "");
 		
 		resultDelimiter = new JTextField(step.getResultDelim());
 		resultDelimiter.getDocument().addDocumentListener(new DocumentListener(){

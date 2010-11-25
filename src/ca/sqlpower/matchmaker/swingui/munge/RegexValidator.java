@@ -38,16 +38,13 @@ public class RegexValidator implements Validator {
 
     private static final Logger logger = Logger.getLogger(RegexValidator.class);
     
-    public RegexValidator(){
+    public RegexValidator() {
+    	
     }
     
     public ValidateResult validate(Object contents) {
     	try {
     		String regex = (String) contents;
-    		if (regex.equals("")) {
-    			return ValidateResult.createValidateResult(Status.FAIL, 
-    					"Empty Retain Characters field is not permitted.");
-    		}
     		Pattern p = Pattern.compile(regex);
     	} catch (PatternSyntaxException e) {
     		return ValidateResult.createValidateResult(Status.FAIL, 
