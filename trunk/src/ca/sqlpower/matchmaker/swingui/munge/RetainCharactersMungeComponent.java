@@ -33,6 +33,7 @@ import javax.swing.event.DocumentListener;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
+import ca.sqlpower.validation.StringNotEmptyValidator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
@@ -95,7 +96,10 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
             }
         });
 		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(delimiters, useRegex, validator);
+		getHandler().addValidateObject(delimiters, useRegex, validator, true, "");
+		
+		StringNotEmptyValidator stev = new StringNotEmptyValidator();
+		getHandler().addValidateObject(delimiters, useRegex, stev, false, "any non empty string");
 		
 		content.setLayout(new GridLayout(4,1));
 		content.add(new JLabel("Retain Characters:"));
