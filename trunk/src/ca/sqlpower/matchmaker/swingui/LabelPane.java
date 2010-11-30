@@ -463,11 +463,12 @@ public class LabelPane extends JPanel {
 		JMenu menu = new JMenu("Change color");
 
 		for (final Color c : ColorScheme.BREWER_SET19) {
-			JMenuItem i = new JMenuItem();
-			menu.add(i);
+			JMenuItem mi = new JMenuItem();
+			JPanel i = new JPanel();
 			i.setBackground(c);
-			i.addActionListener(new ActionListener() {
-
+			mi.setPreferredSize(new Dimension(100,20));
+			mi.add(i);
+			mi.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					changeColor(comp, c, isBackgroundColor);
 					if (comp instanceof LabelPane) {
@@ -478,7 +479,9 @@ public class LabelPane extends JPanel {
 				}
 
 			});
+			menu.add(mi);
 		}
+
 		JMenuItem changeColor = new JMenuItem("Custom Color");
 		changeColor.addActionListener(new ActionListener() {
 
