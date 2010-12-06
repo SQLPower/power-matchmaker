@@ -49,11 +49,6 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
 		Collections.emptyList();
 	
 	private static final Logger logger = Logger.getLogger(PotentialMatchRecord.class);
-	
-    /**
-     * The pool of matches (graph) that this match record belongs to.
-     */
-    private MatchPool pool;
     
     /**
      * The set of rules that caused the two source table records
@@ -285,8 +280,12 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
      * new or deleted, it will be left alone.
      */
     private void markDirty() {
-        if (pool != null) {
-            pool.recordChangedState(this);
+    	MatchPool p = null;
+    	if(getParent() != null) {
+    		p = ((MatchCluster)getParent()).getPool();
+    	}
+        if (p != null) {
+            p.recordChangedState(this);
         }
     	if (storeState == StoreState.CLEAN) {
     		setStoreState(StoreState.DIRTY);
