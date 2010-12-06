@@ -116,7 +116,9 @@ public class MatchPoolTest extends TestCase {
 		mungeProcessTwo.setName("Munge_Process_Two");
 		project.addChild(mungeProcessTwo);
 		
-		pool = MMTestUtils.createTestingPool(session, project, mungeProcessOne, mungeProcessTwo);
+		MMTestUtils.createTestingPool(session, project, mungeProcessOne, mungeProcessTwo);
+		
+		pool = project.getMatchPool();
 	}
 
 	@Override
@@ -160,7 +162,8 @@ public class MatchPoolTest extends TestCase {
 	 * properly.
 	 */
 	public void testFindAllPotentialMatches() throws Exception {
-		MatchPool pool = project.getMatchPool();;
+		MatchPool pool = project.getMatchPool();
+		pool.clear();
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
@@ -187,6 +190,7 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testFindSourceTableRecords() throws Exception {
 		MatchPool pool = project.getMatchPool();
+		pool.clear();
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
@@ -216,6 +220,7 @@ public class MatchPoolTest extends TestCase {
 	/** Tests that findAll() hooks up inbound and outbound matches properly. */
 	public void testFindAllEdgeHookup() throws Exception {
 		MatchPool pool = project.getMatchPool();
+		pool.clear();
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
@@ -235,15 +240,23 @@ public class MatchPoolTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testFindAllOrphanedMatches() throws Exception {
-		this.pool = project.getMatchPool();;
+		this.pool = project.getMatchPool();
+		pool.clear();
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
 		pool.find(null);
-		assertEquals(2, pool.getAllSourceTableRecords().size());
-		assertEquals(1, pool.getPotentialMatchRecords().size());
+		assertEquals(3, pool.getAllSourceTableRecords().size());
+		assertEquals(2, pool.getPotentialMatchRecords().size());
+		int delete = 0;
+		for(PotentialMatchRecord p : pool.getPotentialMatchRecords()) {
+			if(p.getMatchStatus() == PotentialMatchRecord.MatchType.DELETE) {
+				delete++;
+			}
+		}
+		assertEquals(1, delete);
 	}
 	
 	/**
@@ -253,6 +266,7 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testReplaceOrphanedMatch() throws Exception {
 		this.pool = project.getMatchPool();
+		pool.clear();
 		pool.begin("Testing Records");
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
@@ -269,7 +283,9 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("3");
 		SourceTableRecord str2 = new SourceTableRecord(project, keyList);
 		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
-		pool.addPotentialMatch(overwrite);
+
+		pool.addPotentialMatchRecord(overwrite);
+		
 		assertTrue(pool.getPotentialMatchRecords().contains(overwrite));
 		assertEquals(2, pool.getPotentialMatchRecords().size());
 		// Store should work without exception
@@ -279,6 +295,8 @@ public class MatchPoolTest extends TestCase {
 	
 	public void testReplaceMergedMatch() throws Exception {
 		this.pool = project.getMatchPool();
+		pool.clear();
+		pool.begin("testing match pool");
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.MERGED);
@@ -292,21 +310,24 @@ public class MatchPoolTest extends TestCase {
 		keyList2.add("2");
 		SourceTableRecord str2 = new SourceTableRecord(project, keyList2);
 		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
-		pool.addPotentialMatch(overwrite);
+
+		pool.addPotentialMatchRecord(overwrite);
+		
 		assertTrue(pool.getPotentialMatchRecords().contains(overwrite));
 		assertEquals(1, pool.getPotentialMatchRecords().size());
-		for (PotentialMatchRecord pmr :pool.getPotentialMatchRecords()) {
+		for (PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
 			assertEquals(keyList1, pmr.getOrigLHS().getKeyValues());
 			assertEquals(keyList2, pmr.getOrigRHS().getKeyValues());
-			assertEquals(pmr.getMatchStatus(), PotentialMatchRecord.MatchType.UNMATCH);
+			assertEquals(PotentialMatchRecord.MatchType.UNMATCH, pmr.getMatchStatus());
 		}
 		// Store should work without exception
-		pool.store();
+		pool.commit();
 		
 	}
 	
 	public void testAddPotentialMatchWithDuplicateMatch() throws Exception {
 		this.pool = project.getMatchPool();
+		pool.clear();
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
@@ -323,13 +344,16 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord str2 = pool.getSourceTableRecord(keyList);
 		assertNotNull(str1);
 		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
-		pool.addPotentialMatch(overwrite);
+
+		pool.addPotentialMatchRecord(overwrite);
 		
 		// overwrite should not have been added (match percent was equal)
 		assertEquals(1, pool.getPotentialMatchRecords().size());
 		
 		overwrite = new PotentialMatchRecord(mungeProcessTwo,MatchType.UNMATCH, str1, str2, false);
-		pool.addPotentialMatch(overwrite);
+
+		pool.addPotentialMatchRecord(overwrite);
+		
 		// overwrite should have overwritten the original
 		assertEquals(1, pool.getPotentialMatchRecords().size());
 		List<PotentialMatchRecord> matches = pool.getAllPotentialMatchByMungeProcess(mungeProcessTwo);
@@ -3799,6 +3823,7 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testStoreDropsRemovedRecords() throws Exception {
 		pool.begin("Testing match pool");
+		pool.find(null);
 		
 		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
 		SourceTableRecord a2 = pool.getSourceTableRecord(Collections.singletonList("a2"));
@@ -3807,8 +3832,8 @@ public class MatchPoolTest extends TestCase {
 				a1, a2);
 		PotentialMatchRecord a2a3 = pool.getPotentialMatchFromOriginals(
 				a2, a3);
-		pool.removePotentialMatch(a1a2);
-		pool.removePotentialMatch(a2a3);
+		pool.removePotentialMatchRecord(a1a2);
+		pool.removePotentialMatchRecord(a2a3);
 
 		pool.commit();
 
@@ -3835,7 +3860,7 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord a1a3 = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, 
 				a1, a3, false);
 		a1a3.setMatchStatus(MatchType.MATCH);
-		pool.addPotentialMatch(a1a3);
+		pool.addPotentialMatchRecord(a1a3);
 
 		pool.commit();
 
@@ -4181,6 +4206,12 @@ public class MatchPoolTest extends TestCase {
 	
 	public void testClear() throws Exception {
 		this.pool = project.getMatchPool();
+		
+		pool.clear();
+		pool.clearCache();
+		assertEquals(0, pool.getPotentialMatchRecords().size());
+		assertEquals(0, pool.getAllSourceTableRecords().size());
+		
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
@@ -4194,6 +4225,7 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pool.getAllSourceTableRecords().size() != 0);
 		
 		pool.clear();
+		pool.clearCache();
 		pool.find(null);
 		
 		assertEquals(0, pool.getPotentialMatchRecords().size());

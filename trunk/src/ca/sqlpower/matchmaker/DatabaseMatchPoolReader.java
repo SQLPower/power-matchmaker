@@ -206,7 +206,12 @@ public class DatabaseMatchPoolReader extends AbstractMatchPoolReader {
                	}
                	PotentialMatchRecord pmr = new PotentialMatchRecord(mungeProcess, matchStatus, lhs, rhs, false);
                 pmr.setStoreState(StoreState.CLEAN);
-               	potentialMatchRecords.add(pmr);
+               	if(mungeProcess != null && !pmr.getMatchStatus().equals(MatchType.MERGED)) {
+	               	potentialMatchRecords.add(pmr);
+               	} else {
+               		pmr.setMatchStatus(MatchType.DELETE);
+	               	potentialMatchRecords.add(pmr);
+               	}
             }
             
         } catch (SQLException ex) {

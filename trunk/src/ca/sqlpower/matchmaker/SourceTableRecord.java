@@ -290,7 +290,11 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      */
 	@NonProperty
     public List<PotentialMatchRecord> getOriginalMatchEdges() {
-    	return getCluster().getOriginalMatchEdges(this);
+		List<PotentialMatchRecord> pmrl = getCluster().getOriginalMatchEdges(this);
+		if(pmrl == null) {
+			return Collections.emptyList();
+		}
+		return pmrl;
     }
 	
     /**

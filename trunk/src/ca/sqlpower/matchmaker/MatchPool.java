@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.beans.PropertyChangeEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -45,6 +46,8 @@ import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.object.ObjectDependentException;
+import ca.sqlpower.object.SPChildEvent;
+import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
 import ca.sqlpower.object.annotation.Mutator;
@@ -53,6 +56,7 @@ import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.util.TransactionEvent;
 
 /**
  * The MatchPool class represents the set of matching records for
@@ -112,9 +116,14 @@ public class MatchPool extends MatchMakerMonitorableImpl {
     private int clusterCount;
 
 	/**
-     * This reads the database for all of the potential matches in community edition.
+     * This reads the database or server and finds all of the potential matches in community edition.
      */
     private MatchPoolReader matchPoolReader;
+    
+    /**
+     * This stores the found matches to the database or server.
+     */
+    private DatabaseMatchPoolListener matchPoolListener;
 
 	private List<SQLColumn> displayColumns;
 	
@@ -195,6 +204,9 @@ public class MatchPool extends MatchMakerMonitorableImpl {
         this.clusterCount = 0;
         this.currentMatchNumber = 0;
         matchPoolReader = new DatabaseMatchPoolReader(this);
+        matchPoolListener = new DatabaseMatchPoolListener(this);
+        addSPListener(matchPoolListener);
+        addSPListener(matchListener);
     }
 
 	@NonProperty
@@ -685,6 +697,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
     		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
     		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
    			matchRecord.setMasterRecord(nodeMasterPair.getValue(), isAutoMatch);
+   			decidedRecordsCache.add(matchRecord);
     	}
 	}
 	
@@ -857,6 +870,9 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 		makeAutoMatches(mungeProcess, selected, neighbours, visited);
 		//If we haven't visited all the nodes, we are not done!
 		while (visited.size() != records.size()) {
+			if(visited.size() == 103) {
+					System.out.println("sop");
+			}
 			SourceTableRecord temp = null;
 			for (SourceTableRecord record : records) {
 				if (!visited.contains(record)) {
@@ -1001,6 +1017,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 */
 	public void clearRecords() {
 		matchClusters.clear();
+		decidedRecordsCache.clear();
 	}
 	
 	/**
@@ -1032,6 +1049,51 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 * PMR's.
 	 */
 	private final List<PotentialMatchRecord> decidedRecordsCache = new ArrayList<PotentialMatchRecord>();
+	
+	private final SPListener matchListener = new SPListener() {
+		public void childAdded(SPChildEvent e) {
+			if(e.getSource() instanceof MatchPool) {
+				MatchCluster mc = (MatchCluster)e.getChild();
+				mc.addSPListener(this);
+				for(PotentialMatchRecord pmr : mc.getPotentialMatchRecords()) {
+					if(pmr.getMatchStatus().equals(MatchType.MATCH)) {
+						decidedRecordsCache.add(pmr);
+					}
+				}
+			}
+			if(e.getSource() instanceof MatchCluster && e.getChild() instanceof PotentialMatchRecord) {
+				PotentialMatchRecord pmr = (PotentialMatchRecord)e.getChild();
+				if(pmr.getMatchStatus().equals(MatchType.MATCH)) {
+					decidedRecordsCache.add(pmr);
+				}
+			}
+		}
+
+		@Override
+		public void childRemoved(SPChildEvent e) {
+			if(e.getChild() instanceof MatchCluster) {
+				MatchCluster mc = (MatchCluster)e.getChild();
+				mc.removeSPListener(this);
+			}
+		}
+
+		@Override
+		public void transactionStarted(TransactionEvent e) {
+		}
+
+		@Override
+		public void transactionEnded(TransactionEvent e) {
+		}
+
+		@Override
+		public void transactionRollback(TransactionEvent e) {
+		}
+
+		@Override
+		public void propertyChanged(PropertyChangeEvent evt) {
+		}
+		
+	};
 	
     public void recordChangedState(PotentialMatchRecord potentialMatchRecord) {
         if (potentialMatchRecord.isMasterUndecided()) {
@@ -1228,6 +1290,10 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 			}
 		}
 		
+		for(SourceTableRecord src : to.getSourceTableRecords()) {
+			src.setParent(to);
+		}
+		
 		for(PotentialMatchRecord pmr : pmrl) {
 			to.addPotentialMatchRecord(pmr);
 		}
@@ -1241,5 +1307,49 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 			if(src != null) return src;
 		}
 		return null;
+	}
+	
+	/**
+	 * This function should only be used for testing purposes.
+	 */
+	public void addPotentialMatchRecord(PotentialMatchRecord pmr) {
+		MatchCluster mc = new MatchCluster();
+		mc.addSourceTableRecord(pmr.getOrigLHS());
+		mc.addSourceTableRecord(pmr.getOrigRHS());
+		mc.addPotentialMatchRecord(pmr);
+		mergeInClusters(Collections.singletonList(mc));
+	}
+	
+	/**
+	 * This function should only be used for testing purposes.
+	 */
+	public boolean removePotentialMatchRecord(PotentialMatchRecord pmr) {
+		MatchCluster toCheck = null;
+		for(MatchCluster mc : matchClusters) {
+			if(mc.getPotentialMatchRecords().contains(pmr)) {
+				toCheck = mc;
+			}
+		}
+		if(toCheck != null) {
+			try {
+				if(toCheck.getPotentialMatchRecords().size() == 1) {
+					removeChild(toCheck);
+				}
+				return toCheck.removeChild(pmr);
+			} catch (IllegalArgumentException e) {
+				throw new RuntimeException(e);
+			} catch (ObjectDependentException e) { 
+				throw new RuntimeException(e);
+			}
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Stores the current MatchPool cache back into the database.
+	 */
+	public void store() {
+		matchPoolListener.store();
 	}
 }

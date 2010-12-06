@@ -384,14 +384,14 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
         	setMaster(MasterSide.NEITHER);
             setMatchStatus(MatchType.UNMATCH);
         } else if (origRHS.equals(newMaster)) {
-            setMaster(MasterSide.LHS);
+            setMaster(MasterSide.RHS);
             if (!isAutoMatch) {
             	setMatchStatus(MatchType.MATCH);
             } else {
             	setMatchStatus(MatchType.AUTOMATCH);
             }
         } else if (origLHS.equals(newMaster)) {
-        	setMaster(MasterSide.RHS);
+        	setMaster(MasterSide.LHS);
             if (!isAutoMatch) {
             	setMatchStatus(MatchType.MATCH);
             } else {
@@ -495,9 +495,9 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
         if(master == MasterSide.NEITHER){
             return null;
         } else if (master == MasterSide.RHS){
-            return origLHS;
-        } else if (master == MasterSide.LHS){
             return origRHS;
+        } else if (master == MasterSide.LHS){
+            return origLHS;
         } else {
             throw new IllegalStateException("Invalid master state: " + master);
         }
@@ -527,9 +527,9 @@ public class PotentialMatchRecord extends AbstractMatchMakerObject{
             return null;
         } else {
             if (master == MasterSide.RHS){
-                return origRHS;
-            } else if (master == MasterSide.LHS){
                 return origLHS;
+            } else if (master == MasterSide.LHS){
+                return origRHS;
             } else {
                 throw new IllegalStateException("Invalid master state: " + master);
             }

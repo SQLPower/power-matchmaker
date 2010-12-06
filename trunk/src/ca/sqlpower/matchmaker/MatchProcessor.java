@@ -121,8 +121,12 @@ public class MatchProcessor extends AbstractProcessor {
 			}
 		}
 		
+		engineLogger.debug("Sorting matches into Clusters");
+		
 		//Sort the new matches into match clusters then add them to the match pool
 		List<MatchCluster> matchClusters = MatchPool.sortMatches(sourceTableRecords, potentialMatchRecords);
+		
+		engineLogger.debug("Merging matches into MatchPool");
 		
 		pool.mergeInClusters(matchClusters);
 

@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -51,6 +50,7 @@ public class MatchCluster extends AbstractMatchMakerObject {
 	
 	@Constructor
 	public MatchCluster() {
+		setName("matchCluster");
 	}
 	
 	@Override
@@ -130,11 +130,31 @@ public class MatchCluster extends AbstractMatchMakerObject {
 		PotentialMatchRecord existing = potentialMatchRecords.contains(pmr) ? 
 				potentialMatchRecords.get(potentialMatchRecords.indexOf(pmr)) :
 					null;
-    	if (existing != null) { 
+    	if (existing != null) {
+    		boolean replace = false;
+    		
+    		if(existing.getMatchStatus() == MatchType.MERGED || existing.getMatchStatus() == MatchType.DELETE) {
+    			replace = true;
+    		}
+    		
     		logger.debug("Found duplicate match of " + pmr);
-    		Integer otherPriority = existing.getMungeProcess().getMatchPriority();
-    		Integer pmrPriority = pmr.getMungeProcess().getMatchPriority();
-			if (pmrPriority == null || otherPriority != null && otherPriority <= pmrPriority) { 
+    		Integer otherPriority;
+    		if(existing.getMungeProcess() == null) {
+    			otherPriority = null;
+    		} else {
+    			otherPriority = existing.getMungeProcess().getMatchPriority();
+    		}
+    		Integer pmrPriority;
+    		if(pmr.getMungeProcess() == null) {
+    			pmrPriority = null;
+    		} else {
+        		pmrPriority = pmr.getMungeProcess().getMatchPriority();
+    		}
+    		if(!(pmrPriority == null || (otherPriority != null && otherPriority <= pmrPriority))) {
+    			replace = true;
+    		}
+    		
+			if (!replace) { 
     			logger.debug("other's priority is equal or higher, so NOT replacing with pmr");
     			return;
     		} else {
@@ -192,6 +212,7 @@ public class MatchCluster extends AbstractMatchMakerObject {
 	public List<? extends SPObject> getChildren() {
 		List<SPObject> children = new ArrayList<SPObject>();
 		children.addAll(sourceTableRecords);
+		children.addAll(potentialMatchRecords);
 		return Collections.unmodifiableList(children);
 	}
 
@@ -290,10 +311,10 @@ public class MatchCluster extends AbstractMatchMakerObject {
 	}
 
 	public void reset() throws IllegalArgumentException, ObjectDependentException {
-		for (Iterator<PotentialMatchRecord> it = getPotentialMatchRecords().iterator(); it.hasNext(); ) {
-        	PotentialMatchRecord pmr = it.next();
+		List<PotentialMatchRecord> pmrl = new ArrayList<PotentialMatchRecord>();
+		pmrl.addAll(getPotentialMatchRecords());
+		for (PotentialMatchRecord pmr : pmrl) {
 			if (pmr.isSynthetic()) {
-				it.remove();
 				removeChild(pmr);
 				continue;
 			}
