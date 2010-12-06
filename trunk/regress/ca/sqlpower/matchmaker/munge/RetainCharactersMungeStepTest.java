@@ -67,6 +67,7 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	}
 
 	public void testCallonMultipleOccurrences() throws Exception {
+		step.setUseRegex(false);
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
 		step.setRetainChars("abc");
@@ -81,6 +82,7 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	}
 	
 	public void testCallonCaseInsensitive() throws Exception {
+		step.setUseRegex(false);
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
 		step.setRetainChars("abc");
@@ -118,6 +120,7 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	 * not be taken in as literals even if regex was turned off.
 	 */
 	public void testCallonRegexInput() throws Exception {
+		step.setUseRegex(false);
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a\\-+*?()[]{}|$^<=z");
 		step.connectInput(0, testInput);

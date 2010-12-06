@@ -72,11 +72,12 @@ public class DeDupeResultStepTest extends MatchMakerTestCase<DeDupeResultStep> {
 		step = new DeDupeResultStep();
 		MungeStepOutput<String> output = new MungeStepOutput<String>("munged", String.class);
 		output.setData("cow");
-		step.connectInput(0, output);
 		
 		MungeProcess mp = new MungeProcess();
 		mp.addChild(inputStep);
 		mp.addChild(step);
+		step.init();
+		step.connectInput(0, output);
 		project.addChild(mp);
 		super.setUp();
 		getRootObject().addChild(project, 0);

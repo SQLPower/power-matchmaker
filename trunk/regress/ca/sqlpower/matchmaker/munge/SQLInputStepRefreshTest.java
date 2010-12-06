@@ -147,6 +147,7 @@ public class SQLInputStepRefreshTest extends AbstractRefreshTest {
         assertNotNull(dobOutput);
         DeDupeResultStep step = new DeDupeResultStep();
         mungeProcess.addChild(step);
+        step.init();
         step.connectInput(0, dobOutput);
         
         sqlx("ALTER TABLE customer ALTER COLUMN dob VARCHAR(50)"); // strange idea, but nyeh
