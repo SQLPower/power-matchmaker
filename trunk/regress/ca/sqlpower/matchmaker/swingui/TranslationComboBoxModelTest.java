@@ -102,6 +102,8 @@ public class TranslationComboBoxModelTest extends TestCase {
         super.setUp();
         session=new TestingMatchMakerSession();
         tgp = session.getTranslations();
+        MatchMakerTranslateGroup mmtg = (MatchMakerTranslateGroup)tgp.getChildren().get(0);
+        tgp.removeChild(mmtg);
         tg = new MatchMakerTranslateGroup();
         tg.setName("Translate Group 1");
         tgp.addChild(tg);
