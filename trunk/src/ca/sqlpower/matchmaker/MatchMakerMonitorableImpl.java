@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker;
 
 import java.util.concurrent.CancellationException;
 
+import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.util.Monitorable;
 import ca.sqlpower.util.MonitorableImpl;
 
@@ -34,36 +35,44 @@ public abstract class MatchMakerMonitorableImpl extends AbstractMatchMakerObject
     private boolean started = false;
     private boolean cancelled = false;
     private boolean finished = false;
-    
+
+    @NonProperty
     public synchronized boolean isCancelled() {
         return cancelled;
     }
-    
+
+    @NonProperty
     public synchronized void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
     
+    @NonProperty
     public synchronized Integer getJobSize() {
         return jobSize;
     }
-    
+
+    @NonProperty
     public synchronized void setJobSize(Integer jobSize) {
         this.jobSize = jobSize;
     }
-    
+
+    @NonProperty
     public synchronized String getMessage() {
         return message;
     }
-    
+
+    @NonProperty
     public synchronized void setMessage(String message) {
         this.message = message;
     }
-    
+
+    @NonProperty
     public synchronized int getProgress() {
         logger.debug("Returning progress " + progress + "/" + getJobSize() + " message="+getMessage()+" started="+hasStarted()+" finished="+isFinished()+" cancelled="+isCancelled());
         return progress;
     }
-    
+
+    @NonProperty
     public synchronized void setProgress(int progress) {
         this.progress = progress;
     }
@@ -71,15 +80,18 @@ public abstract class MatchMakerMonitorableImpl extends AbstractMatchMakerObject
     public synchronized boolean hasStarted() {
         return started;
     }
-    
+
+    @NonProperty
     public synchronized void setStarted(boolean started) {
         this.started = started;
     }
-    
+
+    @NonProperty
     public synchronized boolean isFinished() {
         return finished;
     }
-    
+
+    @NonProperty
     public synchronized void setFinished(boolean finished) {
         this.finished = finished;
     }
