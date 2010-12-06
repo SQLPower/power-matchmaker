@@ -20,17 +20,29 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.Collections;
+
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.object.SPObject;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLTable;
 
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 
 	TableMergeRules m1;
-	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession();
+	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession() {
+		public ca.sqlpower.sqlobject.SQLDatabase getDatabase(ca.sqlpower.sql.JDBCDataSource dataSource) {
+			return this.db;
+		};
+	};
 
 	public TableMergeRuleTest(String name) {
 		super(name);
+        JDBCDataSource dataSource = new JDBCDataSource(
+        		((TestingMatchMakerContext)testingMatchMakerSession.getContext()).getDataSources().get(0));
+        dataSource.setName("testing datasource");
+        ((TestingMatchMakerContext)session.getContext()).setDataSou2rces(
+        		Collections.singletonList(dataSource));
 	}
 	
 	public void setUp() throws Exception {
@@ -72,6 +84,8 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		TableMergeRules m2 = new TableMergeRules();
 		m1.setSession(testingMatchMakerSession);
 		m2.setSession(testingMatchMakerSession);
+		m1.setSpDataSource("Test Oracle");
+		m2.setSpDataSource("Test Oracle");
 		
 		Project parent1 = new Project();
 		parent1.setSession(new TestingMatchMakerSession());
