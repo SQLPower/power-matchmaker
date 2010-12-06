@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ca.sqlpower.architect.ddl.DDLGenerator;
@@ -56,9 +57,10 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 
     PlFolder parentFolder;
 	Project project;
-	private TestingMatchMakerSession session;
+	private TestingMatchMakerSession session ;
 
     protected void setUp() throws Exception {
+    	
     	// The following two are ignored because they are to be used only by hibernate
     	// so they don't throw events
         propertiesToIgnoreForEventGeneration.add("mungeProcesses");
@@ -285,6 +287,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setResultTableCatalog("my_cat");
     	project.setResultTableSchema("my_dog");
     	project.setResultTableName("my_chinchilla");
+    	project.setResultTableSPDatasource("Test Sql Server");
     	
     	SQLTable resultTable = project.createResultTable();
     	
@@ -657,7 +660,22 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	}
     
     public void testNoEmptySimulatedTable() throws Exception {
+
+    	session = new TestingMatchMakerSession() {
+    		public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+    			return this.db;
+    		};	
+    	};
+
+        JDBCDataSource dataSource = new JDBCDataSource(
+        		((TestingMatchMakerContext)session.getContext()).getDataSources().get(0));
+        dataSource.setName("testing datasource");
+        ((TestingMatchMakerContext)session.getContext()).setDataSou2rces(
+        		Collections.singletonList(dataSource));
+        session.setDatabase(new SQLDatabase());
         
+        project.setSession(session);
+    	
         SQLTable sourceTable = new SQLTable(session.getDatabase(), true);
         session.getDatabase().addChild(sourceTable);
         sourceTable.addColumn(new SQLColumn(sourceTable, "pk1", Types.INTEGER, 10, 0));
@@ -669,6 +687,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         project.setResultTableCatalog(null);
         project.setResultTableSchema(null);
         project.setResultTableName("new_table_that_doesnt_exist");
+    	project.setResultTableSPDatasource("testing datasource");
         
         project.createResultTable();
         

@@ -155,6 +155,19 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Per
         propertiesToIgnoreForDuplication.add("expanded");
         propertiesToIgnoreForDuplication.add("position");
         propertiesToIgnoreForDuplication.add("inputCount");
+        propertiesToIgnoreForDuplication.add("matchPool");
+        propertiesToIgnoreForDuplication.add("resultTableCatalog");
+        propertiesToIgnoreForDuplication.add("resultTableName");
+        propertiesToIgnoreForDuplication.add("resultTableSchema");
+        propertiesToIgnoreForDuplication.add("resultTableSPDataSource");
+        propertiesToIgnoreForDuplication.add("sourceTableCatalog");
+        propertiesToIgnoreForDuplication.add("sourceTableName");
+        propertiesToIgnoreForDuplication.add("sourceTableSchema");
+        propertiesToIgnoreForDuplication.add("sourceTableSPDataSource");
+        propertiesToIgnoreForDuplication.add("xrefTableCatalog");
+        propertiesToIgnoreForDuplication.add("xrefTableName");
+        propertiesToIgnoreForDuplication.add("xrefTableSchema");
+        propertiesToIgnoreForDuplication.add("xrefTableSPDataSource");
         
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");
