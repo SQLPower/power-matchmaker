@@ -112,6 +112,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 		project.setResultTableName("MERGE_TEST_RESULT");
 		project.setResultTableSchema("MM_TEST");
 		project.setResultTableCatalog("MM_TEST");
+		project.setResultTableSPDatasource(ds.getName());
 	}
 
 	protected JDBCDataSource getDS() {

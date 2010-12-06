@@ -107,6 +107,7 @@ public class MergeProcessorOnBetterDataModelOracleTest extends AbstractMergeProc
         project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
 		project.setResultTableName("BETTER_MERGE_TEST_RESULT");
 		project.setResultTableSchema(ds.getPlSchema());
+		project.setResultTableSPDatasource(ds.getName());
 		
 	}
 }
