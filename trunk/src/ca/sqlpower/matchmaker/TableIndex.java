@@ -35,7 +35,7 @@ import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 
-public class TableIndex extends AbstractMatchMakerObject{
+public class TableIndex extends AbstractMatchMakerObject {
 	
 	public static final List<Class<? extends SPObject>> allowedChildTypes = 
 		Collections.emptyList();
@@ -76,8 +76,11 @@ public class TableIndex extends AbstractMatchMakerObject{
 					@ConstructorParameter(propertyName="indexRole") String indexRole) {
 		this.table = table;
 		this.indexRole = indexRole;
-		
-		setName("TableIndex for " + table.getTableName());
+		if (table == null) {
+			setName("TableIndex");
+		} else {
+			setName("TableIndex for " + table.getTableName());
+		}
 	}
 	
 	@Accessor
@@ -199,6 +202,7 @@ public class TableIndex extends AbstractMatchMakerObject{
 		t.setName(getName());
 		t.setVisible(isVisible());
 		t.setColNames(getColNames());
+		t.setIndexName(getIndexName());
 		return t;
 	}
 
