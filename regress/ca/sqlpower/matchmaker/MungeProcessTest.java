@@ -25,6 +25,7 @@ import ca.sqlpower.matchmaker.munge.BooleanConstantMungeStep;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.object.SPObject;
 
@@ -69,9 +70,18 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
         assertEquals("Incorrect number of events fired",1,listener.getAllEventCounts());
         assertEquals("Wrong property fired in the event","parent",listener.getLastPropertyChangeEvent().getPropertyName());
     }
+    
 	@Override
 	protected Class<? extends SPObject> getChildClassType() {
-		return SQLInputStep.class;
+		return MungeStep.class;
+	}
+	
+	/**
+	 * Special case override. See top level doc.
+	 */
+	@Override
+	public int getIndexToInsertChildAt() {
+		return 1;
 	}
 
 	/**
