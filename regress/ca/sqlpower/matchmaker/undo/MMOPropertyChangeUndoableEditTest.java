@@ -35,7 +35,9 @@ public class MMOPropertyChangeUndoableEditTest extends TestCase {
 	 */
 	public void testSetMungeStepInputToNull() {
 		StringConstantMungeStep stringConstantStep = new StringConstantMungeStep();
+		stringConstantStep.init();
 		DeDupeResultStep resultStep = new DeDupeResultStep();
+		resultStep.init();
 		assertEquals("Wrong amount of inputs", 1, resultStep.getInputCount());
 		resultStep.connectInput(0, stringConstantStep.getChildren(MungeStepOutput.class).get(0));
 		assertEquals("Wrong amount of inputs", 2, resultStep.getInputCount());
