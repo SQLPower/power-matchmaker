@@ -49,14 +49,15 @@ public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleA
         step = new GoogleAddressLookup();
         step.setGoogleMapsApiKey("ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
         testInput = new MungeStepOutput<String>("Testing address values", String.class);
-        step.connectInput(0, testInput);
         MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
         process.addTransformationMungeStep(step);
+        step.connectInput(0, testInput);
     }
 
     public void testSimpleLookupCanada() throws Exception {
+    	step.setGoogleMapsApiKey("ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
         step.open(logger);
         testInput.setData("4950 Yonge St, Toronto");  // SQLP WWHQ!
         step.call();
@@ -78,6 +79,7 @@ public class GoogleAddressLookupMungeStepTest extends MatchMakerTestCase<GoogleA
     }
 
     public void testInvalidLookupCanada() throws Exception {
+    	step.setGoogleMapsApiKey("ABQIAAAAC68VN0JS8nvnA3-VgSg5dRSPtI6ZTKhKKG8kdYEzcTLFAXRiHhS13bHpYAqAQNo1st7t_FZ7-22PWw");
         step.open(logger);
         testInput.setData("1234 StreetDoesn't Exist at all, definitely, I'm sure about it");
         

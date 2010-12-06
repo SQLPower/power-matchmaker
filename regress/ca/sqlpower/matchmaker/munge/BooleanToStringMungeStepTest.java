@@ -34,12 +34,12 @@ public class BooleanToStringMungeStepTest extends AbstractMungeStepTest<BooleanT
 	protected void setUp() throws Exception {
 		step = new BooleanToStringMungeStep();
 		MungeStepOutput mso = new MungeStepOutput<Boolean>("in",Boolean.class);
-		step.connectInput(0, mso);
 		super.setUp();
 		MungeProcess process = (MungeProcess) createNewValueMaker(
         		getRootObject(), null).makeNewValue(
         				MungeProcess.class, null, "parent process");
         process.addTransformationMungeStep(step);
+		step.connectInput(0, mso);
 	}
 	
 	public void testDefault() throws Exception {
