@@ -20,8 +20,10 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Types;
+import java.util.Collections;
 
 import junit.framework.TestCase;
+import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLCatalog;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -48,7 +50,17 @@ public class ProjectSQLTableHelperTest extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        session = new TestingMatchMakerSession();
+        session = new TestingMatchMakerSession() {
+        	@Override
+        	public SQLDatabase getDatabase(JDBCDataSource dataSource) {
+        		return this.db;
+        	};
+        };
+        JDBCDataSource dataSource = new JDBCDataSource(
+        		((TestingMatchMakerContext)session.getContext()).getDataSources().get(0));
+        dataSource.setName("testing datasource");
+        ((TestingMatchMakerContext)session.getContext()).setDataSou2rces(
+        		Collections.singletonList(dataSource));
         session.setDatabase(new SQLDatabase());
         project = new Project();
         project.setSession(session);
@@ -117,6 +129,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog(null);
         project.setSourceTableSchema(null);
         project.setSourceTableName("table1");
+        project.setSourceTableSPDatasource("testing datasource");
 
         assertNull(project.getSourceTableCatalog());
         assertNull(project.getSourceTableSchema());
@@ -141,6 +154,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog(null);
         project.setSourceTableSchema("schema2");
         project.setSourceTableName("table2");
+        project.setSourceTableSPDatasource("testing datasource");
 
         assertNull(project.getSourceTableCatalog());
         assertEquals("schema2", project.getSourceTableSchema());
@@ -165,6 +179,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog("catalog3");
         project.setSourceTableSchema(null);
         project.setSourceTableName("table3");
+        project.setSourceTableSPDatasource("testing datasource");
 
         assertEquals("catalog3", project.getSourceTableCatalog());
         assertNull(project.getSourceTableSchema());
@@ -189,6 +204,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog("catalog4");
         project.setSourceTableSchema("schema4");
         project.setSourceTableName("table4");
+        project.setSourceTableSPDatasource("testing datasource");
         
         assertEquals("catalog4", project.getSourceTableCatalog());
         assertEquals("schema4", project.getSourceTableSchema());
@@ -210,6 +226,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog(null);
         project.setSourceTableSchema(null);
         project.setSourceTableName("table1");
+        project.setSourceTableSPDatasource("testing datasource");
 
         SQLTable created = project.getSourceTable();
         assertNotNull(created);
@@ -220,6 +237,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog(null);
         project.setSourceTableSchema("schema2");
         project.setSourceTableName("table2");
+        project.setSourceTableSPDatasource("testing datasource");
 
         SQLTable created = project.getSourceTable();
         assertNotNull(created);
@@ -230,6 +248,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog("catalog3");
         project.setSourceTableSchema(null);
         project.setSourceTableName("table3");
+        project.setSourceTableSPDatasource("testing datasource");
 
         SQLTable created = project.getSourceTable();
         assertNotNull(created);
@@ -240,6 +259,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog("catalog4");
         project.setSourceTableSchema("schema4");
         project.setSourceTableName("table4");
+        project.setSourceTableSPDatasource("testing datasource");
 
         SQLTable created = project.getSourceTable();
         assertNotNull(created);
@@ -302,6 +322,7 @@ public class ProjectSQLTableHelperTest extends TestCase {
         project.setSourceTableCatalog(null);
         project.setSourceTableSchema(null);
         project.setSourceTableName("bad_hierarchy");
+        project.setSourceTableSPDatasource("testing datasource");
         
         assertEquals("There should be no warnings in the session to start with",
                 0, session.getWarnings().size());
