@@ -35,6 +35,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MasterSide;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -185,6 +186,7 @@ public class DatabaseMatchPoolReader extends AbstractMatchPoolReader {
                 		rhsKeyValues.add(rs.getString("DUP_CANDIDATE_2"+i));
                 	}
                 }
+                
                 List<Object> lhsDisplayValues = new ArrayList<Object>();
                 List<Object> rhsDisplayValues = new ArrayList<Object>();
                 for (int i = 0; i < displayColumns.size(); i++) {
@@ -206,6 +208,12 @@ public class DatabaseMatchPoolReader extends AbstractMatchPoolReader {
                	}
                	PotentialMatchRecord pmr = new PotentialMatchRecord(mungeProcess, matchStatus, lhs, rhs, false);
                 pmr.setStoreState(StoreState.CLEAN);
+               	String master = (String)(rs.getObject("DUP1_MASTER_IND"));
+               	if ("Y".equals(master)) {
+               		pmr.setMaster(MasterSide.LHS);
+               	} else if ("N".equals(master)) {
+               		pmr.setMaster(MasterSide.RHS);
+               	}
                	if(mungeProcess != null && !pmr.getMatchStatus().equals(MatchType.MERGED)) {
 	               	potentialMatchRecords.add(pmr);
                	} else {
