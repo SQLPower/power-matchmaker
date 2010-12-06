@@ -50,6 +50,7 @@ import ca.sqlpower.object.SPChildEvent;
 import ca.sqlpower.object.SPListener;
 import ca.sqlpower.object.SPObject;
 import ca.sqlpower.object.annotation.Accessor;
+import ca.sqlpower.object.annotation.Constructor;
 import ca.sqlpower.object.annotation.Mutator;
 import ca.sqlpower.object.annotation.NonBound;
 import ca.sqlpower.object.annotation.NonProperty;
@@ -199,6 +200,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 		return matchClusters;
 	}
 	
+	@Constructor
     public MatchPool() {
         this.limit = DEFAULT_LIMIT;
         this.clusterCount = 0;
