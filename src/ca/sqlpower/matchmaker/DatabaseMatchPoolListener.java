@@ -92,7 +92,7 @@ public class DatabaseMatchPoolListener implements SPListener {
 
 	@Override
 	public void propertyChanged(PropertyChangeEvent evt) {
-		if(storeNow) {
+		if(storeNow && evt.getSource().getClass().equals(PotentialMatchRecord.class)) {
 			store();
 		}
 	}
@@ -129,6 +129,20 @@ public class DatabaseMatchPoolListener implements SPListener {
 	    		potentialMatchRecords.remove(pmr);
 		    }
 
+/*		    int sum = 0;
+		    
+		    List<PotentialMatchRecord> checkForDup = new ArrayList<PotentialMatchRecord>(); 
+		    for(PotentialMatchRecord pmr : potentialMatchRecords) {
+		    	int n = checkForDup.indexOf(pmr);
+		    	if(n != -1) {
+		    		sum++;
+		    		PotentialMatchRecord dup = checkForDup.get(n);
+		    		logger.debug("Duplicate");
+		    	} else {
+		    		checkForDup.add(pmr);
+		    	}
+		    }*/
+		    
 		    resultTable = pool.getProject().getResultTable();
 	        con = null;
 	        lastSQL = null;

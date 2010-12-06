@@ -240,7 +240,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
 	@Override
 	public boolean isForegroundThread() {
-		return false;
+		return true;
 	}
 	
 	public List<UserDefinedSQLType> getSQLTypes()
