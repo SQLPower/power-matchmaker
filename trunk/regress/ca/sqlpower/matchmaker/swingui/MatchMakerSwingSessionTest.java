@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
@@ -62,6 +63,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
         };
         
         MatchMakerSession stubSessionImp = new StubMatchMakerSession(){
+        	private MMRootNode rootNode = new MMRootNode();
         	FolderParent folders;
         	SQLDatabase db = null;
         	
@@ -109,6 +111,11 @@ public class MatchMakerSwingSessionTest extends TestCase {
                 // hibernate session impl is supposed to close its database
             	if (db.isConnected()) db.disconnect();
             	return true;
+            }
+            
+            @Override
+            public MMRootNode getRootNode() {
+            	return rootNode;
             }
         };
         
