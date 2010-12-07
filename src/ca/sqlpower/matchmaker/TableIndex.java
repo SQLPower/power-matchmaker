@@ -232,7 +232,9 @@ public class TableIndex extends AbstractMatchMakerObject {
 	
 	@Accessor
 	public List<String> getColNames() {
-		return Collections.unmodifiableList(colNames);
+		List<String> retColNames = new ArrayList<String>();
+		retColNames.addAll(colNames);
+		return Collections.unmodifiableList(retColNames);
 	}
 
 	/**
