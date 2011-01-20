@@ -183,52 +183,71 @@ public class SQLInputStep extends AbstractMungeStep {
     			throw new RuntimeException("The input table has no parent database defined.");
     		}
 
-    		con = db.getConnection();
-    		if (con == null) {
-    			throw new RuntimeException("Could not obtain a connection to the input table's database");
-    		}
-    		con.setAutoCommit(false);
+    		Statement stmt = null;
+    		ResultSet tempRs = null;
+    		try {
+    			con = db.getConnection();
+    			if (con == null) {
+    				throw new RuntimeException("Could not obtain a connection to the input table's database");
+    			}
+    			con.setAutoCommit(false);
 
-            Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            
-            // Some platforms (definitely PostgreSQL) require a non-zero fetch size to enable streaming
-            stmt.setFetchSize(100);
+    			stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 
-    		StringBuilder sql = new StringBuilder();
-    		sql.append("SELECT");
-    		boolean first = true;
-    		for (SQLColumn c : table.getColumns()) {
-    			if (!first) sql.append(",");
-    			sql.append("\n ").append(c.getName());
-    			first = false;
-    		}
-    		sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
-    		if (getProject().getFilter() != null && getProject().getFilter().trim().length() > 0) {
-    			sql.append("\nWHERE " + getProject().getFilter());
-    		}
+    			// Some platforms (definitely PostgreSQL) require a non-zero fetch size to enable streaming
+    			stmt.setFetchSize(100);
 
-    		if (isPreviewMode()) {
-    		    stmt.setMaxRows(MungePreviewer.MAX_ROWS_PREVIEWED);
-    		}
-    		logger.debug("Attempting to execute input query: " + sql);
-    		ResultSet tempRs = stmt.executeQuery(sql.toString());
+    			StringBuilder sql = new StringBuilder();
+    			sql.append("SELECT");
+    			boolean first = true;
+    			for (SQLColumn c : table.getColumns()) {
+    				if (!first) sql.append(",");
+    				sql.append("\n ").append("\"").append(c.getName()).append("\"");
+    				first = false;
+    			}
+    			sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
+    			if (getProject().getFilter() != null && getProject().getFilter().trim().length() > 0) {
+    				sql.append("\nWHERE " + getProject().getFilter());
+    			}
 
-    		logger.debug("ResultSet fetch size is: " + tempRs.getFetchSize());
-    		if (tempRs.getFetchSize() < DEFAULT_FETCH_SIZE) {
-    			tempRs.setFetchSize(DEFAULT_FETCH_SIZE);
-    		}
-    		
-    		if (isPreviewMode()) {
-    			previewRS.populate(tempRs);
-    			previewRS.beforeFirst();
-    			rs = previewRS;
-    			tempRs.close();
-    			stmt.close();
-    		} else if (!nullOutRS) {
-    			rs = tempRs;
-    		}
-    		if (isPreviewMode() || nullOutRS) {
-    			con.close();
+    			if (isPreviewMode()) {
+    				stmt.setMaxRows(MungePreviewer.MAX_ROWS_PREVIEWED);
+    			}
+    			logger.debug("Attempting to execute input query: " + sql);
+    			tempRs = stmt.executeQuery(sql.toString());
+
+    			logger.debug("ResultSet fetch size is: " + tempRs.getFetchSize());
+    			if (tempRs.getFetchSize() < DEFAULT_FETCH_SIZE) {
+    				tempRs.setFetchSize(DEFAULT_FETCH_SIZE);
+    			}
+
+    			if (isPreviewMode()) {
+    				previewRS.populate(tempRs);
+    				previewRS.beforeFirst();
+    				rs = previewRS;
+    			} else if (!nullOutRS) {
+    				rs = tempRs;
+    			}
+    		} finally {
+    			if (isPreviewMode()) {
+    				if (tempRs != null) {
+    					try {
+    						tempRs.close();
+    					} catch (Exception e) {
+    						logger.error(e);
+    					}
+    				}
+    				if (stmt != null) {
+    					try {
+    						stmt.close();
+    					} catch (Exception e) {
+    						logger.error(e);
+    					}
+    				}
+    				con.close();
+    			} else if (nullOutRS) {
+    				con.close();
+    			}
     		}
     	}
     }
