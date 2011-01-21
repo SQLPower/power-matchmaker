@@ -21,32 +21,21 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.object.SPObject;
-
-public class SoundexMungeStepTest extends MatchMakerTestCase<SoundexMungeStep> {
+public class SoundexMungeStepTest extends TestCase {
 
 	private SoundexMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-
-	public SoundexMungeStepTest(String name) {
-		super(name);
-	}
 	
 	protected void setUp() throws Exception {
-		step = new SoundexMungeStep();
-		step.setSession(new TestingMatchMakerSession());
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new SoundexMungeStep();
 	}
 
 	public void testCallonNormalString() throws Exception {
@@ -55,7 +44,7 @@ public class SoundexMungeStepTest extends MatchMakerTestCase<SoundexMungeStep> {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("F160", result);
@@ -67,7 +56,7 @@ public class SoundexMungeStepTest extends MatchMakerTestCase<SoundexMungeStep> {
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -82,20 +71,5 @@ public class SoundexMungeStepTest extends MatchMakerTestCase<SoundexMungeStep> {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected SoundexMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// already in AbstractMungeStep
 	}
 }

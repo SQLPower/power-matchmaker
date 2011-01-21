@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sql-script>
+  <statement>
+    <sql platform=".*">
+      ALTER TABLE <table name="mm_project"/> ADD pool_filter_setting VARCHAR(30) DEFAULT 'INVALID_OR_DIFFERENT_FORMAT' NOT NULL
+    </sql>
+  </statement>
+  <statement>
+    <sql platform=".*">
+      ALTER TABLE <table name="mm_project"/> ADD auto_validate_setting VARCHAR(30) DEFAULT 'NOTHING' NOT NULL
+    </sql>
+  </statement>
+  <statement>
+    <sql platform=".*">
+      UPDATE <table name="mm_schema_info"/> SET param_value = '6.0.3' WHERE param_name = 'schema_version' 
+    </sql>
+  </statement>
+</sql-script>

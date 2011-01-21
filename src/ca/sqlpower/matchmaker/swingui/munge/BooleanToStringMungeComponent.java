@@ -49,8 +49,8 @@ public class BooleanToStringMungeComponent extends AbstractMungeComponent {
 	
 	@Override
 	protected JPanel buildUI() {
-		final BooleanToStringMungeStep step = (BooleanToStringMungeStep) getStep();
-		trueValue = new JTextField(step.getTrueString());
+		
+		trueValue = new JTextField(getStep().getParameter(BooleanToStringMungeStep.TRUE_STRING_PARAMETER_NAME));
 		trueValue.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -62,11 +62,11 @@ public class BooleanToStringMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-				step.setTrueString(trueValue.getText());
+				getStep().setParameter(BooleanToStringMungeStep.TRUE_STRING_PARAMETER_NAME,trueValue.getText());
             }
         });
 		
-		falseValue = new JTextField(step.getFalseString());
+		falseValue = new JTextField(getStep().getParameter(BooleanToStringMungeStep.FALSE_STRING_PARAMETER_NAME));
 		falseValue.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -78,7 +78,7 @@ public class BooleanToStringMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-				step.setFalseString(falseValue.getText());
+				getStep().setParameter(BooleanToStringMungeStep.FALSE_STRING_PARAMETER_NAME,falseValue.getText());
             }
         });
 		

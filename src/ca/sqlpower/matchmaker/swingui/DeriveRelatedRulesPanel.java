@@ -236,7 +236,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 					for (TableMergeRules mergeRule: project.getTableMergeRules()) {
 						if (mergeRule.getTableName().equals(fkTable.getName()) && 
 								mergeRule.getParentMergeRule().equals(sourceTableMergeRule)) {
-							for (ColumnMergeRules cmr : mergeRule.getChildren(ColumnMergeRules.class)) {
+							for (ColumnMergeRules cmr : mergeRule.getChildren()) {
 								if (exportedKey.containsFkColumn(cmr.getColumn())) {
 									SQLColumn pkColumn = exportedKey.getMappingByFkCol(cmr.getColumn()).getPkColumn();
 									cmr.setImportedKeyColumnAndAction(pkColumn);
@@ -265,7 +265,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 				mergeRule.setParentMergeRule(sourceTableMergeRule);
 				mergeRule.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
 				mergeRule.deriveColumnMergeRules();
-				for (ColumnMergeRules cmr : mergeRule.getChildren(ColumnMergeRules.class)) {
+				for (ColumnMergeRules cmr : mergeRule.getChildren()) {
 					if (index != null) {
 						if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
 							cmr.setInPrimaryKeyAndAction(true);
@@ -276,7 +276,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 						cmr.setImportedKeyColumnAndAction(pkColumn);
 					}
 				}
-				project.addChild(mergeRule);
+				project.addTableMergeRule(mergeRule);
 				mergeRules.add(fkTable.getName());
 
 				// recursively derive merge rules for child tables
@@ -347,7 +347,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 							if (mergeRule.getTableName().equals(tableName) && 
 									!mergeRule.isSourceMergeRule() &&
 									mergeRule.getParentMergeRule().equals(sourceTableMergeRule)) {
-								for (ColumnMergeRules cmr : mergeRule.getChildren(ColumnMergeRules.class)) {
+								for (ColumnMergeRules cmr : mergeRule.getChildren()) {
 									if (primaryKeys.contains(cmr.getColumnName())) {
 										cmr.setImportedKeyColumnAndAction(sourceTable.getColumnByName(cmr.getColumnName()));
 									}
@@ -397,7 +397,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 						mergeRule.setParentMergeRule(sourceTableMergeRule);
 						mergeRule.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
 						mergeRule.deriveColumnMergeRules();
-						for (ColumnMergeRules cmr : mergeRule.getChildren(ColumnMergeRules.class)) {
+						for (ColumnMergeRules cmr : mergeRule.getChildren()) {
 							if (index != null) {
 								if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
 									cmr.setInPrimaryKeyAndAction(true);
@@ -407,7 +407,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 								cmr.setImportedKeyColumnAndAction(sourceTable.getColumnByName(cmr.getColumnName()));
 							}
 						}
-						project.addChild(mergeRule);
+						project.addTableMergeRule(mergeRule);
 						mergeRules.add(tableName);
 						count = 0;
 					}

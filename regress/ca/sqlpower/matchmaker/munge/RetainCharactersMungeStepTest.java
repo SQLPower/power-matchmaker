@@ -21,31 +21,20 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.object.SPObject;
-
-public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainCharactersMungeStep> {
+public class RetainCharactersMungeStepTest extends TestCase {
 
 	private RetainCharactersMungeStep step;
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-
-	public RetainCharactersMungeStepTest(String name) {
-		super(name);
-	}
-
+	
 	protected void setUp() throws Exception {
-		step = new RetainCharactersMungeStep();
-		step.setSession(new TestingMatchMakerSession());
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new RetainCharactersMungeStep();
 	}
 
 	/**
@@ -55,43 +44,41 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
-		step.setRetainChars("123");
+		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("", result);
 	}
 
 	public void testCallonMultipleOccurrences() throws Exception {
-		step.setUseRegex(false);
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
-		step.setRetainChars("abc");
+		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "abc");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcabc", result);
 	}
 	
 	public void testCallonCaseInsensitive() throws Exception {
-		step.setUseRegex(false);
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
-		step.setRetainChars("abc");
-		step.setCaseSensitive(false);
+		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "abc");
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcABCabc", result);
@@ -104,12 +91,12 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("xxy123xxy!@#xyABC");
 		step.connectInput(0, testInput);
-		step.setRetainChars("[a-zA-z]");
-		step.setUseRegex(true);
+		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "[a-zA-z]");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("xxyxxyxyABC", result);
@@ -120,15 +107,14 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 	 * not be taken in as literals even if regex was turned off.
 	 */
 	public void testCallonRegexInput() throws Exception {
-		step.setUseRegex(false);
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a\\-+*?()[]{}|$^<=z");
 		step.connectInput(0, testInput);
-		step.setRetainChars("\\-+*?()[]{}|$^<=");
+		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("\\-+*?()[]{}|$^<=", result);
@@ -138,10 +124,10 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.setRetainChars("123");
+		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -156,20 +142,5 @@ public class RetainCharactersMungeStepTest extends MatchMakerTestCase<RetainChar
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected RetainCharactersMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// Do nothing
 	}
 }

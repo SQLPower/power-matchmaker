@@ -305,16 +305,16 @@ public class BuildExampleTableDialog extends JDialog{
 			table = SQLObjectUtils.addSimulatedTable(swingSession.getDatabase(getDataSource()), getTableCatalog(), getTableSchema(), tableName.getText());
 		}
 		
-		SQLColumn id = new SQLColumn(table,"ID",swingSession.getSQLType(Types.INTEGER),0,0, false);
+		SQLColumn id = new SQLColumn(table,"ID",Types.INTEGER,10,0);
+		id.setPrimaryKeySeq(0);
 		
 		table.addColumn(id);
-		table.addToPK(id);
-		table.addColumn(new SQLColumn(table,"FirstName", swingSession.getSQLType(Types.VARCHAR), 100,0,false));
-		table.addColumn(new SQLColumn(table,"LastName", swingSession.getSQLType(Types.VARCHAR),100,0,false));
-		table.addColumn(new SQLColumn(table, "Email", swingSession.getSQLType(Types.VARCHAR),100,0,false));
-		table.addColumn(new SQLColumn(table, "Address", swingSession.getSQLType(Types.VARCHAR),100,0,false));
-		table.addColumn(new SQLColumn(table, "HomePhone", swingSession.getSQLType(Types.VARCHAR),100,0,false));
-		table.addColumn(new SQLColumn(table, "CellPhone", swingSession.getSQLType(Types.VARCHAR),100,0,false));
+		table.addColumn(new SQLColumn(table,"FirstName",Types.VARCHAR,100,0));
+		table.addColumn(new SQLColumn(table,"LastName",Types.VARCHAR,100,0));
+		table.addColumn(new SQLColumn(table, "Email", Types.VARCHAR,100,0));
+		table.addColumn(new SQLColumn(table, "Address", Types.VARCHAR,100,0));
+		table.addColumn(new SQLColumn(table, "HomePhone", Types.VARCHAR,100,0));
+		table.addColumn(new SQLColumn(table, "CellPhone", Types.VARCHAR,100,0));
 		
 		ddlg.addTable(table);
 		

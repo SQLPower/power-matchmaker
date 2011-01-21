@@ -32,6 +32,7 @@ import javax.swing.event.DocumentListener;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.NumberConstantMungeStep;
+import ca.sqlpower.matchmaker.munge.StringConstantMungeStep;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -52,12 +53,11 @@ public class NumberConstantMungeComponent extends AbstractMungeComponent {
 
     @Override
     protected JPanel buildUI() {
-    	final NumberConstantMungeStep step = (NumberConstantMungeStep) getStep();
-    	valueField = new JTextField(step.getValue() == null?"":step.getValue().toString());
+    	valueField = new JTextField(getStepParameter(NumberConstantMungeStep.VALUE_PARAMETER_NAME, ""));
     	
         valueField.getDocument().addDocumentListener(new DocumentListener() {     
             void change() {
-            	step.setValue(new BigDecimal(valueField.getText()));
+                getStep().setParameter(NumberConstantMungeStep.VALUE_PARAMETER_NAME, valueField.getText());
             }
             
             public void changedUpdate(DocumentEvent e) { change(); }
@@ -70,13 +70,11 @@ public class NumberConstantMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				boolean b = retNull.isSelected();
 				valueField.setEnabled(!b);
-				if (b) {
-					step.setValue(null);
-				}
+				getStep().setParameter(StringConstantMungeStep.RETURN_NULL, String.valueOf(b));
 			}
         });
         
-        retNull.setSelected(step.getValue() == null);
+        retNull.setSelected(Boolean.valueOf(getStep().getParameter(StringConstantMungeStep.RETURN_NULL)).booleanValue());
         valueField.setEnabled(!retNull.isSelected());
         
         FormLayout layout = new FormLayout("pref,4dlu,pref:grow");

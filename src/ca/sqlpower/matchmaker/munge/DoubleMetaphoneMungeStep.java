@@ -19,17 +19,7 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.codec.language.DoubleMetaphone;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
 
 /**
  * This munge step will output the double metaphone code of the given input. This
@@ -37,28 +27,20 @@ import ca.sqlpower.object.annotation.Mutator;
  */
 public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will use
-	 * the alternate encoding. It is defaulted to false;
+	 * the alternate encoding. The only values accepted by the parameter
+	 * are "true" and "false". It is defaulted as false.
 	 */
-	private boolean useAlternate = false;
+	public static final String USE_ALTERNATE_PARAMETER_NAME = "useAlternate";
 	
-	@Constructor
 	public DoubleMetaphoneMungeStep() {
 		super("Double Metaphone",false);
-	}
-
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"doubleMetaphoneOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("doubleMetaphone",
-				String.class);
+		InputDescriptor desc = new InputDescriptor("doubleMetaphone", String.class);
+		setParameter(USE_ALTERNATE_PARAMETER_NAME, false);
 		super.addInput(desc);
 	}
 	
@@ -68,7 +50,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
 		throw new UnsupportedOperationException("Double metaphoen substitution munge step does not support removeInput()");
 	}
 	
@@ -83,30 +65,14 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	
 	public Boolean doCall() throws Exception {		
 		MungeStepOutput<String> out = getOut();
+		boolean useAlternate = getBooleanParameter(USE_ALTERNATE_PARAMETER_NAME);
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (data != null) {
-			out.setData(new DoubleMetaphone().doubleMetaphone(data, isUseAlternate()));
+			out.setData(new DoubleMetaphone().doubleMetaphone(data, useAlternate));
 		} else {
 			out.setData(null);
 		}
 		return true;
-	}
-
-	@Mutator
-	public void setUseAlternate(boolean useAlternate) {
-		boolean oldAltVal = this.useAlternate;
-		this.useAlternate = useAlternate;
-		firePropertyChange("useAlternate", oldAltVal, useAlternate);
-	}
-
-	@Accessor
-	public boolean isUseAlternate() {
-		return useAlternate;
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		((DoubleMetaphoneMungeStep) copy).setUseAlternate(isUseAlternate());
 	}
 }

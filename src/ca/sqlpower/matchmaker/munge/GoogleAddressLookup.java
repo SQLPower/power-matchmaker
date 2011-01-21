@@ -27,10 +27,6 @@ import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -38,20 +34,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
 
 public class GoogleAddressLookup extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
     
-	private String googleMapsApiKey;
-	private String googleGeocoderURL;
+    public static final String GOOGLE_MAPS_API_KEY = "GoogleMapsApiKey";
+    public static final String GOOGLE_GEOCODER_URL = "GoogleGeocoderUrl";
     
     /**
      * Minimum number of seconds between lookup requests. Google throttles access
@@ -59,11 +47,11 @@ public class GoogleAddressLookup extends AbstractMungeStep {
      * be sure to set this value high enough to avoid being flagged as an abuser.
      * Presently (August 2008), 2.0 is a reasonable lower limit.
      */
-	private double rateLimit;
+    public static final String LOOKUP_RATE_LIMIT = "LookupRateLimit";
 
     /**
      * The last time a lookup request was issued. This step will block so as to
-     * respect the {@link #rateLimit} if it is called too frequently.
+     * respect the {@link #LOOKUP_RATE_LIMIT} if it is called too frequently.
      */
     private long lastLookupTime;
     
@@ -77,16 +65,16 @@ public class GoogleAddressLookup extends AbstractMungeStep {
      * <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoStatusCode">
      * the Google Maps API documentation</a>.
      */
-    private MungeStepOutput<BigDecimal> statusCode;
+    private final MungeStepOutput<BigDecimal> statusCode;
     
-    private MungeStepOutput<String> country;
-    private MungeStepOutput<String> adminArea;
-    private MungeStepOutput<String> subAdminArea;
-    private MungeStepOutput<String> locality;
-    private MungeStepOutput<String> street;
-    private MungeStepOutput<String> postCode;
-    private MungeStepOutput<BigDecimal> latitude;
-    private MungeStepOutput<BigDecimal> longitude;
+    private final MungeStepOutput<String> country;
+    private final MungeStepOutput<String> adminArea;
+    private final MungeStepOutput<String> subAdminArea;
+    private final MungeStepOutput<String> locality;
+    private final MungeStepOutput<String> street;
+    private final MungeStepOutput<String> postCode;
+    private final MungeStepOutput<BigDecimal> latitude;
+    private final MungeStepOutput<BigDecimal> longitude;
     
     /**
      * The accuracy constant for the location information.  Constant codes are
@@ -94,16 +82,12 @@ public class GoogleAddressLookup extends AbstractMungeStep {
      * <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoAddressAccuracy">
      * the Google Maps API documentation</a>.
      */
-    private MungeStepOutput<BigDecimal> accuracy;
+    private final MungeStepOutput<BigDecimal> accuracy;
     
-    @Constructor
     public GoogleAddressLookup() {
         super("Google Maps Address Lookup",false);
-    }
-
-    @Override
-	public void init() {
-		super.addInput(new InputDescriptor("Address", String.class));
+        
+        super.addInput(new InputDescriptor("Address", String.class));
         
         addChild(statusCode = new MungeStepOutput<BigDecimal>("Lookup Status", BigDecimal.class));
         addChild(country = new MungeStepOutput<String>("Country Code", String.class));
@@ -116,14 +100,14 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         addChild(longitude = new MungeStepOutput<BigDecimal>("Longitude", BigDecimal.class));
         addChild(accuracy = new MungeStepOutput<BigDecimal>("Accuracy Code", BigDecimal.class));
         
-        googleMapsApiKey = "";
-        googleGeocoderURL = "http://maps.google.com/maps/geo";
-        rateLimit = 2.0;
-	}
+        setParameter(GOOGLE_MAPS_API_KEY, "");
+        setParameter(GOOGLE_GEOCODER_URL, "http://maps.google.com/maps/geo");
+        setParameter(LOOKUP_RATE_LIMIT, "2.0");
+    }
      
     @Override
     public void doOpen(EngineMode mode, Logger logger) throws Exception {
-        String key = googleMapsApiKey;
+        String key = getParameter(GOOGLE_MAPS_API_KEY);
         if (key == null || key.length() == 0) {
         	throw new IllegalStateException("Google Address Lookup transformer was " +
         			"called without a Google Maps API Key. " +
@@ -133,29 +117,13 @@ public class GoogleAddressLookup extends AbstractMungeStep {
 
     @Override
     public Boolean doCall() throws Exception {
-    	// if this step was loaded and init() was never called,
-    	// we need to assign names to the loaded outputs.
-    	if (statusCode == null) { // if one is null, they will all be null
-    		List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
-    		statusCode = outputs.get(0);
-    		country = outputs.get(1);
-    		adminArea = outputs.get(2);
-    		subAdminArea = outputs.get(3);
-    		locality = outputs.get(4);
-    		street = outputs.get(5);
-    		postCode = outputs.get(6);
-    		latitude = outputs.get(7);
-    		longitude = outputs.get(8);
-    		accuracy = outputs.get(9);
-    	}
-    	
-    	// Clear out all the output values in case the request fails!
-        for (MungeStepOutput<?> output : getChildren(MungeStepOutput.class)) {
+        // Clear out all the output values in case the request fails!
+        for (MungeStepOutput<?> output : getChildren()) {
             output.setData(null);
         }
         
-        String key = googleMapsApiKey;
-        String url = googleGeocoderURL;
+        String key = getParameter(GOOGLE_MAPS_API_KEY);
+        String url = getParameter(GOOGLE_GEOCODER_URL);
         String address = (String) getMSOInputs().get(0).getData();
         url += "?output=json&key="+key+"&q="+URLEncoder.encode(address, "utf-8");
         
@@ -263,47 +231,12 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         return sb.toString();
     }
 
-    @Accessor
-	public String getGoogleMapsApiKey() {
-		return googleMapsApiKey;
-	}
-
-    @Mutator
-	public void setGoogleMapsApiKey(String googleMapsApiKey) {
-    	String oldKey = this.googleMapsApiKey;
-		this.googleMapsApiKey = googleMapsApiKey;
-		firePropertyChange("googleMapsApiKey", oldKey, googleMapsApiKey);
-	}
-
-    @Accessor
-	public String getGoogleGeocoderURL() {
-		return googleGeocoderURL;
-	}
-
-    @Mutator
-	public void setGoogleGeocoderURL(String googleGeocoderURL) {
-    	String oldURL = this.googleGeocoderURL;
-		this.googleGeocoderURL = googleGeocoderURL;
-		firePropertyChange("googleGeocoderURL", oldURL, googleGeocoderURL);
-	}
-	
-	@Accessor
-	public double getRateLimit() {
-		return rateLimit;
-	}
-
-	@Mutator
-	public void setRateLimit(double rateLimit) {
-		double oldLimit = this.rateLimit;
-		this.rateLimit = rateLimit;
-		firePropertyChange("rateLimit", oldLimit, rateLimit);
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		GoogleAddressLookup step = (GoogleAddressLookup) copy;
-		step.setGoogleGeocoderURL(getGoogleGeocoderURL());
-		step.setGoogleMapsApiKey(getGoogleMapsApiKey());
-		step.setRateLimit(getRateLimit());
-	}
+    public double getRateLimit() {
+        String rateLimitStr = getParameter(LOOKUP_RATE_LIMIT);
+        if (rateLimitStr != null) {
+            return Double.parseDouble(rateLimitStr);
+        } else {
+            return 2.0;
+        }
+    }
 }

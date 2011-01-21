@@ -19,17 +19,86 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.object.SPObject;
+import java.util.List;
+
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 /**
  * The interface for all of the match maker specific business objects
+ *
+ * @param T The type of this implementation of MatchMakerObject
+ * @param C The type of children this implementation of MatchMakerObject contains
  */
-public interface MatchMakerObject extends Auditable, SPObject {
-	
+public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMakerObject> extends Auditable {
+
+	/**
+	 * Registers the given listener as a recipient of future MatchMakerEvents
+     * that this object generates.  Does not register the listener for any such
+     * events that this object's ancestors or descendants generate.  For that,
+     * see {@link MatchMakerUtils#listenToHierarchy(MatchMakerListener, MatchMakerObject)}.
+	 */
+	void addMatchMakerListener(MatchMakerListener<T, C> l);
+
+	/**
+	 * De-registers the given listener as a recipient of future MatchMakerEvents
+     * that this object generates.  If the given listener was not in this object's
+     * listener list, calling this method has non effect.
+	 */
+	void removeMatchMakerListener(MatchMakerListener<T, C> l);
+
+	/**
+	 * Returns the parent of this object.
+	 */
+	MatchMakerObject getParent();
+
+    /**
+     * Returns the user-visible name of this object.
+     */
+    String getName();
+
+    /**
+     * Set the user visible name of this object
+     */
+    void setName(String string);
+    
+	/**
+	 * Sets the parent (ie. the object that holds this one as a child)
+	 */
+	 void setParent(MatchMakerObject parent);
+
+	 /**
+      * Tells whether or not this MatchMaker object can have children.
+      * 
+	  * @return true if this MatchMakerObject allows children, false otherwise.
+	  */
+	 public boolean allowsChildren();
+
+	/**
+	 * Returns the object's primary children
+	 */
+	List<C> getChildren();
+
+	/**
+	 * Returns the number of children on this MatchMaker Object.
+	 */
+	int getChildCount();
+
+	/**
+	 * Add a new child to this object
+	 */
+	void addChild(C child);
+
+    /**
+     * Removes the given child and fires a childrenRemoved event.  If the
+     * given child is not present in this object, calling this method has
+     * no effect (no children are removed and no events are fired).
+	 */
+	void removeChild(C child);
+
 	/**
 	 * copy the match maker object 
 	 */
-	MatchMakerObject duplicate(MatchMakerObject parent);
+	T duplicate(MatchMakerObject parent, MatchMakerSession session);
 	
     /**
      * Returns the current session that this object is associated with.
@@ -52,6 +121,23 @@ public interface MatchMakerObject extends Auditable, SPObject {
 	 */
 	boolean isVisible();
 	
+	
+	/**
+	 * Returns true if the object is undoing.
+	 */
+	boolean isUndoing();
+	
+	/**
+	 * Sets if the object is undoing.
+	 */
+	void setUndoing(boolean isUndoing);
+	
+	/**
+	 * Returns true if the sub-hierarchy of this matchmaker object
+	 * contains the passed in mmo.
+	 */
+	boolean hierarchyContains(MatchMakerObject mmo);
+	
 	/**
 	 * Starts a compound edit so that the whole compound edit can
 	 * be undo'ed at the same time. Note that one must call endCompoundEdit after or the
@@ -65,7 +151,4 @@ public interface MatchMakerObject extends Auditable, SPObject {
 	 * see {@link AbstractMatchMakerObject#startCompoundEdit()} 
 	 */
 	void endCompoundEdit();
-
-	void moveChild(int from, int to, Class<? extends MatchMakerObject> classType);
-	
 }

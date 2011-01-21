@@ -38,6 +38,8 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SQL;
@@ -115,6 +117,11 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 					throw new SQLObjectRuntimeException(e);
 				}
 			}
+
+			@Override
+			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+				return new StubMatchMakerDAO<T>(businessClass);
+			}
 		};
 		
 		session.setDatabase(db);
@@ -125,7 +132,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 
 		MungeProcess mp = new MungeProcess();
 		mp.setName("test");
-		project.addChild(mp);
+		project.addMungeProcess(mp);
 
 		//This is different for Oracle and SQL Server
 		createTables();
@@ -146,11 +153,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		if (project.doesResultTableExist()) {
 			ddlg.dropTable(project.getResultTable());
 		}
-		
-		SQLTable t = project.createResultTable();
-		
-		ddlg.addTable(t);
-		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(1));
+		ddlg.addTable(project.createResultTable());
+		ddlg.addIndex((SQLIndex) project.getResultTable().getChildren(SQLIndex.class).get(0));
 		
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
 	    	sql = sqlStatement.getSQLText();
@@ -233,9 +237,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cccmr_date.setColumn(sourceTable.getColumnByName("COL_DATE"));
 		cccmr_number.setColumn(sourceTable.getColumnByName("COL_NUMBER"));
 		
-		project.addChild(tmr);
-		project.addChild(ctmr);
-		project.addChild(cctmr);
+		project.addTableMergeRule(tmr);
+		project.addTableMergeRule(ctmr);
+		project.addTableMergeRule(cctmr);
    	}
 
 	/**
@@ -472,9 +476,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
     	runProcessor();
 		
-    	MatchPool matchPool = project.getMatchPool();
-    	matchPool.find(new ArrayList<SQLColumn>());
-    	for (PotentialMatchRecord pm : matchPool.getPotentialMatchRecords()) {
+    	MatchPool matchPool = new MatchPool(project);
+    	matchPool.findAll(new ArrayList<SQLColumn>());
+    	for (PotentialMatchRecord pm : matchPool.getPotentialMatches()) {
     		assertFalse("MatchType not set as MERGED for " + pm, pm.isMatch());
     		assertFalse("Match result with status 'UNMATCH' for duplicate not deleted after merge for: " + pm, pm.getMatchStatus() == MatchType.UNMATCH);
     	}

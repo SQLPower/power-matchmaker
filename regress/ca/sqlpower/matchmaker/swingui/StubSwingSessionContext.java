@@ -29,11 +29,8 @@ import java.util.prefs.PreferenceChangeListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.enterprise.client.ProjectLocation;
-import ca.sqlpower.enterprise.client.SPServerInfo;
-import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.enterprise.MatchMakerClientSideSession;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -41,7 +38,6 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
@@ -53,7 +49,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
 
     Logger logger = Logger.getLogger(StubSwingSessionContext.class);
 
-    public MatchMakerSwingSession createSession(JDBCDataSource ds, String username, String password) throws PLSecurityException, SQLException {
+    public MatchMakerSwingSession createSession(JDBCDataSource ds, String username, String password) throws PLSecurityException, SQLException, RepositoryVersionException {
         logger.debug("Stub call: StubSwingSessionContext.createSession()");
         return null;
     }
@@ -114,6 +110,11 @@ public class StubSwingSessionContext implements SwingSessionContext {
 		return null;
 	}
 
+	public MungeStep getMungeStep(Class create) {
+		logger.debug("Stub call: StubSwingSessionContext.getMungeStep()");
+		return null;
+	}
+
 	public Map<Class, StepDescription> getStepMap() {
 		logger.debug("Stub call: StubSwingSessionContext.getStepList()");
 		return null;
@@ -141,7 +142,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
         logger.debug("Stub call: StubSwingSessionContext.launchDefaultSession()");
     }
 
-    public MatchMakerSwingSession createDefaultSession() {
+    public MatchMakerSession createDefaultSession() {
         logger.debug("Stub call: StubSwingSessionContext.createDefaultSession()");
         return null;
     }
@@ -192,36 +193,5 @@ public class StubSwingSessionContext implements SwingSessionContext {
 	public void removePreferenceChangeListener(PreferenceChangeListener l) {
 		logger.debug("Stub call: MatchMakerSessionContext.removePreferenceChangeListener()");
 		
-	}
-	
-	@Override
-	public MatchMakerClientSideSession createSecuritySession(
-			SPServerInfo serverInfo) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: StubSwingSessionContext.createSecuritySession()");
-		return null;
-	}
-	
-	@Override
-	public MatchMakerSwingSession createServerSession(
-			ProjectLocation projectLocation) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: StubSwingSessionContext.createServerSession()");
-		return null;
-	}
-
-	@Override
-	public MatchMakerSwingSession createSession() throws PLSecurityException,
-			SQLException, SQLObjectException, MatchMakerConfigurationException {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: SwingSessionContext.createSession()");
-		return null;
-	}
-
-	@Override
-	public MungeStep getMungeStep(Class<? extends MungeStep> create) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: SwingSessionContext.getMungeStep()");
-		return null;
 	}
 }

@@ -21,33 +21,21 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.object.SPObject;
-
-public class RefinedSoundexMungeStepTest extends MatchMakerTestCase<RefinedSoundexMungeStep> {
+public class RefinedSoundexMungeStepTest extends TestCase {
 
 	private RefinedSoundexMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-
-	public RefinedSoundexMungeStepTest(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
-	}
-
+	
 	protected void setUp() throws Exception {
-		step = new RefinedSoundexMungeStep();
-		step.setSession(new TestingMatchMakerSession());
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new RefinedSoundexMungeStep();
 	}
 
 	public void testCallonNormalString() throws Exception {
@@ -56,7 +44,7 @@ public class RefinedSoundexMungeStepTest extends MatchMakerTestCase<RefinedSound
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("F20109", result);
@@ -68,7 +56,7 @@ public class RefinedSoundexMungeStepTest extends MatchMakerTestCase<RefinedSound
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -83,20 +71,5 @@ public class RefinedSoundexMungeStepTest extends MatchMakerTestCase<RefinedSound
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected RefinedSoundexMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		//Do Nothing
 	}
 }

@@ -115,7 +115,6 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
         project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
 		project.setResultTableName("MERGE_TEST_RESULT");
 		project.setResultTableSchema(ds.getPlSchema());
-		project.setResultTableSPDatasource(ds.getName());
 		
 	}
 }

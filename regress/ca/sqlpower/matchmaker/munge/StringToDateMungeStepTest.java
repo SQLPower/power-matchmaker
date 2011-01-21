@@ -24,23 +24,17 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import junit.framework.TestCase;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.object.SPObject;
+import org.apache.log4j.Logger;
 
 /**
  * This tests the {@link StringToDateMungeStep} on hardcoded date strings.
  * It currently ignores the exact time in milliseconds and just compares 
  * on what's being tested.
  */
-public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMungeStep> {
-	
-	public StringToDateMungeStepTest(String name) {
-		super(name);
-	}
-
-	StringToDateMungeStep step;
+public class StringToDateMungeStepTest extends TestCase {
+	MungeStep step;
 	
 	private final Calendar c = Calendar.getInstance();
 	
@@ -53,17 +47,13 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new StringToDateMungeStep();
-		step.setIgnoreError(false);
+		step.setParameter(StringToDateMungeStep.IGNORE_ERROR_PARAM, false);
 		step.open(Logger.getLogger(StringToDateMungeStepTest.class));
 		
 		c.set(2007, 1, 1, 13, 1, 1);
 		date = c.getTime();
 		timeOnly = new Time(date.getTime());
 		dateOnly  = new java.sql.Date(date.getTime());
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
 	}
 	
 	public void testDate() throws Exception {
@@ -74,7 +64,7 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		StringToDateMungeStep temp = (StringToDateMungeStep) step;
 		temp.connectInput(0, mso);
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		
 		temp.setTimeFormat("");
 		
@@ -93,7 +83,7 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		StringToDateMungeStep temp = (StringToDateMungeStep) step;
 		temp.connectInput(0, mso);
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		
 		temp.setDateFormat("");
 		temp.setOutputFormat(StringToDateMungeStep.OUTPUT_FORMATS.get(1));
@@ -113,7 +103,7 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		StringToDateMungeStep temp = (StringToDateMungeStep) step;
 		temp.connectInput(0, mso);
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		mso.setData("Thursday/01/February/2007 01:01:01 PM");
 
 		temp.setDateFormat(StringToDateMungeStep.DATE_FORMATS.get(10));
@@ -141,28 +131,13 @@ public class StringToDateMungeStepTest extends MatchMakerTestCase<StringToDateMu
 	}
 	
 	public void testIgnoreError() throws Exception {
-		step.setIgnoreError(true);		
+		step.setParameter(StringToDateMungeStep.IGNORE_ERROR_PARAM, true);		
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("One Billion Yen!!!!!");
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		assertEquals(null, (Date)out.getData());
-	}
-
-	@Override
-	protected StringToDateMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// no-op
 	}
 	
 	

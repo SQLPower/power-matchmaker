@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.swingui.engine;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,8 +32,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import org.apache.log4j.Logger;
 
@@ -49,13 +48,6 @@ import com.jgoodies.forms.layout.FormLayout;
 public abstract class MungeProcessSelectionList extends JButton {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessSelectionList.class);
-	
-	/**
-	 * A flag for knowing when the UI should fire events to change the model if it is updated. Since the model
-	 * also fires events to update the UI, without this, we can get into a sticky infinite loop and get
-	 * a stack overflow error. 
-	 */
-	private boolean fireEvents = true;
 	
 	/**
 	 * The actual JList of munge processes.
@@ -120,15 +112,32 @@ public abstract class MungeProcessSelectionList extends JButton {
 	 * Builds and returns the popup menu for choosing the munge processes. 
 	 */
 	private void buildPopupMenu() {
-		if (mps == null) {
-			mps = new ArrayList<MungeProcess>();
-		} else {
-			mps.clear();
-		}
-		for(MungeProcess mp : project.getMungeProcesses()) {
-			mps.add(mp);
-		}
+		mps = project.getMungeProcesses();
 		popupMenu = new JPopupMenu("Choose Processes");
+		
+		popupMenu.addPopupMenuListener(new PopupMenuListener(){
+
+			public void popupMenuCanceled(PopupMenuEvent e) {
+				// not used
+			}
+
+			/**
+			 * Saves the selections and updates the text on the button.
+			 */
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				int index = 0;
+				for (MungeProcess mp : mps) {
+					setValue(mp, processesList.isSelectedIndex(index));
+					index++;
+				}
+				setPopupButtonText();
+			}
+
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				// not used
+			}
+			
+		});
 		
 		popupMenu.setBorder(BorderFactory.createRaisedBevelBorder());
 		
@@ -171,18 +180,7 @@ public abstract class MungeProcessSelectionList extends JButton {
 		row += 2;
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList = new JList(mps.toArray());
-		fireEvents = false;
-		setIndices();
-		fireEvents = true;
-		
-		processesList.addListSelectionListener(new ListSelectionListener() {
-			
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if(fireEvents) applyChanges();
-			}
-		});
-		
+		processesList.setSelectedIndices(getSelectedIndices());
 		processesPane = new JScrollPane(processesList);
 		processesPane.setPreferredSize(new Dimension(160, 100));
 		menu.add(processesPane, cc.xy(2, row));
@@ -200,29 +198,12 @@ public abstract class MungeProcessSelectionList extends JButton {
 	/**
 	 * Refreshes the list so it will contain newly created Munge Processes.
 	 */
-	public void refreshList() {
-		mps.clear();
-		for(MungeProcess mp : project.getMungeProcesses()) {
-			mps.add(mp);
-		}
+	private void refreshList() {
+		mps = project.getMungeProcesses();
 		Collections.sort(mps, new MungeProcessPriorityComparator());
 		processesList.setListData(mps.toArray());
-		fireEvents = false;
-		setIndices();
-		fireEvents = true;
-		setPopupButtonText();
-	}
-	
-	/**
-	 * Used to keep the UI in synch with the model
-	 */
-	public void checkModel() {
-		setIndices();
-		setPopupButtonText();
-	}
-	
-	public void setIndices() {
 		processesList.setSelectedIndices(getSelectedIndices());
+		setPopupButtonText();
 	}
 	
 	/** 
@@ -252,24 +233,6 @@ public abstract class MungeProcessSelectionList extends JButton {
 			index++;
 		}
 		return indices;
-	}
-	
-	public void applyChanges() {
-		int index = 0;
-		try {
-			project.getMungeSettings().begin("Updating which Transformations are active.");
-			for (MungeProcess mp : mps) {
-				if(processesList.isSelectedIndex(index) != getValue(mp)) {
-					setValue(mp, processesList.isSelectedIndex(index));
-				}
-				index++;
-			}
-			project.getMungeSettings().commit();
-		} catch (Exception e) {
-			project.getMungeSettings().rollback("Rolling back");
-			throw new RuntimeException(e);
-		}
-		setPopupButtonText();
 	}
 	
 	/**

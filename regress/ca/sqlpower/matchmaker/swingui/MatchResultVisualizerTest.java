@@ -30,14 +30,13 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
-import ca.sqlpower.matchmaker.MatchCluster;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
-import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -49,12 +48,12 @@ import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class MatchResultVisualizerTest extends TestCase {
 	
@@ -82,7 +81,14 @@ public class MatchResultVisualizerTest extends TestCase {
 		SQLTable resultTable = db.getTableByName(null, "pl", "match_results");
 		final SQLTable sourceTable = db.getTableByName(null, "pl", "source_table");
 		
-		sourceTable.getColumns();
+//		SQLTable sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
+//				true);
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
+//				10, 0));
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
+//				10, 0));
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
+//				10, 0));
 
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
 		sourceTableIndex.addChild(new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
@@ -133,20 +139,22 @@ public class MatchResultVisualizerTest extends TestCase {
 		visualizer = new MatchResultVisualizer(project, null);
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("lhs");
-		lhs = new SourceTableRecord(project, keyList);
+		lhs = new SourceTableRecord(session,
+									project, 
+									keyList);
 		keyList.clear();
 		keyList.add("rhs");
-		rhs = new SourceTableRecord(project, keyList);
+		rhs = new SourceTableRecord(session,
+									project, 
+									keyList);
 		pmr = new PotentialMatchRecord(new MungeProcess(),
 										MatchType.UNMATCH,
 										lhs,
 										rhs,
 										false);
-		MatchCluster mc = new MatchCluster();
-		mc.addSourceTableRecord(lhs);
-		mc.addSourceTableRecord(rhs);
-		mc.addPotentialMatchRecord(pmr);
-		visualizer.getPool().addMatchCluster(mc);
+		visualizer.getPool().addSourceTableRecord(lhs);
+		visualizer.getPool().addSourceTableRecord(rhs);
+		visualizer.getPool().addPotentialMatch(pmr);
 	}
 	
 	protected void tearDown() throws Exception {
@@ -225,7 +233,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	 */
 	public void testMasterGetActions() {
 		pmr.setMatchStatus(MatchType.MATCH);
-		pmr.setMasterRecord(rhs);
+		pmr.setMaster(rhs);
 		List<Action> actions = visualizer.getActions(lhs, rhs);
 		
 		boolean unMatchExists = false;
@@ -254,7 +262,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	 */
 	public void testDuplicateGetActions() {
 		pmr.setMatchStatus(MatchType.MATCH);
-		pmr.setMasterRecord(lhs);
+		pmr.setMaster(lhs);
 		List<Action> actions = visualizer.getActions(lhs, rhs);
 		
 		boolean unMatchExists = false;

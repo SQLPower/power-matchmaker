@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.TestCase;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -42,12 +43,12 @@ import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
-import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLSchema;
 import ca.sqlpower.sqlobject.SQLTable;
+import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
+import ca.sqlpower.sqlobject.SQLIndex.Column;
 
 public class MatchPoolTest extends TestCase {
 
@@ -110,15 +111,13 @@ public class MatchPoolTest extends TestCase {
 
 		mungeProcessOne = new MungeProcess();
 		mungeProcessOne.setName("Munge_Process_One");
-		project.addChild(mungeProcessOne);
+		project.addMungeProcess(mungeProcessOne);
 
 		mungeProcessTwo = new MungeProcess();
 		mungeProcessTwo.setName("Munge_Process_Two");
-		project.addChild(mungeProcessTwo);
+		project.addMungeProcess(mungeProcessTwo);
 		
-		MMTestUtils.createTestingPool(session, project, mungeProcessOne, mungeProcessTwo);
-		
-		pool = project.getMatchPool();
+		pool = MMTestUtils.createTestingPool(session, project, mungeProcessOne, mungeProcessTwo);
 	}
 
 	@Override
@@ -162,25 +161,24 @@ public class MatchPoolTest extends TestCase {
 	 * properly.
 	 */
 	public void testFindAllPotentialMatches() throws Exception {
-		MatchPool pool = project.getMatchPool();
-		pool.clear();
+		MatchPool pool = new MatchPool(project);
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
-		pool.find(new ArrayList<SQLColumn>());
-		List<PotentialMatchRecord> matches = pool.getPotentialMatchRecords();
+		pool.findAll(new ArrayList<SQLColumn>());
+		Set<PotentialMatchRecord> matches = pool.getPotentialMatches();
 		assertEquals(1, matches.size());
 		for (PotentialMatchRecord pmr : matches) {
 			assertNotNull(pmr);
-			assertNotNull(pmr.getOrigLHS());
-			assertNotNull(pmr.getOrigLHS().getKeyValues());
-			assertEquals(1, pmr.getOrigLHS().getKeyValues().size());
+			assertNotNull(pmr.getOriginalLhs());
+			assertNotNull(pmr.getOriginalLhs().getKeyValues());
+			assertEquals(1, pmr.getOriginalLhs().getKeyValues().size());
 			assertEquals("Munge_Process_One", pmr.getMungeProcess().getName());
 		}
 		int originalMatchCount = matches.size();
 		
 		// Now we test if subsequent calls to findAll adds duplicate PotentialMatchRecords
-		pool.find(new ArrayList<SQLColumn>());
+		pool.findAll(new ArrayList<SQLColumn>());
 		assertEquals("Number of PotentialMatchRecords should be the same", originalMatchCount, matches.size());
 	}
 
@@ -189,15 +187,14 @@ public class MatchPoolTest extends TestCase {
 	 * properly.
 	 */
 	public void testFindSourceTableRecords() throws Exception {
-		MatchPool pool = project.getMatchPool();
-		pool.clear();
+		MatchPool pool = new MatchPool(project);
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
-		pool.find(new ArrayList<SQLColumn>());
-		Collection<SourceTableRecord> nodes = pool.getAllSourceTableRecords();
+		pool.findAll(new ArrayList<SQLColumn>());
+		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
 		assertEquals(3, nodes.size());
 
 		boolean foundOne = false;
@@ -219,15 +216,14 @@ public class MatchPoolTest extends TestCase {
 
 	/** Tests that findAll() hooks up inbound and outbound matches properly. */
 	public void testFindAllEdgeHookup() throws Exception {
-		MatchPool pool = project.getMatchPool();
-		pool.clear();
+		MatchPool pool = new MatchPool(project);
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
-		pool.find(new ArrayList<SQLColumn>());
-		Collection<SourceTableRecord> nodes = pool.getAllSourceTableRecords();
+		pool.findAll(new ArrayList<SQLColumn>());
+		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
 		assertEquals(3, nodes.size());
 
 		// FIXME need to be able to retrieve a particular PMR by key values
@@ -240,23 +236,16 @@ public class MatchPoolTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testFindAllOrphanedMatches() throws Exception {
-		this.pool = project.getMatchPool();
-		pool.clear();
+		this.pool = new MatchPool(project);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
-		pool.find(null);
-		assertEquals(3, pool.getAllSourceTableRecords().size());
-		assertEquals(2, pool.getPotentialMatchRecords().size());
-		int delete = 0;
-		for(PotentialMatchRecord p : pool.getPotentialMatchRecords()) {
-			if(p.getMatchStatus() == PotentialMatchRecord.MatchType.DELETE) {
-				delete++;
-			}
-		}
-		assertEquals(1, delete);
+		pool.findAll(null);
+		assertEquals(2, pool.getSourceTableRecords().size());
+		assertEquals(1, pool.getPotentialMatches().size());
+		assertEquals(1, pool.getOrphanedMatches().size());
 	}
 	
 	/**
@@ -265,15 +254,13 @@ public class MatchPoolTest extends TestCase {
 	 * cause a unique constraint violation in the DB if orphan didn't get overwritten)
 	 */
 	public void testReplaceOrphanedMatch() throws Exception {
-		this.pool = project.getMatchPool();
-		pool.clear();
-		pool.begin("Testing Records");
+		this.pool = new MatchPool(project);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
-		pool.find(null);
+		pool.findAll(null);
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("1");
@@ -281,57 +268,50 @@ public class MatchPoolTest extends TestCase {
 		assertNotNull(str1);
 		keyList = new ArrayList<Object>();
 		keyList.add("3");
-		SourceTableRecord str2 = new SourceTableRecord(project, keyList);
+		SourceTableRecord str2 = new SourceTableRecord(project.getSession(), project, keyList);
 		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
-
-		pool.addPotentialMatchRecord(overwrite);
-		
-		assertTrue(pool.getPotentialMatchRecords().contains(overwrite));
-		assertEquals(2, pool.getPotentialMatchRecords().size());
+		pool.addPotentialMatch(overwrite);
+		assertTrue(pool.getPotentialMatches().contains(overwrite));
+		assertEquals(2, pool.getPotentialMatches().size());
 		// Store should work without exception
-		pool.commit();
+		pool.store();
 		
 	}
 	
 	public void testReplaceMergedMatch() throws Exception {
-		this.pool = project.getMatchPool();
-		pool.clear();
-		pool.begin("testing match pool");
+		this.pool = new MatchPool(project);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.MERGED);
-		pool.find(null);
+		pool.findAll(null);
 		
 		List<Object> keyList1 = new ArrayList<Object>();
 		keyList1.add("1");
-		SourceTableRecord str1 = new SourceTableRecord(project, keyList1);
+		SourceTableRecord str1 = new SourceTableRecord(project.getSession(), project, keyList1);
 		assertNotNull(str1);
 		List<Object> keyList2 = new ArrayList<Object>();
 		keyList2.add("2");
-		SourceTableRecord str2 = new SourceTableRecord(project, keyList2);
+		SourceTableRecord str2 = new SourceTableRecord(project.getSession(), project, keyList2);
 		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
-
-		pool.addPotentialMatchRecord(overwrite);
-		
-		assertTrue(pool.getPotentialMatchRecords().contains(overwrite));
-		assertEquals(1, pool.getPotentialMatchRecords().size());
-		for (PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
-			assertEquals(keyList1, pmr.getOrigLHS().getKeyValues());
-			assertEquals(keyList2, pmr.getOrigRHS().getKeyValues());
-			assertEquals(PotentialMatchRecord.MatchType.UNMATCH, pmr.getMatchStatus());
+		pool.addPotentialMatch(overwrite);
+		assertTrue(pool.getPotentialMatches().contains(overwrite));
+		assertEquals(1, pool.getPotentialMatches().size());
+		for (PotentialMatchRecord pmr :pool.getPotentialMatches()) {
+			assertEquals(keyList1, pmr.getOriginalLhs().getKeyValues());
+			assertEquals(keyList2, pmr.getOriginalRhs().getKeyValues());
+			assertEquals(pmr.getMatchStatus(), PotentialMatchRecord.MatchType.UNMATCH);
 		}
 		// Store should work without exception
-		pool.commit();
+		pool.store();
 		
 	}
 	
 	public void testAddPotentialMatchWithDuplicateMatch() throws Exception {
-		this.pool = project.getMatchPool();
-		pool.clear();
+		this.pool = new MatchPool(project);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
-		pool.find(null);
+		pool.findAll(null);
 		mungeProcessOne.setMatchPriority(Integer.valueOf("2"));
 		mungeProcessTwo.setMatchPriority(Integer.valueOf("1"));
 		
@@ -344,18 +324,15 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord str2 = pool.getSourceTableRecord(keyList);
 		assertNotNull(str1);
 		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
-
-		pool.addPotentialMatchRecord(overwrite);
+		pool.addPotentialMatch(overwrite);
 		
 		// overwrite should not have been added (match percent was equal)
-		assertEquals(1, pool.getPotentialMatchRecords().size());
+		assertEquals(1, pool.getPotentialMatches().size());
 		
 		overwrite = new PotentialMatchRecord(mungeProcessTwo,MatchType.UNMATCH, str1, str2, false);
-
-		pool.addPotentialMatchRecord(overwrite);
-		
+		pool.addPotentialMatch(overwrite);
 		// overwrite should have overwritten the original
-		assertEquals(1, pool.getPotentialMatchRecords().size());
+		assertEquals(1, pool.getPotentialMatches().size());
 		List<PotentialMatchRecord> matches = pool.getAllPotentialMatchByMungeProcess(mungeProcessTwo);
 		assertEquals(1, matches.size());
 		
@@ -385,18 +362,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == a1
-					&& potentialMatch.getOrigRHS() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a3
-					&& potentialMatch.getOrigRHS() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
 			}
 
@@ -408,9 +385,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a1 as the master.");
 		}
 
-		assertTrue(pmrA1ToA2.getMasterRecord() == a1);
+		assertTrue(pmrA1ToA2.getMaster() == a1);
 		assertTrue(pmrA1ToA2.getDuplicate() == a2);
-		assertTrue(pmrA2ToA3.getMasterRecord() == null);
+		assertTrue(pmrA2ToA3.getMaster() == null);
 	}
 
 	/**
@@ -435,18 +412,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == a1
-					&& potentialMatch.getOrigRHS() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a3
-					&& potentialMatch.getOrigRHS() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
 			}
 
@@ -458,9 +435,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a1 as the master of all");
 		}
 
-		assertTrue(pmrA1ToA2.getMasterRecord() == a1);
+		assertTrue(pmrA1ToA2.getMaster() == a1);
 		assertTrue(pmrA1ToA2.getDuplicate() == a2);
-		assertTrue(pmrA2ToA3.getMasterRecord() == null);
+		assertTrue(pmrA2ToA3.getMaster() == null);
 		assertTrue(pmrA2ToA3.getDuplicate() == null);
 		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -487,18 +464,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrC1ToC2 = null;
 		PotentialMatchRecord pmrC2ToC3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == c1
-					&& potentialMatch.getOrigRHS() == c2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == c1
+					&& potentialMatch.getOriginalRhs() == c2) {
 				pmrC1ToC2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == c2
-					&& potentialMatch.getOrigRHS() == c1) {
+			} else if (potentialMatch.getOriginalLhs() == c2
+					&& potentialMatch.getOriginalRhs() == c1) {
 				pmrC1ToC2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == c3
-					&& potentialMatch.getOrigRHS() == c2) {
+			} else if (potentialMatch.getOriginalLhs() == c3
+					&& potentialMatch.getOriginalRhs() == c2) {
 				pmrC2ToC3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == c2
-					&& potentialMatch.getOrigRHS() == c3) {
+			} else if (potentialMatch.getOriginalLhs() == c2
+					&& potentialMatch.getOriginalRhs() == c3) {
 				pmrC2ToC3 = potentialMatch;
 			}
 
@@ -510,9 +487,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined c1 as the master of c2");
 		}
 
-		assertTrue(pmrC1ToC2.getMasterRecord() == c1);
+		assertTrue(pmrC1ToC2.getMaster() == c1);
 		assertTrue(pmrC1ToC2.getDuplicate() == c2);
-		assertTrue(pmrC2ToC3.getMasterRecord() == null);
+		assertTrue(pmrC2ToC3.getMaster() == null);
 	}
 
 	/**
@@ -538,18 +515,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrF1ToF2 = null;
 		PotentialMatchRecord pmrF2ToF3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == f1
-					&& potentialMatch.getOrigRHS() == f2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == f1
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == f2
-					&& potentialMatch.getOrigRHS() == f1) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f1) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == f3
-					&& potentialMatch.getOrigRHS() == f2) {
+			} else if (potentialMatch.getOriginalLhs() == f3
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF2ToF3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == f2
-					&& potentialMatch.getOrigRHS() == f3) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f3) {
 				pmrF2ToF3 = potentialMatch;
 			}
 
@@ -561,9 +538,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined f3 as the master of f1.");
 		}
 
-		assertTrue(pmrF1ToF2.getMasterRecord() == f2);
+		assertTrue(pmrF1ToF2.getMaster() == f2);
 		assertTrue(pmrF1ToF2.getDuplicate() == f1);
-		assertTrue(pmrF2ToF3.getMasterRecord() == f3);
+		assertTrue(pmrF2ToF3.getMaster() == f3);
 		assertTrue(pmrF2ToF3.getDuplicate() == f2);
 	}
 
@@ -590,18 +567,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrF1ToF2 = null;
 		PotentialMatchRecord pmrF2ToF3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == f1
-					&& potentialMatch.getOrigRHS() == f2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == f1
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == f2
-					&& potentialMatch.getOrigRHS() == f1) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f1) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == f3
-					&& potentialMatch.getOrigRHS() == f2) {
+			} else if (potentialMatch.getOriginalLhs() == f3
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF2ToF3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == f2
-					&& potentialMatch.getOrigRHS() == f3) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f3) {
 				pmrF2ToF3 = potentialMatch;
 			}
 
@@ -613,9 +590,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined f3 as the master of f1.");
 		}
 
-		assertTrue(pmrF1ToF2.getMasterRecord() == f2);
+		assertTrue(pmrF1ToF2.getMaster() == f2);
 		assertTrue(pmrF1ToF2.getDuplicate() == f1);
-		assertTrue(pmrF2ToF3.getMasterRecord() == f3);
+		assertTrue(pmrF2ToF3.getMaster() == f3);
 		assertTrue(pmrF2ToF3.getDuplicate() == f2);
 	}
 
@@ -641,18 +618,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == b1
-					&& potentialMatch.getOrigRHS() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b3
-					&& potentialMatch.getOrigRHS() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -664,9 +641,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined b2 as the master of b3.");
 		}
 
-		assertTrue(pmrB1ToB2.getMasterRecord() == b1);
+		assertTrue(pmrB1ToB2.getMaster() == b1);
 		assertTrue(pmrB1ToB2.getDuplicate() == b2);
-		assertTrue(pmrB2ToB3.getMasterRecord() == b2);
+		assertTrue(pmrB2ToB3.getMaster() == b2);
 		assertTrue(pmrB2ToB3.getDuplicate() == b3);
 	}
 
@@ -697,24 +674,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrG1ToG2 = null;
 		PotentialMatchRecord pmrG2ToG3 = null;
 		PotentialMatchRecord pmrG3ToG4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == g1
-					&& potentialMatch.getOrigRHS() == g2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == g1
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g2
-					&& potentialMatch.getOrigRHS() == g1) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g1) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g3
-					&& potentialMatch.getOrigRHS() == g2) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g2
-					&& potentialMatch.getOrigRHS() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g3
-					&& potentialMatch.getOrigRHS() == g4) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g4) {
 				pmrG3ToG4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g4
-					&& potentialMatch.getOrigRHS() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g4
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG3ToG4 = potentialMatch;
 			}
 
@@ -726,11 +703,11 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined g2 as the master of g3.");
 		}
 
-		assertTrue(pmrG1ToG2.getMasterRecord() == g2);
+		assertTrue(pmrG1ToG2.getMaster() == g2);
 		assertTrue(pmrG1ToG2.getDuplicate() == g1);
-		assertTrue(pmrG2ToG3.getMasterRecord() == g2);
+		assertTrue(pmrG2ToG3.getMaster() == g2);
 		assertTrue(pmrG2ToG3.getDuplicate() == g3);
-		assertTrue(pmrG3ToG4.getMasterRecord() == g3);
+		assertTrue(pmrG3ToG4.getMaster() == g3);
 		assertTrue(pmrG3ToG4.getDuplicate() == g4);
 	}
 
@@ -762,24 +739,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrH1ToH2 = null;
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == h1
-					&& potentialMatch.getOrigRHS() == h2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == h1
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h2
-					&& potentialMatch.getOrigRHS() == h1) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h3
-					&& potentialMatch.getOrigRHS() == h2) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h2
-					&& potentialMatch.getOrigRHS() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h3
-					&& potentialMatch.getOrigRHS() == h4) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h4
-					&& potentialMatch.getOrigRHS() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h4
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
 
@@ -791,11 +768,11 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined h2 as the master of h3.");
 		}
 
-		assertTrue(pmrH1ToH2.getMasterRecord() == h1);
+		assertTrue(pmrH1ToH2.getMaster() == h1);
 		assertTrue(pmrH1ToH2.getDuplicate() == h2);
-		assertTrue(pmrH2ToH3.getMasterRecord() == h2);
+		assertTrue(pmrH2ToH3.getMaster() == h2);
 		assertTrue(pmrH2ToH3.getDuplicate() == h3);
-		assertTrue(pmrH3ToH4.getMasterRecord() == h3);
+		assertTrue(pmrH3ToH4.getMaster() == h3);
 		assertTrue(pmrH3ToH4.getDuplicate() == h4);
 	}
 
@@ -830,24 +807,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrH1ToH2 = null;
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == h1
-					&& potentialMatch.getOrigRHS() == h2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == h1
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h2
-					&& potentialMatch.getOrigRHS() == h1) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h3
-					&& potentialMatch.getOrigRHS() == h2) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h2
-					&& potentialMatch.getOrigRHS() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h3
-					&& potentialMatch.getOrigRHS() == h4) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h4
-					&& potentialMatch.getOrigRHS() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h4
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
 
@@ -859,11 +836,11 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined h3 as the master of h2.");
 		}
 
-		assertTrue(pmrH1ToH2.getMasterRecord() == h2);
+		assertTrue(pmrH1ToH2.getMaster() == h2);
 		assertTrue(pmrH1ToH2.getDuplicate() == h1);
-		assertTrue(pmrH2ToH3.getMasterRecord() == h3);
+		assertTrue(pmrH2ToH3.getMaster() == h3);
 		assertTrue(pmrH2ToH3.getDuplicate() == h2);
-		assertTrue(pmrH3ToH4.getMasterRecord() == h4);
+		assertTrue(pmrH3ToH4.getMaster() == h4);
 		assertTrue(pmrH3ToH4.getDuplicate() == h3);
 	}
 
@@ -896,24 +873,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrG1ToG2 = null;
 		PotentialMatchRecord pmrG2ToG3 = null;
 		PotentialMatchRecord pmrG3ToG4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == g1
-					&& potentialMatch.getOrigRHS() == g2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == g1
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g2
-					&& potentialMatch.getOrigRHS() == g1) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g1) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g3
-					&& potentialMatch.getOrigRHS() == g2) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g2
-					&& potentialMatch.getOrigRHS() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g3
-					&& potentialMatch.getOrigRHS() == g4) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g4) {
 				pmrG3ToG4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == g4
-					&& potentialMatch.getOrigRHS() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g4
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG3ToG4 = potentialMatch;
 			}
 
@@ -925,11 +902,11 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined g1 as the master of g3.");
 		}
 
-		assertTrue(pmrG1ToG2.getMasterRecord() == g2);
+		assertTrue(pmrG1ToG2.getMaster() == g2);
 		assertTrue(pmrG1ToG2.getDuplicate() == g1);
-		assertTrue(pmrG2ToG3.getMasterRecord() == g2);
+		assertTrue(pmrG2ToG3.getMaster() == g2);
 		assertTrue(pmrG2ToG3.getDuplicate() == g3);
-		assertTrue(pmrG3ToG4.getMasterRecord() == g3);
+		assertTrue(pmrG3ToG4.getMaster() == g3);
 		assertTrue(pmrG3ToG4.getDuplicate() == g4);
 	}
 
@@ -961,24 +938,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrCycle1ToCycle2 = null;
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == cycle1
-					&& potentialMatch.getOrigRHS() == cycle2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle2
-					&& potentialMatch.getOrigRHS() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle3
-					&& potentialMatch.getOrigRHS() == cycle2) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle2
-					&& potentialMatch.getOrigRHS() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle3
-					&& potentialMatch.getOrigRHS() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle1
-					&& potentialMatch.getOrigRHS() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
 
@@ -992,24 +969,24 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined cycle3 as the master of cycle2.");
 		}
 
-		if (pmrCycle1ToCycle2.getMasterRecord() == cycle1) {
+		if (pmrCycle1ToCycle2.getMaster() == cycle1) {
 			assertTrue(pmrCycle1ToCycle2.getDuplicate() == cycle2);
-			assertTrue(pmrCycle2ToCycle3.getMasterRecord() == null);
+			assertTrue(pmrCycle2ToCycle3.getMaster() == null);
 			assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
-			assertTrue(pmrCycle3ToCycle1.getMasterRecord() == cycle1);
+			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
-		} else if (pmrCycle1ToCycle2.getMasterRecord() == cycle2) {
+		} else if (pmrCycle1ToCycle2.getMaster() == cycle2) {
 			assertTrue(pmrCycle1ToCycle2.getDuplicate() == cycle1);
-			assertTrue(pmrCycle2ToCycle3.getMasterRecord() == cycle2);
+			assertTrue(pmrCycle2ToCycle3.getMaster() == cycle2);
 			assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle3);
-			assertTrue(pmrCycle3ToCycle1.getMasterRecord() == null);
+			assertTrue(pmrCycle3ToCycle1.getMaster() == null);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == null);
 		} else {
 			// master of this loop was set to cycle3
 			assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
-			assertTrue(pmrCycle2ToCycle3.getMasterRecord() == cycle3);
+			assertTrue(pmrCycle2ToCycle3.getMaster() == cycle3);
 			assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle2);
-			assertTrue(pmrCycle3ToCycle1.getMasterRecord() == cycle3);
+			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle3);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
 		}
 	}
@@ -1047,30 +1024,30 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrJ2ToJ3 = null;
 		PotentialMatchRecord pmrJ3ToJ4 = null;
 		PotentialMatchRecord pmrJ4ToJ2 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == j2
-					&& potentialMatch.getOrigRHS() == j1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == j2
+					&& potentialMatch.getOriginalRhs() == j1) {
 				pmrJ1ToJ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == j1
-					&& potentialMatch.getOrigRHS() == j2) {
+			} else if (potentialMatch.getOriginalLhs() == j1
+					&& potentialMatch.getOriginalRhs() == j2) {
 				pmrJ1ToJ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == j2
-					&& potentialMatch.getOrigRHS() == j3) {
+			} else if (potentialMatch.getOriginalLhs() == j2
+					&& potentialMatch.getOriginalRhs() == j3) {
 				pmrJ2ToJ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == j3
-					&& potentialMatch.getOrigRHS() == j2) {
+			} else if (potentialMatch.getOriginalLhs() == j3
+					&& potentialMatch.getOriginalRhs() == j2) {
 				pmrJ2ToJ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == j4
-					&& potentialMatch.getOrigRHS() == j3) {
+			} else if (potentialMatch.getOriginalLhs() == j4
+					&& potentialMatch.getOriginalRhs() == j3) {
 				pmrJ3ToJ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == j3
-					&& potentialMatch.getOrigRHS() == j4) {
+			} else if (potentialMatch.getOriginalLhs() == j3
+					&& potentialMatch.getOriginalRhs() == j4) {
 				pmrJ3ToJ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == j2
-					&& potentialMatch.getOrigRHS() == j4) {
+			} else if (potentialMatch.getOriginalLhs() == j2
+					&& potentialMatch.getOriginalRhs() == j4) {
 				pmrJ4ToJ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == j4
-					&& potentialMatch.getOrigRHS() == j2) {
+			} else if (potentialMatch.getOriginalLhs() == j4
+					&& potentialMatch.getOriginalRhs() == j2) {
 				pmrJ4ToJ2 = potentialMatch;
 			}
 
@@ -1084,27 +1061,27 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined j2 to be the master of j1.");
 		}
 
-		assertTrue(pmrJ1ToJ2.getMasterRecord() == j2);
+		assertTrue(pmrJ1ToJ2.getMaster() == j2);
 		assertTrue(pmrJ1ToJ2.getDuplicate() == j1);
-		if (pmrJ2ToJ3.getMasterRecord() == j2) {
+		if (pmrJ2ToJ3.getMaster() == j2) {
 			assertTrue(pmrJ2ToJ3.getDuplicate() == j3);
-			assertTrue(pmrJ3ToJ4.getMasterRecord() == null);
+			assertTrue(pmrJ3ToJ4.getMaster() == null);
 			assertTrue(pmrJ3ToJ4.getDuplicate() == null);
-			assertTrue(pmrJ4ToJ2.getMasterRecord() == j2);
+			assertTrue(pmrJ4ToJ2.getMaster() == j2);
 			assertTrue(pmrJ4ToJ2.getDuplicate() == j4);
-		} else if (pmrJ2ToJ3.getMasterRecord() == j3) {
+		} else if (pmrJ2ToJ3.getMaster() == j3) {
 			assertTrue(pmrJ2ToJ3.getDuplicate() == j2);
-			assertTrue(pmrJ3ToJ4.getMasterRecord() == j3);
+			assertTrue(pmrJ3ToJ4.getMaster() == j3);
 			assertTrue(pmrJ3ToJ4.getDuplicate() == j4);
-			assertTrue(pmrJ4ToJ2.getMasterRecord() == null);
+			assertTrue(pmrJ4ToJ2.getMaster() == null);
 			assertTrue(pmrJ4ToJ2.getDuplicate() == null);
 		} else {
 			// master of this loop was set to j4
-			assertTrue(pmrJ2ToJ3.getMasterRecord() == null);
+			assertTrue(pmrJ2ToJ3.getMaster() == null);
 			assertTrue(pmrJ2ToJ3.getDuplicate() == null);
-			assertTrue(pmrJ3ToJ4.getMasterRecord() == j4);
+			assertTrue(pmrJ3ToJ4.getMaster() == j4);
 			assertTrue(pmrJ3ToJ4.getDuplicate() == j3);
-			assertTrue(pmrJ4ToJ2.getMasterRecord() == j4);
+			assertTrue(pmrJ4ToJ2.getMaster() == j4);
 			assertTrue(pmrJ4ToJ2.getDuplicate() == j2);
 		}
 	}
@@ -1146,36 +1123,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrK3ToK4 = null;
 		PotentialMatchRecord pmrK4ToK5 = null;
 		PotentialMatchRecord pmrK5ToK3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == k2
-					&& potentialMatch.getOrigRHS() == k1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == k2
+					&& potentialMatch.getOriginalRhs() == k1) {
 				pmrK1ToK2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k1
-					&& potentialMatch.getOrigRHS() == k2) {
+			} else if (potentialMatch.getOriginalLhs() == k1
+					&& potentialMatch.getOriginalRhs() == k2) {
 				pmrK1ToK2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k2
-					&& potentialMatch.getOrigRHS() == k3) {
+			} else if (potentialMatch.getOriginalLhs() == k2
+					&& potentialMatch.getOriginalRhs() == k3) {
 				pmrK2ToK3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k3
-					&& potentialMatch.getOrigRHS() == k2) {
+			} else if (potentialMatch.getOriginalLhs() == k3
+					&& potentialMatch.getOriginalRhs() == k2) {
 				pmrK2ToK3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k4
-					&& potentialMatch.getOrigRHS() == k3) {
+			} else if (potentialMatch.getOriginalLhs() == k4
+					&& potentialMatch.getOriginalRhs() == k3) {
 				pmrK3ToK4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k3
-					&& potentialMatch.getOrigRHS() == k4) {
+			} else if (potentialMatch.getOriginalLhs() == k3
+					&& potentialMatch.getOriginalRhs() == k4) {
 				pmrK3ToK4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k5
-					&& potentialMatch.getOrigRHS() == k4) {
+			} else if (potentialMatch.getOriginalLhs() == k5
+					&& potentialMatch.getOriginalRhs() == k4) {
 				pmrK4ToK5 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k4
-					&& potentialMatch.getOrigRHS() == k5) {
+			} else if (potentialMatch.getOriginalLhs() == k4
+					&& potentialMatch.getOriginalRhs() == k5) {
 				pmrK4ToK5 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k5
-					&& potentialMatch.getOrigRHS() == k3) {
+			} else if (potentialMatch.getOriginalLhs() == k5
+					&& potentialMatch.getOriginalRhs() == k3) {
 				pmrK5ToK3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == k3
-					&& potentialMatch.getOrigRHS() == k5) {
+			} else if (potentialMatch.getOriginalLhs() == k3
+					&& potentialMatch.getOriginalRhs() == k5) {
 				pmrK5ToK3 = potentialMatch;
 			}
 
@@ -1189,29 +1166,29 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined k2 to be the master of k1.");
 		}
 
-		assertTrue(pmrK1ToK2.getMasterRecord() == k2);
+		assertTrue(pmrK1ToK2.getMaster() == k2);
 		assertTrue(pmrK1ToK2.getDuplicate() == k1);
-		assertTrue(pmrK2ToK3.getMasterRecord() == k3);
+		assertTrue(pmrK2ToK3.getMaster() == k3);
 		assertTrue(pmrK2ToK3.getDuplicate() == k2);
-		if (pmrK3ToK4.getMasterRecord() == k3) {
+		if (pmrK3ToK4.getMaster() == k3) {
 			assertTrue(pmrK3ToK4.getDuplicate() == k4);
-			assertTrue(pmrK4ToK5.getMasterRecord() == null);
+			assertTrue(pmrK4ToK5.getMaster() == null);
 			assertTrue(pmrK4ToK5.getDuplicate() == null);
-			assertTrue(pmrK5ToK3.getMasterRecord() == k3);
+			assertTrue(pmrK5ToK3.getMaster() == k3);
 			assertTrue(pmrK5ToK3.getDuplicate() == k5);
-		} else if (pmrK3ToK4.getMasterRecord() == k4) {
+		} else if (pmrK3ToK4.getMaster() == k4) {
 			assertTrue(pmrK3ToK4.getDuplicate() == k3);
-			assertTrue(pmrK4ToK5.getMasterRecord() == k4);
+			assertTrue(pmrK4ToK5.getMaster() == k4);
 			assertTrue(pmrK4ToK5.getDuplicate() == k5);
-			assertTrue(pmrK5ToK3.getMasterRecord() == null);
+			assertTrue(pmrK5ToK3.getMaster() == null);
 			assertTrue(pmrK5ToK3.getDuplicate() == null);
 		} else {
 			// master of this loop was set to k5
-			assertTrue(pmrK3ToK4.getMasterRecord() == null);
+			assertTrue(pmrK3ToK4.getMaster() == null);
 			assertTrue(pmrK3ToK4.getDuplicate() == null);
-			assertTrue(pmrK4ToK5.getMasterRecord() == k5);
+			assertTrue(pmrK4ToK5.getMaster() == k5);
 			assertTrue(pmrK4ToK5.getDuplicate() == k4);
-			assertTrue(pmrK5ToK3.getMasterRecord() == k5);
+			assertTrue(pmrK5ToK3.getMaster() == k5);
 			assertTrue(pmrK5ToK3.getDuplicate() == k3);
 		}
 	}
@@ -1243,24 +1220,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrL1ToL2 = null;
 		PotentialMatchRecord pmrL2ToL3 = null;
 		PotentialMatchRecord pmrL2ToL4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == l2
-					&& potentialMatch.getOrigRHS() == l1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == l2
+					&& potentialMatch.getOriginalRhs() == l1) {
 				pmrL1ToL2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == l1
-					&& potentialMatch.getOrigRHS() == l2) {
+			} else if (potentialMatch.getOriginalLhs() == l1
+					&& potentialMatch.getOriginalRhs() == l2) {
 				pmrL1ToL2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == l2
-					&& potentialMatch.getOrigRHS() == l3) {
+			} else if (potentialMatch.getOriginalLhs() == l2
+					&& potentialMatch.getOriginalRhs() == l3) {
 				pmrL2ToL3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == l3
-					&& potentialMatch.getOrigRHS() == l2) {
+			} else if (potentialMatch.getOriginalLhs() == l3
+					&& potentialMatch.getOriginalRhs() == l2) {
 				pmrL2ToL3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == l4
-					&& potentialMatch.getOrigRHS() == l2) {
+			} else if (potentialMatch.getOriginalLhs() == l4
+					&& potentialMatch.getOriginalRhs() == l2) {
 				pmrL2ToL4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == l2
-					&& potentialMatch.getOrigRHS() == l4) {
+			} else if (potentialMatch.getOriginalLhs() == l2
+					&& potentialMatch.getOriginalRhs() == l4) {
 				pmrL2ToL4 = potentialMatch;
 			}
 
@@ -1272,17 +1249,17 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined l2 to be the master of l1.");
 		}
 
-		assertTrue(pmrL1ToL2.getMasterRecord() == l2);
+		assertTrue(pmrL1ToL2.getMaster() == l2);
 		assertTrue(pmrL1ToL2.getDuplicate() == l1);
-		if (pmrL2ToL3.getMasterRecord() == l3) {
+		if (pmrL2ToL3.getMaster() == l3) {
 			assertTrue(pmrL2ToL3.getDuplicate() == l2);
-			assertTrue(pmrL2ToL4.getMasterRecord() == l2);
+			assertTrue(pmrL2ToL4.getMaster() == l2);
 			assertTrue(pmrL2ToL4.getDuplicate() == l4);
 		} else {
 			// master was set to l4
-			assertTrue(pmrL2ToL3.getMasterRecord() == l2);
+			assertTrue(pmrL2ToL3.getMaster() == l2);
 			assertTrue(pmrL2ToL3.getDuplicate() == l3);
-			assertTrue(pmrL2ToL4.getMasterRecord() == l4);
+			assertTrue(pmrL2ToL4.getMaster() == l4);
 			assertTrue(pmrL2ToL4.getDuplicate() == l2);
 		}
 	}
@@ -1332,48 +1309,48 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrM6ToM7 = null;
 		PotentialMatchRecord pmrM6ToM4 = null;
 		PotentialMatchRecord pmrM4ToM3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == m2
-					&& potentialMatch.getOrigRHS() == m1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == m2
+					&& potentialMatch.getOriginalRhs() == m1) {
 				pmrM1ToM2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m1
-					&& potentialMatch.getOrigRHS() == m2) {
+			} else if (potentialMatch.getOriginalLhs() == m1
+					&& potentialMatch.getOriginalRhs() == m2) {
 				pmrM1ToM2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m2
-					&& potentialMatch.getOrigRHS() == m3) {
+			} else if (potentialMatch.getOriginalLhs() == m2
+					&& potentialMatch.getOriginalRhs() == m3) {
 				pmrM2ToM3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m3
-					&& potentialMatch.getOrigRHS() == m2) {
+			} else if (potentialMatch.getOriginalLhs() == m3
+					&& potentialMatch.getOriginalRhs() == m2) {
 				pmrM2ToM3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m5
-					&& potentialMatch.getOrigRHS() == m3) {
+			} else if (potentialMatch.getOriginalLhs() == m5
+					&& potentialMatch.getOriginalRhs() == m3) {
 				pmrM3ToM5 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m3
-					&& potentialMatch.getOrigRHS() == m5) {
+			} else if (potentialMatch.getOriginalLhs() == m3
+					&& potentialMatch.getOriginalRhs() == m5) {
 				pmrM3ToM5 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m5
-					&& potentialMatch.getOrigRHS() == m6) {
+			} else if (potentialMatch.getOriginalLhs() == m5
+					&& potentialMatch.getOriginalRhs() == m6) {
 				pmrM5ToM6 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m6
-					&& potentialMatch.getOrigRHS() == m5) {
+			} else if (potentialMatch.getOriginalLhs() == m6
+					&& potentialMatch.getOriginalRhs() == m5) {
 				pmrM5ToM6 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m6
-					&& potentialMatch.getOrigRHS() == m7) {
+			} else if (potentialMatch.getOriginalLhs() == m6
+					&& potentialMatch.getOriginalRhs() == m7) {
 				pmrM6ToM7 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m7
-					&& potentialMatch.getOrigRHS() == m6) {
+			} else if (potentialMatch.getOriginalLhs() == m7
+					&& potentialMatch.getOriginalRhs() == m6) {
 				pmrM6ToM7 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m6
-					&& potentialMatch.getOrigRHS() == m4) {
+			} else if (potentialMatch.getOriginalLhs() == m6
+					&& potentialMatch.getOriginalRhs() == m4) {
 				pmrM6ToM4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m4
-					&& potentialMatch.getOrigRHS() == m6) {
+			} else if (potentialMatch.getOriginalLhs() == m4
+					&& potentialMatch.getOriginalRhs() == m6) {
 				pmrM6ToM4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m4
-					&& potentialMatch.getOrigRHS() == m3) {
+			} else if (potentialMatch.getOriginalLhs() == m4
+					&& potentialMatch.getOriginalRhs() == m3) {
 				pmrM4ToM3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == m3
-					&& potentialMatch.getOrigRHS() == m4) {
+			} else if (potentialMatch.getOriginalLhs() == m3
+					&& potentialMatch.getOriginalRhs() == m4) {
 				pmrM4ToM3 = potentialMatch;
 			}
 
@@ -1389,51 +1366,51 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined m2 to be the master of m1.");
 		}
 
-		assertTrue(pmrM1ToM2.getMasterRecord() == m2);
+		assertTrue(pmrM1ToM2.getMaster() == m2);
 		assertTrue(pmrM1ToM2.getDuplicate() == m1);
-		assertTrue(pmrM2ToM3.getMasterRecord() == m3);
+		assertTrue(pmrM2ToM3.getMaster() == m3);
 		assertTrue(pmrM2ToM3.getDuplicate() == m2);
-		if (pmrM3ToM5.getMasterRecord() == m3 && pmrM4ToM3.getMasterRecord() == m3) {
-			assertTrue(pmrM6ToM7.getMasterRecord() == m6);
-			if (pmrM5ToM6.getMasterRecord() == m5) {
-				assertTrue(pmrM6ToM4.getMasterRecord() == null);
+		if (pmrM3ToM5.getMaster() == m3 && pmrM4ToM3.getMaster() == m3) {
+			assertTrue(pmrM6ToM7.getMaster() == m6);
+			if (pmrM5ToM6.getMaster() == m5) {
+				assertTrue(pmrM6ToM4.getMaster() == null);
 			} else {
-				assertTrue(pmrM6ToM4.getMasterRecord() == m4);
-				assertTrue(pmrM5ToM6.getMasterRecord() == m5);
+				assertTrue(pmrM6ToM4.getMaster() == m4);
+				assertTrue(pmrM5ToM6.getMaster() == m5);
 			}
-		} else if (pmrM4ToM3.getMasterRecord() == m4 && pmrM6ToM4.getMasterRecord() == m4) {
-			assertTrue(pmrM6ToM7.getMasterRecord() == m6);
-			if (pmrM3ToM5.getMasterRecord() == m3) {
-				assertTrue(pmrM5ToM6.getMasterRecord() == null);
+		} else if (pmrM4ToM3.getMaster() == m4 && pmrM6ToM4.getMaster() == m4) {
+			assertTrue(pmrM6ToM7.getMaster() == m6);
+			if (pmrM3ToM5.getMaster() == m3) {
+				assertTrue(pmrM5ToM6.getMaster() == null);
 			} else {
-				assertTrue(pmrM5ToM6.getMasterRecord() == m6);
-				assertTrue(pmrM3ToM5.getMasterRecord() == null);
+				assertTrue(pmrM5ToM6.getMaster() == m6);
+				assertTrue(pmrM3ToM5.getMaster() == null);
 			}
 
-		} else if (pmrM5ToM6.getMasterRecord() == m6 && pmrM6ToM4.getMasterRecord() == m6
-				&& pmrM6ToM7.getMasterRecord() == m6) {
-			if (pmrM3ToM5.getMasterRecord() == m5) {
-				assertTrue(pmrM4ToM3.getMasterRecord() == null);
+		} else if (pmrM5ToM6.getMaster() == m6 && pmrM6ToM4.getMaster() == m6
+				&& pmrM6ToM7.getMaster() == m6) {
+			if (pmrM3ToM5.getMaster() == m5) {
+				assertTrue(pmrM4ToM3.getMaster() == null);
 			} else {
-				assertTrue(pmrM4ToM3.getMasterRecord() == m4);
-				assertTrue(pmrM3ToM5.getMasterRecord() == null);
+				assertTrue(pmrM4ToM3.getMaster() == m4);
+				assertTrue(pmrM3ToM5.getMaster() == null);
 			}
-		} else if (pmrM3ToM5.getMasterRecord() == m5 && pmrM5ToM6.getMasterRecord() == m5) {
-			assertTrue(pmrM6ToM7.getMasterRecord() == m6);
-			if (pmrM4ToM3.getMasterRecord() == m3) {
-				assertTrue(pmrM6ToM4.getMasterRecord() == null);
+		} else if (pmrM3ToM5.getMaster() == m5 && pmrM5ToM6.getMaster() == m5) {
+			assertTrue(pmrM6ToM7.getMaster() == m6);
+			if (pmrM4ToM3.getMaster() == m3) {
+				assertTrue(pmrM6ToM4.getMaster() == null);
 			} else {
-				assertTrue(pmrM6ToM4.getMasterRecord() == m6);
-				assertTrue(pmrM4ToM3.getMasterRecord() == null);
+				assertTrue(pmrM6ToM4.getMaster() == m6);
+				assertTrue(pmrM4ToM3.getMaster() == null);
 			}
-		} else if (pmrM6ToM7.getMasterRecord() == m7) {
-			assertTrue(pmrM5ToM6.getMasterRecord() == m6);
-			assertTrue(pmrM6ToM4.getMasterRecord() == m6);
-			if (pmrM3ToM5.getMasterRecord() == m5) {
-				assertTrue(pmrM4ToM3.getMasterRecord() == null);
+		} else if (pmrM6ToM7.getMaster() == m7) {
+			assertTrue(pmrM5ToM6.getMaster() == m6);
+			assertTrue(pmrM6ToM4.getMaster() == m6);
+			if (pmrM3ToM5.getMaster() == m5) {
+				assertTrue(pmrM4ToM3.getMaster() == null);
 			} else {
-				assertTrue(pmrM4ToM3.getMasterRecord() == m4);
-				assertTrue(pmrM3ToM5.getMasterRecord() == null);
+				assertTrue(pmrM4ToM3.getMaster() == m4);
+				assertTrue(pmrM3ToM5.getMaster() == null);
 			}
 		} else {
 			fail("We don't know what happened to the master, but we know it's wrong!");
@@ -1464,24 +1441,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrI1ToI2 = null;
 		PotentialMatchRecord pmrI2ToI3 = null;
 		PotentialMatchRecord pmrI3ToI1 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == i1
-					&& potentialMatch.getOrigRHS() == i2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == i1
+					&& potentialMatch.getOriginalRhs() == i2) {
 				pmrI1ToI2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == i2
-					&& potentialMatch.getOrigRHS() == i1) {
+			} else if (potentialMatch.getOriginalLhs() == i2
+					&& potentialMatch.getOriginalRhs() == i1) {
 				pmrI1ToI2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == i3
-					&& potentialMatch.getOrigRHS() == i2) {
+			} else if (potentialMatch.getOriginalLhs() == i3
+					&& potentialMatch.getOriginalRhs() == i2) {
 				pmrI2ToI3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == i2
-					&& potentialMatch.getOrigRHS() == i3) {
+			} else if (potentialMatch.getOriginalLhs() == i2
+					&& potentialMatch.getOriginalRhs() == i3) {
 				pmrI2ToI3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == i3
-					&& potentialMatch.getOrigRHS() == i1) {
+			} else if (potentialMatch.getOriginalLhs() == i3
+					&& potentialMatch.getOriginalRhs() == i1) {
 				pmrI3ToI1 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == i1
-					&& potentialMatch.getOrigRHS() == i3) {
+			} else if (potentialMatch.getOriginalLhs() == i1
+					&& potentialMatch.getOriginalRhs() == i3) {
 				pmrI3ToI1 = potentialMatch;
 			}
 
@@ -1493,18 +1470,18 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined i1 as the master of i3.");
 		}
 
-		assertTrue(pmrI3ToI1.getMasterRecord() == i1);
+		assertTrue(pmrI3ToI1.getMaster() == i1);
 		assertTrue(pmrI3ToI1.getDuplicate() == i3);
-		if (pmrI1ToI2.getMasterRecord() == i1) {
+		if (pmrI1ToI2.getMaster() == i1) {
 			assertTrue(pmrI1ToI2.getDuplicate() == i2);
-			assertTrue(pmrI2ToI3.getMasterRecord() == null);
+			assertTrue(pmrI2ToI3.getMaster() == null);
 			assertTrue(pmrI2ToI3.getDuplicate() == null);
 			assertTrue(pmrI2ToI3.getMatchStatus() == MatchType.UNMATCH);
 		} else {
 			// pmrI2ToI3's master is i3
-			assertTrue(pmrI2ToI3.getMasterRecord() == i2);
+			assertTrue(pmrI2ToI3.getMaster() == i2);
 			assertTrue(pmrI2ToI3.getDuplicate() == i3);
-			assertTrue(pmrI1ToI2.getMasterRecord() == null);
+			assertTrue(pmrI1ToI2.getMaster() == null);
 			assertTrue(pmrI1ToI2.getDuplicate() == null);
 			assertTrue(pmrI1ToI2.getMatchStatus() == MatchType.UNMATCH);
 		}
@@ -1534,24 +1511,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
 		PotentialMatchRecord pmrA1ToA3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == a1
-					&& potentialMatch.getOrigRHS() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a3
-					&& potentialMatch.getOrigRHS() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a3
-					&& potentialMatch.getOrigRHS() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a1
-					&& potentialMatch.getOrigRHS() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA1ToA3 = potentialMatch;
 			}
 
@@ -1563,10 +1540,10 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a3 as the master of a1.");
 		}
 
-		assertTrue(pmrA1ToA2.getMasterRecord() == null);
+		assertTrue(pmrA1ToA2.getMaster() == null);
 		assertTrue(pmrA1ToA2.getDuplicate() == null);
-		assertTrue(pmrA2ToA3.getMasterRecord() == null);
-		assertTrue(pmrA1ToA3.getMasterRecord() == a3);
+		assertTrue(pmrA2ToA3.getMaster() == null);
+		assertTrue(pmrA1ToA3.getMaster() == a3);
 		assertTrue(pmrA1ToA3.getDuplicate() == a1);
 		assertTrue(pmrA1ToA3.isSynthetic());
 	}
@@ -1589,18 +1566,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == b1
-					&& potentialMatch.getOrigRHS() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b3
-					&& potentialMatch.getOrigRHS() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -1612,9 +1589,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined no match between b2 and b1.");
 		}
 
-		assertTrue(pmrB1ToB2.getMasterRecord() == null);
+		assertTrue(pmrB1ToB2.getMaster() == null);
 		assertTrue(pmrB1ToB2.getDuplicate() == null);
-		assertTrue(pmrB2ToB3.getMasterRecord() == null);
+		assertTrue(pmrB2ToB3.getMaster() == null);
 		assertTrue(pmrB2ToB3.getDuplicate() == null);
 		assertTrue(pmrB1ToB2.getMatchStatus() == MatchType.NOMATCH);
 	}
@@ -1640,24 +1617,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrCycle1ToCycle2 = null;
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == cycle1
-					&& potentialMatch.getOrigRHS() == cycle2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle2
-					&& potentialMatch.getOrigRHS() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle3
-					&& potentialMatch.getOrigRHS() == cycle2) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle2
-					&& potentialMatch.getOrigRHS() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle3
-					&& potentialMatch.getOrigRHS() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle1
-					&& potentialMatch.getOrigRHS() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
 
@@ -1671,13 +1648,13 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined cycle2 to not match any other connected nodes.");
 		}
 
-		assertTrue(pmrCycle1ToCycle2.getMasterRecord() == null);
+		assertTrue(pmrCycle1ToCycle2.getMaster() == null);
 		assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
 		assertTrue(pmrCycle1ToCycle2.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrCycle2ToCycle3.getMasterRecord() == null);
+		assertTrue(pmrCycle2ToCycle3.getMaster() == null);
 		assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
 		assertTrue(pmrCycle2ToCycle3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrCycle3ToCycle1.getMasterRecord() == cycle1);
+		assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
 		assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
 	}
 
@@ -1700,18 +1677,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == b1
-					&& potentialMatch.getOrigRHS() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b3
-					&& potentialMatch.getOrigRHS() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -1723,9 +1700,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined no match between b2 and b3.");
 		}
 
-		assertTrue(pmrB1ToB2.getMasterRecord() == b1);
+		assertTrue(pmrB1ToB2.getMaster() == b1);
 		assertTrue(pmrB1ToB2.getDuplicate() == b2);
-		assertTrue(pmrB2ToB3.getMasterRecord() == null);
+		assertTrue(pmrB2ToB3.getMaster() == null);
 		assertTrue(pmrB2ToB3.getDuplicate() == null);
 		assertTrue(pmrB2ToB3.getMatchStatus() == MatchType.NOMATCH);
 	}
@@ -1750,24 +1727,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
 		PotentialMatchRecord pmrA1ToA3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == a1
-					&& potentialMatch.getOrigRHS() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a3
-					&& potentialMatch.getOrigRHS() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a2
-					&& potentialMatch.getOrigRHS() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a3
-					&& potentialMatch.getOrigRHS() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == a1
-					&& potentialMatch.getOrigRHS() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA1ToA3 = potentialMatch;
 			}
 
@@ -1779,10 +1756,10 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined no match between a1 and a3.");
 		}
 
-		assertTrue(pmrA1ToA2.getMasterRecord() == null);
+		assertTrue(pmrA1ToA2.getMaster() == null);
 		assertTrue(pmrA1ToA2.getDuplicate() == null);
-		assertTrue(pmrA2ToA3.getMasterRecord() == null);
-		assertTrue(pmrA1ToA3.getMasterRecord() == null);
+		assertTrue(pmrA2ToA3.getMaster() == null);
+		assertTrue(pmrA1ToA3.getMaster() == null);
 		assertTrue(pmrA1ToA3.getDuplicate() == null);
 		assertTrue(pmrA1ToA3.getMatchStatus() == MatchType.NOMATCH);
 		assertTrue(pmrA1ToA3.isSynthetic());
@@ -1809,24 +1786,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrCycle1ToCycle2 = null;
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == cycle1
-					&& potentialMatch.getOrigRHS() == cycle2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle2
-					&& potentialMatch.getOrigRHS() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle3
-					&& potentialMatch.getOrigRHS() == cycle2) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle2
-					&& potentialMatch.getOrigRHS() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle3
-					&& potentialMatch.getOrigRHS() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == cycle1
-					&& potentialMatch.getOrigRHS() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
 
@@ -1840,16 +1817,16 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we unmatched cycle2 from cycle1 and cycle3.");
 		}
 
-		assertTrue(pmrCycle1ToCycle2.getMasterRecord() == null);
+		assertTrue(pmrCycle1ToCycle2.getMaster() == null);
 		assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
 		assertTrue(pmrCycle1ToCycle2.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrCycle2ToCycle3.getMasterRecord() == null);
+		assertTrue(pmrCycle2ToCycle3.getMaster() == null);
 		assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
 		assertTrue(pmrCycle2ToCycle3.getMatchStatus() == MatchType.UNMATCH);
-		if (pmrCycle3ToCycle1.getMasterRecord() == cycle1) {
+		if (pmrCycle3ToCycle1.getMaster() == cycle1) {
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
 		} else {
-			assertTrue(pmrCycle3ToCycle1.getMasterRecord() == cycle3);
+			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle3);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
 		}
 	}
@@ -1873,18 +1850,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == b1
-					&& potentialMatch.getOrigRHS() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b3
-					&& potentialMatch.getOrigRHS() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == b2
-					&& potentialMatch.getOrigRHS() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
 
@@ -1896,9 +1873,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we unmatched b1 and b2.");
 		}
 
-		assertTrue(pmrB1ToB2.getMasterRecord() == null);
+		assertTrue(pmrB1ToB2.getMaster() == null);
 		assertTrue(pmrB1ToB2.getDuplicate() == null);
-		assertTrue(pmrB2ToB3.getMasterRecord() == null);
+		assertTrue(pmrB2ToB3.getMaster() == null);
 		assertTrue(pmrB2ToB3.getDuplicate() == null);
 		assertTrue(pmrB1ToB2.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -1922,18 +1899,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrE1ToE2 = null;
 		PotentialMatchRecord pmrE2ToE3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == e1
-					&& potentialMatch.getOrigRHS() == e2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == e1
+					&& potentialMatch.getOriginalRhs() == e2) {
 				pmrE1ToE2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == e2
-					&& potentialMatch.getOrigRHS() == e1) {
+			} else if (potentialMatch.getOriginalLhs() == e2
+					&& potentialMatch.getOriginalRhs() == e1) {
 				pmrE1ToE2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == e3
-					&& potentialMatch.getOrigRHS() == e2) {
+			} else if (potentialMatch.getOriginalLhs() == e3
+					&& potentialMatch.getOriginalRhs() == e2) {
 				pmrE2ToE3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == e2
-					&& potentialMatch.getOrigRHS() == e3) {
+			} else if (potentialMatch.getOriginalLhs() == e2
+					&& potentialMatch.getOriginalRhs() == e3) {
 				pmrE2ToE3 = potentialMatch;
 			}
 
@@ -1945,9 +1922,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined no match between e1 and e2.");
 		}
 
-		assertTrue(pmrE1ToE2.getMasterRecord() == null);
+		assertTrue(pmrE1ToE2.getMaster() == null);
 		assertTrue(pmrE1ToE2.getDuplicate() == null);
-		assertTrue(pmrE2ToE3.getMasterRecord() == e2);
+		assertTrue(pmrE2ToE3.getMaster() == e2);
 		assertTrue(pmrE2ToE3.getDuplicate() == e3);
 		assertTrue(pmrE1ToE2.getMatchStatus() == MatchType.NOMATCH);
 	}
@@ -1971,18 +1948,18 @@ public class MatchPoolTest extends TestCase {
 
 		PotentialMatchRecord pmrO1ToO3 = null;
 		PotentialMatchRecord pmrO2ToO3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == o1
-					&& potentialMatch.getOrigRHS() == o3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == o1
+					&& potentialMatch.getOriginalRhs() == o3) {
 				pmrO1ToO3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == o3
-					&& potentialMatch.getOrigRHS() == o1) {
+			} else if (potentialMatch.getOriginalLhs() == o3
+					&& potentialMatch.getOriginalRhs() == o1) {
 				pmrO1ToO3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == o3
-					&& potentialMatch.getOrigRHS() == o2) {
+			} else if (potentialMatch.getOriginalLhs() == o3
+					&& potentialMatch.getOriginalRhs() == o2) {
 				pmrO2ToO3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == o2
-					&& potentialMatch.getOrigRHS() == o3) {
+			} else if (potentialMatch.getOriginalLhs() == o2
+					&& potentialMatch.getOriginalRhs() == o3) {
 				pmrO2ToO3 = potentialMatch;
 			}
 
@@ -1994,9 +1971,9 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a match between o1 and o2.");
 		}
 
-		assertTrue(pmrO1ToO3.getMasterRecord() == o3);
+		assertTrue(pmrO1ToO3.getMaster() == o3);
 		assertTrue(pmrO1ToO3.getDuplicate() == o1);
-		assertTrue(pmrO2ToO3.getMasterRecord() == o3);
+		assertTrue(pmrO2ToO3.getMaster() == o3);
 		assertTrue(pmrO2ToO3.getDuplicate() == o2);
 		assertTrue(pmrO1ToO3.isMatch());
 	}
@@ -2027,36 +2004,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrP1ToP4 = null;
 		PotentialMatchRecord pmrP2ToP3 = null;
 		PotentialMatchRecord pmrP4ToP3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == p1
-					&& potentialMatch.getOrigRHS() == p3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p3
-					&& potentialMatch.getOrigRHS() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p3
-					&& potentialMatch.getOrigRHS() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p2
-					&& potentialMatch.getOrigRHS() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p1
-					&& potentialMatch.getOrigRHS() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p2
-					&& potentialMatch.getOrigRHS() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p1
-					&& potentialMatch.getOrigRHS() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p4
-					&& potentialMatch.getOrigRHS() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p3
-					&& potentialMatch.getOrigRHS() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p4
-					&& potentialMatch.getOrigRHS() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP4ToP3 = potentialMatch;
 			}
 
@@ -2073,88 +2050,88 @@ public class MatchPoolTest extends TestCase {
 		// Not all branches of this test have been exercised. If this starts
 		// failing, think hard
 		// about whether the test makes sense.
-		if (pmrP2ToP3.getMasterRecord() == p3) {
+		if (pmrP2ToP3.getMaster() == p3) {
 			assertTrue(pmrP2ToP3.getDuplicate() == p2);
-			if (pmrP4ToP3.getMasterRecord() == p3) {
+			if (pmrP4ToP3.getMaster() == p3) {
 				assertTrue(pmrP4ToP3.getDuplicate() == p4);
-				if (pmrP1ToP2.getMasterRecord() == p2) {
+				if (pmrP1ToP2.getMaster() == p2) {
 					assertTrue(pmrP1ToP2.getDuplicate() == p1);
-					assertTrue(pmrP1ToP3.getMasterRecord() == null);
+					assertTrue(pmrP1ToP3.getMaster() == null);
 					assertTrue(pmrP1ToP3.getDuplicate() == null);
 					assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
-					assertTrue(pmrP1ToP4.getMasterRecord() == null);
+					assertTrue(pmrP1ToP4.getMaster() == null);
 					assertTrue(pmrP1ToP4.getDuplicate() == null);
 					assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
-				} else if (pmrP1ToP3.getMasterRecord() == p3) {
+				} else if (pmrP1ToP3.getMaster() == p3) {
 					assertTrue(pmrP1ToP3.getDuplicate() == p1);
-					assertTrue(pmrP1ToP2.getMasterRecord() == null);
+					assertTrue(pmrP1ToP2.getMaster() == null);
 					assertTrue(pmrP1ToP2.getDuplicate() == null);
 					assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.UNMATCH);
-					assertTrue(pmrP1ToP4.getMasterRecord() == null);
+					assertTrue(pmrP1ToP4.getMaster() == null);
 					assertTrue(pmrP1ToP4.getDuplicate() == null);
 					assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
 				} else {
 					// pmrP1ToP4's master must be p4
-					assertTrue(pmrP1ToP4.getMasterRecord() == p4);
+					assertTrue(pmrP1ToP4.getMaster() == p4);
 					assertTrue(pmrP1ToP4.getDuplicate() == p1);
-					assertTrue(pmrP1ToP3.getMasterRecord() == null);
+					assertTrue(pmrP1ToP3.getMaster() == null);
 					assertTrue(pmrP1ToP3.getDuplicate() == null);
 					assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
-					assertTrue(pmrP1ToP2.getMasterRecord() == null);
+					assertTrue(pmrP1ToP2.getMaster() == null);
 					assertTrue(pmrP1ToP2.getDuplicate() == null);
 					assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.UNMATCH);
 				}
 			} else {
 				// pmrP1ToP4's master must be p1
-				assertTrue(pmrP1ToP4.getMasterRecord() == p1);
+				assertTrue(pmrP1ToP4.getMaster() == p1);
 				assertTrue(pmrP1ToP4.getDuplicate() == p4);
-				assertTrue(pmrP4ToP3.getMasterRecord() == null);
+				assertTrue(pmrP4ToP3.getMaster() == null);
 				assertTrue(pmrP4ToP3.getDuplicate() == null);
 				assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
-				if (pmrP1ToP2.getMasterRecord() == p2) {
+				if (pmrP1ToP2.getMaster() == p2) {
 					assertTrue(pmrP1ToP2.getDuplicate() == p1);
-					assertTrue(pmrP1ToP3.getMasterRecord() == null);
+					assertTrue(pmrP1ToP3.getMaster() == null);
 					assertTrue(pmrP1ToP3.getDuplicate() == null);
 					assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
 				} else {
 					// pmrP1ToP3's master must be p3
-					assertTrue(pmrP1ToP3.getMasterRecord() == p3);
+					assertTrue(pmrP1ToP3.getMaster() == p3);
 					assertTrue(pmrP1ToP3.getDuplicate() == p1);
-					assertTrue(pmrP1ToP2.getMasterRecord() == null);
+					assertTrue(pmrP1ToP2.getMaster() == null);
 					assertTrue(pmrP1ToP2.getDuplicate() == null);
 					assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.UNMATCH);
 				}
 			}
 		} else {
 			// pmrP1ToP2's master must be p1
-			assertTrue(pmrP1ToP2.getMasterRecord() == p1);
+			assertTrue(pmrP1ToP2.getMaster() == p1);
 			assertTrue(pmrP1ToP2.getDuplicate() == p2);
-			assertTrue(pmrP2ToP3.getMasterRecord() == null);
+			assertTrue(pmrP2ToP3.getMaster() == null);
 			assertTrue(pmrP2ToP3.getDuplicate() == null);
 			assertTrue(pmrP2ToP3.getMatchStatus() == MatchType.UNMATCH);
-			if (pmrP4ToP3.getMasterRecord() == p3) {
+			if (pmrP4ToP3.getMaster() == p3) {
 				assertTrue(pmrP4ToP3.getDuplicate() == p4);
-				if (pmrP1ToP3.getMasterRecord() == p3) {
+				if (pmrP1ToP3.getMaster() == p3) {
 					assertTrue(pmrP1ToP3.getDuplicate() == p1);
-					assertTrue(pmrP1ToP4.getMasterRecord() == null);
+					assertTrue(pmrP1ToP4.getMaster() == null);
 					assertTrue(pmrP1ToP4.getDuplicate() == null);
 					assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
 				} else {
 					// pmrP1ToP4's master must be p4
-					assertTrue(pmrP1ToP4.getMasterRecord() == p4);
+					assertTrue(pmrP1ToP4.getMaster() == p4);
 					assertTrue(pmrP1ToP4.getDuplicate() == p1);
-					assertTrue(pmrP1ToP3.getMasterRecord() == null);
+					assertTrue(pmrP1ToP3.getMaster() == null);
 					assertTrue(pmrP1ToP3.getDuplicate() == null);
 					assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
 				}
 			} else {
 				// pmrP1ToP4's master must be p1
-				assertTrue(pmrP1ToP4.getMasterRecord() == p1);
+				assertTrue(pmrP1ToP4.getMaster() == p1);
 				assertTrue(pmrP1ToP4.getDuplicate() == p4);
-				assertTrue(pmrP4ToP3.getMasterRecord() == null);
+				assertTrue(pmrP4ToP3.getMaster() == null);
 				assertTrue(pmrP4ToP3.getDuplicate() == null);
 				assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
-				assertTrue(pmrP1ToP3.getMasterRecord() == p3);
+				assertTrue(pmrP1ToP3.getMaster() == p3);
 				assertTrue(pmrP1ToP3.getDuplicate() == p1);
 			}
 		}
@@ -2186,36 +2163,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -2229,18 +2206,18 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a match between q3 and q4.");
 		}
 
-		assertTrue(pmrQ1ToQ2.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ2.getMaster() == null);
 		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrQ1ToQ3.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ3.getMaster() == null);
 		assertTrue(pmrQ1ToQ3.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrQ1ToQ4.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ4.getMaster() == null);
 		assertTrue(pmrQ1ToQ4.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ4.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrQ2ToQ3.getMasterRecord() == q3);
+		assertTrue(pmrQ2ToQ3.getMaster() == q3);
 		assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
-		assertTrue(pmrQ4ToQ3.getMasterRecord() == q3);
+		assertTrue(pmrQ4ToQ3.getMaster() == q3);
 		assertTrue(pmrQ4ToQ3.getDuplicate() == q4);
 	}
 
@@ -2269,36 +2246,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrR1ToR4 = null;
 		PotentialMatchRecord pmrR2ToR3 = null;
 		PotentialMatchRecord pmrR4ToR3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == r1
-					&& potentialMatch.getOrigRHS() == r3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR1ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r3
-					&& potentialMatch.getOrigRHS() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r3
-					&& potentialMatch.getOrigRHS() == r2) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r2
-					&& potentialMatch.getOrigRHS() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r1
-					&& potentialMatch.getOrigRHS() == r2) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r2
-					&& potentialMatch.getOrigRHS() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r1
-					&& potentialMatch.getOrigRHS() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r4
-					&& potentialMatch.getOrigRHS() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r3
-					&& potentialMatch.getOrigRHS() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR4ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r4
-					&& potentialMatch.getOrigRHS() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR4ToR3 = potentialMatch;
 			}
 
@@ -2312,29 +2289,29 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a match between p1 and p4.");
 		}
 
-		if (pmrR1ToR2.getMasterRecord() == r2) {
+		if (pmrR1ToR2.getMaster() == r2) {
 			assertTrue(pmrR1ToR2.getDuplicate() == r1);
-			assertTrue(pmrR1ToR4.getMasterRecord() == r1);
+			assertTrue(pmrR1ToR4.getMaster() == r1);
 			assertTrue(pmrR1ToR4.getDuplicate() == r4);
-		} else if (pmrR1ToR2.getMasterRecord() == r1) {
+		} else if (pmrR1ToR2.getMaster() == r1) {
 			assertTrue(pmrR1ToR2.getDuplicate() == r2);
-			assertTrue(pmrR1ToR4.getMasterRecord() == r1);
+			assertTrue(pmrR1ToR4.getMaster() == r1);
 			assertTrue(pmrR1ToR4.getDuplicate() == r4);
 		} else {
 			// r4 is the ultimate master
-			assertTrue(pmrR1ToR2.getMasterRecord() == r1);
+			assertTrue(pmrR1ToR2.getMaster() == r1);
 			assertTrue(pmrR1ToR2.getDuplicate() == r2);
-			assertTrue(pmrR1ToR4.getMasterRecord() == r4);
+			assertTrue(pmrR1ToR4.getMaster() == r4);
 			assertTrue(pmrR1ToR4.getDuplicate() == r1);
 		}
 
-		assertTrue(pmrR1ToR3.getMasterRecord() == null);
+		assertTrue(pmrR1ToR3.getMaster() == null);
 		assertTrue(pmrR1ToR3.getDuplicate() == null);
 		assertTrue(pmrR1ToR3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrR2ToR3.getMasterRecord() == null);
+		assertTrue(pmrR2ToR3.getMaster() == null);
 		assertTrue(pmrR2ToR3.getDuplicate() == null);
 		assertTrue(pmrR2ToR3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrR4ToR3.getMasterRecord() == null);
+		assertTrue(pmrR4ToR3.getMaster() == null);
 		assertTrue(pmrR4ToR3.getDuplicate() == null);
 		assertTrue(pmrR4ToR3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -2363,30 +2340,30 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrR1ToR4 = null;
 		PotentialMatchRecord pmrR2ToR3 = null;
 		PotentialMatchRecord pmrR4ToR3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == r3
-					&& potentialMatch.getOrigRHS() == r2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r2
-					&& potentialMatch.getOrigRHS() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r1
-					&& potentialMatch.getOrigRHS() == r2) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r2
-					&& potentialMatch.getOrigRHS() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r1
-					&& potentialMatch.getOrigRHS() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r4
-					&& potentialMatch.getOrigRHS() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r3
-					&& potentialMatch.getOrigRHS() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR4ToR3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == r4
-					&& potentialMatch.getOrigRHS() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR4ToR3 = potentialMatch;
 			}
 
@@ -2400,25 +2377,25 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a match between p1 and p4.");
 		}
 
-		if (pmrR1ToR2.getMasterRecord() == r2) {
+		if (pmrR1ToR2.getMaster() == r2) {
 			assertTrue(pmrR1ToR2.getDuplicate() == r1);
-			assertTrue(pmrR1ToR4.getMasterRecord() == r1);
+			assertTrue(pmrR1ToR4.getMaster() == r1);
 			assertTrue(pmrR1ToR4.getDuplicate() == r4);
-		} else if (pmrR1ToR2.getMasterRecord() == r1 && pmrR1ToR4.getMasterRecord() == r1) {
+		} else if (pmrR1ToR2.getMaster() == r1 && pmrR1ToR4.getMaster() == r1) {
 			assertTrue(pmrR1ToR2.getDuplicate() == r2);
 			assertTrue(pmrR1ToR4.getDuplicate() == r4);
 		} else {
 			// r4 is the ultimate master
-			assertTrue(pmrR1ToR2.getMasterRecord() == r1);
+			assertTrue(pmrR1ToR2.getMaster() == r1);
 			assertTrue(pmrR1ToR2.getDuplicate() == r2);
-			assertTrue(pmrR1ToR4.getMasterRecord() == r4);
+			assertTrue(pmrR1ToR4.getMaster() == r4);
 			assertTrue(pmrR1ToR4.getDuplicate() == r1);
 		}
 
-		assertTrue(pmrR2ToR3.getMasterRecord() == null);
+		assertTrue(pmrR2ToR3.getMaster() == null);
 		assertTrue(pmrR2ToR3.getDuplicate() == null);
 		assertTrue(pmrR2ToR3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrR4ToR3.getMasterRecord() == null);
+		assertTrue(pmrR4ToR3.getMaster() == null);
 		assertTrue(pmrR4ToR3.getDuplicate() == null);
 		assertTrue(pmrR4ToR3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -2447,30 +2424,30 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -2484,24 +2461,24 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined no match between n2 and n4.");
 		}
 
-		if (pmrN1ToN2.getMasterRecord() == n1) {
+		if (pmrN1ToN2.getMaster() == n1) {
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
-			assertTrue(pmrN2ToN3.getMasterRecord() == n2);
+			assertTrue(pmrN2ToN3.getMaster() == n2);
 			assertTrue(pmrN2ToN3.getDuplicate() == n3);
-		} else if (pmrN1ToN2.getMasterRecord() == n2 && pmrN2ToN3.getMasterRecord() == n2) {
+		} else if (pmrN1ToN2.getMaster() == n2 && pmrN2ToN3.getMaster() == n2) {
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 			assertTrue(pmrN2ToN3.getDuplicate() == n3);
 		} else {
 			// n3 is the ultimate master
-			assertTrue(pmrN1ToN2.getMasterRecord() == n2);
+			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
-			assertTrue(pmrN2ToN3.getMasterRecord() == n3);
+			assertTrue(pmrN2ToN3.getMaster() == n3);
 			assertTrue(pmrN2ToN3.getDuplicate() == n2);
 		}
-		assertTrue(pmrN4ToN3.getMasterRecord() == null);
+		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrN2ToN4.getMasterRecord() == null);
+		assertTrue(pmrN2ToN4.getMaster() == null);
 		assertTrue(pmrN2ToN4.getDuplicate() == null);
 		assertTrue(pmrN2ToN4.getMatchStatus() == MatchType.NOMATCH);
 	}
@@ -2532,36 +2509,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -2580,22 +2557,22 @@ public class MatchPoolTest extends TestCase {
 		}
 
 		if (pmrN1ToN4 != null) {
-			assertTrue(pmrN1ToN4.getMasterRecord() != n4);
+			assertTrue(pmrN1ToN4.getMaster() != n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
-			assertTrue(pmrN1ToN2.getMasterRecord() == n1);
+			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 		} else {
 			// The synthetic edge was created through n2 to n4
-			assertTrue(pmrN2ToN4.getMasterRecord() == n4);
+			assertTrue(pmrN2ToN4.getMaster() == n4);
 			assertTrue(pmrN2ToN4.getDuplicate() == n2);
-			assertTrue(pmrN1ToN2.getMasterRecord() == n2);
+			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 		}
 
-		assertTrue(pmrN2ToN3.getMasterRecord() == null);
+		assertTrue(pmrN2ToN3.getMaster() == null);
 		assertTrue(pmrN2ToN3.getDuplicate() == null);
 		assertTrue(pmrN2ToN3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrN4ToN3.getMasterRecord() == null);
+		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -2623,24 +2600,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN1ToN2 = null;
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
 			}
 
@@ -2652,21 +2629,21 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we unmatch n2 and n4.");
 		}
 
-		if (pmrN1ToN2.getMasterRecord() == n1) {
+		if (pmrN1ToN2.getMaster() == n1) {
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
-			assertTrue(pmrN2ToN3.getMasterRecord() == n2);
+			assertTrue(pmrN2ToN3.getMaster() == n2);
 			assertTrue(pmrN2ToN3.getDuplicate() == n3);
-		} else if (pmrN1ToN2.getMasterRecord() == n2 && pmrN2ToN3.getMasterRecord() == n2) {
+		} else if (pmrN1ToN2.getMaster() == n2 && pmrN2ToN3.getMaster() == n2) {
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 			assertTrue(pmrN2ToN3.getDuplicate() == n3);
 		} else {
 			// n3 is the ultimate master
-			assertTrue(pmrN1ToN2.getMasterRecord() == n2);
+			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
-			assertTrue(pmrN2ToN3.getMasterRecord() == n3);
+			assertTrue(pmrN2ToN3.getMaster() == n3);
 			assertTrue(pmrN2ToN3.getDuplicate() == n2);
 		}
-		assertTrue(pmrN4ToN3.getMasterRecord() == null);
+		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -2697,36 +2674,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -2745,22 +2722,22 @@ public class MatchPoolTest extends TestCase {
 		}
 
 		if (pmrN1ToN4 != null) {
-			assertTrue(pmrN1ToN4.getMasterRecord() == n4);
+			assertTrue(pmrN1ToN4.getMaster() == n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
-			assertTrue(pmrN1ToN2.getMasterRecord() == n1);
+			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 		} else {
 			// The synthetic edge was created through n2 to n4
-			assertTrue(pmrN2ToN4.getMasterRecord() == n4);
+			assertTrue(pmrN2ToN4.getMaster() == n4);
 			assertTrue(pmrN2ToN4.getDuplicate() == n2);
-			assertTrue(pmrN1ToN2.getMasterRecord() == n2);
+			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 		}
 
-		assertTrue(pmrN2ToN3.getMasterRecord() == null);
+		assertTrue(pmrN2ToN3.getMaster() == null);
 		assertTrue(pmrN2ToN3.getDuplicate() == null);
 		assertTrue(pmrN2ToN3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrN4ToN3.getMasterRecord() == null);
+		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -2790,36 +2767,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -2833,18 +2810,18 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined q3 to be the master of all.");
 		}
 
-		assertTrue(pmrQ1ToQ2.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ2.getMaster() == null);
 		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrQ1ToQ3.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ3.getMaster() == null);
 		assertTrue(pmrQ1ToQ3.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrQ1ToQ4.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ4.getMaster() == null);
 		assertTrue(pmrQ1ToQ4.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ4.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrQ2ToQ3.getMasterRecord() == q3);
+		assertTrue(pmrQ2ToQ3.getMaster() == q3);
 		assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
-		assertTrue(pmrQ4ToQ3.getMasterRecord() == q3);
+		assertTrue(pmrQ4ToQ3.getMaster() == q3);
 		assertTrue(pmrQ4ToQ3.getDuplicate() == q4);
 	}
 
@@ -2872,36 +2849,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -2915,19 +2892,19 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined q3 to not be the match of any undefined edges.");
 		}
 
-		assertTrue(pmrQ1ToQ2.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ2.getMaster() == null);
 		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrQ1ToQ3.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ3.getMaster() == null);
 		assertTrue(pmrQ1ToQ3.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrQ1ToQ4.getMasterRecord() == null);
+		assertTrue(pmrQ1ToQ4.getMaster() == null);
 		assertTrue(pmrQ1ToQ4.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ4.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrQ2ToQ3.getMasterRecord() == null);
+		assertTrue(pmrQ2ToQ3.getMaster() == null);
 		assertTrue(pmrQ2ToQ3.getDuplicate() == null);
 		assertTrue(pmrQ2ToQ3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrQ4ToQ3.getMasterRecord() == null);
+		assertTrue(pmrQ4ToQ3.getMaster() == null);
 		assertTrue(pmrQ4ToQ3.getDuplicate() == null);
 		assertTrue(pmrQ4ToQ3.getMatchStatus() == MatchType.NOMATCH);
 	}
@@ -2957,36 +2934,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n3
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n1
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n2
-					&& potentialMatch.getOrigRHS() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == n4
-					&& potentialMatch.getOrigRHS() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
 
@@ -3005,22 +2982,22 @@ public class MatchPoolTest extends TestCase {
 		}
 
 		if (pmrN1ToN4 != null) {
-			assertTrue(pmrN1ToN4.getMasterRecord() == n4);
+			assertTrue(pmrN1ToN4.getMaster() == n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
-			assertTrue(pmrN1ToN2.getMasterRecord() == n1);
+			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 		} else {
 			// The synthetic edge was created through n2 to n4
-			assertTrue(pmrN2ToN4.getMasterRecord() == n4);
+			assertTrue(pmrN2ToN4.getMaster() == n4);
 			assertTrue(pmrN2ToN4.getDuplicate() == n2);
-			assertTrue(pmrN1ToN2.getMasterRecord() == n2);
+			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 		}
 
-		assertTrue(pmrN2ToN3.getMasterRecord() == null);
+		assertTrue(pmrN2ToN3.getMaster() == null);
 		assertTrue(pmrN2ToN3.getDuplicate() == null);
 		assertTrue(pmrN2ToN3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrN4ToN3.getMasterRecord() == null);
+		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -3051,42 +3028,42 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrP2ToP3 = null;
 		PotentialMatchRecord pmrP2ToP4 = null;
 		PotentialMatchRecord pmrP4ToP3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == p1
-					&& potentialMatch.getOrigRHS() == p3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p3
-					&& potentialMatch.getOrigRHS() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p3
-					&& potentialMatch.getOrigRHS() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p2
-					&& potentialMatch.getOrigRHS() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p1
-					&& potentialMatch.getOrigRHS() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p2
-					&& potentialMatch.getOrigRHS() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p1
-					&& potentialMatch.getOrigRHS() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p4
-					&& potentialMatch.getOrigRHS() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p3
-					&& potentialMatch.getOrigRHS() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p4
-					&& potentialMatch.getOrigRHS() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p2
-					&& potentialMatch.getOrigRHS() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP2ToP4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == p4
-					&& potentialMatch.getOrigRHS() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP2ToP4 = potentialMatch;
 			}
 
@@ -3101,19 +3078,19 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we unmatched p3 from everything.");
 		}
 
-		assertTrue(pmrP1ToP2.getMasterRecord() == null);
+		assertTrue(pmrP1ToP2.getMaster() == null);
 		assertTrue(pmrP1ToP2.getDuplicate() == null);
 		assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrP1ToP3.getMasterRecord() == null);
+		assertTrue(pmrP1ToP3.getMaster() == null);
 		assertTrue(pmrP1ToP3.getDuplicate() == null);
 		assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrP1ToP4.getMasterRecord() == null);
+		assertTrue(pmrP1ToP4.getMaster() == null);
 		assertTrue(pmrP1ToP4.getDuplicate() == null);
 		assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrP2ToP3.getMasterRecord() == null);
+		assertTrue(pmrP2ToP3.getMaster() == null);
 		assertTrue(pmrP2ToP3.getDuplicate() == null);
 		assertTrue(pmrP2ToP3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrP4ToP3.getMasterRecord() == null);
+		assertTrue(pmrP4ToP3.getMaster() == null);
 		assertTrue(pmrP4ToP3.getDuplicate() == null);
 		assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -3145,36 +3122,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrS1ToS4 = null;
 		PotentialMatchRecord pmrS2ToS3 = null;
 		PotentialMatchRecord pmrS4ToS3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == s1
-					&& potentialMatch.getOrigRHS() == s3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == s1
+					&& potentialMatch.getOriginalRhs() == s3) {
 				pmrS1ToS3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s3
-					&& potentialMatch.getOrigRHS() == s1) {
+			} else if (potentialMatch.getOriginalLhs() == s3
+					&& potentialMatch.getOriginalRhs() == s1) {
 				pmrS1ToS3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s3
-					&& potentialMatch.getOrigRHS() == s2) {
+			} else if (potentialMatch.getOriginalLhs() == s3
+					&& potentialMatch.getOriginalRhs() == s2) {
 				pmrS2ToS3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s2
-					&& potentialMatch.getOrigRHS() == s3) {
+			} else if (potentialMatch.getOriginalLhs() == s2
+					&& potentialMatch.getOriginalRhs() == s3) {
 				pmrS2ToS3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s1
-					&& potentialMatch.getOrigRHS() == s2) {
+			} else if (potentialMatch.getOriginalLhs() == s1
+					&& potentialMatch.getOriginalRhs() == s2) {
 				pmrS1ToS2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s2
-					&& potentialMatch.getOrigRHS() == s1) {
+			} else if (potentialMatch.getOriginalLhs() == s2
+					&& potentialMatch.getOriginalRhs() == s1) {
 				pmrS1ToS2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s1
-					&& potentialMatch.getOrigRHS() == s4) {
+			} else if (potentialMatch.getOriginalLhs() == s1
+					&& potentialMatch.getOriginalRhs() == s4) {
 				pmrS1ToS4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s4
-					&& potentialMatch.getOrigRHS() == s1) {
+			} else if (potentialMatch.getOriginalLhs() == s4
+					&& potentialMatch.getOriginalRhs() == s1) {
 				pmrS1ToS4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s3
-					&& potentialMatch.getOrigRHS() == s4) {
+			} else if (potentialMatch.getOriginalLhs() == s3
+					&& potentialMatch.getOriginalRhs() == s4) {
 				pmrS4ToS3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == s4
-					&& potentialMatch.getOrigRHS() == s3) {
+			} else if (potentialMatch.getOriginalLhs() == s4
+					&& potentialMatch.getOriginalRhs() == s3) {
 				pmrS4ToS3 = potentialMatch;
 			}
 
@@ -3188,23 +3165,23 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined q3 to be the master of all.");
 		}
 
-		assertTrue(pmrS1ToS2.getMasterRecord() == null);
+		assertTrue(pmrS1ToS2.getMaster() == null);
 		assertTrue(pmrS1ToS2.getDuplicate() == null);
 		assertTrue(pmrS1ToS2.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrS1ToS4.getMasterRecord() == null);
+		assertTrue(pmrS1ToS4.getMaster() == null);
 		assertTrue(pmrS1ToS4.getDuplicate() == null);
 		assertTrue(pmrS1ToS4.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrS4ToS3.getMasterRecord() == s3);
+		assertTrue(pmrS4ToS3.getMaster() == s3);
 		assertTrue(pmrS4ToS3.getDuplicate() == s4);
-		if (pmrS2ToS3.getMasterRecord() == s3) {
-			assertTrue(pmrS1ToS3.getMasterRecord() == null);
+		if (pmrS2ToS3.getMaster() == s3) {
+			assertTrue(pmrS1ToS3.getMaster() == null);
 			assertTrue(pmrS1ToS3.getDuplicate() == null);
 			assertTrue(pmrS1ToS3.getMatchStatus() == MatchType.UNMATCH);
 			assertTrue(pmrS2ToS3.getDuplicate() == s2);
 		} else {
-			assertTrue(pmrS1ToS3.getMasterRecord() == s3);
+			assertTrue(pmrS1ToS3.getMaster() == s3);
 			assertTrue(pmrS1ToS3.getDuplicate() == s1);
-			assertTrue(pmrS2ToS3.getMasterRecord() == null);
+			assertTrue(pmrS2ToS3.getMaster() == null);
 			assertTrue(pmrS2ToS3.getDuplicate() == null);
 			assertTrue(pmrS2ToS3.getMatchStatus() == MatchType.UNMATCH);
 		}
@@ -3236,36 +3213,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q2
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q1
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q3
-					&& potentialMatch.getOrigRHS() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == q4
-					&& potentialMatch.getOrigRHS() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
 
@@ -3279,32 +3256,32 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a match between q3 and q4.");
 		}
 
-		if (pmrQ4ToQ3.getMasterRecord() == q4) {
-			assertTrue(pmrQ1ToQ2.getMasterRecord() == null);
+		if (pmrQ4ToQ3.getMaster() == q4) {
+			assertTrue(pmrQ1ToQ2.getMaster() == null);
 			assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 			assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
-			assertTrue(pmrQ1ToQ3.getMasterRecord() == null);
+			assertTrue(pmrQ1ToQ3.getMaster() == null);
 			assertTrue(pmrQ1ToQ3.getDuplicate() == null);
 			assertTrue(pmrQ1ToQ3.getMatchStatus() == MatchType.NOMATCH);
-			assertTrue(pmrQ1ToQ4.getMasterRecord() == null);
+			assertTrue(pmrQ1ToQ4.getMaster() == null);
 			assertTrue(pmrQ1ToQ4.getDuplicate() == null);
 			assertTrue(pmrQ1ToQ4.getMatchStatus() == MatchType.UNMATCH);
-			assertTrue(pmrQ2ToQ3.getMasterRecord() == q3);
+			assertTrue(pmrQ2ToQ3.getMaster() == q3);
 			assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
 			assertTrue(pmrQ4ToQ3.getDuplicate() == q3);
 		} else {
 			// q1 was matched to q4
-			assertTrue(pmrQ1ToQ2.getMasterRecord() == null);
+			assertTrue(pmrQ1ToQ2.getMaster() == null);
 			assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 			assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
-			assertTrue(pmrQ1ToQ3.getMasterRecord() == null);
+			assertTrue(pmrQ1ToQ3.getMaster() == null);
 			assertTrue(pmrQ1ToQ3.getDuplicate() == null);
 			assertTrue(pmrQ1ToQ3.getMatchStatus() == MatchType.NOMATCH);
-			assertTrue(pmrQ1ToQ4.getMasterRecord() == q4);
+			assertTrue(pmrQ1ToQ4.getMaster() == q4);
 			assertTrue(pmrQ1ToQ4.getDuplicate() == q1);
-			assertTrue(pmrQ2ToQ3.getMasterRecord() == q3);
+			assertTrue(pmrQ2ToQ3.getMaster() == q3);
 			assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
-			assertTrue(pmrQ4ToQ3.getMasterRecord() == null);
+			assertTrue(pmrQ4ToQ3.getMaster() == null);
 			assertTrue(pmrQ4ToQ3.getDuplicate() == null);
 			assertTrue(pmrQ4ToQ3.getMatchStatus() == MatchType.UNMATCH);
 		}
@@ -3336,30 +3313,30 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrT1ToT3 = null;
 		PotentialMatchRecord pmrT2ToT3 = null;
 		PotentialMatchRecord pmrT4ToT3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == t1
-					&& potentialMatch.getOrigRHS() == t3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == t1
+					&& potentialMatch.getOriginalRhs() == t3) {
 				pmrT1ToT3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == t3
-					&& potentialMatch.getOrigRHS() == t1) {
+			} else if (potentialMatch.getOriginalLhs() == t3
+					&& potentialMatch.getOriginalRhs() == t1) {
 				pmrT1ToT3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == t3
-					&& potentialMatch.getOrigRHS() == t2) {
+			} else if (potentialMatch.getOriginalLhs() == t3
+					&& potentialMatch.getOriginalRhs() == t2) {
 				pmrT2ToT3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == t2
-					&& potentialMatch.getOrigRHS() == t3) {
+			} else if (potentialMatch.getOriginalLhs() == t2
+					&& potentialMatch.getOriginalRhs() == t3) {
 				pmrT2ToT3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == t1
-					&& potentialMatch.getOrigRHS() == t2) {
+			} else if (potentialMatch.getOriginalLhs() == t1
+					&& potentialMatch.getOriginalRhs() == t2) {
 				pmrT1ToT2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == t2
-					&& potentialMatch.getOrigRHS() == t1) {
+			} else if (potentialMatch.getOriginalLhs() == t2
+					&& potentialMatch.getOriginalRhs() == t1) {
 				pmrT1ToT2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == t3
-					&& potentialMatch.getOrigRHS() == t4) {
+			} else if (potentialMatch.getOriginalLhs() == t3
+					&& potentialMatch.getOriginalRhs() == t4) {
 				pmrT4ToT3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == t4
-					&& potentialMatch.getOrigRHS() == t3) {
+			} else if (potentialMatch.getOriginalLhs() == t4
+					&& potentialMatch.getOriginalRhs() == t3) {
 				pmrT4ToT3 = potentialMatch;
 			}
 
@@ -3373,15 +3350,15 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined t3 to be the master of all.");
 		}
 
-		assertTrue(pmrT1ToT2.getMasterRecord() == t2);
+		assertTrue(pmrT1ToT2.getMaster() == t2);
 		assertTrue(pmrT1ToT2.getDuplicate() == t1);
-		assertTrue(pmrT1ToT3.getMasterRecord() == null);
+		assertTrue(pmrT1ToT3.getMaster() == null);
 		assertTrue(pmrT1ToT3.getDuplicate() == null);
 		assertTrue(pmrT1ToT3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrT2ToT3.getMasterRecord() == null);
+		assertTrue(pmrT2ToT3.getMaster() == null);
 		assertTrue(pmrT2ToT3.getDuplicate() == null);
 		assertTrue(pmrT2ToT3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrT4ToT3.getMasterRecord() == t3);
+		assertTrue(pmrT4ToT3.getMaster() == t3);
 		assertTrue(pmrT4ToT3.getDuplicate() == t4);
 	}
 
@@ -3406,24 +3383,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrU1ToU2 = null;
 		PotentialMatchRecord pmrU1ToU3 = null;
 		PotentialMatchRecord pmrU2ToU3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == u1
-					&& potentialMatch.getOrigRHS() == u3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == u1
+					&& potentialMatch.getOriginalRhs() == u3) {
 				pmrU1ToU3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == u3
-					&& potentialMatch.getOrigRHS() == u1) {
+			} else if (potentialMatch.getOriginalLhs() == u3
+					&& potentialMatch.getOriginalRhs() == u1) {
 				pmrU1ToU3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == u3
-					&& potentialMatch.getOrigRHS() == u2) {
+			} else if (potentialMatch.getOriginalLhs() == u3
+					&& potentialMatch.getOriginalRhs() == u2) {
 				pmrU2ToU3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == u2
-					&& potentialMatch.getOrigRHS() == u3) {
+			} else if (potentialMatch.getOriginalLhs() == u2
+					&& potentialMatch.getOriginalRhs() == u3) {
 				pmrU2ToU3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == u1
-					&& potentialMatch.getOrigRHS() == u2) {
+			} else if (potentialMatch.getOriginalLhs() == u1
+					&& potentialMatch.getOriginalRhs() == u2) {
 				pmrU1ToU2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == u2
-					&& potentialMatch.getOrigRHS() == u1) {
+			} else if (potentialMatch.getOriginalLhs() == u2
+					&& potentialMatch.getOriginalRhs() == u1) {
 				pmrU1ToU2 = potentialMatch;
 			}
 
@@ -3435,20 +3412,20 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined u2 to be the master of all.");
 		}
 
-		assertTrue(pmrU1ToU3.getMasterRecord() == null);
+		assertTrue(pmrU1ToU3.getMaster() == null);
 		assertTrue(pmrU1ToU3.getDuplicate() == null);
 		assertTrue(pmrU1ToU3.getMatchStatus() == MatchType.NOMATCH);
-		if (pmrU1ToU2.getMasterRecord() == u2) {
+		if (pmrU1ToU2.getMaster() == u2) {
 			assertTrue(pmrU1ToU2.getDuplicate() == u1);
-			assertTrue(pmrU2ToU3.getMasterRecord() == null);
+			assertTrue(pmrU2ToU3.getMaster() == null);
 			assertTrue(pmrU2ToU3.getDuplicate() == null);
 			assertTrue(pmrU2ToU3.getMatchStatus() == MatchType.UNMATCH);
 		} else {
 			// u3 was matched to u2 instead of u1
-			assertTrue(pmrU1ToU2.getMasterRecord() == null);
+			assertTrue(pmrU1ToU2.getMaster() == null);
 			assertTrue(pmrU1ToU2.getDuplicate() == null);
 			assertTrue(pmrU1ToU2.getMatchStatus() == MatchType.UNMATCH);
-			assertTrue(pmrU2ToU3.getMasterRecord() == u2);
+			assertTrue(pmrU2ToU3.getMaster() == u2);
 			assertTrue(pmrU2ToU3.getDuplicate() == u3);
 		}
 	}
@@ -3480,36 +3457,36 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrV1ToV4 = null;
 		PotentialMatchRecord pmrV2ToV3 = null;
 		PotentialMatchRecord pmrV4ToV3 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == v1
-					&& potentialMatch.getOrigRHS() == v3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == v1
+					&& potentialMatch.getOriginalRhs() == v3) {
 				pmrV1ToV3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v3
-					&& potentialMatch.getOrigRHS() == v1) {
+			} else if (potentialMatch.getOriginalLhs() == v3
+					&& potentialMatch.getOriginalRhs() == v1) {
 				pmrV1ToV3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v3
-					&& potentialMatch.getOrigRHS() == v2) {
+			} else if (potentialMatch.getOriginalLhs() == v3
+					&& potentialMatch.getOriginalRhs() == v2) {
 				pmrV2ToV3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v2
-					&& potentialMatch.getOrigRHS() == v3) {
+			} else if (potentialMatch.getOriginalLhs() == v2
+					&& potentialMatch.getOriginalRhs() == v3) {
 				pmrV2ToV3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v1
-					&& potentialMatch.getOrigRHS() == v2) {
+			} else if (potentialMatch.getOriginalLhs() == v1
+					&& potentialMatch.getOriginalRhs() == v2) {
 				pmrV1ToV2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v2
-					&& potentialMatch.getOrigRHS() == v1) {
+			} else if (potentialMatch.getOriginalLhs() == v2
+					&& potentialMatch.getOriginalRhs() == v1) {
 				pmrV1ToV2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v1
-					&& potentialMatch.getOrigRHS() == v4) {
+			} else if (potentialMatch.getOriginalLhs() == v1
+					&& potentialMatch.getOriginalRhs() == v4) {
 				pmrV1ToV4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v4
-					&& potentialMatch.getOrigRHS() == v1) {
+			} else if (potentialMatch.getOriginalLhs() == v4
+					&& potentialMatch.getOriginalRhs() == v1) {
 				pmrV1ToV4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v3
-					&& potentialMatch.getOrigRHS() == v4) {
+			} else if (potentialMatch.getOriginalLhs() == v3
+					&& potentialMatch.getOriginalRhs() == v4) {
 				pmrV4ToV3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == v4
-					&& potentialMatch.getOrigRHS() == v3) {
+			} else if (potentialMatch.getOriginalLhs() == v4
+					&& potentialMatch.getOriginalRhs() == v3) {
 				pmrV4ToV3 = potentialMatch;
 			}
 
@@ -3523,45 +3500,45 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined v3 to be the master of all.");
 		}
 
-		assertTrue(pmrV1ToV2.getMasterRecord() == null);
+		assertTrue(pmrV1ToV2.getMaster() == null);
 		assertTrue(pmrV1ToV2.getDuplicate() == null);
 		assertTrue(pmrV1ToV2.getMatchStatus() == MatchType.NOMATCH);
-		if (pmrV2ToV3.getMasterRecord() == v3) {
+		if (pmrV2ToV3.getMaster() == v3) {
 			assertTrue(pmrV2ToV3.getDuplicate() == v2);
-			assertTrue(pmrV4ToV3.getMasterRecord() == v3);
+			assertTrue(pmrV4ToV3.getMaster() == v3);
 			assertTrue(pmrV4ToV3.getDuplicate() == v4);
-			assertTrue(pmrV1ToV3.getMasterRecord() == null);
+			assertTrue(pmrV1ToV3.getMaster() == null);
 			assertTrue(pmrV1ToV3.getDuplicate() == null);
 			assertTrue(pmrV1ToV3.getMatchStatus() == MatchType.UNMATCH);
-			assertTrue(pmrV1ToV4.getMasterRecord() == null);
+			assertTrue(pmrV1ToV4.getMaster() == null);
 			assertTrue(pmrV1ToV4.getDuplicate() == null);
 			assertTrue(pmrV1ToV4.getMatchStatus() == MatchType.UNMATCH);
 		} else {
 			// v2 was not selected to have v3 as it's ultimate master.
-			assertTrue(pmrV2ToV3.getMasterRecord() == null);
+			assertTrue(pmrV2ToV3.getMaster() == null);
 			assertTrue(pmrV2ToV3.getDuplicate() == null);
 			assertTrue(pmrV2ToV3.getMatchStatus() == MatchType.UNMATCH);
-			if (pmrV1ToV4.getMasterRecord() == v1) {
+			if (pmrV1ToV4.getMaster() == v1) {
 				assertTrue(pmrV1ToV4.getDuplicate() == v4);
-				assertTrue(pmrV4ToV3.getMasterRecord() == null);
+				assertTrue(pmrV4ToV3.getMaster() == null);
 				assertTrue(pmrV4ToV3.getDuplicate() == null);
 				assertTrue(pmrV4ToV3.getMatchStatus() == MatchType.UNMATCH);
-				assertTrue(pmrV1ToV3.getMasterRecord() == v3);
+				assertTrue(pmrV1ToV3.getMaster() == v3);
 				assertTrue(pmrV1ToV3.getDuplicate() == v1);
-			} else if (pmrV1ToV4.getMasterRecord() == v4) {
+			} else if (pmrV1ToV4.getMaster() == v4) {
 				assertTrue(pmrV1ToV4.getDuplicate() == v1);
-				assertTrue(pmrV1ToV3.getMasterRecord() == null);
+				assertTrue(pmrV1ToV3.getMaster() == null);
 				assertTrue(pmrV1ToV3.getDuplicate() == null);
 				assertTrue(pmrV1ToV3.getMatchStatus() == MatchType.UNMATCH);
-				assertTrue(pmrV4ToV3.getMasterRecord() == v3);
+				assertTrue(pmrV4ToV3.getMaster() == v3);
 				assertTrue(pmrV4ToV3.getDuplicate() == v4);
 			} else {
-				assertTrue(pmrV4ToV3.getMasterRecord() == v3);
+				assertTrue(pmrV4ToV3.getMaster() == v3);
 				assertTrue(pmrV4ToV3.getDuplicate() == v4);
-				assertTrue(pmrV1ToV4.getMasterRecord() == null);
+				assertTrue(pmrV1ToV4.getMaster() == null);
 				assertTrue(pmrV1ToV4.getDuplicate() == null);
 				assertTrue(pmrV1ToV4.getMatchStatus() == MatchType.UNMATCH);
-				assertTrue(pmrV1ToV3.getMasterRecord() == v3);
+				assertTrue(pmrV1ToV3.getMaster() == v3);
 				assertTrue(pmrV1ToV3.getDuplicate() == v1);
 			}
 		}
@@ -3590,24 +3567,24 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrH1ToH2 = null;
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
-		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatchRecords()) {
-			if (potentialMatch.getOrigLHS() == h1
-					&& potentialMatch.getOrigRHS() == h2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == h1
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h2
-					&& potentialMatch.getOrigRHS() == h1) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h3
-					&& potentialMatch.getOrigRHS() == h2) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h2
-					&& potentialMatch.getOrigRHS() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h3
-					&& potentialMatch.getOrigRHS() == h4) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getOrigLHS() == h4
-					&& potentialMatch.getOrigRHS() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h4
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
 
@@ -3619,11 +3596,11 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined h2 as the master of h3.");
 		}
 
-		assertTrue(pmrH1ToH2.getMasterRecord() == h2);
+		assertTrue(pmrH1ToH2.getMaster() == h2);
 		assertTrue(pmrH1ToH2.getDuplicate() == h1);
-		assertTrue(pmrH2ToH3.getMasterRecord() == h3);
+		assertTrue(pmrH2ToH3.getMaster() == h3);
 		assertTrue(pmrH2ToH3.getDuplicate() == h2);
-		assertTrue(pmrH3ToH4.getMasterRecord() == h3);
+		assertTrue(pmrH3ToH4.getMaster() == h3);
 		assertTrue(pmrH3ToH4.getDuplicate() == h4);
 	}
 
@@ -3663,19 +3640,19 @@ public class MatchPoolTest extends TestCase {
 		assertNotNull(pmrP1ToP4);
 		assertNotNull(pmrP4ToP3);
 
-		assertTrue(pmrP1ToP2.getMasterRecord() == null);
+		assertTrue(pmrP1ToP2.getMaster() == null);
 		assertTrue(pmrP1ToP2.getDuplicate() == null);
 		assertSame(pmrP1ToP2.getMatchStatus(), MatchType.UNMATCH);
-		assertTrue(pmrP1ToP3.getMasterRecord() == null);
+		assertTrue(pmrP1ToP3.getMaster() == null);
 		assertTrue(pmrP1ToP3.getDuplicate() == null);
 		assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrP1ToP4.getMasterRecord() == null);
+		assertTrue(pmrP1ToP4.getMaster() == null);
 		assertTrue(pmrP1ToP4.getDuplicate() == null);
 		assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrP2ToP3.getMasterRecord() == null);
+		assertTrue(pmrP2ToP3.getMaster() == null);
 		assertTrue(pmrP2ToP3.getDuplicate() == null);
 		assertTrue(pmrP2ToP3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrP4ToP3.getMasterRecord() == null);
+		assertTrue(pmrP4ToP3.getMaster() == null);
 		assertTrue(pmrP4ToP3.getDuplicate() == null);
 		assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
 	}
@@ -3714,7 +3691,7 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined a3 as the master of a1.");
 		}
 
-		assertTrue(pmrA1ToA3.getMasterRecord() == a3);
+		assertTrue(pmrA1ToA3.getMaster() == a3);
 		assertTrue(pmrA1ToA3.getDuplicate() == a1);
 		assertTrue(pmrA1ToA3.isSynthetic());
 
@@ -3722,7 +3699,7 @@ public class MatchPoolTest extends TestCase {
 
 		assertTrue(pmrA1ToA2.getMatchStatus() == MatchType.UNMATCH);
 		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.UNMATCH);
-		assertFalse(pool.getPotentialMatchRecords().contains(pmrA1ToA3));
+		assertFalse(pool.getPotentialMatches().contains(pmrA1ToA3));
 	}
 
 	/**
@@ -3730,7 +3707,7 @@ public class MatchPoolTest extends TestCase {
 	 * in the database.
 	 */
 	public void testStoreUpdatesOnMatch() throws Exception {
-		pool.begin("Testing match pool");
+		pool.store();
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
@@ -3740,9 +3717,9 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
 		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(
 				a1, a2);
-		pmrA1ToA2.setMasterRecord(a1);
+		pmrA1ToA2.setMaster(a1);
 
-		pool.commit();
+		pool.store();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3757,7 +3734,7 @@ public class MatchPoolTest extends TestCase {
 	 * stored in the database.
 	 */
 	public void testStoreUpdatesOnNoMatch() throws Exception {
-		pool.begin("testing match pool");	
+		pool.store();
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
@@ -3769,7 +3746,7 @@ public class MatchPoolTest extends TestCase {
 				a1, a2);
 		pmrA1ToA2.setMatchStatus(MatchType.NOMATCH);
 
-		pool.commit();
+		pool.store();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3784,7 +3761,7 @@ public class MatchPoolTest extends TestCase {
 	 * stored in the database.
 	 */
 	public void testStoreUpdatesOnUnmatch() throws Exception {
-		pool.begin("testing match pool");
+		pool.store();
 		
 		SourceTableRecord b1 = pool.getSourceTableRecord(Collections.singletonList("b1"));
 		SourceTableRecord b2 = pool.getSourceTableRecord(Collections.singletonList("b2"));
@@ -3792,7 +3769,7 @@ public class MatchPoolTest extends TestCase {
 				b1, b2);
 		b1b2.setMatchStatus(MatchType.UNMATCH);
 
-		pool.commit();
+		pool.store();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3807,10 +3784,9 @@ public class MatchPoolTest extends TestCase {
 	 * an exception if the MatchPool contains no SourceTableRecords.
 	 */
 	public void testStoreOnEmptyMatchPool() throws Exception {
-		MatchPool emptyPool = project.getMatchPool();
+		MatchPool emptyPool = new MatchPool(project);
 		try {
-			emptyPool.begin("empty pool");
-			emptyPool.commit();
+			emptyPool.store();
 		} catch (ArrayIndexOutOfBoundsException e) {
 			// Expecting no exception to get thrown
 			fail("store() threw ArrayIndexOutOfBoundsException on an empty MatchPool");
@@ -3822,8 +3798,7 @@ public class MatchPoolTest extends TestCase {
 	 * removed from the database.
 	 */
 	public void testStoreDropsRemovedRecords() throws Exception {
-		pool.begin("Testing match pool");
-		pool.find(null);
+		pool.store();
 		
 		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
 		SourceTableRecord a2 = pool.getSourceTableRecord(Collections.singletonList("a2"));
@@ -3832,10 +3807,10 @@ public class MatchPoolTest extends TestCase {
 				a1, a2);
 		PotentialMatchRecord a2a3 = pool.getPotentialMatchFromOriginals(
 				a2, a3);
-		pool.removePotentialMatchRecord(a1a2);
-		pool.removePotentialMatchRecord(a2a3);
+		pool.removePotentialMatch(a1a2);
+		pool.removePotentialMatch(a2a3);
 
-		pool.commit();
+		pool.store();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3854,15 +3829,14 @@ public class MatchPoolTest extends TestCase {
 	 * potential record is stored in the database.
 	 */
 	public void testStoreNewRecordMatched() throws Exception {
-		pool.begin("Testing match pool");
 		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
 		SourceTableRecord a3 = pool.getSourceTableRecord(Collections.singletonList("a3"));
 		PotentialMatchRecord a1a3 = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, 
 				a1, a3, false);
 		a1a3.setMatchStatus(MatchType.MATCH);
-		pool.addPotentialMatchRecord(a1a3);
+		pool.addPotentialMatch(a1a3);
 
-		pool.commit();
+		pool.store();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3907,7 +3881,7 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.AUTOMATCH);
 		
 		//Checks to see if a2 has two masters
-		assertFalse(pmrA1ToA2.getMasterRecord() == a1 && pmrA2ToA3.getMasterRecord() == a3);
+		assertFalse(pmrA1ToA2.getMaster() == a1 && pmrA2ToA3.getMaster() == a3);
 	}
 	
 	/**
@@ -4004,20 +3978,20 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrCyc2ToCyc3 = pool.getPotentialMatchFromOriginals(cycle2, cycle3);
 		
 		//make sure no nodes have 2 parents
-		assertFalse(pmrCyc1ToCyc2.getMasterRecord() == cycle2 
-				&& pmrCyc1ToCyc3.getMasterRecord() == cycle3);
-		assertFalse(pmrCyc1ToCyc2.getMasterRecord() == cycle1 
-				&& pmrCyc2ToCyc3.getMasterRecord() == cycle3);
-		assertFalse(pmrCyc1ToCyc3.getMasterRecord() == cycle1 
-				&& pmrCyc2ToCyc3.getMasterRecord() == cycle2);
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle2 
+				&& pmrCyc1ToCyc3.getMaster() == cycle3);
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle1 
+				&& pmrCyc2ToCyc3.getMaster() == cycle3);
+		assertFalse(pmrCyc1ToCyc3.getMaster() == cycle1 
+				&& pmrCyc2ToCyc3.getMaster() == cycle2);
 		
 		//make sure there is no cycle
-		assertFalse(pmrCyc1ToCyc2.getMasterRecord() == cycle2
-					&& pmrCyc2ToCyc3.getMasterRecord() == cycle3
-					&& pmrCyc1ToCyc3.getMasterRecord() == cycle1);
-		assertFalse(pmrCyc1ToCyc2.getMasterRecord() == cycle1
-				&& pmrCyc2ToCyc3.getMasterRecord() == cycle2
-				&& pmrCyc1ToCyc3.getMasterRecord() == cycle3);
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle2
+					&& pmrCyc2ToCyc3.getMaster() == cycle3
+					&& pmrCyc1ToCyc3.getMaster() == cycle1);
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle1
+				&& pmrCyc2ToCyc3.getMaster() == cycle2
+				&& pmrCyc1ToCyc3.getMaster() == cycle3);
 	}
 	
 	/**
@@ -4051,7 +4025,7 @@ public class MatchPoolTest extends TestCase {
 		assertNull(pmrF1ToF3);
 		assertTrue(pmrF1ToF2.getMatchStatus() == MatchType.AUTOMATCH);
 		assertTrue(pmrF2ToF3.getMatchStatus() == MatchType.AUTOMATCH);
-		assertFalse(pmrF1ToF2.getMasterRecord() == f1 && pmrF2ToF3.getMasterRecord() == f3);
+		assertFalse(pmrF1ToF2.getMaster() == f1 && pmrF2ToF3.getMaster() == f3);
 	}
 	
 	/**
@@ -4198,20 +4172,14 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrZ2ToZ3.getMatchStatus() == MatchType.AUTOMATCH);
 		assertTrue(pmrZ3ToZ4.getMatchStatus() == MatchType.AUTOMATCH);
 		
-		assertFalse(pmrZ1ToZ2.getMasterRecord() == z1
-				&& pmrZ2ToZ3.getMasterRecord() == z3);
-		assertFalse(pmrZ2ToZ3.getMasterRecord() == z2
-				&& pmrZ3ToZ4.getMasterRecord() == z4);
+		assertFalse(pmrZ1ToZ2.getMaster() == z1
+				&& pmrZ2ToZ3.getMaster() == z3);
+		assertFalse(pmrZ2ToZ3.getMaster() == z2
+				&& pmrZ3ToZ4.getMaster() == z4);
 	}
 	
 	public void testClear() throws Exception {
-		this.pool = project.getMatchPool();
-		
-		pool.clear();
-		pool.clearCache();
-		assertEquals(0, pool.getPotentialMatchRecords().size());
-		assertEquals(0, pool.getAllSourceTableRecords().size());
-		
+		this.pool = new MatchPool(project);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
@@ -4219,16 +4187,17 @@ public class MatchPoolTest extends TestCase {
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
 		insertResultTableRecord(con, "1", "4", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.MERGED);
-		pool.find(null);
+		pool.findAll(null);
 		
-		assertTrue(pool.getPotentialMatchRecords().size() != 0);
-		assertTrue(pool.getAllSourceTableRecords().size() != 0);
+		assertTrue(pool.getPotentialMatches().size() != 0);
+		assertTrue(pool.getSourceTableRecords().size() != 0);
+		assertEquals(1, pool.getMergedMatches().size());
 		
 		pool.clear();
-		pool.clearCache();
-		pool.find(null);
+		pool.findAll(null);
 		
-		assertEquals(0, pool.getPotentialMatchRecords().size());
-		assertEquals(0, pool.getAllSourceTableRecords().size());
+		assertEquals(0, pool.getPotentialMatches().size());
+		assertEquals(0, pool.getSourceTableRecords().size());
+		assertEquals(1, pool.getMergedMatches().size());
 	}
 }

@@ -20,14 +20,11 @@
 package ca.sqlpower.matchmaker.dao.xml;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.io.File;
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +41,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
@@ -54,35 +50,14 @@ import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
-import ca.sqlpower.matchmaker.munge.AddressCorrectionMungeStep;
-import ca.sqlpower.matchmaker.munge.BooleanConstantMungeStep;
-import ca.sqlpower.matchmaker.munge.BooleanToStringMungeStep;
-import ca.sqlpower.matchmaker.munge.CSVWriterMungeStep;
-import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
-import ca.sqlpower.matchmaker.munge.DateConstantMungeStep;
-import ca.sqlpower.matchmaker.munge.DateToStringMungeStep;
-import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
-import ca.sqlpower.matchmaker.munge.GoogleAddressLookup;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeStepInput;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.NumberConstantMungeStep;
-import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
-import ca.sqlpower.matchmaker.munge.SortWordsMungeStep;
-import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
-import ca.sqlpower.matchmaker.munge.StringToBooleanMungeStep;
-import ca.sqlpower.matchmaker.munge.StringToDateMungeStep;
-import ca.sqlpower.matchmaker.munge.StringToNumberMungeStep;
-import ca.sqlpower.matchmaker.munge.SubstringByWordMungeStep;
-import ca.sqlpower.matchmaker.munge.SubstringMungeStep;
-import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
-import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.util.UserPrompter;
 import ca.sqlpower.util.Version;
 
 public class ProjectSAXHandler extends DefaultHandler {
@@ -103,7 +78,7 @@ public class ProjectSAXHandler extends DefaultHandler {
      */
     public static final Version SUPPORTED_EXPORT_VERSION = new Version("1.1.0");
     
-    private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    private final DateFormat df = new SimpleDateFormat(ProjectDAOXML.DATE_FORMAT);
     
     /**
      * All of the allowable classes for munge step inputs/outputs. We enumerate these
@@ -183,7 +158,7 @@ public class ProjectSAXHandler extends DefaultHandler {
      * Inputs of the current munge step we're processing. The step's normal input list will be
      * replaced by this one in endElement.
      */
-    private List<MungeStepInput> stepInputs;
+    private List<Input> stepInputs;
 
     private List<AbstractMungeStep> steps;
 
@@ -194,23 +169,12 @@ public class ProjectSAXHandler extends DefaultHandler {
      */
     private TableMergeRules tableMergeRules;
     
-    private UserPrompter prompt;
-    
     private Map<String, TableMergeRules> tableMergeRulesIdMap = new HashMap<String, TableMergeRules>();
 
     private ColumnMergeRules columnMergeRules;
 
     ProjectSAXHandler(MatchMakerSession session) {
         this.session = session;
-        List<MatchMakerTranslateGroup> groups;
-        if (session.getTranslations() == null) {
-        	groups = Collections.emptyList();
-        } else {
-        	groups = session.getTranslations().getChildren(MatchMakerTranslateGroup.class);
-        }
-        prompt = session.createUserPrompterFactory().createListUserPrompter("A previously selected translate group" +
-        		"could not be carried over\nand must be selected manually. Choose a local translate group:",
-				groups, null);
     }
 
     @Override
@@ -237,8 +201,6 @@ public class ProjectSAXHandler extends DefaultHandler {
                 project = new Project();
                 project.setSession(session);
                 projects.add(project);
-                
-               project.setMagicEnabled(false);
                 
                 String id = null;
 
@@ -445,7 +407,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                 checkMandatory("id", id);
                 checkMandatory("name", process.getName());
 
-                project.addChild(process); // FIXME have to do this in endElement
+                project.addMungeProcess(process); // FIXME have to do this in endElement
 
             } else if (qName.equals("munge-step") && parentIs("munge-process")) {
                 String type = attributes.getValue("step-type");
@@ -493,12 +455,7 @@ public class ProjectSAXHandler extends DefaultHandler {
 
             } else if (qName.equals("output") && parentIs("munge-step")) {
 
-            	/*
-            	 * We put all the properties into a map and initialize this after
-            	 * so that we don't need a setType function for MungeStepOutput
-            	 */
-                MungeStepOutput mso;
-                HashMap<String, String> msoProperties = new HashMap<String,String>();
+                MungeStepOutput mso = new MungeStepOutput();
 
                 String id = null;
 
@@ -507,24 +464,20 @@ public class ProjectSAXHandler extends DefaultHandler {
                     String aval = attributes.getValue(i);
 
                     if (aname.equals("id")) {
-                        msoProperties.put("id",aval);
+                        mungeStepOutputIdMap.put(aval, mso);
                         id = aval;
                     } else if (aname.equals("name")) {
-                        msoProperties.put("name",aval);
+                        mso.setName(aval);
                     } else if (aname.equals("visible")) {
-                        msoProperties.put("visible",aval);
+                        mso.setVisible(Boolean.valueOf(aval));
                     } else if (aname.equals("data-type")) {
                         checkAcceptableOutputType(aval);
-                        msoProperties.put("data-type",aval);
+                        mso.setType(Class.forName(aval));
                     } else {
                         logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locationAsString());
                     }
 
                 }
-
-                mso = new MungeStepOutput(msoProperties.get("name"), Class.forName(msoProperties.get("data-type")));
-                mso.setVisible(Boolean.valueOf(msoProperties.get("visible")));
-                mungeStepOutputIdMap.put(msoProperties.get("id"), mso);
 
                 checkMandatory("id", id);
                 checkMandatory("name", mso.getName());
@@ -546,7 +499,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     throw new SAXException("Bad munge step reference \"" + stepId + "\" at " + locationAsString());
                 }
 
-                stepInputs = new ArrayList<MungeStepInput>();
+                stepInputs = new ArrayList<Input>();
 
             } else if (qName.equals("input") && parentIs("munge-step")) {
 
@@ -587,7 +540,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                     }
                 }
                 InputDescriptor inDesc = new InputDescriptor(name, type);
-                MungeStepInput in = new MungeStepInput(inDesc, step);
+                Input in = new Input(null, inDesc, step);
                 if (connected) {
                     in.setCurrent(fromOutput);
                 }
@@ -597,7 +550,7 @@ public class ProjectSAXHandler extends DefaultHandler {
             } else if (qName.equals("table-merge-rule")) {
                 tableMergeRules = new TableMergeRules();
                 tableMergeRulesIdMap.put(attributes.getValue("id"), tableMergeRules);
-                project.addTableMergeRules(tableMergeRules, project.getTableMergeRules().size());
+                project.addTableMergeRule(tableMergeRules);
                 
                 for (int i = 0; i < attributes.getLength(); i++) {
                     String aname = attributes.getQName(i);
@@ -719,6 +672,8 @@ public class ProjectSAXHandler extends DefaultHandler {
             ms.setLog(new File(aval));  // XXX windows vs unix problems
         } else if (aname.equals("process-count")) {
             ms.setProcessCount(Integer.parseInt(aval));
+        } else if (aname.equals("send-email")) {
+            ms.setSendEmail(Boolean.valueOf(aval));
         } else {
             return false;
         }
@@ -754,246 +709,7 @@ public class ProjectSAXHandler extends DefaultHandler {
                 }
             } else if (qName.equals("parameter")) {
                 if (parentIs("munge-step")) {
-                	if (parameterName.equals("x")) {
-                		if (step.getPosition() != null) {
-                			step.getPosition().x = Integer.valueOf(text.toString());
-                		} else {
-                			step.setPosition(new Point(Integer.valueOf(text.toString()), 0));
-                		}
-                	} else if (parameterName.equals("y")) {
-                		if (step.getPosition() != null) {
-                			step.getPosition().y = Integer.valueOf(text.toString());
-                		} else {
-                			step.setPosition(new Point(0, Integer.valueOf(text.toString())));
-                		}
-                	} else if (parameterName.equals("expanded")) {
-                		step.setExpanded(Boolean.valueOf(text.toString()));
-                	}
-                	// used to look like this:
-                    // step.setParameter(parameterName, text.toString());
-                	// this massive if block is all for the sake of importing.
-                	
-                	else if (step instanceof AddressCorrectionMungeStep) {
-                		if (parameterName.equals("AddressCorrectionDataPath")) {
-                			((AddressCorrectionMungeStep)step).setAddressCorrectionDataPath(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof BooleanConstantMungeStep) {
-                		if (parameterName.equals("value")) {
-                			((BooleanConstantMungeStep)step).setConstant(Boolean.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof BooleanToStringMungeStep) {
-                		if (parameterName.equals("true string")) {
-                			((BooleanToStringMungeStep)step).setTrueString(text.toString());
-                		} else if (parameterName.equals("false string")) {
-                			((BooleanToStringMungeStep)step).setFalseString(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof CSVWriterMungeStep) {
-                		if (parameterName.equals("fileName")) {
-                			((CSVWriterMungeStep)step).setFilePath(text.toString());
-                		} else if (parameterName.equals("clearFile")) {
-                			((CSVWriterMungeStep)step).setClearFile(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("quote")) {
-                			((CSVWriterMungeStep)step).setQuoteChar(text.toString().charAt(0));
-                		} else if (parameterName.equals("escape")) {
-                			((CSVWriterMungeStep)step).setEscapeChar(text.toString().charAt(0));
-                		} else if (parameterName.equals("separator")) {
-                			((CSVWriterMungeStep)step).setSeparator(text.toString().charAt(0));	
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof ConcatMungeStep) {
-                		if (parameterName.equals("delimiter")) {
-                			((ConcatMungeStep)step).setDelimiter(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof DateConstantMungeStep) {
-                		if (parameterName.equals("value")) {
-                			((DateConstantMungeStep)step).setValue(text.toString());
-                		} else if (parameterName.equals("return null")) {
-                			((DateConstantMungeStep)step).setReturnNull(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("use current time")) {
-                			((DateConstantMungeStep)step).setUseCurrentTime(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("format type")) {
-                			((DateConstantMungeStep)step).setDateFormat(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof DateToStringMungeStep) {
-                		if (parameterName.equals("format")) {
-                			((DateToStringMungeStep)step).setFormat(text.toString());
-                		} else if (parameterName.equals("dateFormat")) {
-                			((DateToStringMungeStep)step).setDateFormat(text.toString());
-                		} else if (parameterName.equals("timeFormat")) {
-                			((DateToStringMungeStep)step).setTimeFormat(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof DoubleMetaphoneMungeStep) {
-                		if (parameterName.equals("useAlternate")) {
-                			((DoubleMetaphoneMungeStep)step).setUseAlternate(Boolean.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof GoogleAddressLookup) {
-                		if (parameterName.equals("GoogleMapsApiKey")) {
-                			((GoogleAddressLookup)step).setGoogleMapsApiKey(text.toString());
-                		} else if (parameterName.equals("GoogleGeocoderUrl")) {
-                			((GoogleAddressLookup)step).setGoogleGeocoderURL(text.toString());
-                		} else if (parameterName.equals("LookupRateLimit")) {
-                			((GoogleAddressLookup)step).setRateLimit(Long.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof NumberConstantMungeStep) {
-                		if (parameterName.equals("value")) {
-                			((NumberConstantMungeStep)step).setValue(BigDecimal.valueOf(Double.valueOf(text.toString())));
-                		} else if (parameterName.equals("return null")) {
-                			((NumberConstantMungeStep)step).setValue(null);
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof RetainCharactersMungeStep) {
-                		if (parameterName.equals("caseSensitive")) {
-                			((RetainCharactersMungeStep)step).setCaseSensitive(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("useRegex")) {
-                			((RetainCharactersMungeStep)step).setUseRegex(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("retainChars")) {
-                			((RetainCharactersMungeStep)step).setRetainChars(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof SortWordsMungeStep) {
-                		if (parameterName.equals("caseSensitive")) {
-                			((SortWordsMungeStep)step).setCaseSensitive(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("useRegex")) {
-                			((SortWordsMungeStep)step).setRegex(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("delimiter")) {
-                			((SortWordsMungeStep)step).setDelimiter(text.toString());
-                		} else if (parameterName.equals("resultDelim")) {
-                			((SortWordsMungeStep)step).setResultDelim(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof StringSubstitutionMungeStep) {
-                		if (parameterName.equals("from")) {
-                			((StringSubstitutionMungeStep)step).setFrom(text.toString());
-                		} else if (parameterName.equals("to")) {
-                			((StringSubstitutionMungeStep)step).setTo(text.toString());
-                		} else if (parameterName.equals("caseSensitive")) {
-                			((SortWordsMungeStep)step).setCaseSensitive(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("useRegex")) {
-                			((SortWordsMungeStep)step).setRegex(Boolean.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof StringToBooleanMungeStep) {
-                		if (parameterName.equals("true list")) {
-                			((StringToBooleanMungeStep)step).setTrueList(text.toString());
-                		} else if (parameterName.equals("false list")) {
-                			((StringToBooleanMungeStep)step).setFalseList(text.toString());
-                		} else if (parameterName.equals("caseSensitive")) {
-                			((StringToBooleanMungeStep)step).setCaseSensitive(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("useRegex")) {
-                			((StringToBooleanMungeStep)step).setUseRegex(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("neighter true or false")) {
-                			((StringToBooleanMungeStep)step).setNeither(Boolean.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof StringToDateMungeStep) {
-                		if (parameterName.equals("ignoreError")) {
-                			((StringToDateMungeStep)step).setIgnoreError(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("inputFormat")) {
-                			((StringToDateMungeStep)step).setInputFormat(text.toString());
-                		} else if (parameterName.equals("dateFormat")) {
-                			((StringToDateMungeStep)step).setDateFormat(text.toString());
-                		} else if (parameterName.equals("timeFormat")) {
-                			((StringToDateMungeStep)step).setTimeFormat(text.toString());
-                		} else if (parameterName.equals("outputFormat")) {
-                			((StringToDateMungeStep)step).setOutputFormat(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof StringToNumberMungeStep) {
-                		if (parameterName.equals("continue on malformed number")) {
-                			((StringToNumberMungeStep)step).setAllowMalformed(Boolean.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof SubstringByWordMungeStep) {
-                		if (parameterName.equals("caseSensitive")) {
-                			((SubstringByWordMungeStep)step).setCaseSensitive(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("useRegex")) {
-                			((SubstringByWordMungeStep)step).setRegex(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("delimiter")) {
-                			((SubstringByWordMungeStep)step).setDelimiter(text.toString());
-                		} else if (parameterName.equals("resultDelim")) {
-                			((SubstringByWordMungeStep)step).setResultDelim(text.toString());
-                		} else if (parameterName.equals("beginIndex")) {
-                			((SubstringByWordMungeStep)step).setBegIndex(Integer.valueOf(text.toString()));
-                		} else if (parameterName.equals("endIndex")) {
-                			((SubstringByWordMungeStep)step).setEndIndex(Integer.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof SubstringMungeStep) {
-                		if (parameterName.equals("beginIndex")) {
-                			((SubstringMungeStep)step).setBegIndex(Integer.valueOf(text.toString()));
-                		} else if (parameterName.equals("endIndex")) {
-                			((SubstringMungeStep)step).setEndIndex(Integer.valueOf(text.toString()));
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof TranslateWordMungeStep) {
-                		if (parameterName.equals("caseSensitive")) {
-                			((TranslateWordMungeStep)step).setCaseSensitive(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("useRegex")) {
-                			((TranslateWordMungeStep)step).setRegex(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("translateGroupOid")) {
-	                    		prompt.promptUser();
-	                    		((TranslateWordMungeStep)step).setTranslateGroup((MatchMakerTranslateGroup) prompt.getUserSelectedResponse());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                		
-                	} else if (step instanceof WordCountMungeStep) {
-                		if (parameterName.equals("caseSensitive")) {
-                			((WordCountMungeStep)step).setCaseSensitive(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("useRegex")) {
-                			((WordCountMungeStep)step).setRegex(Boolean.valueOf(text.toString()));
-                		} else if (parameterName.equals("delimiter")) {
-                			((WordCountMungeStep)step).setDelimiter(text.toString());
-                		} else {
-                			throw new SAXException("Cannot import unrecognized parameter " + parameterName);
-                		}
-                	} else {
-                		throw new SAXException("No parameters implemented for " + step.getClass());
-                	}
+                    step.setParameter(parameterName, text.toString());
                 }
             } else if (qName.equals("update-statement")) {
                 if (parentIs("column-merge-rule")) {
@@ -1003,7 +719,6 @@ public class ProjectSAXHandler extends DefaultHandler {
         }
 
         if (qName.equals("project")) {
-        	project.setMagicEnabled(true);
             project = null;
         } else if (qName.equals("munge-process") && parentIs("project")) {
             for (AbstractMungeStep step : steps) {
@@ -1014,11 +729,11 @@ public class ProjectSAXHandler extends DefaultHandler {
             mungeStepOutputIdMap = null;
         } else if (qName.equals("munge-step") && parentIs("munge-process")) {
             logger.debug("setting children to " + stepChildren);
-            step.setMSO(stepChildren);
+            step.setChildren(stepChildren);
             stepChildren = null;
             step = null;
         } else if (qName.equals("munge-step") && parentIs("connections")) {
-            step.setMSI(stepInputs);
+            step.setInputs(stepInputs);
             stepInputs = null;
             step = null;
         }

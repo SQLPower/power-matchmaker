@@ -19,16 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-
 
 
 /**
@@ -38,82 +28,38 @@ import ca.sqlpower.object.annotation.Mutator;
  */
 public class BooleanToStringMungeStep extends AbstractMungeStep {
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
 	/**
 	 * The string to return if the boolean taken in is true.
 	 */
-	private String trueString;
+	public static final String TRUE_STRING_PARAMETER_NAME = "true string";
 	
 	/**
 	 * The string to return if the boolean taken in is false.
 	 */
-	private String falseString;
+	public static final String FALSE_STRING_PARAMETER_NAME = "false string";
 	
-	@Constructor
+	
 	public BooleanToStringMungeStep() {
 		super("Boolean to String",false);
-		setTrueString("True");
-		setFalseString("False");
-	}
-
-
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"stringOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("stringOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("booleanInput",
-				Boolean.class);
+		InputDescriptor desc = new InputDescriptor("booleanInput", Boolean.class);
 		super.addInput(desc);
-
+		setParameter(TRUE_STRING_PARAMETER_NAME, "True");
+		setParameter(FALSE_STRING_PARAMETER_NAME, "False");
 	}
 	
 
 	public Boolean doCall() throws Exception {
 		Boolean in = (Boolean) getMSOInputs().get(0).getData();
-		MungeStepOutput<String> out = getOut();
 		if (in == null) {
-			out.setData(null);
+			getOut().setData(null);
 		} else if (in.booleanValue()) {
-			out.setData(getTrueString());
+			getOut().setData(getParameter(TRUE_STRING_PARAMETER_NAME));
 		} else {
-			out.setData(getFalseString());
+			getOut().setData(getParameter(FALSE_STRING_PARAMETER_NAME));
 		}
 		return true;
-	}
-
-	@Mutator
-	public void setTrueString(String trueString) {
-		String oldTrueString = this.trueString;
-		this.trueString = trueString;
-		firePropertyChange("trueString", oldTrueString, trueString);
-	}
-
-	@Accessor
-	public String getTrueString() {
-		return trueString;
-	}
-
-	@Mutator
-	public void setFalseString(String falseString) {
-		String oldFalseString = this.falseString;
-		this.falseString = falseString;
-		firePropertyChange("falseString", oldFalseString, falseString);
-	}
-
-	@Accessor
-	public String getFalseString() {
-		return falseString;
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		BooleanToStringMungeStep step = (BooleanToStringMungeStep) copy;
-		step.setFalseString(getFalseString());
-		step.setTrueString(getTrueString());
 	}
 
 }

@@ -20,36 +20,38 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.util.Arrays;
+
 import javax.swing.event.TreeModelEvent;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.MMRootNode;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.object.ObjectDependentException;
-import ca.sqlpower.swingui.FolderNode;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 
 public class MatchMakerTreeModelTest extends TestCase {
 
 	MatchMakerTreeEventCounter counter;
 	MatchMakerTreeModel treeModel;
-	private MatchMakerObject currentFoldersNode;
-	private final PlFolder folder = new PlFolder("Test Folder");
-	private final Project mmo = new Project();
+	private MatchMakerObject<MatchMakerObject, PlFolder> currentFoldersNode;
+	private final PlFolder<TestingAbstractMatchMakerObject> folder =
+		new PlFolder<TestingAbstractMatchMakerObject>("Test Folder");
+	private final TestingAbstractMatchMakerObject mmo =
+		new TestingAbstractMatchMakerObject();
 
 	protected void setUp() throws Exception {
 		super.setUp();
 		counter = new MatchMakerTreeEventCounter();
-		MatchMakerSession session = new TestingMatchMakerSession();
-		MMRootNode rootNode = new MMRootNode();
-		rootNode.setSession(session);
-		treeModel = new MatchMakerTreeModel(rootNode, session);
-		currentFoldersNode = (MatchMakerObject) treeModel.getChild(treeModel.getRoot(), 0);
-		currentFoldersNode.addChild(folder, 0);
+		FolderParent current = new FolderParent(new TestingMatchMakerSession());
+		FolderParent backup = new FolderParent(new TestingMatchMakerSession());
+		TranslateGroupParent translate  = new TranslateGroupParent(new TestingMatchMakerSession());
+		treeModel = new MatchMakerTreeModel(current,backup,translate,new TestingMatchMakerSession());
+		currentFoldersNode = (MatchMakerObject<MatchMakerObject, PlFolder>) treeModel.getChild(treeModel.getRoot(), 0);
+		currentFoldersNode.addChild(folder);
 	}
 
 	/**
@@ -60,15 +62,17 @@ public class MatchMakerTreeModelTest extends TestCase {
 
 		treeModel.addTreeModelListener(counter);
 		folder.addChild(mmo);
-		assertEquals("insert event count should be 2 because we are adding the project and FolderNodes",
-				2, counter.getChildrenInsertedCount());
-		assertEquals("total event count should be 2", 2, counter.getAllEventCounts());
-		assertEquals("Last event source should be folder",  mmo, counter.getLastEvt().getSource());
+		assertEquals("insert event count should be 1",
+				1, counter.getChildrenInsertedCount());
+		assertEquals("total event count should be 1",
+				1, counter.getAllEventCounts());
+		assertEquals("Last event source should be folder",
+				folder,counter.getLastEvt().getSource());
 		TreeModelEvent evt = counter.getLastEvt();
-		assertEquals(2, evt.getChildIndices().length);
-		assertEquals(2, evt.getChildren().length);
+		assertEquals(1, evt.getChildIndices().length);
+		assertEquals(1, evt.getChildren().length);
 		assertEquals(folder.getChildren().indexOf(mmo), evt.getChildIndices()[0]);
-		assertSame(mmo, ((FolderNode)evt.getChildren()[0]).getParent());
+		assertSame(mmo, evt.getChildren()[0]);
 	}
 
 	/**
@@ -81,14 +85,14 @@ public class MatchMakerTreeModelTest extends TestCase {
 
 		folder.addChild(mmo);
 		treeModel.addTreeModelListener(counter);
-		mmo.addChild(new MungeProcess());
+		mmo.addChild(new Project());
 
 		assertEquals("insert event count should be 1",
 				1, counter.getChildrenInsertedCount());
 		assertEquals("total event count should be 1",
 				1, counter.getAllEventCounts());
-		assertEquals("Parent of last event source should be project",
-				mmo,((FolderNode)counter.getLastEvt().getSource()).getParent());
+		assertEquals("Last event source should be folder",
+				mmo,counter.getLastEvt().getSource());
 	}
 
 	/**
@@ -96,32 +100,24 @@ public class MatchMakerTreeModelTest extends TestCase {
 	 *
 	 */
 	public void testTreeNodeRemoveEvent() {
-		
-		mmo.setName("Test Project");
-		
+
 		folder.addChild(mmo);
 		treeModel.addTreeModelListener(counter);
 
-		try {
-			folder.removeChild(mmo);
-		} catch (ObjectDependentException e) {
-			fail("You should not get an error here");
-		}
-		
+		mmo.getEventSupport().fireChildrenRemoved("property name",
+				new int[]{0}, Arrays.asList(new MatchMakerObject[] {mmo}));
 		assertEquals("remove event count should be 1",
 				1, counter.getChildrenRemovedCount());
 		assertEquals("total event count should be 1",
 				1, counter.getAllEventCounts());
-		
-		
-		assertEquals("Last event source should be folder",
-				folder,counter.getLastEvt().getSource());
+		assertEquals("Last event source should be mmo",
+				mmo,counter.getLastEvt().getSource());
 
 		TreeModelEvent evt = counter.getLastEvt();
 		assertEquals(1, evt.getChildIndices().length);
 		assertEquals(1, evt.getChildren().length);
 		assertEquals(0, evt.getChildIndices()[0]);
-		assertSame(mmo, (evt.getChildren()[0]));
+		assertSame(mmo, evt.getChildren()[0]);
 	}
 
 	/**
@@ -131,14 +127,11 @@ public class MatchMakerTreeModelTest extends TestCase {
 	public void testTreeNodeRemoveChildEvent() {
 
 		folder.addChild(mmo);
-		try {
-			folder.removeChild(mmo);
-		}catch (ObjectDependentException e) {
-			throw new RuntimeException(e);
-		}
+		folder.removeChild(mmo);
 		treeModel.addTreeModelListener(counter);
 
-		mmo.setName("newName");
+		mmo.getEventSupport().fireChildrenRemoved("property name",
+				new int[]{0}, Arrays.asList(new MatchMakerObject[] {mmo}));
 		assertEquals("remove event count should be 0",
 				0, counter.getChildrenRemovedCount());
 		assertEquals("total event count should be 0",
@@ -151,9 +144,30 @@ public class MatchMakerTreeModelTest extends TestCase {
 
 		folder.addChild(mmo);
 		treeModel.addTreeModelListener(counter);
-		mmo.setName("newName");
+		mmo.getEventSupport().firePropertyChange("property name",
+				"old value","new value");
 		assertEquals("property change event count should be 1",
 				1, counter.getPropertyChangedCount());
+		assertEquals("total event count should be 1",
+				1, counter.getAllEventCounts());
+		assertEquals("Last event source should be mmo",
+				mmo,counter.getLastEvt().getSource());
+	}
+
+	public void testTreeNodeStructChangeEvent() {
+		final PlFolder<TestingAbstractMatchMakerObject> folder =
+			new PlFolder<TestingAbstractMatchMakerObject>("Test Folder");
+		currentFoldersNode.addChild(folder);
+
+		final TestingAbstractMatchMakerObject mmo =
+			new TestingAbstractMatchMakerObject();
+		folder.addChild(mmo);
+
+		treeModel.addTreeModelListener(counter);
+		mmo.getEventSupport().fireStructureChanged();
+
+		assertEquals("structure change event count should be 1",
+				1, counter.getStructureChangedCount());
 		assertEquals("total event count should be 1",
 				1, counter.getAllEventCounts());
 		assertEquals("Last event source should be mmo",

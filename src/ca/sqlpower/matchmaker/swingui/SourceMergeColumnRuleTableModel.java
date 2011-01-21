@@ -31,21 +31,14 @@ import ca.sqlpower.sqlobject.SQLColumn;
  * merge rules of a source merge rule. It has two columns: column name and action.
  */
 public class SourceMergeColumnRuleTableModel extends
-		AbstractMatchMakerTableModel <TableMergeRules>{
-	
-	TableMergeRules mergeRule;
+		AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> {
 	
 	public SourceMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);
-		this.mergeRule = mergeRule;
 	}
 
 	public int getColumnCount() {
 		return 2;
-	}
-	
-	public int getRowCount() {
-		return this.mergeRule.getColumnMergeRules().size();
 	}
 
 	@Override
@@ -72,9 +65,9 @@ public class SourceMergeColumnRuleTableModel extends
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		if (columnIndex == 0) {
-			return mmo.getChildren(ColumnMergeRules.class).get(rowIndex).getColumn();
+			return mmo.getChildren().get(rowIndex).getColumn();
 		} else if (columnIndex == 1) {
-			return mmo.getChildren(ColumnMergeRules.class).get(rowIndex).getActionType();
+			return mmo.getChildren().get(rowIndex).getActionType();
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 		}	
@@ -86,7 +79,7 @@ public class SourceMergeColumnRuleTableModel extends
 	}
 
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		ColumnMergeRules rule = mmo.getChildren(ColumnMergeRules.class).get(rowIndex);
+		ColumnMergeRules rule = mmo.getChildren().get(rowIndex);
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {

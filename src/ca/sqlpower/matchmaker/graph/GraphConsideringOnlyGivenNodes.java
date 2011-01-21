@@ -66,12 +66,12 @@ public class GraphConsideringOnlyGivenNodes implements
 		//XXX We should be able to make this faster. Possibly store the edges and listen to
 		//the pool for changes in the potential matches to know when to update our edges.
 		for (PotentialMatchRecord pmr: node.getOriginalMatchEdges()) {
-			if (pmr.getOrigLHS() == node) {
-				if (nodes.contains(pmr.getOrigRHS())) {
-					adjacentNodes.add(pmr.getOrigRHS());
+			if (pmr.getOriginalLhs() == node) {
+				if (nodes.contains(pmr.getOriginalRhs())) {
+					adjacentNodes.add(pmr.getOriginalRhs());
 				}
-			} else if (pmr.getOrigRHS() == node && nodes.contains(pmr.getOrigLHS())) {
-				adjacentNodes.add(pmr.getOrigLHS());
+			} else if (pmr.getOriginalRhs() == node && nodes.contains(pmr.getOriginalLhs())) {
+				adjacentNodes.add(pmr.getOriginalLhs());
 			}
 		}
 		if (logger.isDebugEnabled()) {
@@ -82,8 +82,8 @@ public class GraphConsideringOnlyGivenNodes implements
 
 	public Collection<PotentialMatchRecord> getEdges() {
 		Collection<PotentialMatchRecord> edges = new ArrayList<PotentialMatchRecord>();
-        for (PotentialMatchRecord pmr : pool.getPotentialMatchRecords()){
-            if (nodes.contains(pmr.getOrigLHS()) && nodes.contains(pmr.getOrigRHS())){
+        for (PotentialMatchRecord pmr : pool.getPotentialMatches()){
+            if (nodes.contains(pmr.getOriginalLhs()) && nodes.contains(pmr.getOriginalRhs())){
                 edges.add(pmr);
             }
         }
@@ -93,9 +93,9 @@ public class GraphConsideringOnlyGivenNodes implements
 	public Collection<PotentialMatchRecord> getInboundEdges(SourceTableRecord node) {
 		Set<PotentialMatchRecord> outboundEdges = new HashSet<PotentialMatchRecord>();
 		for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()) {
-			if ((pmr.getOrigLHS() == node && nodes.contains(pmr.getOrigRHS()) 
-					|| (pmr.getOrigRHS() == node && nodes.contains(pmr.getOrigLHS())))) {
-				if (pmr.getMasterRecord() == node) {
+			if ((pmr.getOriginalLhs() == node && nodes.contains(pmr.getOriginalRhs()) 
+					|| (pmr.getOriginalRhs() == node && nodes.contains(pmr.getOriginalLhs())))) {
+				if (pmr.getMaster() == node) {
 					outboundEdges.add(pmr);
 				}
 			}
@@ -110,9 +110,9 @@ public class GraphConsideringOnlyGivenNodes implements
 	public Collection<PotentialMatchRecord> getOutboundEdges(SourceTableRecord node) {
 		Set<PotentialMatchRecord> outboundEdges = new HashSet<PotentialMatchRecord>();
 		for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()) {
-			if ((pmr.getOrigLHS() == node && nodes.contains(pmr.getOrigRHS()) 
-					|| (pmr.getOrigRHS() == node && nodes.contains(pmr.getOrigLHS())))) {
-				if (pmr.getMasterRecord() != null && pmr.getMasterRecord() != node) {
+			if ((pmr.getOriginalLhs() == node && nodes.contains(pmr.getOriginalRhs()) 
+					|| (pmr.getOriginalRhs() == node && nodes.contains(pmr.getOriginalLhs())))) {
+				if (pmr.getMaster() != null && pmr.getMaster() != node) {
 					outboundEdges.add(pmr);
 				}
 			}

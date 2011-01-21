@@ -23,24 +23,17 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TypeMap;
-import ca.sqlpower.object.ObjectDependentException;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.sql.CachedRowSet;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
@@ -56,11 +49,6 @@ import ca.sqlpower.sqlobject.SQLTable;
  */
 public class SQLInputStep extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
 	/**
 	 * Default value to input when setting the ResultSet fetch size using
 	 * {@link ResultSet#setFetchSize(int)}. This is to help with a production bug running
@@ -111,14 +99,14 @@ public class SQLInputStep extends AbstractMungeStep {
         
         if (!rs.next()) {
             for (int i = 0; i < table.getColumns().size(); i++) {
-                MungeStepOutput<?> o = getChildren(MungeStepOutput.class).get(i);
+                MungeStepOutput<?> o = getChildren().get(i);
                 o.setData(null);
             }
             return false;
         }
         
         for (int i = 0; i < table.getColumns().size(); i++) {
-            MungeStepOutput<?> o = getChildren(MungeStepOutput.class).get(i);
+            MungeStepOutput<?> o = getChildren().get(i);
             if (o.getType() == String.class) {
                 MungeStepOutput<String> oo = (MungeStepOutput<String>) o;
                 oo.setData(rs.getString(i + 1));
@@ -183,71 +171,52 @@ public class SQLInputStep extends AbstractMungeStep {
     			throw new RuntimeException("The input table has no parent database defined.");
     		}
 
-    		Statement stmt = null;
-    		ResultSet tempRs = null;
-    		try {
-    			con = db.getConnection();
-    			if (con == null) {
-    				throw new RuntimeException("Could not obtain a connection to the input table's database");
-    			}
-    			con.setAutoCommit(false);
+    		con = db.getConnection();
+    		if (con == null) {
+    			throw new RuntimeException("Could not obtain a connection to the input table's database");
+    		}
+    		con.setAutoCommit(false);
 
-    			stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            Statement stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+            
+            // Some platforms (definitely PostgreSQL) require a non-zero fetch size to enable streaming
+            stmt.setFetchSize(100);
 
-    			// Some platforms (definitely PostgreSQL) require a non-zero fetch size to enable streaming
-    			stmt.setFetchSize(100);
+    		StringBuilder sql = new StringBuilder();
+    		sql.append("SELECT");
+    		boolean first = true;
+    		for (SQLColumn c : table.getColumns()) {
+    			if (!first) sql.append(",");
+    			sql.append("\n ").append(c.getName());
+    			first = false;
+    		}
+    		sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
+    		if (getProject().getFilter() != null && getProject().getFilter().trim().length() > 0) {
+    			sql.append("\nWHERE " + getProject().getFilter());
+    		}
 
-    			StringBuilder sql = new StringBuilder();
-    			sql.append("SELECT");
-    			boolean first = true;
-    			for (SQLColumn c : table.getColumns()) {
-    				if (!first) sql.append(",");
-    				sql.append("\n ").append("\"").append(c.getName()).append("\"");
-    				first = false;
-    			}
-    			sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
-    			if (getProject().getFilter() != null && getProject().getFilter().trim().length() > 0) {
-    				sql.append("\nWHERE " + getProject().getFilter());
-    			}
+    		if (isPreviewMode()) {
+    		    stmt.setMaxRows(MungePreviewer.MAX_ROWS_PREVIEWED);
+    		}
+    		logger.debug("Attempting to execute input query: " + sql);
+    		ResultSet tempRs = stmt.executeQuery(sql.toString());
 
-    			if (isPreviewMode()) {
-    				stmt.setMaxRows(MungePreviewer.MAX_ROWS_PREVIEWED);
-    			}
-    			logger.debug("Attempting to execute input query: " + sql);
-    			tempRs = stmt.executeQuery(sql.toString());
-
-    			logger.debug("ResultSet fetch size is: " + tempRs.getFetchSize());
-    			if (tempRs.getFetchSize() < DEFAULT_FETCH_SIZE) {
-    				tempRs.setFetchSize(DEFAULT_FETCH_SIZE);
-    			}
-
-    			if (isPreviewMode()) {
-    				previewRS.populate(tempRs);
-    				previewRS.beforeFirst();
-    				rs = previewRS;
-    			} else if (!nullOutRS) {
-    				rs = tempRs;
-    			}
-    		} finally {
-    			if (isPreviewMode()) {
-    				if (tempRs != null) {
-    					try {
-    						tempRs.close();
-    					} catch (Exception e) {
-    						logger.error(e);
-    					}
-    				}
-    				if (stmt != null) {
-    					try {
-    						stmt.close();
-    					} catch (Exception e) {
-    						logger.error(e);
-    					}
-    				}
-    				con.close();
-    			} else if (nullOutRS) {
-    				con.close();
-    			}
+    		logger.debug("ResultSet fetch size is: " + tempRs.getFetchSize());
+    		if (tempRs.getFetchSize() < DEFAULT_FETCH_SIZE) {
+    			tempRs.setFetchSize(DEFAULT_FETCH_SIZE);
+    		}
+    		
+    		if (isPreviewMode()) {
+    			previewRS.populate(tempRs);
+    			previewRS.beforeFirst();
+    			rs = previewRS;
+    			tempRs.close();
+    			stmt.close();
+    		} else if (!nullOutRS) {
+    			rs = tempRs;
+    		}
+    		if (isPreviewMode() || nullOutRS) {
+    			con.close();
     		}
     	}
     }
@@ -260,19 +229,8 @@ public class SQLInputStep extends AbstractMungeStep {
      * columns' types have changed.
      */
     private void setupOutputs() throws SQLObjectException {
-        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren(MungeStepOutput.class));
+        Set<MungeStepOutput> orphanOutputs = new HashSet<MungeStepOutput>(getChildren());
         for (SQLColumn c : table.getColumns()) {
-        	
-        	/*
-			 * this next line is needed because we need to assign upstream types
-			 * to every type in columns otherwise stuff doesn't work right.
-			 * Unfortunately, we cannot do this at the source of the problem:
-			 * 		SQLTable.fetchColumnsForTable
-			 * since we have no session info there
-			 */
-			c.setType(c.getType());
-			c.setType(getSession().getSQLType(c.getType()));
-			
             String colName = c.getName();
             MungeStepOutput<?> output = getOutputByName(colName);
             if (output == null) {
@@ -283,9 +241,9 @@ public class SQLInputStep extends AbstractMungeStep {
                 // existing column changed type -- recreate output with same name and new type
                 int idx = getChildren().indexOf(output);
                 MungeStepOutput<?> newOutput = new MungeStepOutput(colName, TypeMap.typeClass(c.getType()));
-                addChild(newOutput, idx);
+                addChild(idx, newOutput);
                 MungeProcess mp = getParent();
-                for (MungeStep step : mp.getChildren(MungeStep.class)) {
+                for (MungeStep step : mp.getChildren()) {
                     for (int i = 0; i < step.getInputCount(); i++) {
                         InputDescriptor id = step.getInputDescriptor(i);
                         MungeStepOutput input = step.getMSOInputs().get(i);
@@ -300,11 +258,7 @@ public class SQLInputStep extends AbstractMungeStep {
                     }
                     
                 }
-                try {
-                	removeChild(output);
-                } catch (ObjectDependentException e) {
-                	throw new RuntimeException(e);
-                }
+                removeChild(output);
                 orphanOutputs.remove(output);
             } else {
                 // existing column with existing output -- nothing to do
@@ -315,14 +269,10 @@ public class SQLInputStep extends AbstractMungeStep {
         // clean up outputs whose columns no longer exist in the table
         for (MungeStepOutput mso : orphanOutputs) {
             MungeProcess mp = getParent();
-            for (MungeStep step : mp.getChildren(MungeStep.class)) {
+            for (MungeStep step : mp.getChildren()) {
                 step.disconnectInput(mso);
             }
-            try {
-            	removeChild(mso);
-            } catch (ObjectDependentException e) {
-            	throw new RuntimeException(e);
-            }
+            removeChild(mso);
         }
     }
     
@@ -355,12 +305,10 @@ public class SQLInputStep extends AbstractMungeStep {
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
-    @NonProperty
     public MungeResultStep getOutputStep() throws SQLObjectException {
         return getOutputStep(getProject());
     }
     
-    @NonProperty
     public MungeResultStep getOutputStep(Project project) throws SQLObjectException {
         if (outputStep != null) {
             return outputStep;
@@ -368,20 +316,15 @@ public class SQLInputStep extends AbstractMungeStep {
     		outputStep = new CleanseResultStep();
     	} else {
     		outputStep = new DeDupeResultStep();
-    		if (outputStep.isMagicEnabled()) {
-    			outputStep.init();
-    		}
     	}
         return outputStep;
     }
     
     @Override
-    @NonProperty
     public boolean isInputStep() {
     	return true;
     }
     
-    @NonProperty
     public ResultSet getResultSet() {
     	return rs;
     }

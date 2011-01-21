@@ -19,72 +19,36 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-
 
 
 /**
  * This step returns a constant boolean or null.
  */
 public class BooleanConstantMungeStep extends AbstractMungeStep {
-	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
-	/**
-	 * The constant passed to the output of this step.
-	 */
-	private Boolean constant;
+	public static final String BOOLEAN_VALUE = "value";
+	public static final String TRUE = "True";
+	public static final String FALSE = "False";
+	public static final String NULL = "Null";
 	
-	@Constructor
+	
 	public BooleanConstantMungeStep() {
 		super("Boolean Constant", false);
-		setConstant(true);
-
-	}
-
-
-	public void init() {
-		addChild(new MungeStepOutput<Boolean>("boolean out", Boolean.class));
+		setParameter(BOOLEAN_VALUE, TRUE);
+		addChild(new MungeStepOutput<Boolean>("boolean out",Boolean.class));
 	}
 	
 	
 	public Boolean doCall() throws Exception {
 		MungeStepOutput<Boolean> out = getOut();
-		if (getConstant() == null) {
-			out.setData(null);
-		} else if (getConstant()) {
+		String val = getParameter(BOOLEAN_VALUE);
+		if (val.equals(TRUE)) {
 			out.setData(true);
-		} else {
+		} else if (val.equals(FALSE)) {
 			out.setData(false);
+		} else {
+			out.setData(null);
 		}
 		return true;
-	}
-
-	@Mutator
-	public void setConstant(Boolean constant) {
-		Boolean oldConstant = this.constant;
-		this.constant = constant;
-		firePropertyChange("constant", oldConstant, constant);
-	}
-
-	@Accessor
-	public Boolean getConstant() {
-		return constant;
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		((BooleanConstantMungeStep) copy).setConstant(getConstant());
 	}
 }

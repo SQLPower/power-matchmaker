@@ -20,17 +20,9 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.Transient;
 
 /**
  * This munge step will return a string representation of the given date.
@@ -38,25 +30,20 @@ import ca.sqlpower.object.annotation.Transient;
 */
 public class DateToStringMungeStep extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
 	/**
 	 * The pattern used to format the Date.
 	 */
-	private String format;
+	public static final String FORMAT_PARAM = "format";
 	
 	/**
 	 * The date portion of the pattern that helps to build the format.
 	 */
-	private String dateFormat;
+	public static final String DATE_FORMAT_PARAM = "dateFormat";
 	
 	/**
 	 * The time portion of the pattern that helps to build the format.
 	 */
-	private String timeFormat;
+	public static final String TIME_FORMAT_PARAM = "timeFormat";
 	
 	/**
 	 * List of default date formats.
@@ -71,16 +58,12 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	public static final List<String> TIME_FORMATS = Arrays.asList("", "h:mm:ss a",
 			"hh:mm:ss a", "H:mm:ss", "HH:mm:ss");
 	
-	@Constructor
 	public DateToStringMungeStep() {
 		super("Date to String", false);
 		setDateFormat(DATE_FORMATS.get(1));
 		setTimeFormat(TIME_FORMATS.get(1));
-	}
 
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"dateToStringOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("dateToStringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("date", Date.class);
 		super.addInput(desc);
@@ -92,7 +75,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	}
 
 	@Override
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
 		throw new UnsupportedOperationException("Date to String munge step does not support removeInput()");
 	}
 
@@ -110,7 +93,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 		MungeStepOutput<Date> in = getMSOInputs().get(0);
 		Date data = in.getData();
 		String result = null;
-		String format = this.format;
+		String format = getParameter(FORMAT_PARAM);
 		
 		if (data != null) {
 			SimpleDateFormat sdf = new SimpleDateFormat(format);
@@ -122,54 +105,42 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 		return true;
 	}
 	
-	@Transient @Mutator
 	public void setFormat(String format) {
-		String oldFormat = this.format;
-		this.format = format;
-		firePropertyChange("format", oldFormat, format);
+		setParameter(FORMAT_PARAM, format);
 	}
 	
-	@Transient @Accessor
 	public String getFormat() {
-		return format;
+		return getParameter(FORMAT_PARAM);
 	}
 	
 	/**
 	 * Sets the date portion of the pattern and updates the format pattern.
 	 */
-	@Mutator
 	public void setDateFormat(String format) {
-		String oldFormat = dateFormat;
-		dateFormat = format;
-		firePropertyChange("dateFormat", oldFormat, format);
+		setParameter(DATE_FORMAT_PARAM, format);
 		updateFormat();
 	}
 	
 	/**
 	 * Returns the date portion of the format pattern. 
 	 */
-	@Accessor
 	public String getDateFormat() {
-		return dateFormat;
+		return getParameter(DATE_FORMAT_PARAM);
 	}
 	
 	/**
 	 * Sets the time portion of the pattern and updates the format pattern.
 	 */
-	@Mutator
 	public void setTimeFormat(String format) {
-		String oldFormat = timeFormat;
-		timeFormat = format;
-		firePropertyChange("timeFormat", oldFormat, format);
+		setParameter(TIME_FORMAT_PARAM, format);
 		updateFormat();
 	}
 	
 	/**
 	 * Returns the time portion of the format pattern. 
 	 */
-	@Accessor
 	public String getTimeFormat() {
-		return timeFormat;
+		return getParameter(TIME_FORMAT_PARAM);
 	}
 	
 	/**
@@ -177,13 +148,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	 * and the time format.
 	 */
 	private void updateFormat() {
-		format = getDateFormat() + " " + getTimeFormat();
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		DateToStringMungeStep step = (DateToStringMungeStep) copy;
-		step.setDateFormat(getDateFormat());
-		step.setTimeFormat(getTimeFormat());
+		String format = getDateFormat() + " " + getTimeFormat();
+		setParameter(FORMAT_PARAM, format.trim());
 	}
 }

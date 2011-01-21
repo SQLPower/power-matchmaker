@@ -27,17 +27,13 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
-
 /**
  * The Project (Object) settings that are common to both the match and the merge
  * engines
  *
  */
 public abstract class MatchMakerSettings extends
-		AbstractMatchMakerObject {
+		AbstractMatchMakerObject<MatchMakerSettings, MatchMakerObject> {
 
     private static final Logger logger = Logger.getLogger(MatchMakerSettings.class);
 
@@ -51,6 +47,7 @@ public abstract class MatchMakerSettings extends
         result = PRIME * result + ((lastRunDate == null) ? 0 : lastRunDate.hashCode());
         result = PRIME * result + ((log == null) ? 0 : log.hashCode());
         result = PRIME * result + ((processCount == null) ? 0 : processCount.hashCode());
+        result = PRIME * result + ((sendEmail == true) ? 4567 : 5678);
         return result;
     }
 
@@ -100,6 +97,8 @@ public abstract class MatchMakerSettings extends
             return false;
         }
 
+        if (sendEmail != other.sendEmail ) return false;
+
         return true;
     }
 
@@ -113,6 +112,9 @@ public abstract class MatchMakerSettings extends
 
 	/** Log for the engine using this setting */
 	private File log;
+
+	/** Send an email when the job is done */
+	private boolean sendEmail = false;
 
 	/**
 	 * Description of the process
@@ -132,68 +134,72 @@ public abstract class MatchMakerSettings extends
 	 */
 	private Date lastRunDate;
 
-	@NonProperty
 	public boolean getAppendToLog() {
 		return appendToLog;
 	}
 
-	@NonProperty
 	public void setAppendToLog(boolean appendToLog) {
+		boolean oldValue = this.appendToLog;
 		this.appendToLog = appendToLog;
+		getEventSupport().firePropertyChange("appendToLog", oldValue,
+				appendToLog);
 	}
 
-	@Accessor
 	public boolean getDebug() {
 		return debug;
 	}
 
-	@Mutator
 	public void setDebug(boolean debug) {
 		boolean oldValue = this.debug;
 		this.debug = debug;
-		firePropertyChange("debug", oldValue, debug);
+		getEventSupport().firePropertyChange("debug", oldValue, debug);
 	}
 
     /**
      * The number of records the engine should process.  See {@link #processCount}
      * for details.
      */
-	@Accessor
 	public Integer getProcessCount() {
 		return processCount;
 	}
 
-	@Mutator
 	public void setProcessCount(Integer processCount) {
 		Integer oldValue = this.processCount;
 		this.processCount = processCount;
-		firePropertyChange("processCount", oldValue, processCount);
+		getEventSupport().firePropertyChange("processCount", oldValue,
+				processCount);
 	}
 
-	@NonProperty
+	public boolean getSendEmail() {
+		return sendEmail;
+	}
+
+	public void setSendEmail(boolean sendEMail) {
+		boolean oldValue = this.sendEmail;
+		this.sendEmail = sendEMail;
+		getEventSupport().firePropertyChange("sendEmail", oldValue, sendEMail);
+	}
+
 	public File getLog() {
 		return log;
 	}
 
-	@NonProperty
 	public void setLog(File log) {
 		File oldValue = this.log;
 		this.log = log;
+		getEventSupport().firePropertyChange("log", oldValue, this.log);
 	}
 
-	@Accessor
 	public String getDescription() {
 		return description;
 	}
 
-	@Mutator
 	public void setDescription(String description) {
 		String oldValue = this.description;
 		this.description = description;
-		firePropertyChange("description", oldValue, this.description);
+		getEventSupport().firePropertyChange("description", oldValue, this.description);
 	}
 
-	@Accessor
 	public Date getLastRunDate() {
 		return lastRunDate;
 	}
@@ -203,11 +209,10 @@ public abstract class MatchMakerSettings extends
      *
      * @param lastRunDate The last time the match or merge was run, it can be null.
      */
-	@Mutator
 	public void setLastRunDate(Date lastRunDate) {
 		Date oldValue = this.lastRunDate;
 		this.lastRunDate = lastRunDate == null ? null : new Date(lastRunDate.getTime());
-		firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
+		getEventSupport().firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
 	}
 
     @Override
@@ -220,6 +225,7 @@ public abstract class MatchMakerSettings extends
         buf.append("lastRunDate->"+lastRunDate +", ");
         buf.append("log->"+log+", ");
         buf.append("processCount->"+processCount+", ");
+        buf.append("sendEmail->"+sendEmail+"]");
         return buf.toString();
     }
 

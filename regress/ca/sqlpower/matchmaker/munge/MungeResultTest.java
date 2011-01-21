@@ -46,12 +46,12 @@ public class MungeResultTest extends TestCase {
 		r1 = new MungeResult();
 		List<Object> keyValues = new ArrayList<Object>();
 		keyValues.add("test1");
-		r1.setSourceTableRecord(new SourceTableRecord(new Project(), keyValues));
+		r1.setSourceTableRecord(new SourceTableRecord(session, new Project(), keyValues));
 
 		r2 = new MungeResult();
 		keyValues = new ArrayList<Object>();
 		keyValues.add("test2");
-		r2.setSourceTableRecord(new SourceTableRecord(new Project(), keyValues));
+		r2.setSourceTableRecord(new SourceTableRecord(session, new Project(), keyValues));
 		
 		mungedData1 = new Object[] {"B", BigDecimal.valueOf(1), Boolean.TRUE, new Date(1)};
 		r1.setMungedData(mungedData1);

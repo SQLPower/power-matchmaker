@@ -19,7 +19,8 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -27,21 +28,21 @@ import javax.swing.table.AbstractTableModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPListener;
-import ca.sqlpower.util.SQLPowerUtils;
-import ca.sqlpower.util.TransactionEvent;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
-public abstract class AbstractMatchMakerTableModel<T extends MatchMakerObject> extends AbstractTableModel implements CleanupModel {
+public abstract class AbstractMatchMakerTableModel<T extends MatchMakerObject, C extends MatchMakerObject> extends AbstractTableModel implements CleanupModel {
 	
 	private static final Logger logger = Logger.getLogger(AbstractMatchMakerTableModel.class);
 
 	protected T mmo;
 	private TableModelEventAdapter mmoListener = new TableModelEventAdapter();
 	
+	@SuppressWarnings("unchecked")
 	protected AbstractMatchMakerTableModel (T mmo) {
 		this.mmo = mmo;
-		SQLPowerUtils.listenToShallowHierarchy(mmoListener, mmo);
+		MatchMakerUtils.listenToShallowHierarchy(mmoListener, mmo);
 		logger.debug("Table Model initialized.");
 	}
 	
@@ -49,14 +50,16 @@ public abstract class AbstractMatchMakerTableModel<T extends MatchMakerObject> e
 		return mmo.getChildren().size();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void cleanup() {
-		SQLPowerUtils.unlistenToHierarchy(mmo, mmoListener);
+		MatchMakerUtils.unlistenToHierarchy(mmoListener, mmo);
 	}
 	
-	private class TableModelEventAdapter implements SPListener {
+	private class TableModelEventAdapter implements MatchMakerListener {
 
-		public void propertyChanged(PropertyChangeEvent evt) {
-			List<MatchMakerObject> children = mmo.getChildren(MatchMakerObject.class);
+		@SuppressWarnings("unchecked")
+		public void mmPropertyChanged(MatchMakerEvent evt) {
+			List<MatchMakerObject> children = mmo.getChildren();
 			Object source = evt.getSource();
 			if (source != mmo && children.contains(source)) {
 				int index = children.indexOf(source);
@@ -64,37 +67,56 @@ public abstract class AbstractMatchMakerTableModel<T extends MatchMakerObject> e
 			}
 		}
 
-		@Override
-		public void childAdded(SPChildEvent e) {
-			if(e.getSource() == mmo){
-	            Object addedChild = e.getChild();
-	            ((MatchMakerObject) addedChild).addSPListener(this);
-            }
-            fireTableRowsInserted(e.getIndex(), e.getIndex());
-		}
-
-		@Override
-		public void childRemoved(SPChildEvent e) {
-			if(e.getSource() == mmo) {
-	            Object addedChild = e.getChild();
-	            ((MatchMakerObject) addedChild).removeSPListener(this);
+		@SuppressWarnings("unchecked")
+		public void mmChildrenInserted(MatchMakerEvent evt) {
+			if(evt.getSource() == mmo){
+	            int[] changed = evt.getChangeIndices();
+	            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
+	            for (int selectedRowIndex:changed){
+	                changedIndices.add(new Integer(selectedRowIndex));
 	            }
-	            fireTableRowsDeleted(e.getIndex(),e.getIndex());
+	            Collections.sort(changedIndices);
+	            for (int i=1; i < changedIndices.size(); i++){
+	                if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
+	                    fireTableStructureChanged();
+	                    return;
+	                }
+	            }
+	            for (Object addedChild : evt.getChildren()){
+	                ((MatchMakerObject) addedChild).addMatchMakerListener(this);
+	            }
+	            fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
 	        }
-
-		@Override
-		public void transactionStarted(TransactionEvent e) {
-			//no-op
 		}
 
-		@Override
-		public void transactionEnded(TransactionEvent e) {
-			//no-op
+		@SuppressWarnings("unchecked")
+		public void mmChildrenRemoved(MatchMakerEvent evt) {
+			if(evt.getSource() == mmo) {
+	            int[] changed = evt.getChangeIndices();
+	            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
+	            for (int selectedRowIndex:changed){
+	                changedIndices.add(new Integer(selectedRowIndex));
+	            }
+	            Collections.sort(changedIndices);
+	            for (int i=1; i < changedIndices.size(); i++) {
+	                if (changedIndices.get(i-1)!=changedIndices.get(i)-1) {
+	                    fireTableStructureChanged();
+	                    return;
+	                }
+	            }
+	            for (Object addedChild : evt.getChildren()){
+	                ((MatchMakerObject) addedChild).removeMatchMakerListener(this);
+	            }
+	            fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
+	        }
 		}
 
-		@Override
-		public void transactionRollback(TransactionEvent e) {
-			//no-op
+		/**
+		 * Currently no structure changed event should be fired because it is not
+		 * undoable.
+		 */
+		public void mmStructureChanged(MatchMakerEvent evt) {
+			fireTableStructureChanged();
 		}
 		
 	}

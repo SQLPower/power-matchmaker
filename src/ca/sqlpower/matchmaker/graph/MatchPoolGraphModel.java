@@ -50,11 +50,11 @@ public class MatchPoolGraphModel implements GraphModel<SourceTableRecord, Potent
     }
     
     public Collection<PotentialMatchRecord> getEdges() {
-        return pool.getPotentialMatchRecords();
+        return pool.getPotentialMatches();
     }
 
     public Collection<SourceTableRecord> getNodes() {
-        return pool.getAllSourceTableRecords();
+        return pool.getSourceTableRecords();
     }
 
     /**
@@ -64,10 +64,10 @@ public class MatchPoolGraphModel implements GraphModel<SourceTableRecord, Potent
     public Collection<SourceTableRecord> getAdjacentNodes(SourceTableRecord node) {
         Collection<SourceTableRecord> adjacentNodes = new HashSet<SourceTableRecord>();
         for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()) {
-            if (pmr.getOrigLHS() != node) {
-                adjacentNodes.add(pmr.getOrigLHS());
+            if (pmr.getOriginalLhs() != node) {
+                adjacentNodes.add(pmr.getOriginalLhs());
             } else {
-                adjacentNodes.add(pmr.getOrigRHS());
+                adjacentNodes.add(pmr.getOriginalRhs());
             }
         }
         return adjacentNodes;

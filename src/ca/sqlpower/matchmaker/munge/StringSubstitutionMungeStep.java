@@ -19,17 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -38,95 +29,37 @@ import ca.sqlpower.object.annotation.Mutator;
  *  an option for the target string.
  */
 public class StringSubstitutionMungeStep extends AbstractMungeStep {
+
+	/**
+	 * This is the name of the parameter containing the string to replace. The 
+	 * parameter would be interpreted as a regular expression if the option is 
+	 * set to true.
+	 */
+	public static final String FROM_PARAMETER_NAME = "from";
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	public static final String TO_PARAMETER_NAME = "to";
 	
 	/**
-	 * The string that will be replaced during this step.
+	 * This is the name of the parameter that decides whether this step will use
+	 * regular expression to replace words. The only values accepted by the parameter
+	 * are "true" and "false".
 	 */
-	private String from;
-	
-	/**
-	 * The string that will be the replacement during this step.
-	 */
-	private String to;
-	
-	/**
-	 * Whether this step will use regular expressions.
-	 */
-	private boolean regex;
+	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will be
 	 * case sensitive. The only values accepted by the parameter are "true" and
 	 *  "false".
 	 */
-	private boolean caseSensitive;
+	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
-	@Accessor
-	public String getFrom() {
-		return from;
-	}
-
-	@Mutator
-	public void setFrom(String from) {
-		String old = this.from;
-		this.from = from;
-		firePropertyChange("from", old, from);
-	}
-
-	@Accessor
-	public String getTo() {
-		return to;
-	}
-
-	@Mutator
-	public void setTo(String to) {
-		String old = this.to;
-		this.to = to;
-		firePropertyChange("to", old, to);
-	}
-
-	@Accessor
-	public boolean isRegex() {
-		return regex;
-	}
-
-	@Mutator
-	public void setRegex(boolean regex) {
-		boolean old = this.regex;
-		this.regex = regex;
-		firePropertyChange("regex", old, regex);
-	}
-
-	@Accessor
-	public boolean isCaseSensitive() {
-		return caseSensitive;
-	}
-
-	@Mutator
-	public void setCaseSensitive(boolean caseSensitive) {
-		boolean old = this.caseSensitive;
-		this.caseSensitive = caseSensitive;
-		firePropertyChange("caseSensitive", old, caseSensitive);
-	}
-
-	@Constructor
 	public StringSubstitutionMungeStep() {
 		super("String Substitution", false);
-		setRegex(false);
-		setCaseSensitive(true);
-	}
-
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"stringSubstitutionOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("stringSubstitution",
-				String.class);
+		InputDescriptor desc = new InputDescriptor("stringSubstitution", String.class);
+		setParameter(USE_REGEX_PARAMETER_NAME, false);
+		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
 		super.addInput(desc);
 	}
 	
@@ -136,7 +69,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
 		throw new UnsupportedOperationException("String substitution munge step does not support removeInput()");
 	}
 	
@@ -151,10 +84,10 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	
 	public Boolean doCall() throws Exception {
 
-		String from = getFrom();
-		String to = getTo();
-		boolean useRegex = isRegex();
-		boolean caseSensitive = isCaseSensitive();
+		String from = getParameter(FROM_PARAMETER_NAME);
+		String to = getParameter(TO_PARAMETER_NAME);
+		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
+		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
@@ -184,14 +117,5 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		}
 
 		return true;
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) copy;
-		step.setCaseSensitive(isCaseSensitive());
-		step.setFrom(getFrom());
-		step.setTo(getTo());
-		step.setRegex(isRegex());
 	}
 }

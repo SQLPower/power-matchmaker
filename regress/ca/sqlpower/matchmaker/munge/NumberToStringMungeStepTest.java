@@ -21,30 +21,18 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.object.SPObject;
-
-public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStringMungeStep> {
-
-	NumberToStringMungeStep step;
+public class NumberToStringMungeStepTest extends TestCase {
+	MungeStep step;
 	
-	public NumberToStringMungeStepTest(String name) {
-		super(name);
-	}
-
 	@Override
 	protected void setUp() throws Exception {
-		step = new NumberToStringMungeStep();
-		step.setSession(new TestingMatchMakerSession());
-		step.open(Logger.getLogger(NumberToStringMungeStepTest.class));
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new NumberToStringMungeStep();
+		step.open(Logger.getLogger(NumberToStringMungeStepTest.class));
 	}
 	
 	public void testNull() throws Exception{
@@ -52,7 +40,7 @@ public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStri
 		mso.setData(null);
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		assertNull(out.getData());
 	}
 	
@@ -61,7 +49,7 @@ public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStri
 		mso.setData(new BigDecimal(0));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		assertEquals("0", out.getData());
 	}
 	
@@ -70,7 +58,7 @@ public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStri
 		mso.setData(new BigDecimal(1));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		assertEquals("1", out.getData());
 	}
 	
@@ -79,7 +67,7 @@ public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStri
 		mso.setData(new BigDecimal(-1));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		assertEquals("-1", out.getData());
 	}
 	
@@ -88,27 +76,7 @@ public class NumberToStringMungeStepTest extends MatchMakerTestCase<NumberToStri
 		mso.setData(new BigDecimal(-1234567890));
 		step.connectInput(0, mso);
 		step.call();
-		MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(0);
+		MungeStepOutput out = step.getChildren().get(0);
 		assertEquals("-1234567890", out.getData());
-	}
-
-	@Override
-	protected NumberToStringMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// Do nothing
-	}
-	
-	@Override
-	public void testDuplicate() throws Exception {
-		// Do nothing
 	}
 }

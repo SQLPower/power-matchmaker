@@ -93,9 +93,6 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
      * class cannot be loaded.
      */
 	public void setProperty(String property, String value) throws ClassNotFoundException {
-		
-		logger.debug("setting property: " + property + " with value: " + value);
-		
 		if (property.equals("name")) {
 			setName(value);
 		} else if (property.equals("logic")) {

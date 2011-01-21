@@ -57,7 +57,7 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
     protected JPanel buildUI() {
         GoogleAddressLookup temp = (GoogleAddressLookup) getStep();
         
-        url = new JTextField(temp.getGoogleGeocoderURL());
+        url = new JTextField(temp.getParameter(GoogleAddressLookup.GOOGLE_GEOCODER_URL));
         url.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -70,11 +70,11 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
                 GoogleAddressLookup step = (GoogleAddressLookup) getStep();
-                step.setGoogleGeocoderURL(url.getText());
+                step.setParameter(GoogleAddressLookup.GOOGLE_GEOCODER_URL, url.getText());
             }
         });
         
-        key = new JTextField(temp.getGoogleMapsApiKey());
+        key = new JTextField(temp.getParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY));
         key.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -87,7 +87,7 @@ public class GoogleAddressLookupMungeComponent extends AbstractMungeComponent {
             }
             private void doStuff() {
                 GoogleAddressLookup step = (GoogleAddressLookup) getStep();
-                step.setGoogleMapsApiKey(key.getText());
+                step.setParameter(GoogleAddressLookup.GOOGLE_MAPS_API_KEY, key.getText());
             }
         });
 

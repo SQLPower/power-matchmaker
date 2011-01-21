@@ -23,20 +23,19 @@ import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.Date;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 import ca.sqlpower.util.FakeSQLDatabase;
 
-public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
+public class SQLInputStepTest extends TestCase {
 
 	private final Logger logger = Logger.getLogger("testLogger");
 	
@@ -45,11 +44,7 @@ public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
     FakeSQLDatabase db;
     Project project;
     MungeProcess process;
-
-	public SQLInputStepTest(String name) {
-		super(name);
-	}
- 
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -75,16 +70,14 @@ public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
         project = new Project();
         project.setType(getProjectType());
         project.setSourceTable(table);
-        project.setSession(new TestingMatchMakerSession());
         
         process = new MungeProcess();
-        project.addChild(process);
+        project.addMungeProcess(process);
         
         step = new SQLInputStep();
         process.addChild(step);
 	    resultStep = (MungeResultStep) step.getOutputStep();
 	    process.addChild(resultStep);
-	    getRootObject().addChild(project, 0);
     }
     
     protected ProjectMode getProjectType() {
@@ -99,8 +92,8 @@ public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
         } catch (IllegalStateException ex) {
             // good
         }
-        step.mungeRollback();
-        step.mungeClose();
+        step.rollback();
+        step.close();
     }
     
     public void testNoCallWhenNotYetOpen() throws Exception {
@@ -115,7 +108,7 @@ public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
     public void testNoCallAfterClose() throws Exception {
         try {
             step.open(logger);
-            step.mungeClose();
+            step.close();
             step.call();
             fail("call() succeeded after the step was closed");
         } catch (IllegalStateException ex) {
@@ -129,67 +122,47 @@ public class SQLInputStepTest extends MatchMakerTestCase<SQLInputStep> {
         assertTrue(step.call());
         assertTrue(step.call());
         assertFalse(step.call());
-        step.mungeCommit();
-        step.mungeClose();
+        step.commit();
+        step.close();
     }
     
     public void testOutputsNullAtFirst() throws Exception {
         step.open(logger);
-        assertNull(step.getMungeStepOutputs().get(0).getData());
-        assertNull(step.getMungeStepOutputs().get(1).getData());
-        assertNull(step.getMungeStepOutputs().get(2).getData());
-        step.mungeCommit();
-        step.mungeClose();
+        assertNull(step.getChildren().get(0).getData());
+        assertNull(step.getChildren().get(1).getData());
+        assertNull(step.getChildren().get(2).getData());
+        step.commit();
+        step.close();
     }
 
     public void testOutputsNullAfterEnd() throws Exception {
         step.open(logger);
         while (step.call() == Boolean.TRUE);
-        assertNull(step.getMungeStepOutputs().get(0).getData());
-        assertNull(step.getMungeStepOutputs().get(1).getData());
-        assertNull(step.getMungeStepOutputs().get(2).getData());
-        step.mungeCommit();
-        step.mungeClose();
+        assertNull(step.getChildren().get(0).getData());
+        assertNull(step.getChildren().get(1).getData());
+        assertNull(step.getChildren().get(2).getData());
+        step.commit();
+        step.close();
     }
 
     public void testOutputsTrackResults() throws Exception {
         step.open(logger);
         step.call();
-        assertEquals("row1,1",             step.getMungeStepOutputs().get(0).getData());
-        assertEquals(new BigDecimal("12"), step.getMungeStepOutputs().get(1).getData());
-        assertEquals(new Date(1234),       step.getMungeStepOutputs().get(2).getData());
+        assertEquals("row1,1",             step.getChildren().get(0).getData());
+        assertEquals(new BigDecimal("12"), step.getChildren().get(1).getData());
+        assertEquals(new Date(1234),       step.getChildren().get(2).getData());
 
         step.call();
-        assertEquals(null, step.getMungeStepOutputs().get(0).getData());
-        assertEquals(null, step.getMungeStepOutputs().get(1).getData());
-        assertEquals(null, step.getMungeStepOutputs().get(2).getData());
+        assertEquals(null, step.getChildren().get(0).getData());
+        assertEquals(null, step.getChildren().get(1).getData());
+        assertEquals(null, step.getChildren().get(2).getData());
 
         step.call();
-        assertEquals("row3,1",             step.getMungeStepOutputs().get(0).getData());
-        assertEquals(new BigDecimal("32"), step.getMungeStepOutputs().get(1).getData());
-        assertEquals(new Date(5678),       step.getMungeStepOutputs().get(2).getData());
+        assertEquals("row3,1",             step.getChildren().get(0).getData());
+        assertEquals(new BigDecimal("32"), step.getChildren().get(1).getData());
+        assertEquals(new Date(5678),       step.getChildren().get(2).getData());
         
-        step.mungeCommit();
-        step.mungeClose();
+        step.commit();
+        step.close();
     }
-
-	@Override
-	protected SQLInputStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// already in AbstractMungeStep
-	}
-	
-	@Override
-	public void testDuplicate() throws Exception {
-		// Do nothing
-	}
 }

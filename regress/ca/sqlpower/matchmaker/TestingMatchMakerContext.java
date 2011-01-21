@@ -20,8 +20,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,11 +28,10 @@ import java.util.List;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
@@ -51,23 +48,10 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	Preferences prefs = Preferences.userNodeForPackage(TestingMatchMakerContext.class).node("test");
 	
 	public TestingMatchMakerContext() {
-		this(true);
-	}
-	
-	public TestingMatchMakerContext(boolean loadPlDotIni) {
-		plDotIni = new PlDotIni();
+		dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());
+		dataSources.add(DBTestUtil.getOracleDS());
+		dataSources.add(DBTestUtil.getSqlServerDS());
 		sessions.add(session);
-		
-		if (loadPlDotIni) {
-			dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());
-			dataSources.add(DBTestUtil.getOracleDS());
-			dataSources.add(DBTestUtil.getSqlServerDS());
-			try {
-				plDotIni.read(new File("testbed/pl.regression.ini"));
-			} catch (IOException e) {
-				throw new RuntimeException(e.getMessage());
-			}
-		}
 	}
 	
 	public List<JDBCDataSource> getDataSources() {
@@ -97,7 +81,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	}
 
 	public MatchMakerSession createSession(JDBCDataSource ds, String username,
-			String password) throws PLSecurityException, SQLException {
+			String password) throws PLSecurityException, SQLException, RepositoryVersionException{
 		return session;
 	}
 
@@ -143,11 +127,5 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 
 	public void removePreferenceChangeListener(PreferenceChangeListener l) {
 		prefs.removePreferenceChangeListener(l);
-	}
-
-	@Override
-	public MatchMakerSession createSession() throws PLSecurityException,
-			SQLException, SQLObjectException, MatchMakerConfigurationException {
-		return null;
 	}
 }

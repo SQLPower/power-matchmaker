@@ -44,12 +44,12 @@ public class StringConstantMungeComponent extends AbstractMungeComponent {
 
     @Override
     protected JPanel buildUI() {
-        StringConstantMungeStep step = ((StringConstantMungeStep)getStep());
-        final JTextField valueField = new JTextField(step.getOutValue());
+        
+        final JTextField valueField = new JTextField(getStepParameter(StringConstantMungeStep.VALUE_PARAMETER_NAME, ""));
         valueField.getDocument().addDocumentListener(new DocumentListener() {
 
             void change() {
-            	((StringConstantMungeStep)getStep()).setOutValue(valueField.getText());
+                getStep().setParameter(StringConstantMungeStep.VALUE_PARAMETER_NAME, valueField.getText());
             }
             
             public void changedUpdate(DocumentEvent e) { change(); }
@@ -62,11 +62,11 @@ public class StringConstantMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				boolean b = retNull.isSelected();
 				valueField.setEnabled(!b);
-				((StringConstantMungeStep)getStep()).setReturnNull(b);
+				getStep().setParameter(StringConstantMungeStep.RETURN_NULL, String.valueOf(b));
 			}
         });
         
-        retNull.setSelected(Boolean.valueOf(((StringConstantMungeStep)getStep()).isReturnNull()));
+        retNull.setSelected(Boolean.valueOf(getStep().getParameter(StringConstantMungeStep.RETURN_NULL)).booleanValue());
         valueField.setEnabled(!retNull.isSelected());
         
         FormLayout layout = new FormLayout("pref,4dlu,pref:grow");

@@ -57,11 +57,6 @@ import ca.sqlpower.swingui.table.TableModelColumnAutofit;
 import com.sun.rowset.CachedRowSetImpl;
 import com.sun.rowset.JoinRowSetImpl;
 
-/**
- * Displays statistics for the match engine. These values are currently not
- * saved anywhere, making this class non-functional, but the UI can still be
- * built without any trouble.
- */
 public class MatchStatisticsPanel extends JPanel {
 
 	private static final Logger logger = Logger.getLogger(MatchStatisticsPanel.class);
@@ -80,7 +75,10 @@ public class MatchStatisticsPanel extends JPanel {
 
 	private void createUI() throws SQLException {
 
-		JTable table = new MatchStatisticTable(null);
+		RowSet rs = getProjectStats(project);
+		RowSetModel rsm = new RowSetModel(rs);
+
+		JTable table = new MatchStatisticTable(rsm);
 		JScrollPane scroller = new JScrollPane(table);
 
 		JSplitPane splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -119,8 +117,7 @@ public class MatchStatisticsPanel extends JPanel {
     	ResultSet rs =  null;
     	String lastSql = null;
     	try {
-    		// XXX This is not the table that should be used to find statistics
-    		con = project.createResultTableConnection();
+    		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("SELECT TRANS_RUN_NO,START_DATE_TIME,ELAPSED_TIME");
     		sql.append(",RUN_STATUS,NO_OF_REC_READ,NO_OF_REC_ADDED");
@@ -157,8 +154,7 @@ public class MatchStatisticsPanel extends JPanel {
     	PreparedStatement pstmt = null;
     	ResultSet rs =  null;
     	try {
-    		// XXX This is not the table that should be used to find statistics
-    		con = project.createResultTableConnection();
+    		con = swingSession.getConnection();
 
     		if ( total == 0 ) {
     			total = 1;
@@ -242,10 +238,7 @@ public class MatchStatisticsPanel extends JPanel {
 	private class MatchStatisticTable extends JTable {
 
 		public MatchStatisticTable(RowSetModel rsm) {
-			
-			for (int i=0;i<=10;i++) {
-				addColumn(new TableColumn());
-			}
+			super(rsm);
 
 			JTableHeader header = getTableHeader();
 			header.getColumnModel().getColumn(0).setHeaderValue("Run #");
@@ -271,6 +264,10 @@ public class MatchStatisticsPanel extends JPanel {
 	            	tc.setCellRenderer(new NumberAndIntegerTableCellRenderer());
 	            }
 	        }
+	        TableModelColumnAutofit columnAutoFit =
+	            new TableModelColumnAutofit(rsm, this);
+	        columnAutoFit.setTableHeader(header);
+	        setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		}
 
 	}
@@ -382,8 +379,7 @@ public class MatchStatisticsPanel extends JPanel {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	try {
-    		// XXX This is not the table that should be used to find statistics
-    		con = project.createResultTableConnection();
+    		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
     		sql.append(" AND OBJECT_NAME=? ");
@@ -410,8 +406,7 @@ public class MatchStatisticsPanel extends JPanel {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	try {
-    		// XXX This is not the table that should be used to find statistics
-    		con = project.createResultTableConnection();
+    		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
     		sql.append(" AND OBJECT_NAME=? AND START_DATE_TIME<=?");

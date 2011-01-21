@@ -28,14 +28,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -60,28 +57,24 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.EngineEvent;
 import ca.sqlpower.matchmaker.EngineListener;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MungeSettings;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MungeSettings.AutoValidateSetting;
 import ca.sqlpower.matchmaker.MungeSettings.PoolFilterSetting;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.swingui.AbstractUIUpdateManager;
-import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.SpinnerUpdateManager;
-import ca.sqlpower.object.AbstractPoolingSPListener;
-import ca.sqlpower.object.AbstractSPListener;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPListener;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
-import ca.sqlpower.util.SQLPowerUtils;
-import ca.sqlpower.util.TransactionEvent;
 import ca.sqlpower.validation.FileNameValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -100,43 +93,8 @@ import com.sleepycat.je.DatabaseException;
  * A panel that provides a GUI for setting the parameters for running the MatchMakerEngine,
  * as well as running the MatchMakerEngine itself and displaying its output on the GUI.
  */
-public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
-	
-	/**
-	 * These class keeps the checkBoxes synchronized across multiple clients. Everytime you make
-	 * a new one, you must add it to the list updaters.
-	 */
-	private class CheckBoxModelUpdater extends AbstractSPListener {
-		private final JCheckBox checkBox;
-		private final String propertyName;
-		public CheckBoxModelUpdater(JCheckBox checkBox, String propertyName) {
-			this.checkBox = checkBox;
-			this.propertyName = propertyName;
-			
-		}
-		@Override
-		public void propertyChanged(PropertyChangeEvent evt) {
-			if(evt.getPropertyName().equals(propertyName)) {
-				if(evt.getNewValue() instanceof Boolean) {
-					checkBox.setSelected((Boolean)evt.getNewValue());
-				} else {
-					throw new RuntimeException("The argument should be a boolean value, not a " + evt.getNewValue().getClass());
-				}
-			}
-		}
-	};
-	
-	/**
-	 * This is this list of all the checkbox updaters so that we can easily remove them.
-	 */
-	private List<CheckBoxModelUpdater> updaters = new ArrayList<CheckBoxModelUpdater>();
+public class EngineSettingsPanel implements DataEntryPanel, MatchMakerListener<Project, MatchMakerFolder> {
 
-	/**
-	 * Pref nodes for the log file settings.
-	 */
-	private final String LOG_FILE = "engineLogFile";
-	private final String APPEND_TO_LOG = "engineAppendToLog";
-	
 	private static final String ADDRESS_CORRECTION_ENGINE_PANEL_ROW_SPECS = 
 		"4dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,fill:pref:grow,4dlu,pref,4dlu";
 		//  1    2    3    4    5    6     7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23             24   25 	 26   27
@@ -181,26 +139,9 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 	}
 
 	/**
-	 * A listener that keeps the runActionStatus refreshed.
-	 */
-	public final SPListener engineStatusListener;
-	
-	/**
 	 * The session this panel belongs to.
 	 */
 	private MatchMakerSwingSession swingSession;
-	
-	/**
-	 * A listener to keep the UI in synch with the model
-	 */
-	private SPListener activeListener;
-	
-	/**
-	 * A listener to keep the UI in synch with the model
-	 */
-	private SPListener newMungeProcessListener;
-	
-	
 
 	/**
 	 * The file path to which the engine logs will be written to.
@@ -289,11 +230,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 	private FormValidationHandler handler;
 	
 	/**
-	 * Listens to changes in the model so as to keep the UI in sync.
-	 */
-	private AbstractUIUpdateManager spinnerUpdateManager;
-	
-	/**
 	 * The collection of components that show the user what the engine is doing.
 	 */
 	private final EngineOutputPanel engineOutputPanel;
@@ -363,17 +299,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 	private Date expiryDate;
 
 	private EngineListener engineListener;
-
-	private final JButton refreshButton = new JButton(new AbstractAction("Refresh") {
-		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			recordsToProcess.setValue(engineSettings.getProcessCount());
-			refreshButton.setVisible(false);
-			spinnerUpdateManager.clearWarnings();
-			handler.performFormValidation();
-		}
-	});
 	
 	public EngineSettingsPanel(final MatchMakerSwingSession swingSession, Project project, JFrame parentFrame, 
 			EngineType engineType) {
@@ -381,43 +306,7 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		this.parentFrame = parentFrame;
 		this.project = project;
 		this.type = engineType;
-		
-		
 		handler = new FormValidationHandler(status);
-		engineStatusListener = new SPListener() {
-			@Override
-			public void childAdded(SPChildEvent e) {
-				// no-op
-			}
-
-			@Override
-			public void childRemoved(SPChildEvent e) {
-				// no-op
-			}
-
-			@Override
-			public void propertyChanged(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals("engineRunning")) {
-					refreshRunActionStatus();
-				}
-			}
-
-			@Override
-			public void transactionEnded(TransactionEvent e) {
-				// no-op
-			}
-
-			@Override
-			public void transactionRollback(TransactionEvent e) {
-				// no-op
-			}
-
-			@Override
-			public void transactionStarted(TransactionEvent e) {
-				// no-op
-			}
-			
-		};
 		propertyChangeListener = new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshRunActionStatus();
@@ -444,11 +333,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		} else {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
-
-		Preferences p = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
-		Preferences prefs = p.node(project.getUUID());
-		engineSettings.setLog(new File(prefs.get(LOG_FILE, project.getName() + ".log")));
-		engineSettings.setAppendToLog(Boolean.parseBoolean(prefs.get(APPEND_TO_LOG, "false")));
 		
 		if (type == EngineType.MERGE_ENGINE ||
 			type == EngineType.CLEANSE_ENGINE ||
@@ -476,7 +360,7 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		
 		this.panel = buildUI();
 		
-		SQLPowerUtils.listenToShallowHierarchy(engineStatusListener, project);
+		MatchMakerUtils.listenToShallowHierarchy(this, project);
 	}
 	
 	/**
@@ -556,6 +440,11 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 				}
 			});
 		}
+		
+		
+		if (engineSettings.getLog() == null) {
+			engineSettings.setLog(new File(project.getName() + ".log"));
+		}
 
 		File logFile = engineSettings.getLog();
 		
@@ -570,12 +459,8 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		if (engineSettings.getProcessCount() != null) {
 			recordsToProcess.setValue(engineSettings.getProcessCount());
 		}
-		
-		spinnerUpdateManager = new SpinnerUpdateManager(recordsToProcess, engineSettings, "processCount", handler, this, refreshButton);
 
 		debugMode = new JCheckBox("Debug Mode (Changes will be rolled back)", engineSettings.getDebug());
-		updaters.add(new CheckBoxModelUpdater(debugMode, "debug"));
-		engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 		itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (((JCheckBox) e.getSource()).isSelected()) {
@@ -598,7 +483,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 					}
 					recordsToProcess.setValue(new Integer(0));
 				}
-				engineSettings.setDebug(debugMode.isSelected());
 			}
 		};
 		debugMode.addItemListener(itemListener);
@@ -609,14 +493,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 			} else {
 				clearMatchPool = new JCheckBox("Clear address pool" , ((MungeSettings)engineSettings).isClearMatchPool());
 			}
-			itemListener = new ItemListener() {
-				public void itemStateChanged(ItemEvent e) {
-					((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
-				}
-			};
-			clearMatchPool.addItemListener(itemListener);
-			updaters.add(new CheckBoxModelUpdater(clearMatchPool, "clearMatchPool"));
-			engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 			if (debugMode.isSelected()) {
 				clearMatchPool.setSelected(false);
 				// See comment just above about why this is disabled
@@ -626,26 +502,10 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		
 		if (engineSettings instanceof MungeSettings) {
 			useBatchExecute = new JCheckBox("Batch execute SQL statments", ((MungeSettings)engineSettings).isUseBatchExecution());
-			itemListener = new ItemListener() {
-				public void itemStateChanged(ItemEvent e) {
-					((MungeSettings)engineSettings).setUseBatchExecution(useBatchExecute.isSelected());
-				}
-			};
-			useBatchExecute.addItemListener(itemListener);
-			updaters.add(new CheckBoxModelUpdater(useBatchExecute, "useBatchExecution"));
-			engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 		}
 
 		if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 			autoWriteAutoValidatedAddresses = new JCheckBox("Immediately commit auto-corrected addresses", ((MungeSettings)engineSettings).isAutoWriteAutoValidatedAddresses());
-			itemListener = new ItemListener() {
-				public void itemStateChanged(ItemEvent e) {
-					((MungeSettings)engineSettings).setAutoWriteAutoValidatedAddresses(autoWriteAutoValidatedAddresses.isSelected());
-				}
-			};
-			autoWriteAutoValidatedAddresses.addItemListener(itemListener);
-			updaters.add(new CheckBoxModelUpdater(autoWriteAutoValidatedAddresses,"autoWriteAutoValidatedAddresses"));
-			engineSettings.addSPListener(updaters.get(updaters.size() - 1));
 		}
 		
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
@@ -696,8 +556,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		CellConstraints cc = new CellConstraints();
 		
 		pb.add(status, cc.xyw(4, 2, 6, "l,c"));
-		pb.add(refreshButton, cc.xy(6, 2, "l, c"));
-		refreshButton.setVisible(false);
 
 		int y = 4;
 		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));
@@ -709,9 +567,9 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.CLEANSE_ENGINE) {
 			y += 2;
-			
+
 			pb.add(new JLabel("Tranformations to run: "), cc.xy(2, y, "r,t"));
-			final MungeProcessSelectionList selectionButton = new MungeProcessSelectionList(project) {
+			MungeProcessSelectionList selectionButton = new MungeProcessSelectionList(project) {
 				@Override
 				public boolean getValue(MungeProcess mp) {
 					return mp.getActive();
@@ -722,46 +580,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 					mp.setActive(value);
 				}
 			};
-			
-			
-			activeListener = new AbstractPoolingSPListener() {
-				boolean isSelectionListUpdate = false;
-				
-				@Override
-				protected void finalCommitImpl(TransactionEvent e) {
-					if(isSelectionListUpdate) {
-						selectionButton.checkModel();
-					}
-				}
-
-				@Override
-				public void propertyChangeImpl(PropertyChangeEvent evt) {
-					logger.debug("checking property with name " + evt.getPropertyName());
-					if(evt.getPropertyName().equals("active")) {
-						isSelectionListUpdate = true;
-					} else {
-						isSelectionListUpdate = false;
-					}
-				}
-			};
-			
-			swingSession.getRootNode().addSPListener(activeListener);
-			for(MungeProcess mp : project.getMungeProcesses()) {
-				mp.addSPListener(activeListener);
-			}
-			
-			newMungeProcessListener = new AbstractSPListener() {
-				@Override
-				public void childAdded(SPChildEvent e) {
-					selectionButton.refreshList();
-				}
-				@Override
-				public void childRemoved(SPChildEvent e) {
-					selectionButton.refreshList();
-				}
-			};
-			project.addSPListener(newMungeProcessListener);
-			
 			pb.add(selectionButton, cc.xyw(4, y, 2, "l,c"));
 		}
 
@@ -781,37 +599,29 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 			
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 				final JLabel poolSettingLabel = new JLabel(mungeSettings.getPoolFilterSetting().getLongDescription());
-				SPListener poolFilterSettingChangeListener
-					= new SPListener() {
-						public void childAdded(SPChildEvent evt) {
+				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
+					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
+						public void mmChildrenInserted(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							// no-op
 						}
 
-						public void childRemoved(SPChildEvent evt) {
+						public void mmChildrenRemoved(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							// no-op
 						}
 
-						public void propertyChanged(PropertyChangeEvent evt) {
+						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							if (evt.getPropertyName() == "poolFilterSetting") {
 								PoolFilterSetting newValue = (PoolFilterSetting) evt.getNewValue();
 								poolSettingLabel.setText(newValue.getLongDescription());
 							}
 						}
-						
-						public void transactionStarted(TransactionEvent evt) {
-							// no-op
-						}
 
-						public void transactionRollback(TransactionEvent evt) {
+						public void mmStructureChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							// no-op
-						}
-						
-						public void transactionEnded(TransactionEvent evt) {
-							
 						}
 						
 				};
-				mungeSettings.addSPListener(poolFilterSettingChangeListener);
+				mungeSettings.addMatchMakerListener(poolFilterSettingChangeListener);
 				Font f = poolSettingLabel.getFont();
 				Font newFont = f.deriveFont(Font.ITALIC);
 				poolSettingLabel.setFont(newFont);
@@ -833,37 +643,31 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 			if (type == EngineType.ADDRESS_CORRECTION_ENGINE) {
 				MungeSettings mungeSettings = (MungeSettings) engineSettings;
 				final JLabel autoValidateSettingLabel = new JLabel(((MungeSettings) engineSettings).getAutoValidateSetting().getLongDescription());
-				SPListener poolFilterSettingChangeListener
-					= new SPListener() {
-						public void childAdded(SPChildEvent evt) {
+				MatchMakerListener<MatchMakerSettings, MatchMakerObject> poolFilterSettingChangeListener
+					= new MatchMakerListener<MatchMakerSettings, MatchMakerObject>() {
+						public void mmChildrenInserted(
+								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							// no-op
 						}
 	
-						public void childRemoved(
-								SPChildEvent evt) {
+						public void mmChildrenRemoved(
+								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							// no-op
 						}
 	
-						public void propertyChanged(PropertyChangeEvent evt) {
+						public void mmPropertyChanged(MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							if (evt.getPropertyName() == "autoValidateSetting") {
 								AutoValidateSetting newValue = (AutoValidateSetting) evt.getNewValue();
 								autoValidateSettingLabel.setText(newValue.getLongDescription());
 							}
 						}
 	
-						public void transactionStarted(TransactionEvent evt) {
-							// no-op
-						}
-						
-						public void transactionRollback(TransactionEvent evt) {
-							// no-op
-						}
-						
-						public void transactionEnded(TransactionEvent evt) {
+						public void mmStructureChanged(
+								MatchMakerEvent<MatchMakerSettings, MatchMakerObject> evt) {
 							// no-op
 						}
 				};
-				mungeSettings.addSPListener(poolFilterSettingChangeListener);
+				mungeSettings.addMatchMakerListener(poolFilterSettingChangeListener);
 				Font f = autoValidateSettingLabel.getFont();
 				Font newFont = f.deriveFont(Font.ITALIC);
 				autoValidateSettingLabel.setFont(newFont);
@@ -880,6 +684,7 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 					new Callable<Boolean>() {
 						public Boolean call() throws Exception {
 							boolean returnValue =  avsp.applyChanges();
+							swingSession.save(project);
 							return returnValue;
 						}
 					},
@@ -954,15 +759,13 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		}
 		engineSettings.setLog(new File(logFilePath.getText()));
 		engineSettings.setAppendToLog(appendToLog.isSelected());
-		Preferences p = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
-		Preferences prefs = p.node(project.getUUID());
-		prefs.put(LOG_FILE, engineSettings.getLog().getAbsolutePath());
-		prefs.put(APPEND_TO_LOG, Boolean.toString(engineSettings.getAppendToLog()));
 		if (recordsToProcess.getValue().equals(new Integer(0))) {
 			engineSettings.setProcessCount(null);
 		} else {
 			engineSettings.setProcessCount((Integer) recordsToProcess.getValue());
 		}
+
+		swingSession.save(project);
 		return true;
 	}
 	
@@ -980,6 +783,24 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		logger.error("Cannot discard changes");
 	}
 
+	public void mmPropertyChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		if (evt.getPropertyName().equals("engineRunning")) {
+			refreshRunActionStatus();
+		}
+	}
+
+	public void mmChildrenInserted(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		// do nothing
+	}
+
+	public void mmChildrenRemoved(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		// do nothing
+	}
+
+	public void mmStructureChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
+		// do nothing		
+	}
+
 	/**
 	 * Clean up all resources being held up by the EngineSettingsPanel.
 	 * including removing all event listeners.
@@ -988,15 +809,6 @@ public class EngineSettingsPanel implements DataEntryPanel, CleanupModel {
 		handler.removePropertyChangeListener(propertyChangeListener);
 		debugMode.removeItemListener(itemListener);
 		messageLevel.removeActionListener(messageLevelActionListener);
-		spinnerUpdateManager.cleanup();
-		for(CheckBoxModelUpdater cbmu : updaters) {
-			engineSettings.removeSPListener(cbmu);
-		}
-		swingSession.getRootNode().removeSPListener(activeListener);
-		for(MungeProcess mp : project.getMungeProcesses()) {
-			mp.removeSPListener(activeListener);
-		}
-		project.removeSPListener(newMungeProcessListener);
 //		engine.removeEngineListener(engineListener);
 	}
 }

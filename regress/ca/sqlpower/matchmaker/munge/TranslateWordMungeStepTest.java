@@ -21,17 +21,14 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroupDAOStub;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
-public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateWordMungeStep> {
-
-	public TranslateWordMungeStepTest(String name) {
-		super(name);
-	}
+public class TranslateWordMungeStepTest extends TestCase {
 
 	private TranslateWordMungeStep step;
 	
@@ -46,20 +43,9 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	 * despite any given oid. Check the method for translate words.
 	 */
 	protected void setUp() throws Exception {
-		step = new TranslateWordMungeStep();
 		super.setUp();
+		step = new TranslateWordMungeStep();
 		step.setSession(new TestingMatchMakerSession());
-		MungeProcess mp = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-		mp.addTransformationMungeStep(step);
-		
-		Project p = new Project();
-		p.addChild(mp);
-		mp.setParent(p);
-		p.setParent(getRootObject());
-		getRootObject().addChild(p, getRootObject().getChildren().size());
-
 	}
 
 	/**
@@ -69,12 +55,12 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("efg");
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getTranslateGroups().get(0));
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("efg", result);
@@ -83,12 +69,12 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("1234ABC1234", result);
@@ -101,12 +87,12 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonConsecutiveOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ababcdcd");
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12123434", result);
@@ -120,12 +106,12 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonWrongOrder() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdbadc");
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("1234badc", result);
@@ -138,12 +124,12 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 	public void testCallonRegexInput() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ab\\-+*?()[]{}|$^<=cd");
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12\\-+*?()[]{}|$^<=34", result);
@@ -156,12 +142,12 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("xxyfooxxyfooxyfooy");
 		step.connectInput(0, testInput);
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
-		step.setRegex(true);
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("-foo-foo-foo-", result);
@@ -171,12 +157,12 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCD");
 		step.connectInput(0, testInput);
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
-		step.setCaseSensitive(false);
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("12341234", result);
@@ -186,10 +172,10 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.setTranslateGroup((MatchMakerTranslateGroup) session.getTranslations().getChildren().get(0));
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -204,31 +190,5 @@ public class TranslateWordMungeStepTest extends AbstractMungeStepTest<TranslateW
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected TranslateWordMungeStep getTarget() {
-		return step;
-	}
-	
-	@Override
-	public void testDuplicate() {
-		// do nothing
-	}
-	
-	@Override
-	public void testCallAfterRollback() throws Exception {
-		testInput = new MungeStepOutput<String>("test", String.class);
-		testInput.setData(null);
-		step.connectInput(0, testInput);
-		super.testCallAfterRollback();
-	}
-	
-	@Override
-	public void testCallAfterCommit() throws Exception {
-		testInput = new MungeStepOutput<String>("test", String.class);
-		testInput.setData(null);
-		step.connectInput(0, testInput);
-		super.testCallAfterCommit();
 	}
 }

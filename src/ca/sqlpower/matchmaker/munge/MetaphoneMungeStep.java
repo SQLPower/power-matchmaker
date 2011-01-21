@@ -19,37 +19,18 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.codec.language.Metaphone;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Constructor;
 
 /**
  * This munge step will output the metaphone code of the given input.
  */
 public class MetaphoneMungeStep extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
-	@Constructor
 	public MetaphoneMungeStep() {
 		super("Metaphone",false);
-	}
-
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"metaphoneOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("metaphoneOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("metaphone",
-				String.class);
+		InputDescriptor desc = new InputDescriptor("metaphone", String.class);
 		super.addInput(desc);
 	}
 	
@@ -59,7 +40,7 @@ public class MetaphoneMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
 		throw new UnsupportedOperationException("Metaphone soundex substitution munge step does not support removeInput()");
 	}
 	

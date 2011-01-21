@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -101,7 +102,7 @@ public class MatchProcessorTest extends TestCase {
 						MungeResult result = new MungeResult();
 						Object[] outputs = {s, n, b, d};
 						result.setMungedData(outputs);
-						SourceTableRecord source = new SourceTableRecord(project, Integer.valueOf(key));
+						SourceTableRecord source = new SourceTableRecord(session, project, Integer.valueOf(key));
 						key++;
 						result.setSourceTableRecord(source);
 						results.add(result);
@@ -114,7 +115,7 @@ public class MatchProcessorTest extends TestCase {
 		MungeResult result = new MungeResult();
 		Object[] outputs = {"A", BigDecimal.valueOf(0), Boolean.TRUE, new Date(0)};
 		result.setMungedData(outputs);
-		dup1 = new SourceTableRecord(project, Integer.valueOf(key));
+		dup1 = new SourceTableRecord(session, project, Integer.valueOf(key));
 		key++;
 		result.setSourceTableRecord(dup1);
 		results.add(result);
@@ -126,7 +127,7 @@ public class MatchProcessorTest extends TestCase {
 		outputs[2] = Boolean.FALSE;
 		outputs[3] = new Date(Long.MAX_VALUE/2);
 		result.setMungedData(outputs);
-		dup2 = new SourceTableRecord(project, Integer.valueOf(key));
+		dup2 = new SourceTableRecord(session, project, Integer.valueOf(key));
 		key++;
 		result.setSourceTableRecord(dup2);
 		results.add(result);
@@ -138,7 +139,7 @@ public class MatchProcessorTest extends TestCase {
 		outputs[2] = Boolean.TRUE;
 		outputs[3] = new Date(Long.MAX_VALUE);
 		result.setMungedData(outputs);
-		dup3 = new SourceTableRecord(project, Integer.valueOf(key));
+		dup3 = new SourceTableRecord(session, project, Integer.valueOf(key));
 		key++;
 		result.setSourceTableRecord(dup3);
 		results.add(result);
@@ -150,7 +151,7 @@ public class MatchProcessorTest extends TestCase {
 		outputs[2] = null;
 		outputs[3] = null;
 		result.setMungedData(outputs);
-		nullDup = new SourceTableRecord(project, Integer.valueOf(key));
+		nullDup = new SourceTableRecord(session, project, Integer.valueOf(key));
 		key++;
 		result.setSourceTableRecord(dup3);
 		results.add(result);
@@ -164,8 +165,8 @@ public class MatchProcessorTest extends TestCase {
 		Collections.shuffle(results);
 
 		MungeProcess process = new MungeProcess();
-		process.setParent(project);
-		pool = project.getMatchPool();
+		process.setParentProject(project);
+		pool = new MatchPool(project);
 		matcher = new MatchProcessor(pool, process, results, logger);
 	}
 	
@@ -176,12 +177,12 @@ public class MatchProcessorTest extends TestCase {
 	
 	public void testCall() throws Exception {
 		matcher.call();
-		List<PotentialMatchRecord> pmrs = pool.getPotentialMatchRecords();
+		Set<PotentialMatchRecord> pmrs = pool.getPotentialMatches();
 		assertEquals(3, pmrs.size());
 		
 		for (PotentialMatchRecord pmr: pmrs) {
-			SourceTableRecord lhs = pmr.getOrigLHS();
-			SourceTableRecord rhs = pmr.getOrigRHS();
+			SourceTableRecord lhs = pmr.getOriginalLhs();
+			SourceTableRecord rhs = pmr.getOriginalRhs();
 			
 			if (lhs != dup1 && lhs != dup2 && lhs != dup3 &&
 					rhs != dup1 && rhs != dup2 && rhs != dup3) {

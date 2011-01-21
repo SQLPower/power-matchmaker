@@ -64,22 +64,22 @@ public class SortWordsMungeComponent extends AbstractMungeComponent {
 		useRegex = new JCheckBox("Use Regular Expressions");
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				step.setRegex(useRegex.isSelected());
+				step.setParameter(SortWordsMungeStep.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
 			}	
 		});
-		useRegex.setSelected(step.isRegex());
+		useRegex.setSelected(step.getBooleanParameter(SortWordsMungeStep.USE_REGEX_PARAMETER_NAME));
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(step.isCaseSensitive());
+		caseSensitive.setSelected(step.getBooleanParameter(SortWordsMungeStep.CASE_SENSITIVE_PARAMETER_NAME));
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				step.setCaseSensitive(caseSensitive.isSelected());
+				step.setParameter(SortWordsMungeStep.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
 			}
 			
 		});
 		
-		delimiter = new JTextField(step.getDelimiter());
+		delimiter = new JTextField(step.getParameter(SortWordsMungeStep.DELIMITER_PARAMETER_NAME));
 		delimiter.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -91,13 +91,13 @@ public class SortWordsMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-				step.setDelimiter(delimiter.getText());
+				step.setParameter(SortWordsMungeStep.DELIMITER_PARAMETER_NAME, delimiter.getText());
             }
         });
 		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(delimiter, useRegex, validator, true, "");
+		getHandler().addValidateObject(delimiter, useRegex, validator);
 		
-		resultDelimiter = new JTextField(step.getResultDelim());
+		resultDelimiter = new JTextField(step.getParameter(SortWordsMungeStep.RESULT_DELIM_PARAMETER_NAME));
 		resultDelimiter.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -109,7 +109,7 @@ public class SortWordsMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-				step.setResultDelim(resultDelimiter.getText());
+				step.setParameter(SortWordsMungeStep.RESULT_DELIM_PARAMETER_NAME, resultDelimiter.getText());
             }
         });
 		

@@ -22,48 +22,39 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.object.SPObject;
-
-public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBooleanMungeStep> {
-
-	public StringToBooleanMungeStepTest(String name) {
-		super(name);
-	}
+public class StringToBooleanMungeStepTest extends TestCase {
 
 	private StringToBooleanMungeStep step;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		step = new StringToBooleanMungeStep();
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new StringToBooleanMungeStep();
 	}
 	
 	private void setCaseSensitive(boolean cs) {
-		step.setCaseSensitive(cs);
+		step.setParameter(StringToBooleanMungeStep.CASE_SENSITIVE_PARAMETER_NAME, cs);
 	}
 	
 	private void setRegex(boolean rx) {
-		step.setUseRegex(rx);
+		step.setParameter(StringToBooleanMungeStep.USE_REGEX_PARAMETER_NAME, rx);
 	}
 	
-	private void setNeither(Boolean d) {
-		step.setNeither(d);
+	private void setDefault(String d) {
+		step.setParameter(StringToBooleanMungeStep.NEITHER_PARAMETER_NAME, d);
 	}
 	
 	private void setTrueList(String list) {
-		step.setTrueList(list);
+		step.setParameter(StringToBooleanMungeStep.TRUE_LIST_PARAMETER_NAME, list);
 	}
 	
 	private void setFalseList(String list) {
-		step.setFalseList(list);
+		step.setParameter(StringToBooleanMungeStep.FALSE_LIST_PARAMETER_NAME, list);
 	}
 	
 	private void run(List<String> in, List<Boolean> out) throws Exception {
@@ -76,8 +67,8 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 			
 			assertEquals("Error in item " + x + ": " + in.get(x) + ", ", out.get(x), step.getOut().getData());
 		}
-		step.mungeRollback();
-		step.mungeClose();
+		step.rollback();
+		step.close();
 	}
 
 	public void testOneTrue() throws Exception {
@@ -96,7 +87,7 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 	public void testTrueAndFalse() throws Exception {
 		setCaseSensitive(false);
 		setRegex(false);
-		setNeither(null);
+		setDefault("null");
 		List<String> in = new ArrayList<String>();
 		List<Boolean> out = new ArrayList<Boolean>();
 		
@@ -127,7 +118,7 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 	public void testList() throws Exception {
 		setCaseSensitive(false);
 		setRegex(false);
-		setNeither(null);
+		setDefault("null");
 		List<String> in = new ArrayList<String>();
 		List<Boolean> out = new ArrayList<Boolean>();
 		
@@ -161,7 +152,7 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 	public void testRegex() throws Exception {
 		setCaseSensitive(false);
 		setRegex(true);
-		setNeither(null);
+		setDefault("null");
 		List<String> in = new ArrayList<String>();
 		List<Boolean> out = new ArrayList<Boolean>();
 		
@@ -201,7 +192,7 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 	public void testDefaults() throws Exception {
 		setCaseSensitive(false);
 		setRegex(true);
-		setNeither(null);
+		setDefault("null");
 		List<String> in = new ArrayList<String>();
 		List<Boolean> out = new ArrayList<Boolean>();
 		
@@ -214,21 +205,30 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 		run(in,out);
 		out.clear();
 		
-		setNeither(true);
+		setDefault("true");
 		out.add(true);
 		run(in,out);
 		out.clear();
 		
-		setNeither(false);
+		setDefault("false");
 		out.add(false);
 		run(in,out);
 		out.clear();
+		
+		setDefault("halt");
+		out.add(false);
+		try {
+			run(in,out);
+			fail("This should have thrown an error");
+		} catch (IllegalArgumentException e) {
+			//yay
+		}
 	}
 	
 	public void testEscComma() throws Exception {
 		setCaseSensitive(false);
 		setRegex(false);
-		setNeither(null);
+		setDefault("null");
 		List<String> in = new ArrayList<String>();
 		List<Boolean> out = new ArrayList<Boolean>();
 		
@@ -248,21 +248,5 @@ public class StringToBooleanMungeStepTest extends MatchMakerTestCase<StringToBoo
 		out.add(true);
 		
 		run(in,out);
-	}
-
-	@Override
-	protected StringToBooleanMungeStep getTarget() {
-		logger.debug("Stub call: MatchMakerTestCase<StringToBooleanMungeStep>.getTarget()");
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// no-op
 	}
 }

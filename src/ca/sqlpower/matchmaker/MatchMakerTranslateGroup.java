@@ -19,32 +19,25 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.NonProperty;
 
-public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implements Comparable <MatchMakerTranslateGroup> {
 
-	public static final List<Class<? extends SPObject>> allowedChildTypes =
-        Collections.<Class<? extends SPObject>>singletonList(MatchMakerTranslateWord.class);
-	
-	List<MatchMakerTranslateWord> children = new ArrayList<MatchMakerTranslateWord>();
-	
+
+public class MatchMakerTranslateGroup
+	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, MatchMakerTranslateWord> 
+	implements Comparable <MatchMakerTranslateGroup> {
+
     /**
      * Object identifier. Required for the persistence layer.
      */
-    private Long oid;
+    @SuppressWarnings("unused")
+	private Long oid;
     
     /**
      * Returns this translate group's peristent Object Identifier.  This get method
      * should probably be declared in the AbstractMatchMakerObject, but I just need it
      * here right now.
      */
-	@NonProperty
     public Long getOid() {
         return oid;
     }
@@ -72,9 +65,7 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 		return true;
 	}
 
-	@Constructor
 	public MatchMakerTranslateGroup() {
-        setName("MatchMakerTranslateGroup");
 	}
     
     /**
@@ -86,7 +77,6 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
      */
     MatchMakerTranslateGroup(Long initialOid) {
         this.oid = initialOid;
-        setName("MatchMakerTranslateGroup");
     }
 
 	@Override
@@ -94,51 +84,20 @@ public class MatchMakerTranslateGroup extends AbstractMatchMakerObject implement
 		return getName();
 	}
 
-	public MatchMakerTranslateGroup duplicate(MatchMakerObject parent) {
+	public MatchMakerTranslateGroup duplicate(MatchMakerObject parent, MatchMakerSession s) {
 		MatchMakerTranslateGroup g = new MatchMakerTranslateGroup();
+		g.setSession(s);
 		g.setParent(parent);
 		g.setName(this.getName());
 		g.setVisible(isVisible());
-		int i = 0;
-		for (MatchMakerTranslateWord w: getChildren(MatchMakerTranslateWord.class)){
-			MatchMakerTranslateWord duplicate = w.duplicate(g);
-			g.addChild(duplicate, i);
-			i++;
+		for (MatchMakerTranslateWord w: getChildren()){
+			g.addChild(w.duplicate(g,s));
 		}
 		return g;
 	}
 
 	public int compareTo(MatchMakerTranslateGroup o) {
 		return getName().compareTo(((MatchMakerTranslateGroup) o).getName());
-	}
-
-	@Override
-	@NonProperty
-	public List<MatchMakerTranslateWord> getChildren() {
-		return Collections.unmodifiableList(children);
-	}
-
-	@Override
-	@NonProperty
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
-	}
-	
-	public void addChild(SPObject spo) {
-		addChild(spo,children.size());
-	}
-	
-	protected void addChildImpl(SPObject spo, int index) {
-		children.add(index, (MatchMakerTranslateWord) spo);
-		fireChildAdded(MatchMakerTranslateWord.class, spo, index);
-	}
-	
-	protected boolean removeChildImpl(SPObject spo) {
-		int index = children.indexOf(spo);
-		boolean removed = children.remove(spo);
-		fireChildRemoved(MatchMakerTranslateWord.class, spo, index);
-		spo.setParent(null);
-		return removed;
 	}
 
 }

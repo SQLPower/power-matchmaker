@@ -21,8 +21,6 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import ca.sqlpower.object.annotation.NonProperty;
-
 /**
  * This MungeStep is used to store the final results of a MungeProcess.
  * As such, it contains no outputs, and only inputs. For each row
@@ -45,6 +43,5 @@ public interface MungeResultStep extends MungeStep {
 	/**
 	 * Returns the munged results of this step.
 	 */
-	@NonProperty
 	public List<MungeResult> getResults();
 }

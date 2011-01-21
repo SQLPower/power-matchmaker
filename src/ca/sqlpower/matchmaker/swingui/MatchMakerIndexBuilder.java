@@ -150,7 +150,6 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 						index.removeChild(index.getChildren().get(0));
 					}
 					contains = true;
-					break;
 				}
 			}
 	        if (!contains) {

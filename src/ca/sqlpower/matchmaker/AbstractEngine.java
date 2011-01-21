@@ -33,10 +33,13 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.security.EmailNotification;
+import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.EmailNotification.EmailRecipient;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.util.Email;
+import ca.sqlpower.util.UnknownFreqCodeException;
 /**
  * Common ground for all engines.  This class handles events
  * output capture, monitoring and starting and stopping the engine. 
@@ -245,11 +248,15 @@ public abstract class AbstractEngine implements MatchMakerEngine {
         String sep = System.getProperty("file.separator");
         String userDir = System.getProperty("user.dir") + sep + "dqguru-engine-runner.jar";
         String javaPath = javaHome + sep + "bin" + sep + "java";
-        String workspace = session.getSavePoint().getPath();
+        String dbName = session.getDatabase().getName();
+        String username = session.getDBUser();
+        String password = session.getDatabase().getDataSource().getPass();
         String projectName = project.getName();
         
         String[] cmd = { javaPath, "-jar", userDir, 
-        		"--workspace", workspace,
+        		"--repository", dbName,
+        		"--username", username,
+        		"--password", password,
         		"--project", projectName };
         
         StringBuilder cmdText = new StringBuilder();
@@ -302,6 +309,34 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		validate = host != null &&
 					host.length() > 0;
 		return validate;
+	}
+	
+	/**
+	 * Fills each of the users lists for each status. 
+	 */
+	private void findEmailUsers() throws UnknownFreqCodeException,
+			PLSecurityException, SQLException {
+		Connection con = session.getConnection();
+		greenUsers = EmailNotification.findEmailRecipients(con,
+				this, EmailNotification.GREEN_STATUS);
+		yellowUsers = EmailNotification.findEmailRecipients(con,
+				this, EmailNotification.YELLOW_STATUS);
+		redUsers = EmailNotification.findEmailRecipients(con,
+				this, EmailNotification.RED_STATUS);
+	}
+	
+	/**
+	 * Creates and sets up the emails for each status.
+	 */
+	protected void setupEmail(MatchMakerSessionContext context) 
+			throws Exception {
+		findEmailUsers();
+		
+		String host = context.getEmailSmtpHost();
+		
+		email = new Email(host);
+		email.setFromEmail(session.getAppUserEmail());
+		email.setFromName(session.getAppUser());
 	}
 
 	public String getObjectName() {

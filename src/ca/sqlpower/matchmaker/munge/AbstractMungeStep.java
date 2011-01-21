@@ -19,30 +19,25 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.awt.Point;
 import java.math.BigDecimal;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerEngine.EngineMode;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.ConstructorParameter;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
-import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sqlobject.SQLType;
 import ca.sqlpower.validation.ValidateResult;
 
@@ -52,16 +47,7 @@ import ca.sqlpower.validation.ValidateResult;
  * the {@link #call()} method, which would implement the functionality
  * of a particular MungeStep.
  */
-public abstract class AbstractMungeStep extends AbstractMatchMakerObject implements MungeStep {
-	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
-	protected final List<MungeStepOutput> mungeStepOutputs = new ArrayList<MungeStepOutput>();
-	
-	protected final List<MungeStepInput> inputs = new ArrayList<MungeStepInput>();
+public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeStep, MungeStepOutput> implements MungeStep {
 	
     /**
      * The object identifier for this munge step instance.  Required by
@@ -69,6 +55,18 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      */
     @SuppressWarnings("unused")
     private Long oid;
+    
+	/**
+	 * A list of Input objects, each containing a MungeStepOutput
+	 * that the parent MungeStep has output, which this MungeStep 
+	 * will use for its input.
+	 */
+	private List<Input> inputs = new ArrayList<Input>();
+	
+	/**
+	 * A map of configuration parameters for this MungeStep.
+	 */
+	private Map<String,String> parameters = new HashMap<String, String>();
 	
     /**
      * Tracks whether a open() call has been made on this munge step.
@@ -76,7 +74,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     private boolean opened;
 
     /**
-     * Tracks whether a commit() call has been made on this munge step.
+     * Ttacks whether a commit() call has been made on this munge step.
      */
     private boolean committed;
 
@@ -101,16 +99,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	private boolean previewMode;
 	
 	/**
-	 * Stores the location of this step in a munge pen.
-	 */
-	private Point position;
-	
-	/**
-	 * Whether the step is expanded in a munge pen.
-	 */
-	private boolean expanded;
-	
-	/**
 	 * The default object type of this Munge Step's input. The default value is {@link Object#class}.
 	 * This is used for Munge Steps with variable inputs as the default class to use when adding an new input
 	 * which now happens when connecting an input into the last empty input. 
@@ -122,15 +110,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	
 	protected EngineMode mode;
 	
-	@Constructor
-	public AbstractMungeStep(@ConstructorParameter(propertyName="name") String name, 
-			@ConstructorParameter(propertyName="canAddInputs") boolean canAddInputs) {
+	public AbstractMungeStep(String name, boolean canAddInputs) {
 		setName(name);
 		this.canAddInputs = canAddInputs;
 	}
 	
 	@Override
-	@Accessor
 	public MungeProcess getParent() {
 	    return (MungeProcess) super.getParent();
 	}
@@ -153,10 +138,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     public void refresh(Logger logger) throws Exception {
     	//do nothing on default cases.
     }
-    
-    public void init() {
-    	// do nothing, but all real steps must override this if they want connections.
-    }
 	
 	/**
 	 * A method that is called when an step is "run/called". Default is No-op. 
@@ -177,11 +158,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	 */
 	public void doClose() throws Exception{}
 	
-	@NonProperty
 	public List<MungeStepOutput> getMSOInputs() {
 		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
-		for (MungeStepInput in: inputs) {
-			values.add(in.getCurrent());
+		for (Input in: inputs) {
+			values.add(in.current);
 		}
 		return values;
 	}
@@ -197,11 +177,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
                     "Input " + index + " of step " + getName() +
                     " does not support data type " + o.getType());
         }
-		
-        inputs.get(index).setCurrent(o);
-        
+		inputs.get(index).current = o;
+		getEventSupport().firePropertyChange("inputs", index, null, o);
 		boolean noEmptyInputs = true;
-		for (MungeStepInput input: inputs) {
+		for (Input input: inputs) {
 			if (input.getCurrent() == null) noEmptyInputs = false;
 		}
 		if (canAddInput() && noEmptyInputs) {
@@ -213,7 +192,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 		if (index >= getMSOInputs().size()) {
 			throw new IndexOutOfBoundsException("There is no input at the given index");
 		}
-		inputs.get(index).disconnect();
+		getEventSupport().firePropertyChange("inputs", index,
+				inputs.get(index).current, null);
+		inputs.get(index).current = null;
 	}
 	
 	/**
@@ -224,41 +205,15 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	public int disconnectInput(MungeStepOutput mso) {
 	    int disconnectCount = 0;
 		for (int i = 0; i < inputs.size(); i++) {
-			MungeStepInput in = inputs.get(i);
-			if (in.getCurrent() == mso) {
-				in.disconnect();
+			Input in = inputs.get(i);
+			if (in.current == mso) {
+				getEventSupport().firePropertyChange("inputs", i,
+					in.current, null);
+				in.current = null;
 				disconnectCount++;
 			}
 		}
 		return disconnectCount;
-	}
-	
-	@Override
-	protected void addChildImpl(SPObject ob, int index) {
-		if (ob instanceof MungeStepInput) {
-			MungeStepInput in = (MungeStepInput) ob;
-			inputs.add(index, in);
-			fireChildAdded(MungeStepInput.class, in, index);
-		} else if(ob instanceof MungeStepOutput) {
-			mungeStepOutputs.add(index, (MungeStepOutput) ob);
-			fireChildAdded(MungeStepOutput.class, ob, index);
-		} else {
-			throw new RuntimeException("You should never arrive here. You are adding " +
-					ob.toString() + " to " + this.toString() + "."); 
-		}
-	}
-	
-	@NonProperty
-	public List<SPObject> getChildren() {
-		List<SPObject> children = new ArrayList<SPObject>();
-		children.addAll(mungeStepOutputs);
-		children.addAll(inputs);
-		return Collections.unmodifiableList(children);
-	}
-
-    @Accessor
-	public Class getDefaultInputClass() {
-    	return defaultInputClass;
 	}
 	
 	public int addInput(InputDescriptor desc) {
@@ -272,40 +227,29 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			throw new IndexOutOfBoundsException(
 					"Cannot add at position: " + index);
 		}
-		MungeStepInput in = new MungeStepInput(desc, this);
+		Input in = new Input(null, desc, this);
 		inputs.add(index, in);
-		fireChildAdded(MungeStepInput.class, in, index);
+		getEventSupport().firePropertyChange("addInputs", index, null, desc);
 	}
 
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
+		InputDescriptor old = inputs.get(index).descriptor;
 		if (index >= inputs.size()) {
 			throw new IndexOutOfBoundsException(
-			"There is no IOConnector at the given index.");
+				"There is no IOConnector at the give index.");
 		}
-		MungeStepInput in = inputs.get(index);
-		boolean b = inputs.remove(in);
-		fireChildRemoved(MungeStepInput.class, in, index);
-		return b;
-	}
-	
-	public boolean removeInput(MungeStepInput in) {
-		if (!inputs.contains(in)) {
-			throw new IndexOutOfBoundsException(
-				"The given connector is not an input in the list");
-		}
-		int dex = inputs.indexOf(in);
-		boolean b = inputs.remove(in);
-		fireChildRemoved(MungeStepInput.class,in,dex);
-		return b;
+		inputs.remove(index);
+		getEventSupport().firePropertyChange("addInputs", index,
+				old, null);
 	}
 	
 	public void removeUnusedInput() {
 		try {
-			begin("Removing input");
+			startCompoundEdit();
 			Queue<Integer> freeIndexQueue = new LinkedList<Integer>();
 	
 			for (int i = 0; i < inputs.size(); i++) {
-				if (inputs.get(i).getCurrent() == null) {
+				if (inputs.get(i).current == null) {
 					freeIndexQueue.offer(i);
 				} else {
 					if (freeIndexQueue.size() > 0) {
@@ -321,110 +265,221 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 			while (inputs.get(inputs.size() - 1).getCurrent() == null && inputs.size() > 1) {
 				removeInput(inputs.size() - 1);
 			}
-			commit();
-		} catch (RuntimeException e) {
-			rollback(e.getMessage());
-			throw e;
+		} finally {
+			endCompoundEdit();
 		}
 	}
+
+    public Collection<String> getParameterNames() {
+        return Collections.unmodifiableSet(parameters.keySet());
+    }
+    
+	public String getParameter(String name) {
+		return parameters.get(name);
+	}
 	
-	protected boolean removeChildImpl(SPObject spo) {
-		boolean removed;
-		if(spo instanceof MungeStepOutput) {
-			removed = removeMungeStepOutput((MungeStepOutput)spo);
+	public Boolean getBooleanParameter(String name) {
+		String param = parameters.get(name);
+		if (param != null) {
+			return Boolean.valueOf(param);
 		} else {
-			removed = removeInput((MungeStepInput)spo);
+			return null;
 		}
-		return removed;
 	}
 	
-	private boolean removeMungeStepOutput(MungeStepOutput mso) {
-		int index = mungeStepOutputs.indexOf(mso);
-		boolean removed = mungeStepOutputs.remove(mso);
-		fireChildRemoved(MungeStepOutput.class, mso, index);
-		return removed;
+	public Integer getIntegerParameter(String name) {
+		String param = parameters.get(name);
+		if (param != null) {
+			return Integer.valueOf(param);
+		} else {
+			return null;
+		}
 	}
 	
-	@Mutator
-	public void setPosition(Point np) {
-		Point old = position;
-		position = np;
-		firePropertyChange("position", old, position);
+	public void setPosition(int x, int y) {
+		try {
+			startCompoundEdit();
+			setParameter(MUNGECOMPONENT_X, x);
+			setParameter(MUNGECOMPONENT_Y, y);
+		} finally {
+			endCompoundEdit();
+		}
 	}
 	
-	@Accessor
-	public boolean isExpanded() {
-		return expanded;
-	}
-
-	@Mutator
-	public void setExpanded(boolean expanded) {
-		boolean old = this.expanded;
-		this.expanded = expanded;
-		firePropertyChange("expanded", old, expanded);
-	}
-
-	@Accessor
-	public Point getPosition() {
-		return position;
+	public void setParameter(String name, String newValue) {
+		String oldValue = parameters.get(name);
+		parameters.put(name, newValue);
+		getEventSupport().firePropertyChange(name, oldValue, newValue);
 	}
 	
-	/**
-	 * Needed only for the XML stuff. Don't use it anywhere else.
-	 */
-	@NonProperty
-	public void setMSO(List<MungeStepOutput> newOutputs) {
-		mungeStepOutputs.clear();
-		mungeStepOutputs.addAll(newOutputs);
+	public void setParameter(String name, boolean newValue) {
+		String oldValue = parameters.get(name);
+		parameters.put(name, newValue + "");
+		getEventSupport().firePropertyChange(name, oldValue, newValue + "");
 	}
 	
-	/**
-	 * Needed only for the XML stuff. Don't use it anywhere else.
-	 */
-	@NonProperty
-	public void setMSI(List<MungeStepInput> newInputs) {
-		inputs.clear();
-		inputs.addAll(newInputs);
+	public void setParameter(String name, int newValue) {
+		String oldValue = parameters.get(name);
+		parameters.put(name, newValue + "");
+		getEventSupport().firePropertyChange(name, oldValue, newValue + "");
 	}
 	
-	public MungeStep duplicate(MatchMakerObject parent) {
+	public MungeStep duplicate(MatchMakerObject parent,
+			MatchMakerSession session) {
 		Class stepClass = getClass();
 		AbstractMungeStep step = null;
 		try {
 			step = (AbstractMungeStep) stepClass.newInstance();
-			copyPropertiesForDuplicate(step);
+			step.parameters = new HashMap<String, String>(this.parameters);
 			step.setParent(parent);
+			step.setSession(session);
+			step.setUndoing(this.isUndoing());
 			step.setVisible(this.isVisible());
-			step.setName(getName());
-			step.setPreviewMode(isPreviewMode());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return step;
 	}
-
+	
 	/**
-	 * Classes extending this abstract class can implement this method to define
-	 * how properties specific to each step should be copied over to a new munge
-	 * step. All properties that are not transient should be copied over to the
-	 * new step.
-	 * 
-	 * @param copy
-	 *            The step copy that we need to duplicate this class's
-	 *            parameters to.
-	 */
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		//do nothing by default.
+	 * Warning: One should never mix instances--that is, one
+	 * should never put detached instances from different 
+	 * sessions into the same set because it will break this
+	 * implementation of equals and hashCode.
+	 */  
+	@Override
+	public boolean equals(Object obj) {
+		return this == obj;
 	}
 	
-	@NonProperty
+	/**
+	 * Warning: One should never mix instances--that is, one
+	 * should never put detached instances from different 
+	 * sessions into the same set because it will break this
+	 * implementation of equals and hashCode.
+	 */  
+	@Override
+	public int hashCode() {
+		return System.identityHashCode(this);
+	}
+	
 	public InputDescriptor getInputDescriptor(int inputNumber) {
-		return inputs.get(inputNumber).getDescriptor();
+		return inputs.get(inputNumber).descriptor;
 	}
 	
-	@NonProperty
 	public int getInputCount() {
 	    return inputs.size();
+	}
+	
+	/**
+	 * This is the pairing between a MungeStepOutput value and its InputDescriptor.
+	 * The reason for this class is to avoid maintaining two separate collections of
+	 * MungeStepOutputs and their InputDescriptors.
+	 * <p>
+	 * Note this class is only public because the XML DAO needs access to it. For
+	 * normal use of the MatchMaker API, there is no need to refer to this class
+	 * directly.
+	 */
+	public static class Input{
+		
+		/**
+		 * used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private Long oid;
+		
+		private AbstractMungeStep parentStep;
+		
+		/**
+		 * The MungeStepOutput containing the value of this input.
+		 */
+		private MungeStepOutput current;
+		
+		/**
+		 * The attributes of this input.
+		 */
+		private InputDescriptor descriptor;
+		
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private Input() {
+			descriptor = new InputDescriptor(null, null);
+		}
+		
+		public Input(MungeStepOutput current, InputDescriptor descriptor, AbstractMungeStep step) {
+			this.current = current;
+			this.descriptor = descriptor;
+			this.parentStep = step;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private AbstractMungeStep getParentStep() {
+			return parentStep;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private void setParentStep(AbstractMungeStep parentStep) {
+			this.parentStep = parentStep;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+        public MungeStepOutput getCurrent() {
+			return current;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+        public void setCurrent(MungeStepOutput current) {
+			this.current = current;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+        public String getName() {
+			return descriptor.getName();
+		}
+
+		/**
+         * Returns the data type expected by this input.
+         * <p>
+         * Note: This method is used reflectively by Hibernate. Do not remove
+         * this method even if it appears unused.
+         */
+		@SuppressWarnings("unused")
+        public Class<?> getType() {
+			return descriptor.getType();
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private void setName(String name) {
+			descriptor.setName(name);
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private void setType(Class type) {
+			descriptor.setType(type);
+		}
 	}
 	
 	/**
@@ -441,9 +496,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	/**
      * Only sets the logger, because most steps do not need to allocate any resources.
      * If your step needs to allocate resources (perform a database query, open
-     * a file, connect to a server, and so on), you should override this method. This does
-     * not relate to the main persistence engine, and is only used in writing files
-     * as part of a mungestep.
+     * a file, connect to a server, and so on), you should override this method.
      */
     public final void open(EngineMode mode, Logger logger) throws Exception {
     	this.logger = logger;
@@ -467,11 +520,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     }
     
     /**
-     * Called when the step tries to commit, in cases where the MungeStep writes to
-     * a file. This is unrelated to the larger commit. This calls doCommit(), which should
+     * Called when the step tries to commit. This called doCommit(). doCommit should
      * be overridden if the step is to do anything when commit is called.
      */
-    public final void mungeCommit() throws Exception {
+    public final void commit() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't commit because step is not opened");
         }
@@ -488,7 +540,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      * Called when the step tries to rollback. This called doRollback(). doRollback() should
      * be overridden if the step is to do anything when commit is called.
      */
-    public final void mungeRollback() throws Exception {
+    public final void rollback() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't roll back because step is not opened");
         }
@@ -502,10 +554,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     }
 
     /**
-     * Called when this step is closed. This calls doClose(). 
-     * doClose should be overridden if the step needs to do anything on close.
+     * Called when this step is closed. This calls doClose(). doClose should be overridden if 
+     * the step needs to do anything on close.
      */
-    public final void mungeClose() throws Exception {
+    public final void close() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Step not opened");
         }
@@ -555,7 +607,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     protected void printOutputs() {
     	if (logger.isDebugEnabled()) {
     		String out = getName() + " Outputs: ";
-    		for (MungeStepOutput mso : getChildren(MungeStepOutput.class)) {
+    		for (MungeStepOutput mso : getChildren()) {
     			if (mso == null) {
     				out += "[ null ] ";
     			} else {
@@ -600,9 +652,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
      * Returns the first MungeStepOutput it finds with the given name. 
      * Returns null if no such MungeStepOutput exists.
      */
-    @NonProperty
-	public MungeStepOutput getOutputByName(String name) {
-    	for(MungeStepOutput o: getChildren(MungeStepOutput.class)) {
+    public MungeStepOutput getOutputByName(String name) {
+    	for(MungeStepOutput o: getChildren()) {
     		if (o.getName().equals(name)) {
     			return o;
     		}
@@ -611,30 +662,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     }
 
     /**
-     * Returns the mungeStepOutput children in an unmodfiable list.
-     */
-    @NonProperty
-	public List<MungeStepOutput> getMungeStepOutputs() {
-    	return Collections.unmodifiableList(mungeStepOutputs);
-    }
-
-    /**
-     * Returns the mungeStepIntput children (the actual class name is AbstractMungeStep.Input) 
-     * in an unmodfiable list
-     */
-    @NonProperty
-	public List<MungeStepInput> getMungeStepInputs() {
-    	return Collections.unmodifiableList(inputs);
-    }
-
-    /**
      * Returns the MMO ancestor of this munge step that is a Project.
      * Returns null if there is no such ancestor.
-     * XXX There is a utility method that you can use instead of this. (getAncestor(class)).
      */
-    @NonProperty
     public Project getProject() {
-        for (MatchMakerObject mmo = getParent(); mmo != null; mmo = (MatchMakerObject) mmo.getParent()) {
+        for (MatchMakerObject<?, ?> mmo = getParent(); mmo != null; mmo = mmo.getParent()) {
             if (mmo instanceof Project) {
                 return (Project) mmo;
             }
@@ -654,29 +686,29 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     		result.append(" " + mso);
     	}
     	result.append("] [Outputs:");
-    	for (MungeStepOutput mso : getChildren(MungeStepOutput.class)) {
+    	for (MungeStepOutput mso : getChildren()) {
     		result.append(" " + mso);
+    	}
+    	result.append("] [Parameters:");
+    	for (String param : getParameterNames()) {
+    		result.append(" <" + param + ":" + getParameter(param) + ">");
     	}
     	result.append("]");
     	return result.toString();
     }
     
-    @NonProperty
     public boolean isInputStep() {
     	return false;
     }
     
-    @Accessor
     public boolean isOpen() {
         return opened;
     }
     
-    @Accessor
     public boolean isCommitted() {
         return committed;
     }
     
-    @Accessor
     public boolean isRolledBack() {
         return rolledBack;
     }
@@ -684,13 +716,26 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     /**
 	 * returns the first child output
 	 */
-    @NonProperty
-	protected MungeStepOutput getOut() {
-		if (mungeStepOutputs.size() != 1) {
+    protected MungeStepOutput getOut() {
+		if (getChildCount() != 1) {
 			throw new IllegalStateException(
 					"This step has the incorrect number of outputs");
 		}
-		return getMungeStepOutputs().get(0);
+		return getChildren().get(0);
+    }
+    
+    /**
+	 * Only used by hibernate and xml import/export.
+	 */
+    public void setInputs(List<Input> inputs) {
+    	this.inputs = inputs;
+    }
+	
+	/**
+     * Only used by hibernate and xml import/export.
+	 */
+    public List<Input> getInputs() {
+    	return inputs;
     }
 
 	/**
@@ -698,29 +743,22 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
 	 * and expect a default Input class that is not Object. It is currently default access for now, since all
 	 * Munge Steps are placed in the ca.sqlpower.matchmaker.munge package anyway. 
 	 */
-    @Mutator
-	public void setDefaultInputClass(Class defaultInputClass) {
-    	Class oldDefaultInputClass = this.defaultInputClass;
+	void setDefaultInputClass(Class defaultInputClass) {
 		this.defaultInputClass = defaultInputClass;
-		firePropertyChange("defaultInputClass", oldDefaultInputClass, this.defaultInputClass);
 	}
 
-    @Transient
-    @Accessor
 	public boolean isPreviewMode() {
 		return previewMode;
 	}
 
-	@Transient
-	@Mutator
 	public void setPreviewMode(boolean previewMode) {
 		this.previewMode = previewMode;
 	}
 	
 	public boolean hasConnectedInputs() {
 		boolean result = false;
-		for (MungeStepInput in: inputs) {
-			result |= (in.getCurrent() != null);
+		for (Input in: inputs) {
+			result |= (in.current != null);
 			if (result) break;
 		}
 		return result;
@@ -780,10 +818,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject impleme
     
     public List<ValidateResult> checkPreconditions() {
     	return Collections.emptyList();
-    }
-    
-    public List<Class<? extends SPObject>> getAllowedChildTypes() {
-    	return allowedChildTypes;
     }
 
 }

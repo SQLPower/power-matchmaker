@@ -101,7 +101,7 @@ public class DuplicateProjectAction extends AbstractAction {
         }
 		final JDialog dialog;
 
-		final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren(PlFolder.class);
+		final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
 		folderComboBox = new JComboBox(new DefaultComboBoxModel(folders.toArray()));
 		folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
 		folderComboBox.setSelectedItem(project.getParent());
@@ -111,7 +111,7 @@ public class DuplicateProjectAction extends AbstractAction {
 		okCall = new Callable<Boolean>() {
 			public Boolean call() {
 				String newName = archPanel.getDupName();
-				PlFolder folder = (PlFolder) folderComboBox.getSelectedItem();
+				PlFolder<Project> folder = (PlFolder<Project>) folderComboBox.getSelectedItem();
 				
 				ByteArrayOutputStream out = new ByteArrayOutputStream();
 				ProjectDAOXML outdao = new ProjectDAOXML(out);
@@ -122,6 +122,7 @@ public class DuplicateProjectAction extends AbstractAction {
 				Project newProject = indao.findAll().get(0);
 				newProject.setName(newName);
 				folder.addChild(newProject);
+				swingSession.save(newProject);
 				return Boolean.TRUE;
 			}};
 			

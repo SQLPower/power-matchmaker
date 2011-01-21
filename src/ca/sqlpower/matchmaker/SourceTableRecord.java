@@ -25,36 +25,30 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.ConstructorParameter;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
-import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 
-public class SourceTableRecord extends AbstractMatchMakerObject {
+public class SourceTableRecord {
     
     private static final Logger logger = Logger.getLogger(SourceTableRecord.class);
-	
-	/**
-	 * Defines an absolute ordering of the child types of this class.
-	 */
-    @SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.emptyList();
+    
+    /**
+     * The session this record exists in.
+     */
+    private final MatchMakerSession session;
     
     /**
      * The Project object this SourceTableRecord belongs to.
@@ -84,58 +78,67 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      */
     private final int computedHashCode;
     
-    @Accessor
+    /**
+     * All of the PotentialMatchRecords that reference this source table record.
+     */
+    private final Set<PotentialMatchRecord> potentialMatches =
+        new HashSet<PotentialMatchRecord>();
+
+    /**
+     * The match pool that this source table record belongs to.  The pool
+     * should set up this reference when this item is added to it.
+     */
+    private MatchPool pool;
+    
     public List<Object> getKeyValues() {
         return keyValues;
-    }
-    
-    @Accessor
-    public Project getProject() {
-    	return project;
     }
     
     /**
      * Creates a new SourceTableRecord instance in the given MatchMakerSession
      * for the given Project and source table key values.
      * 
+     * @param session The MatchMakerSession of the given Project
      * @param project The Project this record is attached to
      * @param displayValues The values used to display this record in the UI
      * @param keyValues The values of the unique index on the project's source
      * table.  These values must be specified in the same order as the project's
      * sourceTableIndex columns. Not allowed to be null.
      */
-    @Constructor
     public SourceTableRecord(
-            @ConstructorParameter(propertyName="project") final Project project,
-            @ConstructorParameter(propertyName="displayValues") List<Object> displayValues,
-            @ConstructorParameter(propertyName="keyValues") List<Object> keyValues) {
+            final MatchMakerSession session,
+            final Project project,
+            List<Object> displayValues,
+            List<Object> keyValues) {
         super();
+        this.session = session;
         this.project = project;
         this.displayValues = displayValues;
         this.keyValues = Collections.unmodifiableList(new ArrayList<Object>(keyValues));
         this.computedHashCode = this.keyValues.hashCode();
-        setName("sourceTableRecord:" + keyValues);
     }
 
     /**
-     * Works exactly like {@link #SourceTableRecord(Project, List, List)}
+     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Project, List, List)}
      * but takes key values as a variable length argument list.  Mostly useful in setting up test
      * cases.
      */
     public SourceTableRecord(
+            final MatchMakerSession session,
             final Project project,
             Object ... keyValues) {
-    	this(project, new ArrayList<Object>(),Arrays.asList(keyValues));
+    	this(session, project, new ArrayList<Object>(),Arrays.asList(keyValues));
     }
 
     /**
-     * Works exactly like {@link #SourceTableRecord(Project, List, List)}
+     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Project, List, List)}
      * except the displayValues is initialized as an empty ArrayList.
      */
     public SourceTableRecord(
+            final MatchMakerSession session,
             final Project project,
             List<Object> keyValues) {
-    	this(project, new ArrayList<Object>(),keyValues);
+    	this(session, project, new ArrayList<Object>(),keyValues);
     }
     
     /**
@@ -228,7 +231,7 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
             
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
-            getSession().handleWarning(
+            session.handleWarning(
                     "Error in SQL Query!" +
                     "\nMessage: "+ex.getMessage() +
                     "\nSQL State: "+ex.getSQLState() +
@@ -280,6 +283,14 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
         return computedHashCode;
     }
     
+    public void addPotentialMatch(PotentialMatchRecord pmr){
+        potentialMatches.add(pmr);
+    }
+    
+    public boolean removePotentialMatch(PotentialMatchRecord pmr){
+        return potentialMatches.remove(pmr);
+    }
+    
     /**
      * Returns a list of all the PotentialMatchRecords that were originally associtated
      * with this source table record by the match engine.  The original associations are
@@ -288,15 +299,10 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      * @return the list of all PotentialMatchRecords that were originally associated with
      * this database record.
      */
-	@NonProperty
-    public List<PotentialMatchRecord> getOriginalMatchEdges() {
-		List<PotentialMatchRecord> pmrl = getCluster().getOriginalMatchEdges(this);
-		if(pmrl == null) {
-			return Collections.emptyList();
-		}
-		return pmrl;
+    public Collection<PotentialMatchRecord> getOriginalMatchEdges(){
+        return Collections.unmodifiableCollection(potentialMatches);
     }
-	
+
     /**
      * Returns the edge (PotentialMatchRecord) that makes this node (SourceTableRecord)
      * adjacent to the given other node.  For this method, adjacency is defined as
@@ -306,9 +312,13 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      * common edge for.
      * @return The edge that makes this node adjacent to the given other node.
      */
-	@NonProperty
     public PotentialMatchRecord getMatchRecordByOriginalAdjacentSourceTableRecord(SourceTableRecord adjacent) {
-    	return getCluster().getMatchRecordByOriginalAdjacentSourceTableRecord(this, adjacent);
+        for (PotentialMatchRecord pmr : potentialMatches) {
+            if (pmr.getOriginalLhs() == adjacent || pmr.getOriginalRhs() == adjacent) {
+                return pmr;
+            }
+        }
+        return null;
     }
     
     /**
@@ -321,47 +331,40 @@ public class SourceTableRecord extends AbstractMatchMakerObject {
      * @return The edge that makes this record adjacent to the given record,
      * or null if they are not adjacent by this method's definition of adjacency.
      */
-	@NonProperty
     public PotentialMatchRecord getMatchRecordByValidatedSourceTableRecord(SourceTableRecord adjacent) {
-    	return getCluster().getMatchRecordByValidatedSourceTableRecord(this, adjacent);
+        for (PotentialMatchRecord pmr : potentialMatches) {
+            if (pmr.getMaster() == adjacent || pmr.getDuplicate() == adjacent) {
+                return pmr;
+            }
+        }
+        return null;
     }
+    
+    /**
+     * Returns the pool that this source table record belongs to.
+     */
+    public MatchPool getPool() {
+		return pool;
+	}
+    
+    /**
+     * Changes which pool this source table thinks it belongs to.  Normally,
+     * only the pool itself should call this method.
+     */
+    public void setPool(MatchPool pool) {
+		this.pool = pool;
+	}
     
     @Override
     public String toString() {
-        return "STR " + "key=" + keyValues;
+        return "SourceTableRecord@"+System.identityHashCode(this)+" key="+keyValues;
     }
 
-    @Transient
-    @Accessor
 	public List<Object> getDisplayValues() {
 		return displayValues;
 	}
 
-	@Transient
-	@Mutator
 	public void setDisplayValues(List<Object> displayValues) {
 		this.displayValues = displayValues;
-	}
-
-	@Override
-	public MatchMakerObject duplicate(MatchMakerObject parent) {
-		return null;
-	}
-
-	@Override
-	@NonProperty
-	public List<? extends SPObject> getChildren() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	@NonProperty
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
-	}
-
-	@NonProperty
-	public MatchCluster getCluster() {
-		return (MatchCluster) getParent();
 	}
 }

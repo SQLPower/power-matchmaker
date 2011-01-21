@@ -19,14 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Constructor;
-
 
 
 
@@ -35,23 +27,12 @@ import ca.sqlpower.object.annotation.Constructor;
  * to upper case.
  */
 public class UpperCaseMungeStep extends AbstractMungeStep {
-	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
-	@Constructor
 	public UpperCaseMungeStep() {
 		super("Upper Case",false);
-	}
-
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"upperCaseOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("upperCaseOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("upperCase",
-				String.class);
+		InputDescriptor desc = new InputDescriptor("upperCase", String.class);
 		super.addInput(desc);
 	}
 	
@@ -61,7 +42,7 @@ public class UpperCaseMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
 		throw new UnsupportedOperationException("Upper case munge step does not support removeInput()");
 	}
 	

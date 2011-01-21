@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
@@ -63,15 +62,14 @@ public class MatchMakerSwingSessionTest extends TestCase {
         };
         
         MatchMakerSession stubSessionImp = new StubMatchMakerSession(){
-        	private MMRootNode rootNode = new MMRootNode();
         	FolderParent folders;
         	SQLDatabase db = null;
         	
             @Override
             public FolderParent getCurrentFolderParent() {
-            	folders = new FolderParent();
-                folders.addChild(folder1);
-                folders.addChild(folder2);
+            	folders = new FolderParent(this);
+                folders.getChildren().add(folder1);
+                folders.getChildren().add(folder2);
                 return folders;
             }
             
@@ -85,7 +83,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
            
             @Override
             public PlFolder findFolder(String foldername) {
-                for (PlFolder folder : getCurrentFolderParent().getChildren(PlFolder.class)){
+                for (PlFolder folder : getCurrentFolderParent().getChildren()){
                     if (folder.getName().equals(foldername)) return folder;
                 }
                 return null;
@@ -93,7 +91,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
             
             @Override
             public TranslateGroupParent getTranslations() {
-                TranslateGroupParent tgp = new TranslateGroupParent();
+                TranslateGroupParent tgp = new TranslateGroupParent(this);
                 return tgp;
             }
             
@@ -112,11 +110,6 @@ public class MatchMakerSwingSessionTest extends TestCase {
             	if (db.isConnected()) db.disconnect();
             	return true;
             }
-            
-            @Override
-            public MMRootNode getRootNode() {
-            	return rootNode;
-            }
         };
         
         session = new MatchMakerSwingSession(stubContext, stubSessionImp);
@@ -134,5 +127,12 @@ public class MatchMakerSwingSessionTest extends TestCase {
         assertEquals("Got the wrong folder", folder1, session.findFolder("Test Folder"));
         assertEquals("Got the wrong folder", folder2, session.findFolder("Test Folder2"));
     }  
-
+    
+    public void testConnectionCloses() {
+    	//opens the connection
+    	session.getConnection();
+    	assertTrue("Test is not very usefull if the connection starts closed!",session.getDatabase().isConnected());
+    	session.close();
+    	assertFalse("Database connection is not closed! ", session.getDatabase().isConnected());
+    }
 }

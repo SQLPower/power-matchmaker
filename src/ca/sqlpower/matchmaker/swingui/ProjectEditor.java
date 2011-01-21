@@ -27,6 +27,7 @@ import java.awt.event.ItemListener;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
@@ -52,12 +53,13 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.jdbcwrapper.DatabaseMetaDataDecorator;
 import ca.sqlpower.sqlobject.SQLCatalog;
-import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObject;
 import ca.sqlpower.sqlobject.SQLObjectException;
@@ -81,7 +83,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * The MatchEditor is the GUI for editing all aspects of a {@link Project} instance.
  */
-public class ProjectEditor implements MatchMakerEditorPane {
+public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 
@@ -117,7 +119,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
      * create a new ProjectEditor.
      */
 	private final Project project;
-	private final PlFolder folder;
+	private final PlFolder<Project> folder;
 	private FormValidationHandler handler;
 
 	
@@ -129,7 +131,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
 	 * @param project the project Object to be edited
 	 * @param folder the project's parent folder
 	 */
-    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder folder, Action cancelAction) throws SQLObjectException {
+    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder, Action cancelAction) throws SQLObjectException {
         if (project == null) throw new IllegalArgumentException("You can't edit a null project");
         if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
         
@@ -168,15 +170,6 @@ public class ProjectEditor implements MatchMakerEditorPane {
         		SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
 				refreshIndexComboBoxAndAction(sourceTable);
 				if (sourceTable != null) {
-					try {
-						for(SQLColumn c : sourceTable.getColumns()) {
-							logger.debug("old SQL type: " + c.getShortDisplayName());
-							c.setType(swingSession.getSQLType(c.getType()));
-							logger.debug("new SQL type: " + c.getShortDisplayName());
-						}
-					} catch (SQLObjectException evt) {
-						throw new RuntimeException(evt);
-					}
 					String trimmedResultTableName;
 					if (project.getType() == ProjectMode.FIND_DUPES) {
 						trimmedResultTableName = sourceTable.getName() + "_match_pool";
@@ -272,7 +265,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
         if (owner instanceof JFrame) return (JFrame) owner;
         else return null;
     }
-			
+
 	private Action createIndexAction = new AbstractAction("Pick Columns..."){
 		public void actionPerformed(ActionEvent e) {
 			SQLTable sourceTable = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
@@ -280,13 +273,6 @@ public class ProjectEditor implements MatchMakerEditorPane {
 				JOptionPane.showMessageDialog(panel,
 						"You have to select a source table and save before picking columns" );
 				return;
-			}
-			try {
-				for(SQLColumn c : sourceTable.getColumns()) {
-					c.setType(swingSession.getSQLType(c.getType()));
-				}
-			} catch (SQLObjectException evt) {
-				throw new RuntimeException(evt);
 			}
 			try {
 				MatchMakerIndexBuilder indexBuilder = new MatchMakerIndexBuilder(sourceTable, (MutableComboBoxModel)indexComboBox.getModel(),swingSession);
@@ -394,7 +380,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
 			row+=2;
 		}
 		
-        final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren(PlFolder.class);
+        final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
         folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
 
@@ -412,6 +398,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
 
     private void setDefaultSelections() throws SQLObjectException {
 
+    	final SQLDatabase loginDB = swingSession.getDatabase();
 
         folderComboBox.setSelectedItem(folder);
         projectName.setText(project.getName());
@@ -427,7 +414,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
         	SQLSchema sch = sourceTable.getSchema();
         	
         	if (project.getSourceTableSPDatasource().length() == 0) {
-        		sourceChooser.getDataSourceComboBox().getModel().setSelectedItem(null);
+        		sourceChooser.getDataSourceComboBox().getModel().setSelectedItem(loginDB.getDataSource());
         	} else {
         		for (int x = 0; x < sourceChooser.getDataSourceComboBox().getModel().getSize(); x++) {
         			SPDataSource curr =(SPDataSource) sourceChooser.getDataSourceComboBox().getModel().getElementAt(x);
@@ -461,7 +448,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
 		}
         
         //sets the resultChooser defaults
-        resultChooser.getDataSourceComboBox().setSelectedItem(null);
+        resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
     	SQLTable resultTable = project.getResultTable();
     	logger.debug("result table: " + resultTable);
     	if ( resultTable != null ) {
@@ -498,7 +485,7 @@ public class ProjectEditor implements MatchMakerEditorPane {
 				List<SQLIndex> uniqueIndices = newTable.getUniqueIndices();
 				SQLIndex sourceTableIndex = project.getSourceTableIndex();
 				
-				if (sourceTableIndex != null && !sourceTableIndex.isEmpty()) {
+				if (sourceTableIndex != null) {
 					boolean contains = false;
 					for (SQLIndex index : uniqueIndices) {
 						if (index.getName().equals(sourceTableIndex.getName())) {
@@ -556,13 +543,6 @@ public class ProjectEditor implements MatchMakerEditorPane {
         if (sourceTable == null || sourceTableIndex == null) {
         	throw new IllegalStateException("Source table/index not found.");
         }
-		try {
-			for(SQLColumn c : sourceTable.getColumns()) {
-				c.setType(swingSession.getSQLType(c.getType()));
-			}
-		} catch (SQLObjectException evt) {
-			throw new RuntimeException(evt);
-		}
         project.setSourceTable(sourceTable);
         project.setSourceTableIndex(sourceTableIndex);
         project.setFilter(filterPanel.getFilterTextArea().getText());
@@ -648,19 +628,19 @@ public class ProjectEditor implements MatchMakerEditorPane {
 				mergeRule.setTable(sourceTable);
 				mergeRule.setTableIndex(sourceTableIndex);
 				mergeRule.deriveColumnMergeRules();
-				for (ColumnMergeRules cmr : mergeRule.getChildren(ColumnMergeRules.class)) {
+				for (ColumnMergeRules cmr : mergeRule.getChildren()) {
 					if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
 						cmr.setActionType(MergeActionType.NA);
 					}
 				}
-				project.addChild(mergeRule);
+				project.getTableMergeRulesFolder().addChild(mergeRule);
         	}
         } else {
         	if (project.getType() == ProjectMode.FIND_DUPES) {
         		for (TableMergeRules tmr : project.getTableMergeRules()) {
         			if (tmr.isSourceMergeRule()) {
         				tmr.setTableIndex(sourceTableIndex);
-        				for (ColumnMergeRules cmr : tmr.getChildren(ColumnMergeRules.class)) {
+        				for (ColumnMergeRules cmr : tmr.getChildren()) {
         					if (tmr.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
         						cmr.setActionType(MergeActionType.NA);
         					} else if (cmr.getActionType() == MergeActionType.NA) {
@@ -680,10 +660,12 @@ public class ProjectEditor implements MatchMakerEditorPane {
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
         if (project.getParent() != selectedFolder) {
             swingSession.move(project,selectedFolder);
+        	swingSession.save(selectedFolder);
         } 
         
         logger.debug(project.getResultTable());
         logger.debug("saving");
+        swingSession.save(project);
 
 		return true;
     }
@@ -712,6 +694,30 @@ public class ProjectEditor implements MatchMakerEditorPane {
 				}
 				enableAction(true);
 
+				final String tableName = resultTableName.getText();
+				if (tableName != null && tableName.length() > 0) {
+					String catalogName = null;
+					String schemaName = null;
+
+					if ( resultChooser.getCatalogComboBox().getSelectedItem() != null) {
+						catalogName = ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName();
+					}
+					if ( resultChooser.getSchemaComboBox().getSelectedItem() != null) {
+						schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
+					}
+					SQLTable resultTable;
+					try {
+						resultTable = swingSession.getDatabase().getTableByName(
+								catalogName, schemaName, tableName);
+					} catch (SQLObjectException e) {
+						throw new SQLObjectRuntimeException(e);
+					}
+					if ( value == resultTable ) {
+						return ValidateResult.createValidateResult(
+								Status.FAIL,
+								"Project source table has the same name as the result table");
+					}
+				}
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
@@ -775,6 +781,40 @@ public class ProjectEditor implements MatchMakerEditorPane {
 						"Result table name is not a valid SQL identifier");
 			}
 			
+			if (sourceChooser.getTableComboBox().getSelectedItem() != null ) {
+				SQLTable sourceTable = (SQLTable) sourceChooser.getTableComboBox().getSelectedItem();
+				String catalogName = getSelectedCatalogName();
+				String schemaName = getSelectedSchemaName();
+
+				SQLTable resultTable;
+				try {
+					resultTable = swingSession.getDatabase().getTableByName(
+							catalogName, schemaName, value);
+				} catch (SQLObjectException e) {
+					throw new SQLObjectRuntimeException(e);
+				}
+				if ( sourceTable == resultTable ) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+							"Project result table has the same name as the source table");
+				}
+			}
+			
+			ProjectDAO dao = (ProjectDAO) swingSession.getDAO(Project.class);
+			SPDataSource ds = (SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem();
+			String catalogName = getSelectedCatalogName();
+			String schemaName = getSelectedSchemaName();
+			String tableName = value;
+			Set<String> projectsUsingResultTable =
+			    dao.getProjectNamesUsingResultTable(
+			            ds.getName(), catalogName, schemaName, tableName);
+			projectsUsingResultTable.remove(project.getName());
+
+			logger.debug("name of project with selected resulting table" + projectsUsingResultTable);
+			if (!projectsUsingResultTable.isEmpty()) {
+			    return ValidateResult.createValidateResult(Status.FAIL,
+			            "Output table \""+tableName+"\" is in use by another project.");
+			}
+
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 

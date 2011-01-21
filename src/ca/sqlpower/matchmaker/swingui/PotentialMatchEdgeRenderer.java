@@ -85,13 +85,13 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
         edgeColor = edge.getMungeProcess().getColour();
         
         // original edge
-        SourceTableRecord origLHS = edge.getOrigLHS();
-        SourceTableRecord origRHS = edge.getOrigRHS();
+        SourceTableRecord origLHS = edge.getOriginalLhs();
+        SourceTableRecord origRHS = edge.getOriginalRhs();
         origLhsPosition = graph.getNodeBounds(origLHS);
         origRhsPosition = graph.getNodeBounds(origRHS);
 
         // current edge
-        SourceTableRecord master = edge.getMasterRecord();
+        SourceTableRecord master = edge.getMaster();
         SourceTableRecord duplicate = edge.getDuplicate();
         if (master != null && duplicate != null) {
             logger.debug("edge="+edge);

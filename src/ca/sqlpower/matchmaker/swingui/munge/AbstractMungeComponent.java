@@ -41,7 +41,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-import java.beans.PropertyChangeEvent;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,15 +69,14 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
-import ca.sqlpower.object.AbstractSPListener;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPObject;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -167,6 +165,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private final JButton hideShow;
 
+	private final int[] connected;
+	
 	/**
 	 * The icon of the nib that is dropping down.
 	 */
@@ -265,6 +265,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		autoScrollTimer.setRepeats(true);
 		
 		dropNibIndex = -1;
+		connected = new int[step.getChildCount()];
+		for (int x = 0; x < connected.length;x++) {
+			connected[x] = 0;
+		}
 		
 		ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
 		toolTipManager.setInitialDelay(0);
@@ -274,10 +278,23 @@ public abstract class AbstractMungeComponent extends JPanel {
 		mungeComKeyListener = new MungeComponentKeyListener();
 		addKeyListener(mungeComKeyListener);
 		
-		step.addSPListener(new StepEventHandler());
+		step.addMatchMakerListener(new StepEventHandler());
 		setName(step.getName());
 		
-		resizeBorders();
+		int borderTop;
+		if (!getStep().canAddInput() && getStep().getMSOInputs().size() == 0) {
+			borderTop = MMM_TOP.getHeight(null);
+		} else {
+			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight() + PLUG_OFFSET;
+		}
+		
+		int borderBottom;
+		if (getStep().getChildCount() == 0) {
+			borderBottom = 0;
+		} else {
+			borderBottom = ConnectorIcon.getNibInstance(Object.class).getIconHeight();
+		}
+		setBorder(BorderFactory.createEmptyBorder(borderTop,1,borderBottom,MMM_TOP.getWidth(null)));
 		
 		setOpaque(false);
 		setFocusable(true);
@@ -316,10 +333,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		outputNames.setOpaque(false);
 		outputNames.setLayout(new FlowLayout());
 		
-		outputLabels = new CoolJLabel[step.getChildren(MungeStepOutput.class).size()];
+		outputLabels = new CoolJLabel[step.getChildCount()];
 		
 		for (int x = 0; x < outputLabels.length; x++) {
-			MungeStepOutput out = step.getChildren(MungeStepOutput.class).get(x);
+			MungeStepOutput out = step.getChildren().get(x);
 			outputLabels[x] = new CoolJLabel(out.getName(), out.getType());
 			outputLabels[x].collapse();
 			outputNames.add(outputLabels[x]);
@@ -418,27 +435,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		deOpaquify(inputNames);
 		setDefaults();
 	}
-
-	/**
-	 * This will re-calculate the top and bottom borders depending on the
-	 * children of the step.
-	 */
-	private void resizeBorders() {
-		int borderTop;
-		if (!getStep().canAddInput() && getStep().getMSOInputs().size() == 0) {
-			borderTop = MMM_TOP.getHeight(null);
-		} else {
-			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight() + PLUG_OFFSET;
-		}
-		
-		int borderBottom;
-		if (getStep().getChildren(MungeStepOutput.class).size() == 0) {
-			borderBottom = 0;
-		} else {
-			borderBottom = ConnectorIcon.getNibInstance(Object.class).getIconHeight();
-		}
-		setBorder(BorderFactory.createEmptyBorder(borderTop,1,borderBottom,MMM_TOP.getWidth(null)));
-	}
 	
     /**
      * Returns the unqualified name of the given class (no package name prefix).
@@ -524,12 +520,33 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Resets the location and expandedness to the values in the step.
 	 */
 	private void setDefaults() {
-		setExpanded(step.isExpanded());
-		if (step.getPosition() != null) {
-			setLocation(step.getPosition());
-		}
+		setExpanded(isExpanded());
+		configureXFromMMO();
+		configureYFromMMO();
 	}
 	
+	private void configureXFromMMO() {
+		setLocation(getXFromMMO(), getY());
+	}
+	
+	private void configureYFromMMO() {
+		setLocation(getX(), getYFromMMO());
+	}
+
+
+	
+	/**
+	 * Set the x y parameter to the current value if needed.
+	 */
+	public void applyChanges() {
+		MungeStep step = getStep();
+		if (hasUnsavedChanges()) step.setPosition(getX(), getY());
+	}
+	
+	public boolean hasUnsavedChanges() {
+		return getXFromMMO() != getX() || getYFromMMO() != getY();
+	}
+
 	/**
 	 * Walks the tree of components rooted at c, setting all of the components
 	 * that can and should be flagged as non-opaque as such.
@@ -609,7 +626,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return Point where the IOC is
 	 */
 	public Point getOutputPosition(int outputNum) {
-		int outputs = step.getChildren(MungeStepOutput.class).size();
+		int outputs = step.getChildren().size();
 		int xPos = (int) (((double)(outputNum+1)/((double)outputs+1))*getWidth());
 		Point orig =  new Point(xPos,getHeight() - getBorder().getBorderInsets(this).bottom);
 		
@@ -638,7 +655,19 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	private boolean isExpanded() {
-		return step.isExpanded();
+		return getStepParameter(MungeStep.MUNGECOMPONENT_EXPANDED, false);
+	}
+	
+	/**
+	 * note that this is not the true position value, it is the
+	 * positions stored in the MMO, which is not synchronized 
+	 * until a mouse release event is fired.
+	 */
+	private int getXFromMMO() {
+		return getStepParameter(MungeStep.MUNGECOMPONENT_X, 0);
+	}
+	private int getYFromMMO() {
+		return getStepParameter(MungeStep.MUNGECOMPONENT_Y, 0);
 	}
 	
 	@Override
@@ -687,14 +716,14 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 		}
 		
-		for (int i = 0; i < getStep().getChildren(MungeStepOutput.class).size(); i++) {
+		for (int i = 0; i < getStep().getChildCount(); i++) {
 			if (!isOutputConnected(i) || (dropNib != null && dropNibIndex == i)) {
 				int xPos = getOutputPosition(i).x;
 				Icon nib;
 				
 				int droppingOffset;
 				if (dropNib == null || dropNibIndex != i) {
-					nib = ConnectorIcon.getNibInstance(getStep().getChildren(MungeStepOutput.class).get(i).getType());
+					nib = ConnectorIcon.getNibInstance(getStep().getChildren().get(i).getType());
 					droppingOffset = 0;
 				} else {
 					nib = dropNib;
@@ -733,7 +762,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return the list
 	 */
 	public List<MungeStepOutput> getOutputs() {
-		return step.getMungeStepOutputs();
+		return step.getChildren();
 	}
 	
 	/**
@@ -790,7 +819,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	protected void remove() {
 		MungeStep step = getStep();
-		MatchMakerObject mmo = (MatchMakerObject) step.getParent();
+		MatchMakerObject mmo = step.getParent();
 		if (mmo instanceof MungeProcess) {
 			((MungeProcess)mmo).removeChildAndInputs(getStep());
 		}
@@ -817,46 +846,33 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	/**
-	 * Set the x y parameter to the current value if needed.
+	 * A Set of listeners that detect changes in the MungeSteps and redraws them
 	 */
-	public void applyChanges() {
-		//override this method to apply changes that may not have been saved to the model.
-	}
-	
-	public boolean hasUnsavedChanges() {
-		return false;
-	}
+	private class StepEventHandler implements MatchMakerListener<MungeStep, MungeStepOutput> {
+		public void mmChildrenInserted(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {}
 
-	/**
-	 * A Set of listeners that detect changes in the MungeSteps and redraws
-	 * them. XXX This listener does not get removed when the munge pen goes away
-	 * and cleans up the munge components.
-	 */
-	private class StepEventHandler extends AbstractSPListener {
+		public void mmChildrenRemoved(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {}
 
-		@Override
-		public void propertyChanged(PropertyChangeEvent evt) {
-			if (evt.getPropertyName().equals("expanded")) {
-				setExpanded((Boolean)evt.getNewValue());
-			} else if (evt.getPropertyName().equals("position")) {
-				setLocation((Point) evt.getNewValue());
+		public void mmPropertyChanged(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
+			if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_EXPANDED)) {
+				setExpanded(Boolean.parseBoolean((String)evt.getNewValue()));
+			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_X)) {
+				configureXFromMMO();
+			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_Y)) {
+				configureYFromMMO();
 			} else if (evt.getPropertyName().equals("addInputs")){
 				repaint();
 			} else if (!evt.getPropertyName().equals("inputs")
-					&& !((SPObject)evt.getSource()).isMagicEnabled()) {
+					&& evt.isUndoEvent()) {
 				reload();
 			}
 		}
-		
-		@Override
-		public void childAdded(SPChildEvent e) {
-			resizeBorders();
-		}
-		
-		@Override
-		public void childRemoved(SPChildEvent e) {
-			resizeBorders();
-		}
+
+		public void mmStructureChanged(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {}
 	}
 	
 	/**
@@ -864,7 +880,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	private class HideShowAction extends AbstractAction {
 		public void actionPerformed(ActionEvent e) {
-			step.setExpanded(!step.isExpanded());
+			step.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, !isExpanded());
 		}	
 	}
 	
@@ -969,7 +985,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			boolean showPopup = maybeShowPopup(e);
 			if (!showPopup && e.getClickCount() == 2) { 
-				step.setExpanded(!isExpanded());
+				step.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, !isExpanded());
 			}
 			bustGhost();
 			autoScrollTimer.stop();
@@ -987,7 +1003,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void mousePressed(MouseEvent e) {
 			getPen().moveToFront(AbstractMungeComponent.this);
 			if (!maybeShowPopup(e)) {
-				diff = new Point((int)(e.getPoint().getX()), (int)(e.getPoint().getY()));			
+				diff = new Point((int)(e.getPoint().getX() - getX()), (int)(e.getPoint().getY() - getY()));			
+				diff.translate(getX(), getY());
 				if (!checkForIOConnectors(new Point(e.getX() + getX(),e.getY()+getY()))) {
 					requestFocusInWindow();
 				}
@@ -1008,7 +1025,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 				}
 				mp.repaint();
 			} else {
-				step.setPosition(new Point(e.getX()+getX() - diff.x, e.getY()+getY() - diff.y));
+				mp.updatePositionsToMMO();
 			}
 			mp.normalize();
 			mp.stopConnection();
@@ -1113,7 +1130,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			int selected = getClosestIOIndex(p, CLICK_TOLERANCE, false);			
 			
 			if (selected != -1 && step.isInputStep()) {
-				MungeStepOutput<?> out = step.getChildren(MungeStepOutput.class).get(selected);
+				MungeStepOutput<?> out = step.getChildren().get(selected);
 				setToolTipText(out.getName() + " ("	+ shortClassName(out.getType()) + ")");
 			}
 			if (dropNibIndex != selected && selected != -1 && isOutputConnected(selected)) {
@@ -1185,7 +1202,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		if (checkInputs) {
 			count = getStep().getMSOInputs().size();
 		} else {
-			count = getStep().getMungeStepOutputs().size();
+			count = getStep().getChildren().size();
 		}
 		
 		//squared because it should be faster then using the sqrt method later
@@ -1218,7 +1235,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param index The index
 	 */
 	private boolean isOutputConnected(int index) {
-		return getStep().getMungeStepOutputs().get(index).getUsage() > 0;
+		return connected[index] > 0;
 	}
 
 	/**
@@ -1229,11 +1246,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void setConnectOutput(int index, boolean con) {
 		logger.debug("connect "+getStep().getName()+"'s output index: " + index + " -> " + con);
-		MungeStepOutput mso = getStep().getMungeStepOutputs().get(index);
 		if (con) {
-			mso.incrementUsage();
+			connected[index]++;
 		} else {
-			mso.decrementUsage();
+			connected[index]--;
+			if (connected[index] < 0) {
+				connected[index] = 0;
+			}
 		}
 	}
 	
@@ -1256,7 +1275,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		int dropAmount;
 		public DropDownAction(int index, int dropAmount) {
 			this.dropAmount = dropAmount;
-			dropNib = ConnectorIcon.getNibInstance(getStep().getChildren(MungeStepOutput.class).get(index).getType());
+			dropNib = ConnectorIcon.getNibInstance(getStep().getChildren().get(index).getType());
 			dropNibOffSet = dropNib.getIconHeight();
 			dropNibIndex = index;
 		}
@@ -1309,8 +1328,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		content = buildUI();
 		if (content != null) {
 			content.setOpaque(false);
-			deOpaquify(content);
 		}
+		deOpaquify(content);
 		if (isExpanded()) {
 			setExpanded(true);
 		}
@@ -1321,6 +1340,36 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * helper methods called by the subclasses
 	 * **************************************************************
 	 */
+	protected int getStepParameter(String key, int defaultValue) {
+		String val = step.getParameter(key);
+		if (val == null) {
+			return defaultValue;
+		}
+		try {
+			return Integer.parseInt(val);
+		} catch (NumberFormatException ex) {
+			logger.warn("Invalid integer value \"" + val + "\" for parameter \"" + key + "\" in step " + step);
+			return defaultValue;
+		}
+	}
+
+	protected boolean getStepParameter(String key, boolean defaultValue) {
+		String val = step.getParameter(key);
+		if (val == null) {
+			return defaultValue;
+		} else {
+			return Boolean.parseBoolean(val);
+		}
+	}
+
+	protected String getStepParameter(String key, String defaultValue) {
+		String val = step.getParameter(key);
+		if (val == null) {
+			return defaultValue;
+		} else {
+			return val;
+		}
+	}
 	
 	private Point getDifferencePoint() {
 		return this.diff;

@@ -22,35 +22,21 @@ package ca.sqlpower.matchmaker.munge;
 import java.math.BigDecimal;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.object.SPObject;
+public class WordCountMungeStepTest extends TestCase {
 
-public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeStep> {
-
-	WordCountMungeStep step;
+	private WordCountMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		step = new WordCountMungeStep();
 		super.setUp();
-        MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
-	}
-	
-	public WordCountMungeStepTest(String name) {
-		super(name);
-	}
-	
-	@Override
-	protected WordCountMungeStep getTarget() {
-		return step;
+		step = new WordCountMungeStep();
 	}
 
 	public void testCallonNoOccurrence() throws Exception {
@@ -59,7 +45,7 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(1, result.intValue());
@@ -71,7 +57,7 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(7, result.intValue());
@@ -80,11 +66,11 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 	public void testCallonMixedDelimiters() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a   b \nc d\n e f\n\ng");
-		step.setDelimiter(" \n");
+		step.setParameter(step.DELIMITER_PARAMETER_NAME, " \n");
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(7, result.intValue());
@@ -97,11 +83,11 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 	public void testCallonRegexInput() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a()[]{}|$^<=b()\\-+*?c");
-		step.setDelimiter("\\-+*?()[]{}|$^<=");
+		step.setParameter(step.DELIMITER_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(3, result.intValue());
@@ -113,12 +99,12 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 	public void testCallonUsingRegex() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("aaaaab");
-		step.setRegex(true);
-		step.setDelimiter("a+");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
+		step.setParameter(step.DELIMITER_PARAMETER_NAME, "a+");
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(2, result.intValue());
@@ -130,7 +116,7 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		BigDecimal result = (BigDecimal)output.getData();
 		assertEquals(0, result.intValue());
@@ -145,15 +131,5 @@ public class WordCountMungeStepTest extends MatchMakerTestCase<WordCountMungeSte
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// no-op
 	}
 }

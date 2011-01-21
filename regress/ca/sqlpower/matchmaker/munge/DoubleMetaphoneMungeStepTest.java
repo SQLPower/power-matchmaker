@@ -21,30 +21,21 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.object.SPObject;
-
-public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetaphoneMungeStep> {
+public class DoubleMetaphoneMungeStepTest extends TestCase {
 
 	private DoubleMetaphoneMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
-
-	public DoubleMetaphoneMungeStepTest(String name) {
-		super(name);
-	}
-
+	
 	protected void setUp() throws Exception {
-		step = new DoubleMetaphoneMungeStep();
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new DoubleMetaphoneMungeStep();
 	}
 
 	public void testCallonNormalString() throws Exception {
@@ -53,7 +44,7 @@ public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetap
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("SM0", result);
@@ -63,10 +54,10 @@ public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetap
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("Smith");
 		step.connectInput(0, testInput);
-		step.setUseAlternate(true);
+		step.setParameter(step.USE_ALTERNATE_PARAMETER_NAME, true);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("XMT", result);
@@ -78,7 +69,7 @@ public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetap
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -93,20 +84,5 @@ public class DoubleMetaphoneMungeStepTest extends MatchMakerTestCase<DoubleMetap
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected DoubleMetaphoneMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// Already in AbstractMungeStep
 	}
 }

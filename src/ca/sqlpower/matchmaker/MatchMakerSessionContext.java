@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.prefs.PreferenceChangeListener;
 
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.JDBCDataSource;
@@ -37,7 +38,7 @@ import ca.sqlpower.swingui.event.SessionLifecycleListener;
  * MatchMaker API. If you were looking for the starting point, you've found it!
  *
  * <p>The normal implementation of this interface is
- * {@link ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl},
+ * {@link ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext},
  * so you probably want to create and configure one of those to get started.
  *
  * @version $Id$
@@ -91,8 +92,9 @@ public interface MatchMakerSessionContext {
      * @throws SQLObjectException If some SQLObject operations fail
      * @throws MatchMakerConfigurationException  If there is a user-fixable configuration problem.
      */
-    public MatchMakerSession createSession() throws PLSecurityException, SQLException,
-			SQLObjectException, MatchMakerConfigurationException;
+    public MatchMakerSession createSession(JDBCDataSource ds, String username,
+			String password) throws PLSecurityException, SQLException,
+			SQLObjectException, MatchMakerConfigurationException, RepositoryVersionException;
 
     /**
      * Creates a session using some default repository data source. If the
@@ -136,6 +138,12 @@ public interface MatchMakerSessionContext {
      * action for a project.
      */
     public void closeAll();
+    
+    /**
+	 * Checks whether or not the default repository is defined in the user's
+	 * data sources, and if it's not, then add an entry for it.
+	 */
+    public void ensureDefaultRepositoryDefined();
     
     /**
      * Sets the path of the directory containing the Address Correction Data.

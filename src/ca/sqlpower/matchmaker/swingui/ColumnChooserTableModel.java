@@ -41,7 +41,7 @@ public class ColumnChooserTableModel extends AbstractTableModel{
 		this.showPosition = showPosition;
 		for ( SQLColumn column : sqlTable.getColumns()) {
 			int positionInIndex = -1;
-			if (!oldIndex.isEmpty()){
+			if (oldIndex != null){
 				positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
 			}
 			candidateColumns.add(new CustomTableColumn(

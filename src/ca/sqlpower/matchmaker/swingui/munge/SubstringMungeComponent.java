@@ -51,26 +51,26 @@ public class SubstringMungeComponent extends AbstractMungeComponent {
 	protected JPanel buildUI() {
 		SubstringMungeStep step = (SubstringMungeStep) getStep();
         if (step == null) throw new NullPointerException("Null step!");
-		int beginIndex = step.getBegIndex();
+		int beginIndex = step.getIntegerParameter(SubstringMungeStep.BEGIN_PARAMETER_NAME);
 		SpinnerNumberModel beginNumberModel = new SpinnerNumberModel(beginIndex, 0, Integer.MAX_VALUE, 1);
 		
 		begin = new JSpinner(beginNumberModel);
 		begin.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				SubstringMungeStep step = (SubstringMungeStep) getStep();
-				step.setBegIndex((Integer) begin.getValue());
+				step.setParameter(SubstringMungeStep.BEGIN_PARAMETER_NAME, begin.getValue().toString());
 			}
 		
 		});
 		
-		int endIndex = step.getEndIndex();
+		int endIndex = step.getIntegerParameter(SubstringMungeStep.END_PARAMETER_NAME);
 		SpinnerNumberModel endNumberModel = new SpinnerNumberModel(endIndex, 0, Integer.MAX_VALUE, 1);
 		
 		end = new JSpinner(endNumberModel);
 		end.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				SubstringMungeStep step = (SubstringMungeStep) getStep();
-				step.setEndIndex((Integer) end.getValue());
+				step.setParameter(SubstringMungeStep.END_PARAMETER_NAME, end.getValue().toString());
 			}
 		
 		});

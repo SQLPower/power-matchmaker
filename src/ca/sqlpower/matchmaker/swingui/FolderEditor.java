@@ -38,7 +38,10 @@ import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
@@ -56,33 +59,20 @@ import com.jgoodies.forms.layout.FormLayout;
  * An DataEntryPanel for displaying and editing information about a folder such as
  * its name and description.
  */
-public class FolderEditor implements DataEntryPanel, CleanupModel {
+public class FolderEditor implements DataEntryPanel {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 	private JPanel panel;
 	private final MatchMakerSwingSession swingSession;
-	private PlFolder folder;
+	private PlFolder<Project> folder;
 
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
-	private final JButton refreshButton = new JButton(new AbstractAction("Refresh") {
-		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			folderName.setText(folder.getName());
-			folderDesc.setText(folder.getFolderDesc());
-			refreshButton.setVisible(false);
-			nameUpdateManager.clearWarnings();
-			descUpdateManager.clearWarnings();
-			handler.performFormValidation();
-		}
-	});
 
 	private JTextField folderName = new JTextField(40);
 	private JTextArea folderDesc = new JTextArea(4,40);
-	private AbstractUIUpdateManager descUpdateManager;
-	
-	public FolderEditor(MatchMakerSwingSession swingSession, PlFolder folder) {
+
+	public FolderEditor(MatchMakerSwingSession swingSession, PlFolder<Project> folder) {
 		this.swingSession = swingSession;
 		this.folder = folder;
 		handler = new FormValidationHandler(status);
@@ -93,8 +83,6 @@ public class FolderEditor implements DataEntryPanel, CleanupModel {
 				refreshActionStatus();
 			}
         });
-		nameUpdateManager = new FieldUpdateManager(folderName, folder, "name", handler, this, refreshButton);
-		descUpdateManager = new FieldUpdateManager(folderDesc, folder, "folderDesc", handler, this, refreshButton);
 		handler.resetHasValidated();
 	}
 
@@ -116,9 +104,6 @@ public class FolderEditor implements DataEntryPanel, CleanupModel {
 		CellConstraints cc = new CellConstraints();
 
 		pb.add(status, cc.xy(4,2,"l,c"));
-		pb.add(refreshButton, cc.xy(6, 2, "l, c"));
-		refreshButton.setVisible(false);
-		
 		pb.add(new JLabel("Folder Name:"), cc.xy(2,4,"r,c"));
 		pb.add(new JLabel("Description:"), cc.xy(2,6,"r,c"));
 
@@ -165,11 +150,6 @@ public class FolderEditor implements DataEntryPanel, CleanupModel {
             applyChanges();
         }
 	};
-	
-	/**
-	 * Watches for changes to the name field in the UI and model and keeps them in sync.
-	 */
-	private AbstractUIUpdateManager nameUpdateManager;
 
 	public boolean applyChanges() {
         List<String> fail = handler.getFailResults();
@@ -212,11 +192,14 @@ public class FolderEditor implements DataEntryPanel, CleanupModel {
 
         if ( !swingSession.getCurrentFolderParent().getChildren().contains(folder) ) {
             TreeModel treeModel = swingSession.getTree().getModel();
-            if (treeModel.getIndexOfChild(swingSession.getCurrentFolderParent(), folder) == -1){
+            MatchMakerObject<?,?> root = (MatchMakerObject<?,?>) treeModel.getRoot();
+            if (treeModel.getIndexOfChild(root, folder) == -1){
                 swingSession.getCurrentFolderParent().addNewChild(folder);
             }
         }
 
+        PlFolderDAO dao = (PlFolderDAO)swingSession.getDAO(PlFolder.class);
+        dao.save(folder);
         handler.resetHasValidated();
 
 		return true;
@@ -256,9 +239,5 @@ public class FolderEditor implements DataEntryPanel, CleanupModel {
 	public void discardChanges() {
 		logger.error("Cannot discard changes");
 	}
-	
-	public void cleanup() {
-		nameUpdateManager.cleanup();
-		descUpdateManager.cleanup();
-	}
+
 }

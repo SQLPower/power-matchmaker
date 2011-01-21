@@ -19,28 +19,20 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
 import ca.sqlpower.sqlobject.SQLTable;
 
-public abstract class CachableColumn extends AbstractMatchMakerObject {
-	
-	public static final List<Class<? extends SPObject>> allowedChildTypes =
-    	Collections.emptyList();
-	
+public abstract class CachableColumn {
 	private SQLColumn cachedColumn;
 	private String columnName;
+	AbstractMatchMakerObject eventSource;
 	private String property;
 	
-    public CachableColumn(String property) {
+    public CachableColumn(AbstractMatchMakerObject eventSource, String property) {
+		super();
+		this.eventSource = eventSource;
 		this.property = property;
 	}
 
@@ -48,7 +40,6 @@ public abstract class CachableColumn extends AbstractMatchMakerObject {
      * Returns the name of the column this set of criteria applies to.
      * You should use {@link #getColumn()} under normal circumstances.
      */
-    @Accessor
     public String getColumnName() {
         if (cachedColumn == null){
        		return columnName;
@@ -69,12 +60,9 @@ public abstract class CachableColumn extends AbstractMatchMakerObject {
      * @param columnName the name of the project's source table column these munge
      * steps are associated with.
      */
-    @Mutator
     public void setColumnName(String columnName) {
         cachedColumn = null;
-        String oldColumnName = this.columnName;
         this.columnName = columnName;
-        firePropertyChange("columnName",oldColumnName,this.columnName);
     }
 
     /**
@@ -92,8 +80,7 @@ public abstract class CachableColumn extends AbstractMatchMakerObject {
      * @throws SQLObjectRuntimeException
      *             if getColumnByName fails
      */
-    @Accessor
-    public SQLColumn getCachedColumn() {
+    public SQLColumn getColumn() {
         if (cachedColumn != null) return cachedColumn;
         if (columnName == null) return null;
         
@@ -114,28 +101,15 @@ public abstract class CachableColumn extends AbstractMatchMakerObject {
         }
     }
 
-    @Accessor
 	public abstract SQLTable getTable();
 
     /**
      * Sets the cached column as well as the simple columnName string.
      */
-    @Mutator
     public void setColumn(SQLColumn column) {
         SQLColumn oldVal = this.cachedColumn;
         this.cachedColumn = column;
         this.columnName = (column == null ? null : column.getName());
-        //TODO: find the right property name
-        firePropertyChange(property, oldVal, column);
+        eventSource.getEventSupport().firePropertyChange(property, oldVal, column);
     }
-    
-    @NonProperty
-	public List<SPObject> getChildren() {
-		return Collections.emptyList();
-	}
-
-    @NonProperty
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
-	}
 }

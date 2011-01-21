@@ -72,14 +72,14 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
     	    logger.debug("The number of edges for this node is " + getEdges().size());
     	}
     	for (PotentialMatchRecord pmr : getEdges()){
-    		if (pmr.getMasterRecord() == node){
+    		if (pmr.getMaster() == node){
     			adjacentNodes.add(pmr.getDuplicate());
     		} else if (pmr.getDuplicate() == node){
-    			adjacentNodes.add(pmr.getMasterRecord());
-    		} else if (additionalPMRs.contains(pmr) && pmr.getOrigLHS() == node) {
-    			adjacentNodes.add(pmr.getOrigRHS());
-    		} else if (additionalPMRs.contains(pmr) && pmr.getOrigRHS() == node){
-    			adjacentNodes.add(pmr.getOrigLHS());
+    			adjacentNodes.add(pmr.getMaster());
+    		} else if (additionalPMRs.contains(pmr) && pmr.getOriginalLhs() == node) {
+    			adjacentNodes.add(pmr.getOriginalRhs());
+    		} else if (additionalPMRs.contains(pmr) && pmr.getOriginalRhs() == node){
+    			adjacentNodes.add(pmr.getOriginalLhs());
     		} else {
     			// edge belongs to some other nodes in the graph
     		}
@@ -104,7 +104,7 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
             SourceTableRecord node) {
         Collection<PotentialMatchRecord> outboundEdges  = new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()){
-            if (pmr.getMasterRecord() == node){
+            if (pmr.getMaster() == node){
                 outboundEdges.add(pmr);
             }
         }
@@ -112,7 +112,7 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
     }
 
     public Collection<SourceTableRecord> getNodes() {
-        return pool.getAllSourceTableRecords();
+        return pool.getSourceTableRecords();
     }
 
     /**

@@ -23,7 +23,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,9 +44,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
-import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -66,7 +65,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * An editor pane that allows the user to add/remove/move 
  * translate word pares
  */
-public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMakerTranslateGroup> {
+public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
 	
 	private JScrollPane translateWordsScrollPane;
 	private JTable translateWordsTable;
@@ -115,7 +114,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 		
 		row += 2;
 		internalPB.add(new JLabel ("Group Name:"), cc.xy(2,row,"r,t"));
-		setGroupName();
+		groupName.setText(mmo.getName());
 		internalPB.add(groupName, cc.xy(4,row,"f,f"));
 		
 		row += 2;
@@ -165,7 +164,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 		externalPB.add(internalPB.getPanel(), cc.xyw(2,2,4,"f,f"));
 		
         
-        MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getRootNode().getTranslateGroupParent(),
+        MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getTranslations(),
                                     null, "translate group name", 35, mmo);
         handler.addValidateObject(groupName, mmoValidator);
         TranslateWordValidator wordValidator = new TranslateWordValidator(translateWordsTable);
@@ -178,7 +177,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 		translateWordsTable = new EditableJTable();
         translateWordsTable.setName("Translate Words");
         TranslateWordsTableModel tm = new TranslateWordsTableModel(mmo);
-        translateWordsTable.setModel(tm);
+        translateWordsTable.setModel (tm);
         translateWordsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting()) return;
@@ -250,7 +249,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
             word.setFrom(from.getText());
             word.setTo(to.getText());
             mmo.addChild(word);
-            translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(mmo.getChildren().size()-1,
+            translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(mmo.getChildCount()-1,
             		0, true).getBounds());
             from.setText("");
             to.setText("");
@@ -267,11 +266,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
                 selectedIndeces.add(new Integer(selectedRowIndex));
             }
             for (int i=selectedIndeces.size()-1;i >= 0; i--){
-                try {
-					mmo.removeChild(mmo.getChildren().get((int)selectedIndeces.get(i)));
-				} catch (ObjectDependentException ex) {
-					throw new RuntimeException(ex);
-				}
+                mmo.removeChild(mmo.getChildren().get((int)selectedIndeces.get(i)));
             }
         }
     };
@@ -289,7 +284,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
-					mmo.moveChild(index, index-1, MatchMakerTranslateWord.class);
+					mmo.moveChild(index, index-1);
 					translateWordsTable.setRowSelectionInterval(index-1, index-1);
 					scrollToSelected(index-1);
 				}
@@ -302,7 +297,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() -1) ){						
-					mmo.moveChild(index, index+1, MatchMakerTranslateWord.class);
+					mmo.moveChild(index, index+1);
 					translateWordsTable.setRowSelectionInterval(index+1, index+1);
 				 	scrollToSelected(index+1);
 				}
@@ -315,7 +310,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
-					mmo.moveChild(index, 0, MatchMakerTranslateWord.class);
+					mmo.moveChild(index, 0);
 					translateWordsTable.setRowSelectionInterval(0,0);
 					scrollToSelected(0);
 				}
@@ -328,9 +323,9 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() - 1) ){						
-					mmo.moveChild(index, mmo.getChildren(MatchMakerTranslateWord.class).size() - 1, MatchMakerTranslateWord.class);
- 					translateWordsTable.setRowSelectionInterval(mmo.getChildren().size()-1,mmo.getChildren().size()-1);
-					scrollToSelected(mmo.getChildren().size()-1);
+					mmo.moveChild(index, mmo.getChildCount() - 1);
+ 					translateWordsTable.setRowSelectionInterval(mmo.getChildCount()-1,mmo.getChildCount()-1);
+					scrollToSelected(mmo.getChildCount()-1);
 				}
 			}
 		}
@@ -357,22 +352,9 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane <MatchMaker
 	}
 
 	@Override
-	public void undoEventFired(PropertyChangeEvent evt) {
+	public void undoEventFired(
+			MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
 		groupName.setText(mmo.getName());
 	}
-	
-	public void setGroupName() {
-		List<String> names = new ArrayList<String>();
-		for(MatchMakerTranslateGroup tg : swingSession.getRootNode().getTranslateGroupParent().getTranslateGroups()) {
-			names.add(tg.getName());
-		}
-		if(names.contains(mmo.getName())) {
-			int i = 1;
-			while(names.contains(mmo.getName() + i)) {
-				i++;
-			}
-			mmo.setName(mmo.getName() + i);
-		}
-		groupName.setText(mmo.getName());
-	}
+
 }

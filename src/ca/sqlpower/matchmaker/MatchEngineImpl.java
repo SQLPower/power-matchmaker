@@ -86,7 +86,16 @@ public class MatchEngineImpl extends AbstractEngine {
         	throw new EngineSettingException(
         			"PreCondition failed: session context must not be null");
         }
-
+        
+        if ( session.getDatabase() == null ) {
+        	throw new EngineSettingException(
+        			"PreCondition failed: database of the session must not be null");
+        }
+        if ( session.getDatabase().getDataSource() == null ) {
+        	throw new EngineSettingException(
+        			"PreCondition failed: data source of the session must not be null");
+        }
+        
         if (!project.doesSourceTableExist()) {
             throw new SourceTableException(
                     "PreCondition failed: Your project source table \""+
@@ -114,6 +123,23 @@ public class MatchEngineImpl extends AbstractEngine {
 					"PreCondition failed: project result table structure incorrect");
 		}
         
+        if (settings.getSendEmail()) {
+        	// First checks for email settings
+        	if (!validateEmailSetting(context)) {
+        		throw new EngineSettingException("PreCondition failed: " +
+        			 	"missing email setting information, " +
+        			 	"the email sender requires smtp host name!");
+        	}
+        	
+        	// Then tries to set up the emails for each status
+        	try {
+				setupEmail(context);
+			} catch (Exception e) {
+				throw new EngineSettingException("PreCondition failed: " +
+						"error while setting up for sending emails.", e);
+			}
+        }
+                
         if (!canWriteLogFile(settings)) {
             throw new EngineSettingException("The log file is not writable.");
         }
@@ -154,13 +180,19 @@ public class MatchEngineImpl extends AbstractEngine {
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
 			logger.addAppender(fileAppender);
 			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				String emailSubject = "Project " + getProject().getName() + " Match Engine";
+				emailAppender = new EmailAppender(email, emailSubject, greenUsers, yellowUsers, redUsers);
+				logger.addAppender(emailAppender);
+			}
+			
 			progressMessage = "Starting Match Engine";
 			logger.info(progressMessage);
 			
 			rowCount = getNumRowsToProcess();
 			
 			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
-			for (MungeProcess mp: getProject().getChildren(MungeProcess.class)) {
+			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
 				if (mp.getActive()) {
 					mungeProcesses.add(mp);
 				}
@@ -168,10 +200,9 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			jobSize = rowCount * mungeProcesses.size() * 2 + rowCount;
 			
-			MatchPool pool = getProject().getMatchPool();
-			
-			pool.clearRecords();
-			pool.clearCache();
+			MatchPool pool = new MatchPool(getProject());
+			// Fill pool with pre-existing matches
+			pool.findAll(null);
 			
 			// I've currently disabled the clear match pool option in debug mode because
 			// changes should be rolled back, but if the clearing of the match
@@ -181,7 +212,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			// then it would be as if clear match pool wasn't selected in the first place, 
 			// so I don't see the point in allowing it in debug mode for now.
 			if (!inDebugMode && getProject().getMungeSettings().isClearMatchPool()) {
-				int clearJobSize = pool.getPotentialMatchRecords().size();
+				int clearJobSize = pool.getPotentialMatches().size() + pool.getOrphanedMatches().size();
 				jobSize += clearJobSize;
 				progressMessage = "Clearing Match Pool";
 				logger.info(progressMessage);
@@ -189,35 +220,22 @@ public class MatchEngineImpl extends AbstractEngine {
 				pool.clear();
 				progress += clearJobSize;
 				setCurrentProcessor(null);
-			} else {
-				// Fill pool with pre-existing matches
-				pool.findOld(null);
 			}
 			
 			checkCancelled();
             
 			progressMessage = "Searching for matches";
 			logger.info(progressMessage);
-			try {
-				pool.begin("Running match engine");
-				mungeAndMatch(rowCount, mungeProcesses, pool);
-				logger.info("Match Engine found a total of " + pool.getNumberOfPotentialMatches() + " matches");
-				
-				progressMessage = "Storing matches";
-				setCurrentProcessor(pool);
-				logger.info(progressMessage);
-	            checkCancelled();
-	            progress += rowCount;
-	            setCurrentProcessor(null);
-	            pool.setUseBatchUpdates(getProject().getMungeSettings().isUseBatchExecution());
-	            pool.setDebug(getProject().getMungeSettings().getDebug());
-	            pool.commit();
-	        	pool.clearRecords();
-	        	pool.setCurrentMatchNumber(0);
-			} catch(Exception ex) {
-				pool.rollback("rolling back engine");
-				throw new RuntimeException(ex);
-			}
+			mungeAndMatch(rowCount, mungeProcesses, pool);
+			logger.info("Match Engine found a total of " + pool.getNumberOfPotentialMatches() + " matches");
+			
+			progressMessage = "Storing matches";
+			setCurrentProcessor(pool);
+			logger.info(progressMessage);
+			pool.store(getProject().getMungeSettings().isUseBatchExecution(), inDebugMode);
+            checkCancelled();
+            progress += rowCount;
+            setCurrentProcessor(null);
             
             if (inDebugMode) {
             	logger.info("In Debug Mode, so rolling back changes");
@@ -259,7 +277,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			munger = new MungeProcessor(currentProcess, logger);
 			setCurrentProcessor(munger);
 			progressMessage = "Running transformation " + currentProcess.getName();
-			logger.info(getMessage());
+			logger.debug(getMessage());
 			munger.call(rowCount);
 			progress += munger.getProgress();
 			setCurrentProcessor(null);
@@ -269,7 +287,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			matcher = new MatchProcessor(pool, currentProcess, results, logger);
 			setCurrentProcessor(matcher);
 			progressMessage = "Matching transformation " + currentProcess.getName();
-			logger.info(getMessage());
+			logger.debug(getMessage());
 			matcher.call();
             checkCancelled();
 			progress += matcher.getProgress();

@@ -19,14 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Constructor;
-
 
 /**
  * This munge step will convert a alphabetical string input
@@ -34,22 +26,11 @@ import ca.sqlpower.object.annotation.Constructor;
  */
 public class LowerCaseMungeStep extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
-	@Constructor
 	public LowerCaseMungeStep() {
 		super("Lower Case",false);
-	}
-
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"lowerCaseOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
 		addChild(out);
-		InputDescriptor desc = new InputDescriptor("lowerCase",
-				String.class);
+		InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
 		super.addInput(desc);
 	}
 	
@@ -60,7 +41,7 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 	}
 	
 	@Override
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
 		throw new UnsupportedOperationException(
 			"Lower case munge step does not support removeInput()");
 	}

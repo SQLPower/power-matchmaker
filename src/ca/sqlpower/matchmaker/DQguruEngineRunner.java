@@ -20,14 +20,13 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.prefs.Preferences;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.OpenSaveHandler;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.RepositoryVersionException;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -54,19 +53,29 @@ public class DQguruEngineRunner {
 	 * @throws SourceTableException 
 	 * @throws EngineSettingException 
 	 */
-	public static void main(String[] args) throws
+	public static void main(String[] args) throws RepositoryVersionException,
 			PLSecurityException, SQLException, SQLObjectException,
 			MatchMakerConfigurationException, IOException, EngineSettingException, SourceTableException {
-		String workspacePath = null;
+		String repositoryDSName = null;
+		String username = null;
+		String password = null;
 		String projectName = null;
 		String logfilePath = null;
 		boolean debugMode = false;
 		
 		for (int i = 0; i < args.length; i++) {
 			String arg = args[i];
-			if (arg.equals("--workspace") || arg.equals("-w")) {
+			if (arg.equals("--repository") || arg.equals("-r")) {
 				arg = args[i + 1];
-				workspacePath = arg;
+				repositoryDSName = arg;
+				i++;
+			} else if (arg.equals("--username") || arg.equals("-u")) {
+				arg = args[i + 1];
+				username = arg;
+				i++;
+			} else if (arg.equals("--password") || arg.equals("-P")) {
+				arg = args[i + 1];
+				password = arg;
 				i++;
 			} else if (arg.equals("--project") || arg.equals("-p")) {
 				arg = args[i + 1];
@@ -87,27 +96,24 @@ public class DQguruEngineRunner {
 			}
 		}
 
-		if (workspacePath == null || projectName == null) {
+		if (repositoryDSName == null || username == null || password == null || projectName == null) {
 			printUsage();
 			System.exit(1);
 		}
-		
-		
 
 		Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
 
 		String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
 		DataSourceCollection<JDBCDataSource> plIni= readPlDotIni(plDotIniPath);
-		MatchMakerSessionContext context = new MatchMakerSessionContextImpl(prefs, plIni);
+		MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(prefs, plIni);
 		
-		MatchMakerSession session = context.createSession();
-		
-		File loadFile = new File(workspacePath);
-		if (!loadFile.exists()) {
-			throw new FileNotFoundException("Could not find workspace '" + projectName + "'");
+		JDBCDataSource repositoryDS = plIni.getDataSource(repositoryDSName);
+		if (repositoryDS == null) {
+			System.out.println("Could not find repository '" + repositoryDSName + "'");
+			System.exit(1);
 		}
-		OpenSaveHandler.doOpen(loadFile, session);
 		
+		MatchMakerSession session = context.createSession(repositoryDS, username, password);
 		Project project = session.getProjectByName(projectName);
 		
 		if (project == null) throw new NullPointerException("Could not find project '" + projectName + "'");
@@ -136,24 +142,19 @@ public class DQguruEngineRunner {
 			project.getMungeSettings().setLog(new File(logfilePath));
 		}
 		
-
-		project.getMungeSettings().setDebug(debugMode);
-
-		System.out.println("SOURCE: " + project.getSourceTableSPDatasource() + "," +
-				project.getSourceTableSchema() + "," +
-				project.getSourceTableName());
+		if (debugMode == true) {
+			project.getMungeSettings().setDebug(debugMode);
+		}
 		
-		System.out.println("RESULT: " + project.getResultTableSPDatasource() + "," +
-				project.getResultTableSchema() + "," +
-				project.getResultTableName());
 		engine.call();
-		
 	}
 	
 	private static void printUsage() {
 		System.out.println("Usage: java -jar dqguru-engine-runner.jar [JVM options] [args...]");
 		System.out.println("Mandatory arguments include:");
-		System.out.println("\t--workspace | -w <path>\tLocation of Workspace File");
+		System.out.println("\t--repository | -r <repository name>\tName of Repository Datasource");
+		System.out.println("\t--username | -u <username>\t\tRepository Username");
+		System.out.println("\t--password | -P <password>\t\tRepository Password");
 		System.out.println("\t--project | -p <project>\t\tDQguru Project Name");
 		System.out.println("\nOptional arguments include:");
 		System.out.println("\t--log | -l <log path>\t\t\tPath of the engine log");

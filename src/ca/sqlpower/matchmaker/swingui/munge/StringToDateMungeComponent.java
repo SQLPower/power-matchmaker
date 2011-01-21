@@ -36,6 +36,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.StringToDateMungeStep;
 import ca.sqlpower.validation.Status;
@@ -90,12 +91,14 @@ public class StringToDateMungeComponent extends AbstractMungeComponent {
 		sample.setEditable(false);
 
 		ignoreError = new JCheckBox("Continue on Error");
-		ignoreError.setSelected(((StringToDateMungeStep)getStep()).isIgnoreError());
+		ignoreError.setSelected(((AbstractMungeStep)getStep()).getBooleanParameter(
+				StringToDateMungeStep.IGNORE_ERROR_PARAM));
 		
 		ignoreError.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				StringToDateMungeStep temp = (StringToDateMungeStep) getStep();
-				temp.setIgnoreError(ignoreError.isSelected());
+				AbstractMungeStep temp = (AbstractMungeStep) getStep();
+				temp.setParameter(StringToDateMungeStep.IGNORE_ERROR_PARAM,
+						ignoreError.isSelected());
 			}
 			
 		});

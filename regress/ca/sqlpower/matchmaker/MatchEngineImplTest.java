@@ -80,7 +80,6 @@ public class MatchEngineImplTest extends TestCase {
 		stmt.close();
 		
 		resultTable = db.getTableByName(null, "pl", "match_results");
-		resultTable.getColumns();
 		session = new TestingMatchMakerSession() {
 			@Override
 			public Connection getConnection() {
@@ -101,14 +100,14 @@ public class MatchEngineImplTest extends TestCase {
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("matchTest", "log");
 		settings.setLog(file);
-		settings.copyPropertiesToTarget(project.getMungeSettings());
+		project.setMungeSettings(settings);
 		
 		MungeProcess mungeProcessOne = new MungeProcess();
 		mungeProcessOne.setName("Munge_Process_One");
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessOne.addChild(inputStep);
 		
-		project.addChild(mungeProcessOne);
+		project.addMungeProcess(mungeProcessOne);
 
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessOne.addChild(outputStep);
@@ -130,21 +129,21 @@ public class MatchEngineImplTest extends TestCase {
 	public void testCall() throws Exception {
 		engine.call();
 
-		MatchPool pool = project.getMatchPool();
-		pool.find(null);
-		assertEquals(2, pool.getAllSourceTableRecords().size());
-		assertEquals(1, pool.getPotentialMatchRecords().size());
-		for (SourceTableRecord s: pool.getAllSourceTableRecords()) {
+		MatchPool pool = new MatchPool(project);
+		pool.findAll(null);
+		assertEquals(2, pool.getSourceTableRecords().size());
+		assertEquals(1, pool.getPotentialMatches().size());
+		for (SourceTableRecord s: pool.getSourceTableRecords()) {
 			assertTrue(s.getKeyValues().get(0).equals("1") ||
 					s.getKeyValues().get(0).equals("4"));
 		}
 		
-		for (PotentialMatchRecord p: pool.getPotentialMatchRecords()) {
-			assertTrue(p.getOrigLHS().getKeyValues().get(0).equals("1") ||
-					p.getOrigLHS().getKeyValues().get(0).equals("4"));
-			assertTrue(p.getOrigRHS().getKeyValues().get(0).equals("1") ||
-					p.getOrigRHS().getKeyValues().get(0).equals("4"));
-			assertEquals(null, p.getMasterRecord());
+		for (PotentialMatchRecord p: pool.getPotentialMatches()) {
+			assertTrue(p.getOriginalLhs().getKeyValues().get(0).equals("1") ||
+					p.getOriginalLhs().getKeyValues().get(0).equals("4"));
+			assertTrue(p.getOriginalRhs().getKeyValues().get(0).equals("1") ||
+					p.getOriginalRhs().getKeyValues().get(0).equals("4"));
+			assertEquals(null, p.getMaster());
 			assertEquals(MatchType.UNMATCH, p.getMatchStatus());
 		}
 	}
@@ -155,7 +154,7 @@ public class MatchEngineImplTest extends TestCase {
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessTwo.addChild(inputStep);
 		
-		project.addChild(mungeProcessTwo);
+		project.addMungeProcess(mungeProcessTwo);
 		
 		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessTwo.addChild(outputStep);
@@ -166,9 +165,9 @@ public class MatchEngineImplTest extends TestCase {
 		
 		engine.call();
 		
-		MatchPool pool = project.getMatchPool();
-		pool.find(null);
-		assertEquals(2, pool.getAllSourceTableRecords().size());
-		assertEquals(1, pool.getPotentialMatchRecords().size());
+		MatchPool pool = new MatchPool(project);
+		pool.findAll(null);
+		assertEquals(2, pool.getSourceTableRecords().size());
+		assertEquals(1, pool.getPotentialMatches().size());
 	}
 }

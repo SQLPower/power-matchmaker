@@ -21,16 +21,11 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.object.SPObject;
-
-public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSubstitutionMungeStep> {
-
-	public StringSubstitutionMungeStepTest(String name) {
-		super(name);
-	}
+public class StringSubstitutionMungeStepTest extends TestCase {
 
 	private StringSubstitutionMungeStep step;
 	
@@ -41,10 +36,6 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new StringSubstitutionMungeStep();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
 	}
 
 	/**
@@ -55,11 +46,11 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.connectInput(0, testInput);
-		step.setFrom("h");
-		step.setTo("123");
+		step.setParameter(step.FROM_PARAMETER_NAME, "h");
+		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("abcdefg", result);
@@ -69,11 +60,11 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
-		step.setFrom("abc");
-		step.setTo("123");
+		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
+		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("123ABC123", result);
@@ -87,11 +78,11 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcabc");
 		step.connectInput(0, testInput);
-		step.setFrom("abc");
-		step.setTo("123");
+		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
+		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("123123", result);
@@ -106,11 +97,11 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abccba");
 		step.connectInput(0, testInput);
-		step.setFrom("abc");
-		step.setTo("123");
+		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
+		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("123cba", result);
@@ -124,11 +115,11 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a\\-+*?()[]{}|$^<=z");
 		step.connectInput(0, testInput);
-		step.setFrom("\\-+*?()[]{}|$^<=");
-		step.setTo("!");
+		step.setParameter(step.FROM_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
+		step.setParameter(step.TO_PARAMETER_NAME, "!");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("a!z", result);
@@ -141,12 +132,12 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("aabfooaabfooabfoob");
 		step.connectInput(0, testInput);
-		step.setRegex(true);
-		step.setFrom("a*b");
-		step.setTo("-");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
+		step.setParameter(step.FROM_PARAMETER_NAME, "a*b");
+		step.setParameter(step.TO_PARAMETER_NAME, "-");
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("-foo-foo-foo-", result);
@@ -156,14 +147,14 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 	public void testCallonCaseInsensitive() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCdabcdABC");
-		step.setFrom("abc");
-		step.setTo("-");
-		step.setCaseSensitive(false);
+		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
+		step.setParameter(step.TO_PARAMETER_NAME, "-");
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("-d-d-d-", result);
@@ -175,7 +166,7 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -191,19 +182,4 @@ public class StringSubstitutionMungeStepTest extends MatchMakerTestCase<StringSu
 			// UnexpectedDataTypeException was thrown as expected
 		}
 	}
-
-	@Override
-	protected StringSubstitutionMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// no-op
-	}		
 }

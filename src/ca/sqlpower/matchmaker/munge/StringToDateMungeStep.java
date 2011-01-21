@@ -22,17 +22,9 @@ package ca.sqlpower.matchmaker.munge;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.Transient;
 
 
 /**
@@ -47,35 +39,30 @@ import ca.sqlpower.object.annotation.Transient;
  */
 public class StringToDateMungeStep extends AbstractMungeStep {
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
 	/**
-	 * Whether to ignore conversion errors.
+	 * Determines whether to ignore conversion errors.
 	 */
-	private boolean ignoreError;
+	public static final String IGNORE_ERROR_PARAM = "ignoreError";
 
 	/**
 	 * The pattern used to format the input Date.
 	 */
-	private String inputFormat;
+	public static final String INPUT_FORMAT_PARAM = "inputFormat";
 	
 	/**
 	 * The date portion of the pattern that helps to build the format.
 	 */
-	private String dateFormat;
+	public static final String DATE_FORMAT_PARAM = "dateFormat";
 	
 	/**
 	 * The time portion of the pattern that helps to build the format.
 	 */
-	private String timeFormat;
+	public static final String TIME_FORMAT_PARAM = "timeFormat";
 	
 	/**
 	 * The format to output as.
 	 */
-	private String outputFormat;
+	public static final String OUTPUT_FORMAT_PARAM = "outputFormat";
 	
 	/**
 	 * List of default date formats.
@@ -95,23 +82,13 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 	 */
 	public static final List<String> OUTPUT_FORMATS = Arrays.asList("Date Only", "Time Only", "Date and Time");
 	
-	private void updateInputFormat() {
-		String old = inputFormat;
-		String format = getDateFormat() + (
-				((getDateFormat() == null || getDateFormat().equals("")) ||
-						((getTimeFormat() == null) || getTimeFormat().equals(""))) ?
-						"" : " ") + getTimeFormat();
-		inputFormat = format;
-		firePropertyChange("inputFormat", old, inputFormat);
-	}
-	
 	@Override
 	public int addInput(InputDescriptor desc) {
 		throw new UnsupportedOperationException("String to Date munge step does not support addInput()");
 	}
 
 	@Override
-	public boolean removeInput(int index) {
+	public void removeInput(int index) {
 		throw new UnsupportedOperationException("String to Date munge step does not support removeInput()");
 	}
 
@@ -124,18 +101,14 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	@Constructor
 	public StringToDateMungeStep() {
 		super("String to Date",false);
-		setIgnoreError(false);
+		setParameter(IGNORE_ERROR_PARAM, false);
 		setDateFormat(DATE_FORMATS.get(1));
 		setTimeFormat(TIME_FORMATS.get(1));
 		setOutputFormat(OUTPUT_FORMATS.get(0));
-	}
-
-	public void init() {
-		MungeStepOutput<Date> out = new MungeStepOutput<Date>(
-				"stringToDateOutput", Date.class);
+		
+		MungeStepOutput<Date> out = new MungeStepOutput<Date>("stringToDateOutput", Date.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("String", String.class);
 		super.addInput(desc);
@@ -148,8 +121,6 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		Date ret = null;
 		if (in.getData() != null) {
 			try {
-				System.out.println(getInputFormat());
-				System.out.println(data);
 				SimpleDateFormat sdf = new SimpleDateFormat(getInputFormat());
 				ret = sdf.parse(data);
 				if (OUTPUT_FORMATS.get(0).equals(getOutputFormat())) {
@@ -158,7 +129,7 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 					ret = new Time(ret.getTime());
 				}
 			} catch (ParseException e) {
-				if (isIgnoreError()) {
+				if (getBooleanParameter(IGNORE_ERROR_PARAM)) {
 					logger.error("Problem occured when trying to convert \"" + data + "\" to a date!");
 				} else {
 					throw new ParseException("Error trying to convert \"" + data + "\" to a date!",
@@ -170,77 +141,64 @@ public class StringToDateMungeStep extends AbstractMungeStep {
 		out.setData(ret);
 		return true;
 	}
-
-	@Accessor
-	public boolean isIgnoreError() {
-		return ignoreError;
-	}
-
-	@Mutator
-	public void setIgnoreError(boolean ignoreError) {
-		boolean old = this.ignoreError;
-		this.ignoreError = ignoreError;
-		firePropertyChange("ignoreError", old, ignoreError);
-	}
-
-	@Transient
-	@Accessor
-	public String getInputFormat() {
-		return inputFormat;
-	}
-
-	@Mutator
-	public void setInputFormat(String inputFormat) {
-		String old = this.inputFormat;
-		this.inputFormat = inputFormat;
-		firePropertyChange("inputFormat", old, inputFormat);
-	}
-
-	@Accessor
-	public String getDateFormat() {
-		return dateFormat;
-	}
-
-	@Mutator
-	public void setDateFormat(String dateFormat) {
-		String old = this.dateFormat;
-		this.dateFormat = dateFormat;
-		firePropertyChange("dateFormat", old, dateFormat);
-		updateInputFormat();
-	}
-
-	@Accessor
-	public String getTimeFormat() {
-		return timeFormat;
-	}
-
-	@Mutator
-	public void setTimeFormat(String timeFormat) {
-		String old = this.timeFormat;
-		this.timeFormat = timeFormat;
-		firePropertyChange("timeFormat", old, timeFormat);
-		updateInputFormat();
-	}
-
-	@Accessor
-	public String getOutputFormat() {
-		return outputFormat;
-	}
-
-	@Mutator
-	public void setOutputFormat(String outputFormat) {
-		String old = this.outputFormat;
-		this.outputFormat = outputFormat;
-		firePropertyChange("outputFormat", old, outputFormat);
+	
+	public void setInputFormat(String format) {
+		setParameter(INPUT_FORMAT_PARAM, format);
 	}
 	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		StringToDateMungeStep step = (StringToDateMungeStep) copy;
-		step.setDateFormat(getDateFormat());
-		step.setIgnoreError(isIgnoreError());
-		step.setInputFormat(getInputFormat());
-		step.setOutputFormat(getOutputFormat());
-		step.setTimeFormat(getTimeFormat());
+	public String getInputFormat() {
+		return getParameter(INPUT_FORMAT_PARAM);
+	}
+	
+	/**
+	 * Sets the date portion of the pattern and updates the format pattern.
+	 */
+	public void setDateFormat(String format) {
+		setParameter(DATE_FORMAT_PARAM, format);
+		updateInputFormat();
+	}
+	
+	/**
+	 * Returns the date portion of the format pattern. 
+	 */
+	public String getDateFormat() {
+		return getParameter(DATE_FORMAT_PARAM);
+	}
+	
+	/**
+	 * Sets the time portion of the pattern and updates the format pattern.
+	 */
+	public void setTimeFormat(String format) {
+		setParameter(TIME_FORMAT_PARAM, format);
+		updateInputFormat();
+	}
+	
+	/**
+	 * Returns the time portion of the format pattern.
+	 */
+	public String getTimeFormat() {
+		return getParameter(TIME_FORMAT_PARAM);
+	}
+	
+	/**
+	 * Updates the input format parameter to the concatenation of the date format
+	 * and the time format.
+	 */
+	private void updateInputFormat() {
+		String format = getDateFormat() + " " + getTimeFormat();
+		setParameter(INPUT_FORMAT_PARAM, format.trim());
+	}
+	
+	public void setOutputFormat(String format) {
+		if (OUTPUT_FORMATS.contains(format)) {
+			setParameter(OUTPUT_FORMAT_PARAM, format);
+		}
+	}
+	
+	public String getOutputFormat() {
+		return getParameter(OUTPUT_FORMAT_PARAM);
 	}
 }
+
+
+

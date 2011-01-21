@@ -19,31 +19,17 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
-public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
+public class MatchMakerTranslateWord
+	extends AbstractMatchMakerObject<MatchMakerTranslateWord,MatchMakerObject> {
 
-	public static final List<Class<? extends SPObject>> allowedChildTypes =
-        Collections.emptyList();
-	
 	@SuppressWarnings(value={"UWF_UNWRITTEN_FIELD"}, justification="Used reflectively by Hibernate")
 	private Long oid;
 	private String from = "";
 	private String to = "";
-	
-	private String name = "";
 
-	@Constructor
 	public MatchMakerTranslateWord() {
-		setName("MatchMakerTranslateWord");
 	}
     
 	/**
@@ -51,7 +37,6 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 	 * If the from value is null return "" if it dosn't 
 	 * Done this way to stop update storm in hibernate
 	 */
-	@Accessor
 	public String getFrom() {
 		if (from == null) return "";
 		return from;
@@ -61,11 +46,10 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
      * Some databases will behave badly if you have nulls nested in subselects
      * so we change null to "" otherwise this is a normal setter.
      */
-	@Mutator
 	public void setFrom(String from) {
 		String oldValue = this.from;
 		this.from = from;
-		firePropertyChange("from", oldValue, this.from);
+		getEventSupport().firePropertyChange("from", oldValue, this.from);
 	}
 
 	/**
@@ -73,7 +57,6 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
 	 * If the from value is null return "" if it dosn't 
 	 * Done this way to stop update storm in hibernate
 	 */
-	@Accessor
 	public String getTo() {
 		if (to == null) return "";
 		return to;
@@ -83,29 +66,20 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
      * Some databases will behave badly if you have nulls nested in subselects
      * so we change null to "" otherwise this is a normal setter.
      */
-	@Mutator
 	public void setTo(String to) {
 		String oldValue = this.to;
 		this.to = to;
-		firePropertyChange("to", oldValue, this.to);
+		getEventSupport().firePropertyChange("to", oldValue, this.to);
 	}
 
 	@Override
-	@Accessor
 	public String getName() {
-		if (name == null) {
-			return from + " \u2192 " + to;
-		} else {
-			return name;
-		}
+		return from + " \u2192 " + to;
 	}
 	
 	@Override
-	@Mutator
-	public void setName(String name) {
-		String oldName = getName();
-		this.name = name;
-		firePropertyChange("name", oldName, name);
+	protected void addImpl(int index, MatchMakerObject child) {
+		throw new IllegalStateException("MatchMakerTranslateWord does not allow child!");
 	}
 	
     @Override
@@ -158,24 +132,14 @@ public class MatchMakerTranslateWord extends AbstractMatchMakerObject {
     	return buf.toString();
     }
     
-    public MatchMakerTranslateWord duplicate(MatchMakerObject parent) {
+    public MatchMakerTranslateWord duplicate(MatchMakerObject parent, MatchMakerSession session) {
     	MatchMakerTranslateWord w = new MatchMakerTranslateWord();
     	w.setName(getName());
     	w.setFrom(getFrom());
     	w.setTo(getTo());
     	w.setParent(parent);
+    	w.setSession(session);
     	w.setVisible(isVisible());
     	return w;
     }
-
-	@Override
-	@NonProperty
-	public List<? extends SPObject> getChildren() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
-	}
 }

@@ -26,11 +26,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sqlobject.DatabaseConnectedTestCase;
-import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLTable;
 
 /**
@@ -92,7 +90,6 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
                 " CONSTRAINT customer_pk PRIMARY KEY (customer_id))");
         
         SQLTable customerTable = db.getTableByName(null, "PUBLIC", "CUSTOMER");
-        
         session = new TestingMatchMakerSession() {
             @Override
             public Connection getConnection() {
@@ -103,10 +100,6 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
                 }
             }
         };
-        
-        for(SQLColumn c : customerTable.getColumns()) {
-        	c.setType(session.getSQLType(c.getType()));
-        }
         session.setDatabase(db);
         
         p = new Project();
@@ -118,15 +111,15 @@ public abstract class AbstractRefreshTest extends DatabaseConnectedTestCase {
         
         mungeProcess = new MungeProcess();
         mungeProcess.setName("Simple");
-        p.addChild(mungeProcess);
+        p.addMungeProcess(mungeProcess);
         inputStep = new SQLInputStep();
         mungeProcess.addChild(inputStep);
         inputStep.refresh(logger);
         
-        assertEquals(3, inputStep.getChildren(MungeStepOutput.class).size());
-        assertEquals("CUSTOMER_ID", inputStep.getMungeStepOutputs().get(0).getName());
-        assertEquals("NAME", inputStep.getMungeStepOutputs().get(1).getName());
-        assertEquals("DOB", inputStep.getMungeStepOutputs().get(2).getName());
+        assertEquals(3, inputStep.getChildCount());
+        assertEquals("CUSTOMER_ID", inputStep.getChildren().get(0).getName());
+        assertEquals("NAME", inputStep.getChildren().get(1).getName());
+        assertEquals("DOB", inputStep.getChildren().get(2).getName());
         
     }
     

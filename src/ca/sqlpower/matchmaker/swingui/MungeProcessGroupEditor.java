@@ -45,11 +45,10 @@ import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
-import ca.sqlpower.object.ObjectDependentException;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -65,7 +64,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * A panel to edit the munge process group
  */
-public class MungeProcessGroupEditor implements MatchMakerEditorPane {
+public class MungeProcessGroupEditor implements MatchMakerEditorPane<MatchMakerFolder<MungeProcess>> {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessGroupEditor.class);
 	
@@ -185,9 +184,10 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mungeProcessTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
-			project.getChildren(MungeProcess.class).get(selectedRow).setMatchPriority(selectedRow - 1);
-			project.getChildren(MungeProcess.class).get(selectedRow - 1).setMatchPriority(selectedRow);
-			project.moveChild(selectedRow, selectedRow-1, MungeProcess.class);
+			MatchMakerFolder<MungeProcess> mungeProcessesFolder = project.getMungeProcessesFolder();
+			mungeProcessesFolder.getChildren().get(selectedRow).setMatchPriority(selectedRow - 1);
+			mungeProcessesFolder.getChildren().get(selectedRow - 1).setMatchPriority(selectedRow);
+			mungeProcessesFolder.moveChild(selectedRow, selectedRow-1);
 			mungeProcessTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
 			applyChanges();
 		}
@@ -197,9 +197,10 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mungeProcessTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
-			project.getChildren(MungeProcess.class).get(selectedRow).setMatchPriority(selectedRow + 1);
-			project.getChildren(MungeProcess.class).get(selectedRow + 1).setMatchPriority(selectedRow);
-			project.moveChild(selectedRow, selectedRow+1, MungeProcess.class);
+			MatchMakerFolder<MungeProcess> mungeProcessesFolder = project.getMungeProcessesFolder();
+			mungeProcessesFolder.getChildren().get(selectedRow).setMatchPriority(selectedRow + 1);
+			mungeProcessesFolder.getChildren().get(selectedRow + 1).setMatchPriority(selectedRow);
+			mungeProcessesFolder.moveChild(selectedRow, selectedRow+1);
 			mungeProcessTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
 			applyChanges();
 		}
@@ -219,11 +220,8 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 				}
 				
 				MungeProcess mp = project.getMungeProcesses().get(selectedRow);
-				try {
-					project.removeChild(mp);
-				} catch (ObjectDependentException ex) {
-					throw new RuntimeException();
-				}
+				project.removeMungeProcess(mp);
+				swingSession.save(project);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
 					selectedRow = mungeProcessTable.getRowCount() - 1;
 				}
@@ -250,25 +248,18 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 	 * 								multiple munge process produce the same match
 	 * </dl>
 	 */
-	private class MungeProcessTableModel extends AbstractMatchMakerTableModel <Project>{
+	private class MungeProcessTableModel extends AbstractMatchMakerTableModel<MatchMakerFolder<MungeProcess>, MungeProcess>{
 
-		Project project;
-		
 		public MungeProcessTableModel(Project project) {
-			super(project);
-			this.project = project;
+			super(project.getMungeProcessesFolder());
 		}
 
 		public int getColumnCount() {
 			return 4;
 		}
-		
-		public int getRowCount() {
-			return project.getMungeProcesses().size();
-		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			MungeProcess mungeProcess = mmo.getMungeProcesses().get(rowIndex);
+			MungeProcess mungeProcess = mmo.getChildren().get(rowIndex);
 			switch (columnIndex) {
 			case 0:  return mungeProcess.getName();
 			case 1:  return mungeProcess.getDesc();
@@ -351,7 +342,12 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 		}
 	}
 
+	public MatchMakerFolder<MungeProcess> getCurrentEditingMMO() {
+		return project.getMungeProcessesFolder();
+	}
+
 	public boolean applyChanges() {
+		swingSession.save(project.getMungeProcessesFolder());
 		return true;
 	}
 
@@ -366,11 +362,6 @@ public class MungeProcessGroupEditor implements MatchMakerEditorPane {
 	public boolean hasUnsavedChanges() {
 		logger.debug("MungeProgressGroupEditor panel automatically saves changes");
 		return false;
-	}
-
-	@Override
-	public MatchMakerObject getCurrentEditingMMO() {
-		return project;
 	}
 
 }

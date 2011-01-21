@@ -19,19 +19,18 @@
 
 package ca.sqlpower.matchmaker.undo;
 
-import java.beans.PropertyChangeEvent;
-
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.MatchMakerEditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
-public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject> implements MatchMakerEditorPane, CleanupModel {
+public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C extends MatchMakerObject> implements MatchMakerEditorPane<T>, CleanupModel {
 	
 	private static final Logger logger = Logger.getLogger(AbstractUndoableEditorPane.class);
 	
@@ -62,6 +61,7 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject> imp
 	 */
 	public boolean applyChanges() {
 		logger.debug("saving object: " + mmo);
+		swingSession.save(mmo);
 		undo.setHasChanged(false);
 		return true;
 	}
@@ -84,21 +84,18 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject> imp
 		return panel;
 	}
 
-	public void setPanel(JPanel p) {
-		panel = p;
-	}
-
 	public void cleanup() {
 		undo.cleanup();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void initUndo() {
-		undo = new MMOChangeUndoWatcher(mmo,this,swingSession);
+		undo = new MMOChangeUndoWatcher<T, C>(mmo,this,swingSession);
 	}
 
-	public abstract void undoEventFired(PropertyChangeEvent evt);
+	public abstract void undoEventFired(MatchMakerEvent<T,C> evt);
 	
-	public MatchMakerObject getCurrentEditingMMO() {
+	public T getCurrentEditingMMO() {
 		return mmo;
 	}
 }

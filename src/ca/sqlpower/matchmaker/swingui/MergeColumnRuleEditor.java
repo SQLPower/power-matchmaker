@@ -24,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +49,11 @@ import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.sqlobject.SQLColumn;
@@ -71,7 +71,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMergeRules>{
+public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMergeRules, ColumnMergeRules> {
 
 	private class MergeColumnRuleJTableValidator implements Validator {
 
@@ -108,7 +108,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 				TableMergeRules parentMergeRule = tableMergeRule.getParentMergeRule();
 				
 				boolean uniqueKeyDefined = false;
-				for (ColumnMergeRules cmr: tableMergeRule.getChildren(ColumnMergeRules.class)) {
+				for (ColumnMergeRules cmr: tableMergeRule.getChildren()) {
 					uniqueKeyDefined |= cmr.isInPrimaryKey();
 				}
 				if (!uniqueKeyDefined) {
@@ -116,14 +116,14 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 				}
 				
 				// checks for invalid foreign keys types
-				for (ColumnMergeRules cmr : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 					if (cmr.getImportedKeyColumn() != null && cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
 						return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
 					}
 				}
 				
 				// checks for foreign keys that is not part of the parent's primary keys
-				for (ColumnMergeRules cmr : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 					if (cmr.getImportedKeyColumn() != null && cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
 						return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
 					}
@@ -133,7 +133,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 				if (parentMergeRule != null) {
 					if (parentMergeRule.isSourceMergeRule()) {
 						int count = 0;
-						for (ColumnMergeRules cmr : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+						for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 							if (cmr.getImportedKeyColumn() != null) {
 								boolean found = false;
 								
@@ -169,7 +169,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 					} else {
 						int primaryKeyCount = 0;
 						int foreignKeyCount = 0;
-						for (ColumnMergeRules parentColumn : parentMergeRule.getChildren(ColumnMergeRules.class)) {
+						for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
 							if (parentColumn.isInPrimaryKey()) {
 								primaryKeyCount++;
 							}
@@ -177,10 +177,10 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 						
 						// TODO: This check needs to be redone because it doesn't account
 						// for the possibility of a table importing keys from more than one table 
-						for (ColumnMergeRules childColumn : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+						for (ColumnMergeRules childColumn : tableMergeRule.getChildren()) {
 							if (childColumn.getImportedKeyColumn() != null) {
 								boolean found = false;
-								for (ColumnMergeRules parentColumn : parentMergeRule.getChildren(ColumnMergeRules.class)) {
+								for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
 									if (parentColumn.getColumn().equals(childColumn.getImportedKeyColumn())) {
 										foreignKeyCount++;
 										found = true;
@@ -240,7 +240,8 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 	 */
 	private class RelatedColumnMergeRulesTable extends EditableJTable {
 
-		public RelatedColumnMergeRulesTable( AbstractMatchMakerTableModel ruleTableModel) {
+		public RelatedColumnMergeRulesTable(
+				AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> ruleTableModel) {
 			super(ruleTableModel);
 		}
 
@@ -282,7 +283,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 	private class SourceColumnMergeRulesTable extends EditableJTable {
 		
 		public SourceColumnMergeRulesTable(
-				AbstractMatchMakerTableModel ruleTableModel) {
+				AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> ruleTableModel) {
 			super(ruleTableModel);
 		}
 
@@ -326,7 +327,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 	/**
 	 * The table that lists the column merge rules
 	 */
-	private AbstractMatchMakerTableModel ruleTableModel;
+	private AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> ruleTableModel;
 
 	private EditableJTable ruleTable; 
 	
@@ -334,7 +335,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 		public void valueChanged(ListSelectionEvent e) {
             int selectedRow = ruleTable.getSelectedRow();
             if (selectedRow >= 0) {
-                ColumnMergeRules mergeColumn = mmo.getChildren(ColumnMergeRules.class).get(selectedRow); 
+                ColumnMergeRules mergeColumn = mmo.getChildren().get(selectedRow); 
                 MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
                 TreePath menuPath = treeModel.getPathForNode(mergeColumn);
                 swingSession.getTree().setSelectionPath(menuPath);
@@ -493,7 +494,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 		
 		//adds the mergeRule to the project if it is new
 		if (!project.getTableMergeRules().contains(mmo)) {
-			project.addChild(mmo);
+			project.getTableMergeRulesFolder().addChild(mmo);
 		}
 
 		return super.applyChanges();
@@ -501,7 +502,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 	
 	
 	public TableMergeRules getMergeRule() {
-		return (TableMergeRules) mmo;
+		return mmo;
 	}
 	
 	protected JComboBox getParentTableComboBox() {
@@ -535,7 +536,8 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane <TableMerg
 	}
 
 	@Override
-	public void undoEventFired(PropertyChangeEvent evt) {
+	public void undoEventFired(
+			MatchMakerEvent<TableMergeRules, ColumnMergeRules> evt) {
 		if (!mmo.isSourceMergeRule()) {
 			if (mmo.getParentMergeRule() != null) {
 				parentMergeRule.setSelectedItem(mmo.getParentMergeRule().getSourceTable());

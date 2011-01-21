@@ -19,23 +19,19 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.io.File;
+import java.sql.Connection;
 import java.util.Date;
-import java.util.List;
 
-import ca.sqlpower.dao.upgrade.UpgradePersisterManager;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerSessionContextImpl;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.sql.JDBCDataSource;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLDatabaseMapping;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.sqlobject.UserDefinedSQLType;
 import ca.sqlpower.swingui.event.SessionLifecycleListener;
-import ca.sqlpower.util.RunnableDispatcher;
-import ca.sqlpower.util.UserPrompterFactory;
-import ca.sqlpower.util.WorkspaceContainer;
+import ca.sqlpower.util.Version;
 
 /**
  * The MatchMakerSession interface represents one person's login to
@@ -43,7 +39,7 @@ import ca.sqlpower.util.WorkspaceContainer;
  * throughout the MatchMaker business model.
  *
  * <p>To make one of these, use the
- * {@link MatchMakerSessionContextImpl#createSession(SPDataSource, String, String)}
+ * {@link MatchMakerHibernateSessionContext#createSession(SPDataSource, String, String)}
  * method.
  *
  * <p>This interface makes a strong committment to keeping the MatchMaker
@@ -51,13 +47,23 @@ import ca.sqlpower.util.WorkspaceContainer;
  *
  * @version $Id$
  */
-public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContainer, RunnableDispatcher {
+public interface MatchMakerSession extends SQLDatabaseMapping {
 
     /**
      * The session context that created this session.
      */
     public MatchMakerSessionContext getContext();
 
+	/**
+	 * The database connection to the PL Schema for this session.
+	 */
+	public SQLDatabase getDatabase();
+
+    /**
+     * get the PL Schema Version
+     */
+    public Version getPLSchemaVersion();
+    
 	/**
 	 * The PL Schema user for this session.  Often but not necessarily
 	 * the same as the DB User.
@@ -79,32 +85,24 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 */
 	public Date getSessionStartTime();
 
-	/**
-	 * Returns the default save location for this session, probably where it was
-	 * last saved. Opening from this location is probably pointless since the
-	 * same session already exists.
-	 */
-	public File getSavePoint();
-	
-	/**
-	 * Sets the default save location for this session; this will likely only be called
-	 * after a successful save to or load from a local file.
-	 */
-	public void setSavePoint(File savePoint);
-	
-	/**
-	 * The prompter factory for this session. The returned factory will communicate with
-	 * the user through the proper method depending on what kind of session is running.
-	 * @return the factory
-	 */
-	public UserPrompterFactory createUserPrompterFactory();
-
     /**
      * Returns the folder that matches with the name
      * @param foldername the name of the folder that is desired
      * @return the folder with that matches with the foldername, returns null if no results are avaiable
      */
     public PlFolder findFolder(String foldername);
+
+    /**
+     * Returns the DAO Object for the given business class
+     * @param <T> the business class of the DAO Object
+     * @return the object that is of the business class
+     */
+    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass);
+
+    /**
+     * Get a connection to the current database
+     */
+    public Connection getConnection();
 
     /**
 	 * check to see if there is any project under given name
@@ -166,11 +164,6 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
      */
     public void removeWarningListener(WarningListener l);
 
-	/**
-	 * Retrieves the root node of all MatchMakerObject objects
-	 */
-    public MMRootNode getRootNode();
-    
     /**
      * get all of the translations the user can see
      */
@@ -186,6 +179,18 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 */
 	public FolderParent getCurrentFolderParent();
 	
+	
+	/**
+     * find the sql table that exists in the session's database 
+     * (i.e. not just in memory)
+     * @param catalog	catalog of the table
+     * @param schema	schema of the table
+     * @param tableName name of the table
+     * @return SQLTable if found or null if not
+     * session's database
+     */
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws SQLObjectException;
+    
     /**
      * find the sql table that exists in the given spDataSource
      * (i.e. not just in memory), throws an error if the dsName
@@ -198,7 +203,15 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
      * @return SQLTable if found or null if not
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;  
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws SQLObjectException;
+
+    
+	/**
+     * Returns true if the SQL table exists
+     * in the session's database; false otherwise.
+     */
+    public boolean tableExists(String catalog, String schema, String tableName) throws SQLObjectException;
+    
     
     /**
      * Returns true if the SQLTable exists in the database 
@@ -258,20 +271,5 @@ public interface MatchMakerSession extends SQLDatabaseMapping, WorkspaceContaine
 	 * 
 	 */
 	public void removeStatusMessage();
-	
-	 /** 
-     * Gets the basic SQL types from the PL.INI file
-     */
-    public List<UserDefinedSQLType> getSQLTypes();
-    
-    /** 
-     * Gets the basic SQL type from the PL.INI file.
-     */
-    public UserDefinedSQLType getSQLType(int sqlType);
-    
-    /**
-     * Gets the upgrade version manager for this session.
-     */
-    public UpgradePersisterManager getUpgradePersisterManager();
 }
 

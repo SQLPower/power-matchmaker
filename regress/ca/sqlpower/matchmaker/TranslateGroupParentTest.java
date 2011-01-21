@@ -23,36 +23,28 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
-import ca.sqlpower.object.SPObject;
 
-public class TranslateGroupParentTest extends MatchMakerTestCase {
-	
-    public TranslateGroupParentTest(String name) {
-		super(name);
-	}
-
-	PlFolder folder;
+public class TranslateGroupParentTest extends TestCase {
+    PlFolder<MatchMakerObject> folder;
     Project project;
     MungeProcess cg;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
-    	super.setUp();
-        folder = new PlFolder();
+        folder = new PlFolder<MatchMakerObject>();
         project = new Project();
         folder.addChild(project);
         cg = new MungeProcess();
-        project.addChild(cg);
+        project.addMungeProcess(cg);
         session = new TestingMatchMakerSession(); 
         List<PlFolder> folders = new ArrayList<PlFolder>();
         folders.add(folder);
         session.setFolders(folders);
-        tgp = new TranslateGroupParent();
-        getRootObject().addChild(tgp, 0);
-        tgp.setSession(session);
+        tgp = new TranslateGroupParent(session);
     }
 
     protected void tearDown() throws Exception {
@@ -60,12 +52,11 @@ public class TranslateGroupParentTest extends MatchMakerTestCase {
     }
 
     public void testIsUseInBusinessModelTGFound() {
-        MatchMakerTranslateGroup tg = new MatchMakerTranslateGroup();
+        MatchMakerTranslateGroup tg = new MatchMakerTranslateGroup(new Long(1234));
         tg.setName("tg");
         TranslateWordMungeStep twMungeStep;
         twMungeStep = new TranslateWordMungeStep();
-        twMungeStep.setTranslateGroup(tg);
-
+        twMungeStep.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME, String.valueOf(tg.getOid()));
         cg.addChild(twMungeStep);
         assertTrue("Couldn't find the translate group in the business model",tgp.isInUseInBusinessModel(tg));
     }
@@ -76,18 +67,4 @@ public class TranslateGroupParentTest extends MatchMakerTestCase {
         assertFalse("Oops found the translate group in the business model",tgp.isInUseInBusinessModel(tg));
     }
 
-	@Override
-	protected MatchMakerObject getTarget() {
-		return tgp;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MatchMakerTranslateGroup.class;
-	}
-	
-	@Override
-	public void testDuplicate() throws Exception {
-		// TranslateGroupParent does not duplicate.
-	}
 }

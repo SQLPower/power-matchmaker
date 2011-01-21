@@ -127,17 +127,17 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 			
 			if (settings.getDebug()) {
 				for (MungeStep step: processOrder) {
-					step.mungeRollback();
+					step.rollback();
 				}
 			} else {
 				for (MungeStep step: processOrder) {
-					step.mungeCommit();
+					step.commit();
 				}
 			}
 		} catch (Throwable t) {
 			for (MungeStep step: processOrder) {
 				try {
-					step.mungeRollback();
+					step.rollback();
 				} catch (Exception e) {
 					getLogger().error("Execption thrown while attempting to rollback step " + step.getName(), e);
 				}
@@ -150,7 +150,7 @@ public class AddressCorrectionMungeProcessor extends MungeProcessor {
 		} finally {
 			for (MungeStep step: processOrder) {
 				try {
-					step.mungeClose();
+					step.close();
 				} catch (Exception e) {
 					getLogger().error("Exception thrown while attempting to close step " + step.getName(), e);
 				}

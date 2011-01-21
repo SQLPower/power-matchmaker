@@ -19,16 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-
 
 /**
  * The String Constant Step provides a user-specified String value on its output
@@ -39,66 +29,46 @@ import ca.sqlpower.object.annotation.Mutator;
  * the cleansing process has been completed on that row).
  */
 public class StringConstantMungeStep extends AbstractMungeStep {
-	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
     /**
      * The value this step should provide on its output.
      */
-    private String outValue;
+    public static final String VALUE_PARAMETER_NAME = "value";
     
     /**
-     * Whether the step is to return null
+     * The value to set if the step is to return null
      */
-    private boolean returnNull;
+    public static final String RETURN_NULL = "return null";
     
-    @Accessor
-    public String getOutValue() {
-		return outValue;
-	}
-
-    @Mutator
-	public void setOutValue(String outValue) {
-    	String old = this.outValue;
-		this.outValue = outValue;
-		firePropertyChange("outValue", old, outValue);
-	}
-
-    @Accessor
-	public boolean isReturnNull() {
-		return returnNull;
-	}
-
-    @Mutator
-	public void setReturnNull(boolean returnNull) {
-    	boolean old = this.returnNull;
-		this.returnNull = returnNull;
-		firePropertyChange("returnNull", old, returnNull);
-	}
-
-	@Constructor
     public StringConstantMungeStep() {
-        super("String Constant", false);
+        super("String constant", false);
+        setParameter(RETURN_NULL, "False");
+        addChild(new MungeStepOutput<String>("Value", String.class));
     }
-
-	public void init() {
-		setReturnNull(false);
-		addChild(new MungeStepOutput<String>("Value", String.class));
-	}
     
     @Override
     public Boolean doCall() throws Exception {
-    	getOut().setData((returnNull? null : getOutValue()));
+    	getOut().setData(getValue());
         return Boolean.TRUE;
     }
     
-    @Override
-    protected void copyPropertiesForDuplicate(MungeStep copy) {
-    	StringConstantMungeStep step = (StringConstantMungeStep) copy;
-    	step.setOutValue(getOutValue());
-    	step.setReturnNull(isReturnNull());
+    public void setValue(String newValue) {
+        setParameter(VALUE_PARAMETER_NAME, newValue);
+    }
+    
+    public String getValue() {
+    	if (!isReturningNull()) {
+    		return getParameter(VALUE_PARAMETER_NAME);
+    	} else {
+    		return null;
+    	}
+    }
+    
+    public boolean isReturningNull() {
+    	return getBooleanParameter(RETURN_NULL).booleanValue();
+    }
+    
+    public void setReturningNull(boolean b) {
+    	setParameter(RETURN_NULL, String.valueOf(b));
     }
 }

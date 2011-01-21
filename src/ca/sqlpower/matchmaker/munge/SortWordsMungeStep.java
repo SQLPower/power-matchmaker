@@ -19,127 +19,65 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
 
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-
 public class SortWordsMungeStep extends AbstractMungeStep {
-	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
 
     /**
-     * The delimiters for this step.
+     * The parameter that specifies the delimiter for dividing the input String
+     * into words. It will be interpreted either as a literal string or a
+     * regular expression, depending on the USE_REGEX_PARAMETER_NAME parameter.
      */
-    private String delimiter;
+    public static final String DELIMITER_PARAMETER_NAME = "delimiter";
 
     /**
-     * Whether the step will use regular expressions.
+     * The parameter that decides whether this step will use regular expression
+     * to interpret the delimiter. The only values accepted by the parameter are
+     * "true" and "false".
      */
-    private boolean regex;
+    public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 
     /**
      * The parameter that specifies whether the delimiter should be case
      * sensitive. The only values accepted by the parameter are "true" and
      * "false".
      */
-    private boolean caseSensitive;
+    public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
     
     /**
      * The parameter that holds the delimiter that separates words in the
      * output.
      */
-    private String resultDelim;
+    public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
 
-    @Accessor
-    public boolean isRegex() {
-		return regex;
-	}
-
-    @Mutator
-	public void setRegex(boolean regex) {
-    	boolean old = this.regex;
-		this.regex = regex;
-		firePropertyChange("regex", old, regex);
-	}
-
-    @Accessor
-	public boolean isCaseSensitive() {
-		return caseSensitive;
-	}
-
-    @Mutator
-	public void setCaseSensitive(boolean caseSensitive) {
-    	boolean old = this.caseSensitive;
-		this.caseSensitive = caseSensitive;
-		firePropertyChange("caseSensitive", old, caseSensitive);
-	}
-
-    @Accessor
-	public String getResultDelim() {
-		return resultDelim;
-	}
-
-    @Mutator
-	public void setResultDelim(String resultDelim) {
-    	String old = this.resultDelim;
-		this.resultDelim = resultDelim;
-		firePropertyChange("resultDelim", old, resultDelim);
-	}
-
-    @Accessor
-	public String getDelimiter() {
-		return delimiter;
-	}
-	
-    @Mutator
-	public void setDelimiter(String delimiter) {
-    	String old = this.delimiter;
-		this.delimiter = delimiter;
-		firePropertyChange("delimiter", old, delimiter);
-	}
-
-	@Constructor
     public SortWordsMungeStep() {
         super("Sort Words", false);
-        setDelimiter("\\p{Space}+");
-        setResultDelim(" ");
-        setRegex(true);
-        setCaseSensitive(false);
+        setParameter(DELIMITER_PARAMETER_NAME, "\\p{Space}+");
+        setParameter(RESULT_DELIM_PARAMETER_NAME, " ");
+        setParameter(USE_REGEX_PARAMETER_NAME, true);
+        setParameter(CASE_SENSITIVE_PARAMETER_NAME, false);
+        MungeStepOutput<String> out = new MungeStepOutput<String>("sortedWordsOutput", String.class);
+        addChild(out);
+        InputDescriptor desc = new InputDescriptor("words", String.class);
+        super.addInput(desc);
     }
-
-	public void init() {
-		MungeStepOutput<String> out = new MungeStepOutput<String>(
-				"sortedWordsOutput", String.class);
-		addChild(out);
-		InputDescriptor desc = new InputDescriptor("words", String.class);
-		super.addInput(desc);
-	}
     
     @Override
     public int addInput(InputDescriptor desc) {
-        throw new UnsupportedOperationException("Sort words munge step does not support addInput()");
+        throw new UnsupportedOperationException("Substring munge step does not support addInput()");
     }
     
     @Override
-    public boolean removeInput(int index) {
-        throw new UnsupportedOperationException("Sort words munge step does not support removeInput()");
+    public void removeInput(int index) {
+        throw new UnsupportedOperationException("Substring munge step does not support removeInput()");
     }
     
     public Boolean doCall() throws Exception {
-        String delimiter = getDelimiter();
-        boolean delimIsRegex = isRegex();
-        boolean delimCaseSensitive = isCaseSensitive();
-        String resultDelim = getResultDelim();
+        String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
+        boolean delimIsRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
+        boolean delimCaseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
+        String resultDelim = getParameter(RESULT_DELIM_PARAMETER_NAME);
         
         MungeStepOutput<String> out = getOut();
         MungeStepOutput<String> in = getMSOInputs().get(0);
@@ -176,13 +114,19 @@ public class SortWordsMungeStep extends AbstractMungeStep {
         return true;
     }
 
-    @Override
-    protected void copyPropertiesForDuplicate(MungeStep copy) {
-    	SortWordsMungeStep step = (SortWordsMungeStep) copy;
-    	step.setCaseSensitive(isCaseSensitive());
-    	step.setDelimiter(getDelimiter());
-    	step.setRegex(isRegex());
-    	step.setResultDelim(getResultDelim());
+    public void setDelimiter(String delimiter) {
+        setParameter(DELIMITER_PARAMETER_NAME, delimiter);
     }
     
+    public void setDelimiterCaseSensitive(boolean v) {
+        setParameter(CASE_SENSITIVE_PARAMETER_NAME, v);
+    }
+    
+    public void setDelimiterRegex(boolean v) {
+        setParameter(USE_REGEX_PARAMETER_NAME, v);
+    }
+    
+    public void setResultDelimiter(String resultDelimiter) {
+        setParameter(RESULT_DELIM_PARAMETER_NAME, resultDelimiter);
+    }
 }

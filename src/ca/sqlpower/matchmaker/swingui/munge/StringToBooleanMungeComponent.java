@@ -61,27 +61,27 @@ public class StringToBooleanMungeComponent extends AbstractMungeComponent {
 		StringToBooleanMungeStep temp = (StringToBooleanMungeStep) getStep();
 
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setSelected(temp.isUseRegex());
+		useRegex.setSelected(temp.getBooleanParameter(temp.USE_REGEX_PARAMETER_NAME));
 		useRegex.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				StringToBooleanMungeStep temp = (StringToBooleanMungeStep) getStep();
-				temp.setUseRegex(useRegex.isSelected());
+				temp.setParameter(StringToBooleanMungeStep.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
 			}
 		});
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(temp.isCaseSensitive());
+		caseSensitive.setSelected(temp.getBooleanParameter(temp.CASE_SENSITIVE_PARAMETER_NAME));
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				StringToBooleanMungeStep temp = (StringToBooleanMungeStep) getStep();
-				temp.setCaseSensitive(caseSensitive.isSelected());
+				temp.setParameter(StringToBooleanMungeStep.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
 			}
 			
 		});
 		
-		trueList = new JTextField(temp.getTrueList());
+		trueList = new JTextField(temp.getParameter(StringToBooleanMungeStep.TRUE_LIST_PARAMETER_NAME));
 		trueList.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -94,11 +94,11 @@ public class StringToBooleanMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-            	((StringToBooleanMungeStep) getStep()).setTrueList(trueList.getText());
+				getStep().setParameter(StringToBooleanMungeStep.TRUE_LIST_PARAMETER_NAME, trueList.getText());
             }
         });
 		
-		falseList = new JTextField(temp.getFalseList());
+		falseList = new JTextField(temp.getParameter(StringToBooleanMungeStep.TRUE_LIST_PARAMETER_NAME));
 		falseList.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -110,22 +110,22 @@ public class StringToBooleanMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-            	((StringToBooleanMungeStep) getStep()).setFalseList(falseList.getText());
+				getStep().setParameter(StringToBooleanMungeStep.FALSE_LIST_PARAMETER_NAME, falseList.getText());
             }
         });
 		
-		defaultOption = new JComboBox(new Boolean[]{Boolean.TRUE, Boolean.FALSE, null});
+		defaultOption = new JComboBox(new String[]{"True", "False", "Null", "Halt"});
 		defaultOption.addItemListener(new ItemListener(){
 
 			public void itemStateChanged(ItemEvent e) {
-				((StringToBooleanMungeStep) getStep()).setNeither((Boolean) defaultOption.getSelectedItem());
+				getStep().setParameter(StringToBooleanMungeStep.NEITHER_PARAMETER_NAME, (String)defaultOption.getSelectedItem());
 			}
 			
 		});
 		
 		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(trueList, useRegex, validator, true, "");
-		getHandler().addValidateObject(falseList, useRegex, validator, true, "");
+		getHandler().addValidateObject(trueList, useRegex, validator);
+		getHandler().addValidateObject(falseList, useRegex, validator);
 		
 		content.setLayout(new GridLayout(8,1));
 		content.add(new JLabel("True List (regex or comma seperated values):"));

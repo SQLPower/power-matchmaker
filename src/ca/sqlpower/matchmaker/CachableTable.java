@@ -19,20 +19,11 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.ConstructorParameter;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonProperty;
-import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sql.JDBCDataSource;
-import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
@@ -49,21 +40,19 @@ import ca.sqlpower.sqlobject.SQLTable;
  * Hibernate mappings are the only part of the application that use this
  * functionality.
  */
-public class CachableTable extends AbstractMatchMakerObject {
-	
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.emptyList();
-	
+public class CachableTable {
+
 	private static final Logger logger = Logger.getLogger(CachableTable.class); 
 	/**
      * The name of the Project property we're maintaining (for example,
      * sourceTable, xrefTable, or resultTable).
      */
-    private final String tableRole;
+    private final String propertyName;
+    private AbstractMatchMakerObject mmo;
     private String catalogName;
     private String schemaName;
     private String tableName;
-    private SQLTable table;
+    private SQLTable cachedTable;
     
     private String dsName = null;
 
@@ -72,32 +61,24 @@ public class CachableTable extends AbstractMatchMakerObject {
      * session of the given mmo, and fires property change events on its
      * behalf using the given property name.
      * 
+     * @param mmo The match maker object this cachable table acts on behalf
+     * of.  Unfortunately, we have to explicitly ask for an AbstractMatchMakerObject
+     * because this class needs to access its propertyChangeSupport object and
+     * its session reference (these things are not declared on the MatchMakerObject
+     * interface, and shouldn't be). 
      * @param propertyName the property name that all property change events fired
      * on behalf of mmo will report.
      */
-    public CachableTable(String tableRole) {
-    	this(null, tableRole, null, null, null);
-    }
-    
-    @Constructor
-    public CachableTable(@ConstructorParameter(propertyName="spDataSourceName") String spDataSourceName,
-    		@ConstructorParameter(propertyName="tableRole") String tableRole,
-    		@ConstructorParameter(propertyName="tableName") String tableName,
-    		@ConstructorParameter(propertyName="catalogName") String catalogName,
-    		@ConstructorParameter(propertyName="schemaName") String schemaName) {
-    	this.dsName = spDataSourceName;
-    	this.tableName = tableName;
-		this.catalogName = catalogName;
-		this.schemaName = schemaName;
-		if (tableRole == null) throw new NullPointerException("Can't make a cachable table for a null property name");
-		this.tableRole = tableRole;
-		setName("Cachable Table: " + tableRole);
+    CachableTable(AbstractMatchMakerObject mmo,String propertyName) {
+    	if (mmo == null) throw new NullPointerException("Can't make a cachable table for a null owner");
+    	if (propertyName == null) throw new NullPointerException("Can't make a cachable table for a null property name");
+		this.propertyName = propertyName;
+		this.mmo = mmo;		
     }
 
-    @NonProperty
     public String getCatalogName() {
-        if (table != null) {
-            String catalogName = table.getCatalogName();
+        if (cachedTable != null) {
+            String catalogName = cachedTable.getCatalogName();
             if (catalogName == null || catalogName.length() == 0) {
                 return null;
             } else {
@@ -108,35 +89,27 @@ public class CachableTable extends AbstractMatchMakerObject {
         }
     }
 
-    @Mutator
-    public void setCatalogName(String tableCatalog) {
-        table = null;
-        String oldCatalogName = this.catalogName;
-        this.catalogName = tableCatalog;
-        firePropertyChange("catalogName", oldCatalogName, this.catalogName);
+    public void setCatalogName(String sourceTableCatalog) {
+        cachedTable = null;
+        this.catalogName = sourceTableCatalog;
     }
 
-    @Accessor
     public String getTableName() {
-        if (table != null) {
-        	return table.getName();
+        if (cachedTable != null) {
+        	return cachedTable.getName();
         } else {
             return tableName;
         }
     }
 
-    @Mutator
-    public void setTableName(String tableName) {
-        table = null;
-        String oldTableName = this.tableName;
-        this.tableName = tableName;
-        firePropertyChange("tableName", oldTableName, this.tableName);
+    public void setTableName(String sourceTableName) {
+        cachedTable = null;
+        this.tableName = sourceTableName;
     }
 
-    @Accessor
     public String getSchemaName() {
-        if (table != null) {
-            String schemaName = table.getSchemaName();
+        if (cachedTable != null) {
+            String schemaName = cachedTable.getSchemaName();
             if (schemaName == null || schemaName.length() == 0) {
                 return null;
             } else {
@@ -147,12 +120,9 @@ public class CachableTable extends AbstractMatchMakerObject {
         }
     }
 
-    @Mutator
-    public void setSchemaName(String tableSchema) {
-        table = null;
-        String oldSchemaName = this.schemaName;
-        this.schemaName = tableSchema;
-        firePropertyChange("schemaName", oldSchemaName, this.schemaName);
+    public void setSchemaName(String sourceTableSchema) {
+        cachedTable = null;
+        this.schemaName = sourceTableSchema;
     }
     
     /**
@@ -162,12 +132,9 @@ public class CachableTable extends AbstractMatchMakerObject {
      * 
      * @param spDataSourceName The name of the datasource.
      */
-    @NonProperty
-    public void setSPDataSourceName(String spDataSourceName) {
-    	table = null;
-        String oldSPDataSourceName = dsName;
+    public void setSPDataSource(String spDataSourceName) {
+    	cachedTable = null;
     	this.dsName = spDataSourceName;
-    	firePropertyChange("dsName", oldSPDataSourceName, dsName);
     }
     
     /**
@@ -175,11 +142,10 @@ public class CachableTable extends AbstractMatchMakerObject {
      * from.
      * 
      */
-    @NonProperty
     public String getSPDataSourceName() {
-    	if (table != null && table.getParentDatabase() != null && 
-    			table.getParentDatabase().getDataSource() != null) {
-    		return table.getParentDatabase().getDataSource().getName();
+    	if (cachedTable != null && cachedTable.getParentDatabase() != null && 
+    			cachedTable.getParentDatabase().getDataSource() != null) {
+    		return cachedTable.getParentDatabase().getDataSource().getName();
     	}
     	return dsName == null ? "" : dsName;
     }
@@ -187,10 +153,9 @@ public class CachableTable extends AbstractMatchMakerObject {
     /**
      * Returns the SPDataSource for the current table
      */
-    @NonProperty
     public JDBCDataSource getJDBCDataSource() {
-    	if (table != null) {
-    		return table.getParentDatabase().getDataSource();
+    	if (cachedTable != null) {
+    		return cachedTable.getParentDatabase().getDataSource();
     	}
 
     	// if no data source is specified, should default to repository data source
@@ -198,7 +163,7 @@ public class CachableTable extends AbstractMatchMakerObject {
             return null;
         }
     	
-    	MatchMakerSession session = getSession();
+    	MatchMakerSession session = mmo.getSession();
         MatchMakerSessionContext context = session.getContext();
         List<JDBCDataSource> dataSources = context.getDataSources();
         for (JDBCDataSource spd : dataSources) {
@@ -229,25 +194,25 @@ public class CachableTable extends AbstractMatchMakerObject {
      *         up in the session's SQLDatabase, or created in the session's
      *         SQLDatabase if the lookup failed.
      */
-    @Transient @Accessor
-    public SQLTable getTable() {
-    	logger.debug("GetTable(): "+this);
+    public SQLTable getSourceTable() {  // XXX rename to getTable
+    	logger.debug("GetSourceTable(): "+this);
     	
-        if (table != null) {
-        	return table;
+        if (cachedTable != null) {
+        	return cachedTable;
         }
         if (tableName == null) {
         	return null;
         }
 
         try {
-			logger.debug("getTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
+			logger.debug("getSourceTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
+			logger.debug("mmo.parent="+mmo.getParent());
 			
 			SQLDatabase db = null;
 			if (getJDBCDataSource() == null) {
-				return null;
+				db = mmo.getSession().getDatabase();
 			} else {
-				db = getSession().getDatabase(getJDBCDataSource());
+				db = mmo.getSession().getDatabase(getJDBCDataSource());
 			}
 			
 			if (SQLObjectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
@@ -258,14 +223,11 @@ public class CachableTable extends AbstractMatchMakerObject {
 				} else {
 					logger.debug("     Found!");
 				}
-				for(SQLColumn c : table.getColumns()) {
-					c.setType(getSession().getSQLType(c.getType()));
-				}
-				this.table = table;
-				return table;
+				cachedTable = table;
+				return cachedTable;
 			} else {
-				getSession().handleWarning("The location of "+tableRole+" "+catalogName+"."+schemaName+"."+tableName +
-						" in Project "+getParent().getName()+ " is not compatible with the "+db.getName() +" database. " +
+				mmo.getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
+						" in Project "+mmo.getName()+ " is not compatible with the "+db.getName() +" database. " +
 				"The table selection has been reset to nothing");
 				return null;
 			}
@@ -278,62 +240,32 @@ public class CachableTable extends AbstractMatchMakerObject {
      * Sets the table to the given table, clears the simple string properties, and fires an event.
      * @param table
      */
-    @Transient @Mutator
     public void setTable(SQLTable table) {
     	logger.debug("Set Table: " + table);
     	
-        final SQLTable oldValue = table;
+        final SQLTable oldValue = cachedTable;
         final SQLTable newValue = table;
 
         catalogName = null;
         schemaName = null;
         tableName = null;
-        this.table = table;
+        cachedTable = table;
         dsName = null;
 
-        //TODO: Choose the right property name
-        firePropertyChange("table", oldValue, newValue);
-    }
-
-    @Accessor
-    public String getTableRole() {
-    	return tableRole;
+        // XXX create an InternalMatchMakerObject package-private interface that lets us do this,
+        //     and don't declare mmo as AbstractMatchMakerObject anymore
+        mmo.getEventSupport().firePropertyChange(propertyName, oldValue, newValue);
     }
 
     @Override
     public String toString() {
     	return "CachableTable:" +
-    			" parent="+(getParent() == null ? "null" : getParent().getClass().getName() + System.identityHashCode(getParent())) + 
+    			" mmo="+(mmo == null ? "null" : mmo.getClass().getName() + System.identityHashCode(mmo)) + 
     			" ds=" + getSPDataSourceName() +
     			" catalogName=" + catalogName +
     			" schemaName="+schemaName+
     			" tableName="+tableName+
-    			" table="+(table == null ? "null" : table.getName()) +
-    			" propertyName="+tableRole;
+    			" cachedTable="+(cachedTable == null ? "null" : cachedTable.getName()) +
+    			" propertyName="+propertyName;
     }
-
-	@Override
-	public MatchMakerObject duplicate(MatchMakerObject parent) {
-		CachableTable t = new CachableTable(getTableRole());
-		t.setParent(parent);
-		t.setName(getName());
-		t.setVisible(isVisible());
-		t.setSchemaName(getSchemaName());
-		t.setTableName(getTableName());
-		t.setSPDataSourceName(getSPDataSourceName());
-		t.setCatalogName(getCatalogName());
-		return t;
-	}
-
-	@Override
-	@NonProperty
-	public List<? extends SPObject> getChildren() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	@NonProperty
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
-	}
 }

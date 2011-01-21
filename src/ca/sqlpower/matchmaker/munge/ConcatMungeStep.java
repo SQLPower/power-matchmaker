@@ -19,16 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-
 
 /**
  * A munge step that concatenates all string input values into a single output value.
@@ -45,33 +35,24 @@ import ca.sqlpower.object.annotation.Mutator;
  */
 public class ConcatMungeStep extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
     /**
      * The value of this parameter will be placed between each concatenated value.
      * When the delimiter is set to null, this step behaves as if the delimiter was
      * set to the empty string.
      */
-	private String delimiter;
+    public static final String DELIMITER_PARAMETER_NAME = "delimiter";
     
-    @Constructor
 	public ConcatMungeStep() {
 		super("Concat", true);
-		super.setDefaultInputClass(String.class);
-	}
-    
-    public void init() {
+		//This might be overriden by hibernate when loading from database.
 		MungeStepOutput<String> out = new MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);
 		InputDescriptor desc1 = new InputDescriptor("concat1", String.class);
 		InputDescriptor desc2 = new InputDescriptor("concat2", String.class);
 		super.addInput(desc1);
 		super.addInput(desc2);
-    	
-    }
+		super.setDefaultInputClass(String.class);
+	}
 	
 	public void connectInput(int index, MungeStepOutput o) {
 		if (o != null && o.getType() != getInputDescriptor(index).getType()) {
@@ -111,20 +92,11 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		return true;
 	}
     
-	@Mutator
     public void setDelimiter(String delimiter) {
-		String oldDelimiter = this.delimiter;
-		this.delimiter = delimiter;
-		firePropertyChange("delimiter", oldDelimiter, delimiter);
+        setParameter(DELIMITER_PARAMETER_NAME, delimiter);
     }
 
-    @Accessor
     public String getDelimiter() {
-        return delimiter;
-    }
-    
-    @Override
-    protected void copyPropertiesForDuplicate(MungeStep copy) {
-    	((ConcatMungeStep) copy).setDelimiter(getDelimiter());
+        return getParameter(DELIMITER_PARAMETER_NAME);
     }
 }

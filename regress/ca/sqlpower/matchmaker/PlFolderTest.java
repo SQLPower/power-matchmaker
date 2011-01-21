@@ -20,38 +20,22 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.object.SPObject;
-
 
 public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 
-	private FolderParent parentFolder;
 	private PlFolder plFolder;
 	final String appUserName = "THE_USER";
-	
-	public PlFolderTest(String name) {
-		super(name);
-	}
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		plFolder = new PlFolder("Test Folder");
+		plFolder = new PlFolder<Project>("Test Folder");
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		plFolder.setSession(session);
-		parentFolder = session.getCurrentFolderParent();
-		parentFolder.addChild(plFolder, 0);
-		getRootObject().addChild(parentFolder, 0);
-		parentFolder.setSession(session);
 	}
 
 	@Override
 	protected PlFolder getTarget() {
 		return plFolder;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return Project.class;
 	}
 }

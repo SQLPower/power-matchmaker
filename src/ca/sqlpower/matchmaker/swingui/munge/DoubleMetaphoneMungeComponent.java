@@ -46,12 +46,13 @@ public class DoubleMetaphoneMungeComponent extends AbstractMungeComponent {
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();
 		useAlt = new JCheckBox("Use Alternate Encoding");
-		final DoubleMetaphoneMungeStep temp = (DoubleMetaphoneMungeStep) getStep();
-		useAlt.setSelected(temp.isUseAlternate());
+		DoubleMetaphoneMungeStep temp = (DoubleMetaphoneMungeStep) getStep();
+		useAlt.setSelected(temp.getBooleanParameter(temp.USE_ALTERNATE_PARAMETER_NAME));
 		useAlt.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				temp.setUseAlternate(useAlt.isSelected());
+				DoubleMetaphoneMungeStep temp = (DoubleMetaphoneMungeStep) getStep();
+				temp.setParameter(temp.USE_ALTERNATE_PARAMETER_NAME, useAlt.isSelected());
 			}
 			
 		});

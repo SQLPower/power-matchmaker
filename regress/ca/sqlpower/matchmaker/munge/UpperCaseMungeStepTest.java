@@ -21,12 +21,11 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.object.SPObject;
-
-public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeStep> {
+public class UpperCaseMungeStepTest extends TestCase {
 
 	private UpperCaseMungeStep step;
 	
@@ -34,22 +33,9 @@ public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeSte
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
-	public UpperCaseMungeStepTest(String name) {
-		super(name);
-	}
-	
-	@Override
-	protected UpperCaseMungeStep getTarget() {
-		return step;
-	}
-	
 	protected void setUp() throws Exception {
-		step = new UpperCaseMungeStep();
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new UpperCaseMungeStep();
 	}
 
 	public void testCallonLowerCaseString() throws Exception {
@@ -58,7 +44,7 @@ public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeSte
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCDEFG", result);
@@ -70,7 +56,7 @@ public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeSte
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCDEF!@#$%^&*", result);
@@ -83,7 +69,7 @@ public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeSte
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -98,15 +84,5 @@ public class UpperCaseMungeStepTest extends MatchMakerTestCase<UpperCaseMungeSte
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// no-op
 	}
 }

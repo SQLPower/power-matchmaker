@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +28,8 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPListener;
-import ca.sqlpower.util.TransactionEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 /**
  * This class will select a few rows from a database on a munge process to
@@ -115,44 +113,26 @@ public class MungePreviewer extends MungeProcessor {
 	 * refresh the preview on step changes. It also needs to be removed when
 	 * the previewer goes away.
 	 */
-	private SPListener stepListener  = new SPListener() {
+	private MatchMakerListener<MungeStep, MungeStepOutput> stepListener  = new MatchMakerListener<MungeStep, MungeStepOutput>() {
 
-		@SuppressWarnings("unused")
-		public void transactionStarted() {
+		public void mmChildrenInserted(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
 			refreshPreview();
 		}
 
-
-		public void childAdded(SPChildEvent e) {
+		public void mmChildrenRemoved(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
 			refreshPreview();
 		}
 
-
-		public void childRemoved(SPChildEvent e) {
+		public void mmPropertyChanged(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
+			lastModifiedMS = evt.getSource();
 			refreshPreview();
 		}
 
-
-		public void propertyChanged(PropertyChangeEvent evt) {
-			lastModifiedMS = (MungeStep) evt.getSource();
-			refreshPreview();
-		}
-
-
-		public void transactionEnded(TransactionEvent e) {
-			refreshPreview();
-		}
-
-
-		@Override
-		public void transactionRollback(TransactionEvent e) {
-			refreshPreview();
-		}
-
-
-		@Override
-		public void transactionStarted(TransactionEvent e) {
-			refreshPreview();
+		public void mmStructureChanged(
+				MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
 		}
 	};
 
@@ -164,8 +144,8 @@ public class MungePreviewer extends MungeProcessor {
 	public MungePreviewer(MungeProcess process) {
 		super(process, logger);
 		this.process = process;
-		for (MungeStep step : process.getChildren(MungeStep.class)) {
-			step.addSPListener(stepListener);
+		for (MungeStep step : process.getChildren()) {
+			step.addMatchMakerListener(stepListener);
 		}
 		listeners = new ArrayList<PreviewListener>();
 		refreshEnabled = true;
@@ -176,8 +156,8 @@ public class MungePreviewer extends MungeProcessor {
 	 * as other cleanup things.
 	 */
 	public void cleanup() {
-		for (MungeStep step : process.getChildren(MungeStep.class)) {
-			step.removeSPListener(stepListener);
+		for (MungeStep step : process.getChildren()) {
+			step.removeMatchMakerListener(stepListener);
 		}
 	}
 	
@@ -219,7 +199,7 @@ public class MungePreviewer extends MungeProcessor {
 					ArrayList inputRow = new ArrayList();
 					previewStepInputData.get(step).add(inputRow);
 
-					for (MungeStepOutput<?> mso : step.getChildren(MungeStepOutput.class)) {
+					for (MungeStepOutput<?> mso : step.getChildren()) {
 						row.add(mso.getData());
 					}
 					for (MungeStepOutput<?> mso : step.getMSOInputs()) {
@@ -244,13 +224,13 @@ public class MungePreviewer extends MungeProcessor {
 			
 			for (MungeStep step : processOrder) {
 				try {
-					step.mungeRollback();
+					step.rollback();
 				} catch (Exception e) {
 					logger.error("Exception while rolling back step " + step.getName() + ". " +
 							"Exception was " + e.getMessage());
 				}
 				try {
-					step.mungeClose();
+					step.close();
 				} catch (Exception e) {
 					logger.error("Closing step " + step.getName() + " caused an exception in a finally clause!" +
 							" Exception was: " + e.getMessage());
@@ -306,7 +286,7 @@ public class MungePreviewer extends MungeProcessor {
 		
 		if (refreshEnabled) {
 			try {
-				Project project = process.getParent();
+				Project project = process.getParentProject();
 				
 				// XXX: A quick fix, but ideally, each project type would be a
 				// subclass of Project and have a 'getEngine' method that would

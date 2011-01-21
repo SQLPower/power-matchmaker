@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -33,27 +32,17 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.ColumnMergeRules;
+import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MMRootNode;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeResultStep;
-import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPListener;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.swingui.FolderNode;
-import ca.sqlpower.util.SQLPowerUtils;
-import ca.sqlpower.util.TransactionEvent;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 /**
  * A tree model implementation that adapts a hierarchy of MatchMakerObjects
@@ -65,14 +54,38 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerTreeModel.class);
 
-	/**
-	 * Each table in the tree model is entered in the map when it is added to the tree
-	 * and is mapped to folders that contains the children of the table broken into their
-	 * types.
-	 */
-	protected final Map<SPObject, List<FolderNode>> foldersInTables = 
-	    new HashMap<SPObject, List<FolderNode>>();
-	
+    /**
+     * A very simple MatchMakerObject implementation for the tree's root node object.
+     * Its children will be FolderParent objects, which are the "Current Project"
+     * and "Backup Project" folders, which are in turn parents to the PLFolders
+     * (hence, FolderParent).
+     */
+    private static class MMRootNode <C extends MatchMakerObject> 
+    	extends AbstractMatchMakerObject<MMRootNode, C> {
+
+        public MMRootNode() {
+            setName("Root Node");
+        }
+
+        public boolean isRoot() {
+            return true;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        public MMRootNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
+            throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
+        }
+    }
+
     /**
      * All the types of actions associated with each project in the tree.
      */
@@ -137,6 +150,59 @@ public class MatchMakerTreeModel implements TreeModel {
     }
     
     /**
+     * A simple MatchMakerObject that holds a single Swing Action.  We create
+     * these as extra children for the Project objects in the tree so the entire
+     * project workflow is represented in one place, with pretty pictures and
+     * everything.
+     */
+    public class ProjectActionNode extends AbstractMatchMakerObject<Project, ProjectActionNode> {
+
+        private final ProjectActionType projectActionType;
+        private final Project project;
+        
+        public ProjectActionNode(ProjectActionType projectActionType, Project project) {
+            this.projectActionType = projectActionType;
+            this.project = project;
+            setName(projectActionType.toString());
+        }
+
+        public boolean isRoot() {
+            return false;
+        }
+        
+        @Override
+        public boolean allowsChildren() {
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        public Project duplicate(MatchMakerObject parent, MatchMakerSession session) {
+            throw new UnsupportedOperationException("A ProjectActionNode cannot be duplicated");
+        }
+        
+        public ProjectActionType getActionType() {
+            return projectActionType;
+        }
+        
+        public Project getProject() {
+        	return project;
+        }
+        
+        public Project getParent() {
+        	return project;
+        }
+    }
+    
+    /**
      * The session this tree model belongs to.  For testing, it's acceptable
      * for this to be just a stub, but you will not be able to call
      * {@link ProjectActionNode#performAction()} unless this is actually a
@@ -147,7 +213,7 @@ public class MatchMakerTreeModel implements TreeModel {
     /**
      * This tree's root node.
      */
-	private final MMRootNode rootNode;
+	private final MMRootNode root = new MMRootNode();
 
     /**
      * The cache that is maintained by {@link #getActionNodes(Project)}. Don't ever access
@@ -183,50 +249,23 @@ public class MatchMakerTreeModel implements TreeModel {
      *            {@link ProjectActionNode#performAction()} unless this is
      *            actually a MatchMakerSwingSession.
      */
-	public MatchMakerTreeModel(MMRootNode rootNode, MatchMakerSession s) {
+	public MatchMakerTreeModel(FolderParent current, FolderParent backup,
+			TranslateGroupParent translate, MatchMakerSession s) {
 		session = s;
-        this.rootNode = rootNode;
+        root.setSession(s);
         
-        this.current = rootNode.getCurrentFolderParent();
+        this.current = current;
+		root.addChild(current);
 
-        this.backup = rootNode.getBackupFolderParent();
+        this.backup = backup;
+		root.addChild(backup);
 		
-		this.translate = rootNode.getTranslateGroupParent();
+		this.translate = translate;
+		root.addChild(translate);
         
-		SQLPowerUtils.listenToHierarchy(rootNode, listener);
-		SQLPowerUtils.listenToShallowHierarchy(cacheLisener, current);
-		
-		setupTreeForNode(rootNode, false);
+		MatchMakerUtils.listenToHierarchy(listener, root);
+		MatchMakerUtils.listenToShallowHierarchy(cacheLisener, current);
 	}
-
-    /**
-     * Creates the list of action nodes associated with the given match
-     * in this tree.  The responses from this method are cached, so once a list of
-     * actions has been returned for a particular project, the same list will be returned
-     * for all future requests. This is needed separately because when you persist a project
-     * from the server to a client, it's property type gets persisted after it, so the
-     * actionNodes need to be remade.
-     * 
-     * @param project The project the action nodes belong to. (It's their parent in the tree)
-     * @return The unique list of action nodes for the given project.
-     */
-    private void createActionNodes(Project project) {
-        List<ProjectActionNode> actionNodes = new ArrayList<ProjectActionNode>();
-        if (project.getType() == ProjectMode.FIND_DUPES) {
-            for (ProjectActionType type : DE_DUP_ACTIONS) {
-                actionNodes.add(new ProjectActionNode(type, project));
-            }
-        } else if (project.getType() == ProjectMode.CLEANSE) {
-        	for (ProjectActionType type : CLEANSING_ACTIONS) {
-        		actionNodes.add(new ProjectActionNode(type, project));
-        	}
-        } else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
-        	for (ProjectActionType type: ADDRESSS_CORRECTION_ACTIONS) {
-        		actionNodes.add(new ProjectActionNode(type, project));
-        	}
-        }
-        projectActionCache.put(project, actionNodes);
-    }
 
     /**
      * Returns (and possibly creates) the list of action nodes associated with the given match
@@ -238,50 +277,54 @@ public class MatchMakerTreeModel implements TreeModel {
      * @return The unique list of action nodes for the given project.
      */
     private List<ProjectActionNode> getActionNodes(Project project) {
-    	if (projectActionCache.get(project) == null)
-        {
-            createActionNodes(project);
+        List<ProjectActionNode> actionNodes = projectActionCache.get(project);
+        if (actionNodes == null) {
+            actionNodes = new ArrayList<ProjectActionNode>();
+            if (project.getType() == ProjectMode.FIND_DUPES) {
+	            for (ProjectActionType type : DE_DUP_ACTIONS) {
+	                actionNodes.add(new ProjectActionNode(type, project));
+	            }
+            } else if (project.getType() == ProjectMode.CLEANSE) {
+            	for (ProjectActionType type : CLEANSING_ACTIONS) {
+            		actionNodes.add(new ProjectActionNode(type, project));
+            	}
+            } else if (project.getType() == ProjectMode.ADDRESS_CORRECTION) {
+            	for (ProjectActionType type: ADDRESSS_CORRECTION_ACTIONS) {
+            		actionNodes.add(new ProjectActionNode(type, project));
+            	}
+            }
+            projectActionCache.put(project, actionNodes);
         }
-        return projectActionCache.get(project);
+        return actionNodes;
     }
     
 	public Object getChild(Object parent, int index) {
-		if (parent instanceof FolderNode) {
-			return ((FolderNode)parent).getChildren().get(index);
-        }
-		
-		if (parent instanceof ProjectActionNode) {
-			return null;
-        } 
-		
-        final MatchMakerObject mmoParent = (MatchMakerObject) parent;
-        final MatchMakerObject mmoChild;
+        final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
+        final MatchMakerObject<?, ?> mmoChild;
     
         if (mmoParent instanceof Project) {
-        	List<Object> lob = new ArrayList<Object>();
-        	lob.addAll(foldersInTables.get(parent));
-        	for (ProjectActionNode pan : getActionNodes((Project)parent)) {
-        		if (pan.isVisible()) {
-        			lob.add(pan);
-        		}
-        	}
-            return lob.get(index);
-        } else if (mmoParent instanceof MungeProcess) {
-        	int real = index;
-        	for (int i = 0; i < index; i++) {
-        		if (!((AbstractMungeStep)mmoParent.getChildren().get(i)).isVisible()) {
-        			real++;
-        		}
-        	}
-            mmoChild = mmoParent.getChildren(MatchMakerObject.class).get(real);
+            Project project = (Project) mmoParent;
+            MatchMakerObject [] visible = new MatchMakerObject [getChildCount(project)];
+            int count = 0;
+            for (MatchMakerObject child : project.getChildren()) {
+            	if (child.isVisible()) {
+            		visible[count++] = child;
+            	}
+            }
+            for (ProjectActionNode child : getActionNodes(project)) {
+            	if (child.isVisible()) {
+            		visible[count++] = child;
+            	}
+            }
+            mmoChild = visible[index];
         } else {
         	int real = index;
         	for (int i = 0; i < index; i++) {
-        		if (!mmoParent.getChildren(MatchMakerObject.class).get(i).isVisible()) {
+        		if (!mmoParent.getChildren().get(i).isVisible()) {
         			real++;
         		}
         	}
-            mmoChild = mmoParent.getChildren(MatchMakerObject.class).get(real);
+            mmoChild = mmoParent.getChildren().get(real);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Child "+index+" of \""+mmoParent.getName()+"\" is "+
@@ -292,23 +335,17 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public int getChildCount(Object parent) {
-		if (parent instanceof FolderNode) {
-			return ((FolderNode)parent).getChildren().size();
-		}
-		if (parent instanceof ProjectActionNode) {
-			return 0;
-		}
-		final MatchMakerObject mmo = (MatchMakerObject) parent;
+		final MatchMakerObject<?, ?> mmo = (MatchMakerObject<?, ?>) parent;
         int count;
         if (mmo instanceof Project) {
-            return foldersInTables.get((Project) mmo).size() + getActionNodes((Project) mmo).size();
-        } else if (mmo instanceof TableMergeRules) {
-        	count = ((TableMergeRules)mmo).getColumnMergeRules().size();
+            Project project = (Project) mmo;
+            List<ProjectActionNode> projectActions = getActionNodes(project);
+            count = mmo.getChildren().size() + projectActions.size();
         } else {
             count = mmo.getChildren().size();
         }
         
-        for (MatchMakerObject child : mmo.getChildren(MatchMakerObject.class)) {
+        for (MatchMakerObject child : mmo.getChildren()) {
         	if (!child.isVisible()) {
         		logger.debug("--------------------------------");
         		count--;
@@ -322,27 +359,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public int getIndexOfChild(Object parent, Object child) {
-		if(parent instanceof ProjectActionNode) {
-			throw new IllegalArgumentException("ProjectActionNodes are leaves. They don't have children.");
-		}
-        final SPObject mmoParent = (SPObject) parent;
-        int index;
-        if(parent instanceof Project) {
-        	if(foldersInTables.get((Project)parent) == null) {
-        		getActionNodes((Project)parent);
-        		if(projectActionCache.get((Project)parent) == null) {
-        			return -1;
-        		} else {
-        			return projectActionCache.get((Project)parent).indexOf(child) + foldersInTables.get((Project)parent).size();
-        		}
-        	}
-        	return foldersInTables.get((Project)parent).indexOf(child);
-        }
-        final SPObject mmoChild = (SPObject) child;
-        int offset;
-        offset = mmoParent.childPositionOffset(mmoChild.getClass());
-        index = mmoParent.getChildren(mmoChild.getClass()).indexOf(mmoChild) + offset;
-        
+        final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
+        final MatchMakerObject<?, ?> mmoChild = (MatchMakerObject<?, ?>) child;
+        final int index = mmoParent.getChildren().indexOf(mmoChild);
+
         if (logger.isDebugEnabled()) {
             logger.debug("Index of child \""+mmoChild.getName()+"\" of \""+mmoParent.getName()+"\" is "+index);
         }
@@ -351,24 +371,12 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public Object getRoot() {
-		return rootNode;
+		return root;
 	}
 
 	public boolean isLeaf(Object node) {
-		if (node instanceof FolderNode) return false;
-		if (node instanceof ProjectActionNode) return true;
-		
-		if (node instanceof ColumnMergeRules) {
-			return true;
-		}
-		
-        final MatchMakerObject mmoNode = (MatchMakerObject) node;
-        boolean isLeaf = !mmoNode.allowsChildren();
-        
-        if (!isLeaf) {
-    		if (mmoNode instanceof MungeResultStep) isLeaf = true;
-    		if (MungeStep.class.isAssignableFrom(mmoNode.getClass()) && !(mmoNode instanceof SQLInputStep)) isLeaf = true;
-        }
+        final MatchMakerObject<?, ?> mmoNode = (MatchMakerObject<?, ?>) node;
+        final boolean isLeaf = !mmoNode.allowsChildren();
 
         if (logger.isDebugEnabled()) {
             logger.debug("Is "+
@@ -439,196 +447,97 @@ public class MatchMakerTreeModel implements TreeModel {
 		logger.debug("done");
 	}
 
-	/**
-	 * Recursively walks the tree doing any necessary setup for each node.
-	 * At current this just adds folders for Project objects.
-	 */
-	private void setupTreeForNode(SPObject node, boolean recreateFolders) {
-	    if (node instanceof Project) {
-	        createFolders((Project) node, recreateFolders);
-	    } 
-        for (SPObject child : node.getChildren()) {
-            setupTreeForNode(child, false);
-        }
-	}
-	
-    /**
-     * Creates all of the folders the given table should contain for its children
-     * and adds them to the {@link #foldersInTables} map.
-     */
-    private void createFolders(final Project p, boolean recreate) {
-        if (foldersInTables.get(p) == null || recreate) {
-            List<FolderNode> folderList = new ArrayList<FolderNode>();
-            foldersInTables.put(p, folderList);
-            
-        	FolderNode MungeProcessFolder = new FolderNode(p, MungeProcess.class);
-            MungeProcessFolder.setName("Transformations");
-            folderList.add(MungeProcessFolder);
-
-	        if(p.getType() == ProjectMode.FIND_DUPES)      
-	        {
-	            FolderNode TableMergeRuleFolder = new FolderNode(p, TableMergeRules.class);
-	            TableMergeRuleFolder.setName("Merge Rules");
-	            folderList.add(TableMergeRuleFolder);
-	        }
-        }
-    }
-
-	
 	public void refresh() {
-		fireTreeNodesChanged(new TreeModelEvent(rootNode, new TreePath(rootNode)));
+		fireTreeNodesChanged(new TreeModelEvent(root, new TreePath(root)));
 	}
 
-	private class TreeModelEventAdapter
-			implements SPListener {
+	private class TreeModelEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
+			implements MatchMakerListener<T, C> {
+        
+		public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
+            logger.debug("Got mmPropertyChanged event. property="+
+                    evt.getPropertyName()+"; source="+evt.getSource());
+			TreePath paths = getPathForNode(evt.getSource());
+			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
+			fireTreeNodesChanged(e);
+		}
 
-		@Override
-		public void childAdded(SPChildEvent e) {
-			SPObject parent = (SPObject)e.getSource();
-			MatchMakerObject child = (MatchMakerObject) e.getChild();
-            if (parent instanceof Project) {
-                for (FolderNode folder : foldersInTables.get(parent)) {
-                    if (folder.getContainingChildType().isAssignableFrom(child.getClass())) {
-                        parent = folder;
-                        break;
-                    }
-                }
-            }
-            int offset;
-            offset = parent.childPositionOffset(child.getClass());
-            
-			TreeModelEvent evt = new TreeModelEvent(parent, getPathForNode(parent), 
-					new int[]{e.getIndex() + offset}, new MatchMakerObject[]{child});
-			
-			fireTreeNodesInserted(evt);
-			
+		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
+			TreePath paths = getPathForNode(evt.getSource());
+			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
+					.getChangeIndices(), evt.getChildren().toArray());
 			if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children inserted event!");
                 StringBuilder sb = new StringBuilder();
-                SPObject mmo = parent;
+                MatchMakerObject mmo = evt.getSource();
                 while (mmo != null) {
                     sb.insert(0, "->" + mmo.getName());
                     mmo = mmo.getParent();
                 }
                 logger.debug("Parent of inserted MMObject: "+sb);
-                logger.debug("          inserted child: "+e.getChild());
+                logger.debug("          inserted children: "+evt.getChildren());
                 
                 sb = new StringBuilder();
                 sb.append("{");
-                sb.append(e.getIndex());
+                for (int i = 0; i < evt.getChangeIndices().length; i++) {
+                    if (i != 0) sb.append(", ");
+                    sb.append(evt.getChangeIndices()[i]);
+                }
                 sb.append("}");
                 logger.debug("     inserted child indices: "+sb);
                 logger.debug("Traceback:", new Exception());
 			}
-			
-			if (e.getChild() instanceof Project && foldersInTables.get(e.getChild()) == null) {
-				Project project = (Project) e.getChild();
-				createFolders(project, false);
-
-				List<FolderNode> folderList = foldersInTables.get(project);
-				int[] positions = new int[folderList.size()];
-				for (int i = 0; i < folderList.size(); i++) {
-					positions[i] = i;
-				}
-				final TreeModelEvent ev = new TreeModelEvent(project, getPathForNode((MatchMakerObject)project), positions, folderList.toArray());
-				fireTreeNodesInserted(ev);
-			} else {
-				setupTreeForNode((SPObject) e.getChild(), false);
-
+			fireTreeNodesInserted(e);
+			for ( MatchMakerObject o : evt.getChildren() ) {
+				MatchMakerUtils.listenToHierarchy(listener,o);
 			}
-			SQLPowerUtils.listenToHierarchy(e.getChild(), listener);
 		}
 
-		@Override
-		public void childRemoved(SPChildEvent e) {
-			SPObject parent = (SPObject)e.getSource();
-			MatchMakerObject child = (MatchMakerObject) e.getChild();
-            if (parent instanceof Project) {
-                for (FolderNode folder : foldersInTables.get(parent)) {
-                    if (folder.getContainingChildType().isAssignableFrom(child.getClass())) {
-                        parent = folder;
-                        break;
-                    }
-                }
-            }
-            
-			TreePath path = getPathForNode(parent);
-            
-            int offset = 0;
-            offset = parent.childPositionOffset(child.getClass());
-            
+		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
+			TreePath path = getPathForNode(evt.getSource());
             if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children removed event!");
                 StringBuilder sb = new StringBuilder();
-                MatchMakerObject mmo = (MatchMakerObject) e.getSource();
+                MatchMakerObject mmo = evt.getSource();
                 while (mmo != null) {
                     sb.insert(0, "->" + mmo.getName());
-                    mmo = (MatchMakerObject) mmo.getParent();
+                    mmo = mmo.getParent();
                 }
                 logger.debug("Parent of removed MMObject: "+sb);
-                logger.debug("          removed child: "+e.getChild());
+                logger.debug("          removed children: "+evt.getChildren());
                 
                 sb = new StringBuilder();
                 sb.append("{");
-                sb.append(e.getIndex() + offset);
+                for (int i = 0; i < evt.getChangeIndices().length; i++) {
+                    if (i != 0) sb.append(", ");
+                    sb.append(evt.getChangeIndices()[i]);
+                }
                 sb.append("}");
-                logger.debug("     removed child index: "+sb);
+                logger.debug("     removed child indices: "+sb);
                 logger.debug("Traceback:", new Exception());
             }
-            
-            offset = parent.childPositionOffset(child.getClass());
-            
-            MatchMakerObject children[] = {(MatchMakerObject) e.getChild()};
-            int indices[] = {e.getIndex() + offset};
-			TreeModelEvent evt = new TreeModelEvent((MatchMakerObject) e.getSource(), path,
-					indices ,children);
+			TreeModelEvent e = new TreeModelEvent(evt.getSource(), path, evt
+					.getChangeIndices(), evt.getChildren().toArray());
             logger.debug("About to fire tree model event: "+e);
-			fireTreeNodesRemoved(evt);
-			SQLPowerUtils.unlistenToHierarchy(e.getChild(), listener);
+			fireTreeNodesRemoved(e);
+			for ( MatchMakerObject o : evt.getChildren() ) {
+				MatchMakerUtils.unlistenToHierarchy(listener,o);
+			}
 		}
 
-		@Override
-		public void transactionStarted(TransactionEvent e) {
-			// no-op
-		}
-
-		@Override
-		public void transactionEnded(TransactionEvent e) {
-			// no-op
-		}
-
-		@Override
-		public void transactionRollback(TransactionEvent e) {
-			// no-op
-		}
-
-		@Override
-		public void propertyChanged(PropertyChangeEvent e) {
-            logger.debug("Got PropertyChanged event. property="+
-                    e.getPropertyName()+"; source="+e.getSource());
-            if(e.getSource() instanceof Project && e.getPropertyName().equals("type")) {
-            	createActionNodes((Project)e.getSource());
-            	setupTreeForNode((Project)e.getSource(), true);
-            }
-			TreePath paths = getPathForNode((MatchMakerObject)e.getSource());
-			TreeModelEvent evt = new TreeModelEvent(e.getSource(), paths);
-			fireTreeNodesChanged(evt);
+		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
+            logger.debug("Got mmObjectChanged event for " + evt.getSource());
+			TreePath paths = getPathForNode(evt.getSource());
+			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
+			fireTreeStructureChanged(e);
 		}
 	}
 
-	public TreePath getPathForNode(SPObject source) {
-		List<SPObject> path = new LinkedList<SPObject>();
+	public TreePath getPathForNode(MatchMakerObject<?, ?> source) {
+		List<MatchMakerObject> path = new LinkedList<MatchMakerObject>();
 		while (source != null) {
-		    if (path.size() > 0 && source instanceof Project) {
-		        for (FolderNode folder : foldersInTables.get(source)) {
-		            if (folder.getContainingChildType().isAssignableFrom(path.get(0).getClass())) {
-		                path.add(0, folder);
-		                break;
-		            }
-		        }
-		    }
 			path.add(0, source);
-			source = (SPObject)source.getParent();
+			source = source.getParent();
 		}
 		return new TreePath(path.toArray());
 	}
@@ -637,47 +546,36 @@ public class MatchMakerTreeModel implements TreeModel {
 		current.addChild(folder);
 	}
 	
-	private class ActionCacheEventAdapter implements SPListener{
+	private class ActionCacheEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
+		implements MatchMakerListener<T, C>{
 
-		public void childAdded(SPChildEvent e) {
-			if (e.getSource() instanceof FolderParent) {
-				PlFolder folder = (PlFolder)e.getChild();
-				folder.addSPListener(this);
+		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
+			if (evt.getSource() instanceof FolderParent) {
+				for (C folder : evt.getChildren()) {
+					folder.addMatchMakerListener(this);
 				}
+			}
 		}
 
-		public void childRemoved(SPChildEvent e) {
-			if (e.getSource() instanceof FolderParent) {
-				PlFolder folder = (PlFolder)e.getChild();
-				for (Project project : folder.getChildren(Project.class)) {
-					projectActionCache.remove(project);
+		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
+			if (evt.getSource() instanceof FolderParent) {
+				for (C folder : evt.getChildren()) {
+					for (Object project : folder.getChildren()) {
+						projectActionCache.remove(project);
+					}
+					folder.removeMatchMakerListener(this);
 				}
-				folder.removeSPListener(this);
-			} else if (e.getSource() instanceof PlFolder) {
-				for (Project project : e.getSource().getChildren(Project.class)) {
+			} else if (evt.getSource() instanceof PlFolder) {
+				for (C project : evt.getChildren()) {
 					projectActionCache.remove(project);
 				}
 			}
 		}
 
-		@Override
-		public void propertyChanged(PropertyChangeEvent evt) {
-			//no-op
+		public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
 		}
 
-		@Override
-		public void transactionStarted(TransactionEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void transactionEnded(TransactionEvent e) {
-			//no-op
-		}
-
-		@Override
-		public void transactionRollback(TransactionEvent e) {
-			//no-op
+		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
 		}
 	}
 }

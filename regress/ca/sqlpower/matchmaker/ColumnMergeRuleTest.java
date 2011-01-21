@@ -20,26 +20,21 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
 
-public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
+public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 
-	ColumnMergeRules m1;
-	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession(false);
+	ColumnMergeRules rule;
+	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession();
 
-	public ColumnMergeRuleTest(String name) {
-		
-		super(name);
-		
+	public ColumnMergeRuleTest() {
 		propertiesToIgnoreForEventGeneration.add("columnName");
 		propertiesToIgnoreForEventGeneration.add("importedKeyColumnName");
 		propertiesToIgnoreForDuplication.add("columnName");
 		propertiesToIgnoreForDuplication.add("importedKeyColumnName");
-		propertiesToIgnoreForDuplication.add("cachedColumn");
 		
 		propertiesShareInstanceForDuplication.add("column");
 		
@@ -49,39 +44,21 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 		propertiesThatHaveSideEffects.add("importedKeyColumn");
 		propertiesThatHaveSideEffects.add("parent");
 	}
-	
-	protected void setUp() throws Exception {
-		super.setUp();
-		TableMergeRules tmr = (TableMergeRules) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				TableMergeRules.class, null, "parent table rules");
+	@Override
+	protected ColumnMergeRules getTarget() throws SQLObjectException {
+		
+		TableMergeRules tmr = new TableMergeRules();
 		tmr.setSession(testingMatchMakerSession);
 		tmr.setTable(new SQLTable(new SQLDatabase(),true));
 		tmr.getSourceTable().addColumn(new SQLColumn(tmr.getSourceTable(),"new",1,1,1));
-		m1 = new ColumnMergeRules();
-		m1.setParent(tmr);
-		m1.setSession(tmr.getSession());
-		tmr.addChild(m1);
-		
-	}
-	
-	@Override
-	protected ColumnMergeRules getTarget() {
-		return m1;
+		ColumnMergeRules cmr = new ColumnMergeRules();
+		cmr.setParent(tmr);
+		return cmr;
 	}
 
-	public void testNamesSynced() throws Exception {
-		m1.setName("moo");
-		assertEquals("Child name not updated when parent name updates", "moo", m1.getCachedColumn().getName());
-		m1.getCachedColumn().setName("meow");
-		assertEquals("Parent name not updated when child name updates", "meow", m1.getName());
-		
-		
-	}
-	
 	public void testEquals() throws SQLObjectException {
-		m1 = getTarget();
-		ColumnMergeRules m2 = new ColumnMergeRules();
+		ColumnMergeRules m1 = getTarget();
+		ColumnMergeRules m2 = getTarget();
 		m1.setParent(null);
 		m2.setParent(null);
 		
@@ -137,9 +114,5 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules> {
 		
 		m2.setImportedKeyColumn(c1);
 		assertEquals("Two objects with same imported key columns should equal", m1, m2);
-	}
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return null;
 	}
 }

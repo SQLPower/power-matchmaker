@@ -2,8 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="jdbc_drivers"/>
-	<classpathentry kind="src" path="generated"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/JVM 1.5"/>
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry kind="src" path="testbed"/>
 	<classpathentry kind="lib" path="lib/commons-digester.jar"/>
@@ -29,6 +28,8 @@
 	<classpathentry kind="lib" path="lib/gdata-core-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-meta-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="libsrc/hibernate3_src.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate-tools.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb.jar"/>
 	<classpathentry kind="lib" path="lib/iText-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jhall.jar"/>
@@ -38,6 +39,7 @@
 	<classpathentry kind="lib" path="lib/opencsv-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/osx_adapter.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="lib/architect_lib.jar" sourcepath="/architect/src"/>
 	<classpathentry kind="lib" path="ext-tools/findbugs/lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/bsh.jar"/>
 	<classpathentry kind="lib" path="lib/forms-1.2.1.jar" sourcepath="libsrc/forms-1.2.1-src.zip"/>
@@ -46,9 +48,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/je-3.3.75.jar" sourcepath="libsrc/je-3.3.75_src.zip"/>
 	<classpathentry kind="lib" path="lib/antlr-3.1.1-runtime.jar" sourcepath="libsrc/antlr-3.1.1-runtime_src.zip"/>
 	<classpathentry kind="lib" path="lib/antlr-2.7.6.jar"/>
-	<classpathentry kind="lib" path="lib/google-collect-1.0.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="lib" path="buildlib/junit.jar"/>
-	<classpathentry kind="lib" path="lib/architect-core-1.0.3.jar" sourcepath="/architect/src/main/java/ca/sqlpower/architect/ddl"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

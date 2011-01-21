@@ -42,15 +42,12 @@ public class PotentialMatchRecordTest extends TestCase {
 		project.setSession(session);
 		MungeProcess mungeProcess = new MungeProcess();
 		mungeProcess.setName("mungeprocess");
-		project.addChild(mungeProcess);
-		MatchPool pool = project.getMatchPool();
-		SourceTableRecord str1 = new SourceTableRecord(project, Collections.singletonList("str1"));
-		SourceTableRecord str2 = new SourceTableRecord(project, Collections.singletonList("str2"));
+		project.getMungeProcessesFolder().addChild(mungeProcess);
+		MatchPool pool = new MatchPool(project);
+		SourceTableRecord str1 = new SourceTableRecord(session, project, Collections.singletonList("str1"));
+		SourceTableRecord str2 = new SourceTableRecord(session, project, Collections.singletonList("str2"));
 		pmr = new PotentialMatchRecord(mungeProcess, MatchType.UNMATCH, str1, str2, false);
-		MatchCluster mc = new MatchCluster();
-		mc.addSourceTableRecord(str1);
-		mc.addSourceTableRecord(str2);
-		mc.addPotentialMatchRecord(pmr);
+		pool.addPotentialMatch(pmr);
 	}
 	
 	public void testDirtyAfterPropertyChange() {
@@ -59,8 +56,8 @@ public class PotentialMatchRecordTest extends TestCase {
 		pmr.setMatchStatus(MatchType.NOMATCH);
 		assertSame(StoreState.DIRTY, pmr.getStoreState());
 		pmr.setStoreState(StoreState.CLEAN);
-		pmr.setMasterRecord(pmr.getOrigLHS());
-		pmr.setMasterRecord(pmr.getOrigRHS());
+		pmr.setMaster(pmr.getOriginalLhs());
+		pmr.setMaster(pmr.getOriginalRhs());
 		assertSame(StoreState.DIRTY, pmr.getStoreState());
 	}
 	
@@ -70,26 +67,26 @@ public class PotentialMatchRecordTest extends TestCase {
 		pmr.setMatchStatus(MatchType.NOMATCH);
 		assertSame(StoreState.NEW, pmr.getStoreState());
 		pmr.setStoreState(StoreState.NEW);
-		pmr.setMasterRecord(pmr.getOrigLHS());
-		pmr.setMasterRecord(pmr.getOrigRHS());
+		pmr.setMaster(pmr.getOriginalLhs());
+		pmr.setMaster(pmr.getOriginalRhs());
 		assertSame(StoreState.NEW, pmr.getStoreState());
 	}
 	
 	public void testIsMatch() {
-		pmr.setMasterRecord(pmr.getOrigLHS());
+		pmr.setMaster(pmr.getOriginalLhs());
 		pmr.setMatchStatus(MatchType.MATCH);
 		assertTrue(pmr.isMatch());
 		
 		pmr.setMatchStatus(MatchType.AUTOMATCH);
 		assertTrue(pmr.isMatch());
 		
-		pmr.setMasterRecord(pmr.getOrigRHS());
+		pmr.setMaster(pmr.getOriginalRhs());
 		assertTrue(pmr.isMatch());
 		
 		pmr.setMatchStatus(MatchType.MATCH);
 		assertTrue(pmr.isMatch());
 		
-		pmr.setMasterRecord(null);
+		pmr.setMaster(null);
 		pmr.setMatchStatus(MatchType.UNMATCH);
 		assertFalse(pmr.isMatch());
 		

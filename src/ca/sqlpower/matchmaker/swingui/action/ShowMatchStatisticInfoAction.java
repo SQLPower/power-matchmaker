@@ -90,13 +90,29 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 			JButton deleteAllButton = new JButton(new AbstractAction(
 					"Delete All") {
 				public void actionPerformed(ActionEvent e) {
-					// XXX Nothing to do at the moment since no statistics exist.
+					try {
+						p2.deleteAllStatistics();
+					} catch (SQLException e1) {
+						MMSUtils
+								.showExceptionDialog(
+										parent,
+										"Could not delete match statistics information",
+										e1);
+					}
 				}
 			});
 			JButton deleteBackwardButton = new JButton(new AbstractAction(
 					"Delete Backward") {
 				public void actionPerformed(ActionEvent e) {
-					// XXX Nothing to do at the moment since no statistics exist.
+					try {
+						p2.deleteBackwardStatistics();
+					} catch (SQLException e1) {
+						MMSUtils
+								.showExceptionDialog(
+										parent,
+										"Could not delete match statistics information",
+										e1);
+					}
 				}
 			});
 			Action closeAction = new CommonCloseAction(d);

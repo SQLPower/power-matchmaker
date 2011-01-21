@@ -160,8 +160,6 @@ public class MergeProcessor extends AbstractProcessor {
 
 			initVariables();
 			
-			pool.begin("Starting the merge engine");
-			
 			for (PotentialMatchRecord pm : pmProcessOrder) {
                 checkCancelled();
 				monitorableHelper.incrementProgress();
@@ -171,7 +169,7 @@ public class MergeProcessor extends AbstractProcessor {
 				        " of " + monitorableHelper.getJobSize() + " *****");
 				
 				ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
-				ResultRow masterKeyValues = new ResultRow(sourceTableMergeRule, pm.getMasterRecord().getKeyValues());
+				ResultRow masterKeyValues = new ResultRow(sourceTableMergeRule, pm.getMaster().getKeyValues());
 				
 				engineLogger.debug("Duplicate record: " + dupKeyValues + "; master record: " + masterKeyValues);
 				
@@ -209,7 +207,6 @@ public class MergeProcessor extends AbstractProcessor {
 										+ rows);
 					}
 				}
-				
 				//clean up match pool
 				pm.setMatchStatus(MatchType.MERGED);
 				
@@ -219,8 +216,8 @@ public class MergeProcessor extends AbstractProcessor {
 				// from the pool as we are looping through the pool
 				SourceTableRecord str = pm.getDuplicate();
 				List<PotentialMatchRecord> toBeDeleted = new ArrayList<PotentialMatchRecord>();
-				for (PotentialMatchRecord pmr : pool.getPotentialMatchRecords()) {
-					if (pmr.getOrigLHS().equals(str) || pmr.getOrigRHS().equals(str)) {
+				for (PotentialMatchRecord pmr : pool.getPotentialMatches()) {
+					if (pmr.getOriginalLhs().equals(str) || pmr.getOriginalRhs().equals(str)) {
 						if (pmr.getMatchStatus() != MatchType.MERGED) {
 							engineLogger.debug("Removing match pool record: " + pmr);
 							toBeDeleted.add(pmr);
@@ -228,17 +225,13 @@ public class MergeProcessor extends AbstractProcessor {
 					}
 				}
 				for (PotentialMatchRecord pmr : toBeDeleted) {
-					pmr.setMatchStatus(MatchType.DELETE);
+					pool.removePotentialMatch(pmr);
 				}
 			}
 
             checkCancelled();
-            
-            pool.setUseBatchUpdates(true);
-            pool.setDebug(project.getMergeSettings().getDebug());
-            pool.commit();
-        	pool.clearRecords();
-        	pool.clearCache();
+
+			pool.store(true, project.getMergeSettings().getDebug());
 			return Boolean.TRUE;
 		} finally {
 		    monitorableHelper.setFinished(true);
@@ -251,11 +244,10 @@ public class MergeProcessor extends AbstractProcessor {
 	private void initVariables() throws SQLException, SQLObjectException {
 		//Initialize the match pool
 		engineLogger.info("Loading match pool...");
-		pool = project.getMatchPool();
-		pool.clearRecords();
-		pool.find(new ArrayList<SQLColumn>());
+		pool = new MatchPool(project);
+		pool.findAll(new ArrayList<SQLColumn>());
 		
-		engineLogger.debug("Found " + pool.getAllSourceTableRecords().size() + " source table records in pool");
+		engineLogger.debug("Found " + pool.getSourceTableRecords().size() + " source table records in pool");
 		
 		//Topological sort so that chains of matches are merged in the right order
 		engineLogger.info("Sorting matches...");
@@ -288,7 +280,7 @@ public class MergeProcessor extends AbstractProcessor {
             sb.append("\nPlanned processing order ([duplicate key] into [master key]):");
             for (PotentialMatchRecord pmr : pmProcessOrder) {
                 sb.append("\n    ").append(pmr.getDuplicate().getKeyValues())
-                .append(" into ").append(pmr.getMasterRecord().getKeyValues());
+                .append(" into ").append(pmr.getMaster().getKeyValues());
             }
             engineLogger.debug(sb.toString());
         }
@@ -315,7 +307,7 @@ public class MergeProcessor extends AbstractProcessor {
         
 		// Finds the columns that needs to be merged and maps it to the 
 		// corresponding column merge rule.
-		for (ColumnMergeRules cmr : sourceTableMergeRule.getChildren(ColumnMergeRules.class)) {
+		for (ColumnMergeRules cmr : sourceTableMergeRule.getChildren()) {
 		    if (engineLogger.isDebugEnabled()) {
 		        mergeRuleMessage.append(
 		            String.format("\n    %-40s %s",
@@ -589,7 +581,7 @@ public class MergeProcessor extends AbstractProcessor {
 						ResultRow row = childDupRows.get(i);
 						ResultRow temp = row.duplicate();
 	
-						for (ColumnMergeRules cmr : childTableMergeRule.getChildren(ColumnMergeRules.class)) {
+						for (ColumnMergeRules cmr : childTableMergeRule.getChildren()) {
 							if (cmr.getImportedKeyColumn() != null) {
 								Object masterVal = parentMasterRow.getValue(cmr.getImportedKeyColumn().getName());
 								temp.setValue(cmr.getColumnName(), masterVal);
@@ -862,7 +854,7 @@ public class MergeProcessor extends AbstractProcessor {
 		StringBuilder sql = new StringBuilder();
 		boolean first = true;
 		sql.append("SELECT ");
-		for (ColumnMergeRules cmr : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 			if (!first) sql.append(", ");
 			first = false;
 			sql.append(cmr.getColumnName());
@@ -1088,7 +1080,7 @@ public class MergeProcessor extends AbstractProcessor {
 		boolean first = true;
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ");
-		for (ColumnMergeRules cmr : tableMergeRule.getColumnMergeRules()) {
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 			if (!first) sql.append(", ");
 			first = false;
 			sql.append(cmr.getColumnName());
@@ -1160,7 +1152,7 @@ public class MergeProcessor extends AbstractProcessor {
 		sql.append("UPDATE ");
 		sql.append(DDLUtils.toQualifiedName(tableMergeRules.getSourceTable()));
 		sql.append("\n SET ");
-		for (ColumnMergeRules cmr : tableMergeRules.getChildren(ColumnMergeRules.class)) {
+		for (ColumnMergeRules cmr : tableMergeRules.getChildren()) {
 			engineLogger.debug("dupRowValues: " + dupRowValues);
 			engineLogger.debug("cmr: " + cmr);
 			if (cmr == null) {
@@ -1300,7 +1292,7 @@ public class MergeProcessor extends AbstractProcessor {
 		public ResultRow(TableMergeRules tmr, ResultSet rs) throws SQLException {
 			tableMergeRule = tmr;
 			values = new ArrayList<Object>();
-			for (int i = 0; i < tableMergeRule.getColumnMergeRules().size(); i++) {
+			for (int i = 0; i < tableMergeRule.getChildCount(); i++) {
 				values.add(rs.getObject(i+1));
 			}		
 		}
@@ -1320,7 +1312,7 @@ public class MergeProcessor extends AbstractProcessor {
 		public ResultRow(TableMergeRules tmr) throws SQLException {
 			tableMergeRule = tmr;
 			values = new ArrayList<Object>();
-			for (int i = 0; i < tableMergeRule.getColumnMergeRules().size(); i++) {
+			for (int i = 0; i < tableMergeRule.getChildCount(); i++) {
 				values.add(null);
 			}
 		}
@@ -1331,7 +1323,7 @@ public class MergeProcessor extends AbstractProcessor {
 		
 		public void setValue(String columnName, Object value) {
 			int column = 0;
-			for (ColumnMergeRules cmr : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+			for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 				if (cmr.getColumnName().equals(columnName)) {
 					setValue(column, value);
 					return;
@@ -1348,7 +1340,7 @@ public class MergeProcessor extends AbstractProcessor {
 		
 		public Object getValue(String columnName) {
 			int column = 0;
-			for (ColumnMergeRules cmr : tableMergeRule.getChildren(ColumnMergeRules.class)) {
+			for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 				if (cmr.getColumnName().equals(columnName)) {
 					return values.get(column);
 				}
@@ -1368,7 +1360,7 @@ public class MergeProcessor extends AbstractProcessor {
 		 *         for a column in the unique key. Otherwise returns false;
 		 */
 		public boolean isInUniqueKey(int column) {
-			ColumnMergeRules cmr = tableMergeRule.getChildren(ColumnMergeRules.class).get(column);
+			ColumnMergeRules cmr = tableMergeRule.getChildren().get(column);
 			SQLColumn temp = cmr.getColumn();
 			return temp.isUniqueIndexed();
 		}
@@ -1385,7 +1377,7 @@ public class MergeProcessor extends AbstractProcessor {
 		 * @throws SQLObjectException
 		 */
 		public boolean isImportedKey(int column) {
-			ColumnMergeRules cmr = tableMergeRule.getChildren(ColumnMergeRules.class).get(column);
+			ColumnMergeRules cmr = tableMergeRule.getChildren().get(column);
 			SQLColumn temp = cmr.getColumn();
 			return temp.isForeignKey();
 		}
@@ -1402,7 +1394,7 @@ public class MergeProcessor extends AbstractProcessor {
 		 * @throws SQLObjectException
 		 */
 		public boolean isInPrimaryKey(int column) {
-			ColumnMergeRules cmr = tableMergeRule.getChildren(ColumnMergeRules.class).get(column);
+			ColumnMergeRules cmr = tableMergeRule.getChildren().get(column);
 
 			if (tableMergeRule.isSourceMergeRule()) {
 				SQLColumn temp = cmr.getColumn();
@@ -1425,7 +1417,7 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 		
 		public String getColumnName(int index) {
-			return tableMergeRule.getColumnMergeRules().get(index).getColumnName();
+			return tableMergeRule.getChildren().get(index).getColumnName();
 		}
 		
 		/**
@@ -1448,7 +1440,7 @@ public class MergeProcessor extends AbstractProcessor {
 				if (values.get(i) != null) {
 					if (!first) temp.append(", ");
 					first = false;
-					temp.append(tableMergeRule.getChildren(ColumnMergeRules.class).get(i).getColumnName());
+					temp.append(tableMergeRule.getChildren().get(i).getColumnName());
 					temp.append("=");
 					temp.append(values.get(i));
 				} 

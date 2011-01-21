@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
@@ -52,6 +53,7 @@ import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.ProjectActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMungeProcessAction;
@@ -66,12 +68,12 @@ import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.RefreshAction;
 import ca.sqlpower.matchmaker.swingui.action.ScriptAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.address.AddressPoolLoadingWorker;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.swingui.FolderNode;
 import ca.sqlpower.swingui.ProgressWatcher;
 
 /**
@@ -148,8 +150,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					addFolderMenuItems(m, (PlFolder) o);
 				} else if (o instanceof Project) {
 					addProjectMenuItems(m, (Project) o);
-				} else if (o instanceof FolderNode) {
-					FolderNode folder = (FolderNode) o;
+				} else if (o instanceof MatchMakerFolder<?>) {
+					MatchMakerFolder<?> folder = (MatchMakerFolder<?>) o;
 					if (folder.getName().equals(Project.MUNGE_PROCESSES_FOLDER_NAME)) {
 						addMungeProcessesFolderMenuItems(m, folder);
 					} else if (folder.getName().equals(
@@ -169,11 +171,26 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 				}
 				
 				if (o instanceof MatchMakerObject) {
+		            m.add(new JMenuItem(new RefreshAction(swingSession)));
 		            m.add(new ScriptAction(swingSession, (MatchMakerObject) o));
 				}
 			}
 			m.show(t, e.getX(), e.getY());
 		}
+	}
+
+	/**
+	 * Attaches a menu item for the actions of a munge process.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addMungeProcessesFolderMenuItems(JPopupMenu m,
+			MatchMakerFolder<?> folder) {
+		m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
+				(Project) folder.getParent())));
 	}
 
 	/**
@@ -185,7 +202,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMergeRulesFolderMenuItems(JPopupMenu m,
-			FolderNode folder) {
+			MatchMakerFolder<?> folder) {
 		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, (Project) folder
 				.getParent())));
 	}
@@ -199,7 +216,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMergeRulesMenuItems(JPopupMenu m, TableMergeRules mergeRule) {
-		if (!mergeRule.getTableName().equals((mergeRule.getParent()).getSourceTableName())) {
+		if (!mergeRule.getTableName().equals(mergeRule.getParentProject().getSourceTableName())) {
 			m.add(new JMenuItem(new DeleteMergeRuleAction(swingSession,
 					mergeRule)));
 		}
@@ -224,20 +241,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
-	 * @param folder
-	 *            The current folder being right-clicked on.
-	 */
-	private void addMungeProcessesFolderMenuItems(JPopupMenu m,
-			FolderNode folder) {
-		m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
-				(Project) folder.getParent())));
-	}
-
-	/**
-	 * Attaches a menu item for the actions of a munge process.
-	 * 
-	 * @param m
-	 *            The popup menu that the menu item would be attached onto.
 	 * @param mungeProcess
 	 *            The current folder being right-clicked on.
 	 */
@@ -248,7 +251,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	private void createNewFolderMenuItem(JPopupMenu m) {
 		m.add(new JMenuItem(new AbstractAction("New Folder") {
 			public void actionPerformed(ActionEvent e) {
-				PlFolder folder = new PlFolder();
+				PlFolder<Project> folder = new PlFolder<Project>();
 				FolderEditor editor = new FolderEditor(swingSession, folder);
 				swingSession.setCurrentEditorComponent(editor);
 			}
@@ -430,7 +433,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					
 					ProjectEditor me;
 					me = new ProjectEditor(swingSession, (Project) o,
-							(PlFolder) ((Project) o).getParent(),
+							(PlFolder<Project>) ((Project) o).getParent(),
 							cancelAction);
 
 					swingSession.setCurrentEditorComponent(me);
@@ -442,14 +445,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 							return;
 						}
 					}
-					Project m = ((MungeProcess) o).getParent();
+					Project m = ((MungeProcess) o).getParentProject();
 					MungeProcessEditor editor = new MungeProcessEditor(swingSession, m, (MungeProcess) o);
 					logger.debug("Created new munge process editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof MungeStep) {
 					MungeProcess mp = (MungeProcess)((MungeStep) o).getParent();
-					Project m = mp.getParent();
+					Project m = mp.getParentProject();
 					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
 						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {
@@ -464,7 +467,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 				} else if (o instanceof MungeStepOutput) {
 					MungeStep ms = (MungeStep)((MungeStepOutput) o).getParent();
 					MungeProcess mp = (MungeProcess)(ms.getParent());
-					Project m = mp.getParent();
+					Project m = mp.getParentProject();
 					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
 						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {
@@ -476,8 +479,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					logger.debug("Created new munge process editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 					editor.setSelectedStepOutput((MungeStepOutput) o);
-				} else if (o instanceof FolderNode) {
-					FolderNode f = (FolderNode) o;
+				} else if (o instanceof MatchMakerFolder) {
+					MatchMakerFolder f = (MatchMakerFolder) o;
 					Project m = (Project) f.getParent();
 
 					if (f.getName().equals(Project.MERGE_RULES_FOLDER_NAME)) {
@@ -500,7 +503,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						}
 					}
 					TableMergeRules f = (TableMergeRules) o;
-					Project m = (Project) f.getParent();
+					Project m = (Project) f.getParentProject();
 					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
 					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
@@ -515,7 +518,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						}
 					}
 					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules) o).getParent();
-					Project m = (Project) f.getParent();
+					Project m = (Project) f.getParentProject();
 					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
 					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);

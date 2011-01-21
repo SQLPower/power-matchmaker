@@ -20,15 +20,6 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
 
 
 /**
@@ -37,25 +28,12 @@ import ca.sqlpower.object.annotation.Mutator;
  */
 public class StringToNumberMungeStep extends AbstractMungeStep {
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
-	
-	/**
-	 * Whether the munge step should continue in the face of evil, malformed numbers.
-	 */
-	private boolean allowMalformed;
+	public static final String CONTINUE_ON_MALFORMED_NUMBER = "continue on malformed number";
 
-	@Constructor
 	public StringToNumberMungeStep() {
 		super("String to Number",false);
-		allowMalformed = false;
-	}
-
-	public void init() {
-		MungeStepOutput<BigDecimal> out = new MungeStepOutput<BigDecimal>(
-				"StringToNumberOutput", BigDecimal.class);
+		setParameter(CONTINUE_ON_MALFORMED_NUMBER, "False");
+		MungeStepOutput<BigDecimal> out = new MungeStepOutput<BigDecimal>("StringToNumberOutput", BigDecimal.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("String", String.class);
 		super.addInput(desc);
@@ -70,7 +48,7 @@ public class StringToNumberMungeStep extends AbstractMungeStep {
 			try {
 			ret = new BigDecimal(data);
 			} catch (NumberFormatException e) {
-				if (isAllowMalformed()) {
+				if (getBooleanParameter(CONTINUE_ON_MALFORMED_NUMBER)) {
 					logger.error("Problem occured when trying to convert \"" + data + "\" to a number!");
 					ret = null;
 				} else {
@@ -81,23 +59,6 @@ public class StringToNumberMungeStep extends AbstractMungeStep {
 		
 		out.setData(ret);
 		return true;
-	}
-
-	@Mutator
-	public void setAllowMalformed(boolean allowMalformed) {
-			boolean old = this.allowMalformed;
-			this.allowMalformed = allowMalformed;
-			firePropertyChange("allowMalformed", old, allowMalformed);
-	}
-
-	@Accessor
-	public boolean isAllowMalformed() {
-		return allowMalformed;
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		((StringToNumberMungeStep) copy).setAllowMalformed(isAllowMalformed());
 	}
 }
 

@@ -20,65 +20,33 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.object.SPObject;
-
 
 public class MatchMakerSettingsTest extends MatchMakerTestCase {
-
-	public MatchMakerSettingsTest(String name) {
-		super(name);
-	}
 
 	String appUserName = "User Name";
 	MatchMakerSettings mms;
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		mms = new TestingMatchMakerSettingsStub();
+		mms = new MatchMakerSettings() {
+
+			public MatchMakerSettings duplicate(MatchMakerObject parent, MatchMakerSession s) {
+				return null;
+			}};
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		mms.setSession(session);
 
-		getRootObject().addChild(mms,0);
+
 	}
 
 	@Override
-	protected MatchMakerObject getTarget() {
+	protected MatchMakerObject<MatchMakerSettings, MatchMakerObject> getTarget() {
 		return mms;
 	}
 
 	@Override
 	public void testDuplicate() throws Exception {
 		// this class is not duplicated only its subclasses are.
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return null;
-	}
-
-	@Override
-	public SPObject getSPObjectUnderTest() {
-		return getTarget();
-	}
-	
-	@Override
-	public void testSPPersisterPersistsProperties() throws Exception {
-		// don't test this
-	}
-	
-	@Override
-	public void testPersisterCreatesNewObjects() throws Exception {
-		// don't test this
-	}
-	
-	@Override
-	public void testSPListenerPersistsNewObjects() throws Exception {
-		// don't test this
-	}
-	
-	@Override
-	public void testSessionPersisterRollsBackProperties() throws Exception {
-		// don't test this
 	}
 }

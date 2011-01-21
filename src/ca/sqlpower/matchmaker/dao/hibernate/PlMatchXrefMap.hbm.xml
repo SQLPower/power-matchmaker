@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated Sep 28, 2006 12:53:42 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+<class 
+    name="ca.sqlpower.matchmaker.hibernate.PlMatchXrefMap"
+    table="pl_match_xref_map" 
+    
+>
+
+
+    <composite-id
+		name="id"
+        class="ca.sqlpower.matchmaker.hibernate.PlMatchXrefMapId"
+    >		
+	        <key-property name="matchOid" type="long">
+<column name="match_oid" length="80" />
+	        </key-property>
+	        <key-property name="mappingSeqNo" type="long">
+<column name="mapping_seq_no" precision="18" scale="0" />
+	        </key-property>
+    </composite-id>	
+
+
+ <!--   <many-to-one
+	    name="plMatch"
+	    class="ca.sqlpower.matchmaker.hibernate.PlMatch"
+        update="false"
+        insert="false"
+        fetch="select"
+    >
+<column name="match_oid" not-null="true" />
+   </many-to-one> -->
+    <property
+        name="sourceColumnName"
+        type="string"
+    >
+<column name="source_column_name" length="50" />
+  	</property>
+    <property
+        name="targetColumnName"
+        type="string"
+    >
+<column name="target_column_name" length="50" />
+  	</property>
+    <property
+        name="indexColumnInd"
+        type="boolean"
+    >
+<column name="index_column_ind" length="1" />
+  	</property>
+
+</class>
+</hibernate-mapping>

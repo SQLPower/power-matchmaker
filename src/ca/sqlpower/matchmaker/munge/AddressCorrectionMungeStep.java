@@ -22,8 +22,6 @@ package ca.sqlpower.matchmaker.munge;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -39,12 +37,6 @@ import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
 import ca.sqlpower.matchmaker.address.AddressValidator;
 import ca.sqlpower.matchmaker.address.AddressCorrectionEngine.AddressCorrectionEngineMode;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonBound;
-import ca.sqlpower.object.annotation.Transient;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
 import ca.sqlpower.validation.Status;
@@ -59,14 +51,9 @@ import ca.sqlpower.validation.ValidateResult;
  */
 public class AddressCorrectionMungeStep extends AbstractMungeStep {
 
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MungeStepOutput.class,MungeStepInput.class)));
+	private static Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
 	
-	private Logger logger = Logger.getLogger(AddressCorrectionMungeStep.class);
-	
-	private String addressCorrectionDataPath;
+	public static final String ADDRESS_CORRECTION_DATA_PATH = "AddressCorrectionDataPath";
 	
 	private AddressDatabase addressDB;
 	
@@ -93,14 +80,9 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	
 	private AddressStatus addressStatus;
 	
-	@Constructor
 	public AddressCorrectionMungeStep() {
 		super("Address Correction", false);
 		
-	}
-
-	public void init() {
-
 		addChild(new MungeStepOutput<String>("Address Line 1", String.class));
 		addChild(new MungeStepOutput<String>("Address Line 2", String.class));
 		addChild(new MungeStepOutput<String>("Suite", String.class));
@@ -118,31 +100,29 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		// address's isValid flag in the case of just writing values from the
 		// result table
 		addChild(new MungeStepOutput<Boolean>("Is Valid?", Boolean.class));
-		
+	
 		InputDescriptor input0 = new InputDescriptor("Address Line 1", String.class);
 		InputDescriptor input1 = new InputDescriptor("Address Line 2", String.class);
 		InputDescriptor input2 = new InputDescriptor("Municipality", String.class);
 		InputDescriptor input3 = new InputDescriptor("Province", String.class);
 		InputDescriptor input4 = new InputDescriptor("Country", String.class);
 		InputDescriptor input5 = new InputDescriptor("Postal/ZIP", String.class);
-		
+
 		super.addInput(input0);
 		super.addInput(input1);
 		super.addInput(input2);
 		super.addInput(input3);
 		super.addInput(input4);
 		super.addInput(input5);
-		
 	}
 	
-	@NonBound
 	public void setInputStep(MungeStep inputStep) {
 		this.inputStep = inputStep;
 	}
 	
 	@Override
 	public void doOpen(EngineMode mode, Logger logger) throws Exception {
-		this.logger = logger;
+		AddressCorrectionMungeStep.logger = logger;
 		
 		if (mode instanceof AddressCorrectionEngineMode) {
 			this.mode = (AddressCorrectionEngineMode) mode;
@@ -166,10 +146,10 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	public void validateDatabase() {
 		MatchMakerSession session = getSession();
 		MatchMakerSessionContext context = session.getContext();
-		setAddressCorrectionDataPath(context.getAddressCorrectionDataPath());
+		setParameter(ADDRESS_CORRECTION_DATA_PATH, context.getAddressCorrectionDataPath());
 		
 		
-		String addressCorrectionDataPath = getAddressCorrectionDataPath();
+		String addressCorrectionDataPath = getParameter(ADDRESS_CORRECTION_DATA_PATH);
 		try {
 			setAddressDB(new AddressDatabase(new File(addressCorrectionDataPath)));
 		} catch (Exception e) {
@@ -230,7 +210,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			output = address;
 		}
 		
-		List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
+		List<MungeStepOutput> outputs = getChildren(); 
 		outputs.get(0).setData(output.getAddress());
 		outputs.get(1).setData(addressLine2);
 		outputs.get(2).setData(output.getSuite());
@@ -287,7 +267,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 			String country = (countryMSO != null) ? (String)countryMSO.getData() : null;
 			
 			logger.debug("Found an output address:\n" + address);
-			List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
+			List<MungeStepOutput> outputs = getChildren(); 
 			outputs.get(0).setData(address.getAddress());
 			outputs.get(1).setData(addressLine2);
 			outputs.get(2).setData(address.getSuite());
@@ -450,7 +430,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 					
 					logger.debug("Top suggestion from validator is: " + correctedAddress);
 					
-					List<MungeStepOutput> outputs = getChildren(MungeStepOutput.class); 
+					List<MungeStepOutput> outputs = getChildren(); 
 					
 					outputs.get(0).setData(correctedAddress.getAddress());
 					outputs.get(1).setData(addressLine2);
@@ -490,17 +470,14 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	 * parsed in this step. Generally, the boolean value applies to the address
 	 * data it received that last time the {@link #doCall()} method was called.
 	 */
-	@Transient @Accessor
 	boolean isAddressCorrected() {
 		return addressCorrected;
 	}
 	
-	@NonBound
 	MungeStep getInputStep() {
 		return inputStep;
 	}
 	
-	@NonBound
 	private void setAddressDB(AddressDatabase addressDB) {
 		AddressDatabase oldValue = this.addressDB;
 		this.addressDB = addressDB;
@@ -512,7 +489,6 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		return addressDB != null;
 	}
 	
-	@Transient @Mutator
 	void setAddressPool(AddressPool pool, Logger logger) {
 		this.pool = pool;
 	}
@@ -535,25 +511,7 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 	 * {@link AddressCorrectionMungeStep}. If it is null, then no addresses have
 	 * been processed by this step yet.
 	 */
-	@Transient @Accessor
 	public AddressStatus getAddressStatus() {
 		return addressStatus;
-	}
-
-	@Mutator
-	public void setAddressCorrectionDataPath(String addressCorrectionDataPath) {
-		String oldPath = this.addressCorrectionDataPath;
-		this.addressCorrectionDataPath = addressCorrectionDataPath;
-		firePropertyChange("addressCorrectionDataPath", oldPath, addressCorrectionDataPath);
-	}
-
-	@Accessor
-	public String getAddressCorrectionDataPath() {
-		return addressCorrectionDataPath;
-	}
-	
-	@Override
-	protected void copyPropertiesForDuplicate(MungeStep copy) {
-		((AddressCorrectionMungeStep) copy).setAddressCorrectionDataPath(getAddressCorrectionDataPath());
 	}
 }

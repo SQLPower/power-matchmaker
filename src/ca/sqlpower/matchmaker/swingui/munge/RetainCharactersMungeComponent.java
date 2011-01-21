@@ -33,7 +33,6 @@ import javax.swing.event.DocumentListener;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
-import ca.sqlpower.validation.StringNotEmptyValidator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
@@ -55,32 +54,31 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 	@Override
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();
-		final RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
+		RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
 
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setSelected(temp.isUseRegex());
+		useRegex.setSelected(temp.getBooleanParameter(temp.USE_REGEX_PARAMETER_NAME));
 		useRegex.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				boolean selected = useRegex.isSelected();
-				temp.setUseRegex(selected);
-				delimiters.setText(selected ? ".*" : "");
-				temp.setRetainChars(delimiters.getText());
+				RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
+				temp.setParameter(temp.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
 			}
 			
 		});
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setSelected(temp.isCaseSensitive());
+		caseSensitive.setSelected(temp.getBooleanParameter(temp.CASE_SENSITIVE_PARAMETER_NAME));
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				temp.setCaseSensitive(caseSensitive.isSelected());
+				RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
+				temp.setParameter(temp.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
 			}
 			
 		});
 		
-		delimiters = new JTextField(temp.getRetainChars());
+		delimiters = new JTextField(temp.getParameter(temp.RETAIN_CHARACTERS_PARAMETER_NAME));
 		delimiters.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
@@ -92,14 +90,12 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-            	temp.setRetainChars(delimiters.getText());
+            	RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
+				temp.setParameter(temp.RETAIN_CHARACTERS_PARAMETER_NAME, delimiters.getText());
             }
         });
 		RegexValidator validator = new RegexValidator();
-		getHandler().addValidateObject(delimiters, useRegex, validator, true, "");
-		
-		StringNotEmptyValidator stev = new StringNotEmptyValidator();
-		getHandler().addValidateObject(delimiters, useRegex, stev, false, "any non empty string");
+		getHandler().addValidateObject(delimiters, useRegex, validator);
 		
 		content.setLayout(new GridLayout(4,1));
 		content.add(new JLabel("Retain Characters:"));

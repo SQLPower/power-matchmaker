@@ -62,7 +62,7 @@ public final class NewProjectAction extends AbstractAction {
 			return;
 		}
 		
-		PlFolder folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
+		PlFolder<Project> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
 		if (folder == null) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"Please select a folder first",
@@ -79,6 +79,9 @@ public final class NewProjectAction extends AbstractAction {
 			count++;
 		}
 		project.setName("New Project " + count);
+		final String dsName = swingSession.getDatabase().getDataSource().getName();
+		project.setSourceTableSPDatasource(dsName);
+		project.setResultTableSPDatasource(dsName);
 		
 		try {
 			AbstractAction cancelAction = new AbstractAction("Cancel") {

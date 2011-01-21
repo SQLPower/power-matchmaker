@@ -19,62 +19,35 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.Collections;
-import java.util.List;
-
-import ca.sqlpower.object.AbstractSPObject;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.ConstructorParameter;
-
 
 /**
  * This class contains the attributes of a particular MungeStep input. If there are
  * additional attributes to describe MungeStep input, it should be added to this class.
- * The attributes should all be immutable.
+ * The attributes should all be immutable. 
  */
-public class InputDescriptor extends AbstractSPObject {
+public class InputDescriptor {
 	
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.emptyList();
+	private Class type;
+	private String name;
 	
-	private final Class type;
-	
-	@Constructor
-	public InputDescriptor(@ConstructorParameter(propertyName="name") String name, 
-			@ConstructorParameter(propertyName="type") Class type) {
+	public InputDescriptor(String name, Class type) {
 		this.type = type;
-		setName(name);
+		this.name = name;
 	}
 	
-	@Accessor
 	public Class getType() {
 		return type;
 	}
 	
-	@Override
-	protected boolean removeChildImpl(SPObject child) {
-		return false;
+	public String getName() {
+		return name;
 	}
 
-	@Override
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
+	public void setType(Class type) {
+		this.type = type;
 	}
 
-	@Override
-	public List<? extends SPObject> getChildren() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<? extends SPObject> getDependencies() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public void removeDependency(SPObject dependency) {
-		//do nothing
+	public void setName(String name) {
+		this.name = name;
 	}
 }

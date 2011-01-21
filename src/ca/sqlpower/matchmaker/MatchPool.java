@@ -19,21 +19,24 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.beans.PropertyChangeEvent;
+import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Logger;
 
@@ -42,22 +45,17 @@ import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.DijkstrasAlgorithm;
 import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.object.ObjectDependentException;
-import ca.sqlpower.object.SPChildEvent;
-import ca.sqlpower.object.SPListener;
-import ca.sqlpower.object.SPObject;
-import ca.sqlpower.object.annotation.Accessor;
-import ca.sqlpower.object.annotation.Constructor;
-import ca.sqlpower.object.annotation.Mutator;
-import ca.sqlpower.object.annotation.NonBound;
-import ca.sqlpower.object.annotation.NonProperty;
+import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
-import ca.sqlpower.util.TransactionEvent;
+import ca.sqlpower.util.MonitorableImpl;
 
 /**
  * The MatchPool class represents the set of matching records for
@@ -69,151 +67,62 @@ import ca.sqlpower.util.TransactionEvent;
  * MatchPool is monitorable. The activity monitored is the process
  * of storing the match pool back to the database.
  */
-public class MatchPool extends MatchMakerMonitorableImpl {
+public class MatchPool extends MonitorableImpl {
     
     private static final Logger logger = Logger.getLogger(MatchPool.class);
+    
+    private static final int DEFAULT_BATCH_SIZE = 1000;
+    
+    private final Project project;
+    
+    private final MatchMakerSession session;
+    
+    /**
+     * The edge list for this graph.  This is a Map rather than a Set because
+     * we need to be able to retrieve the exact same instances of PotentialMatchRecord
+     * that we put in, and the Set interface doesn't provide a means of getting
+     * back the objects it contains (other than an iterator, but that would not
+     * perform adequately).
+     */
+    private final Map<PotentialMatchRecord, PotentialMatchRecord> potentialMatches;
 
-	/**
-	 * Defines an absolute ordering of the child types of this class.
-	 */
-	@SuppressWarnings("unchecked")
-	public static final List<Class<? extends SPObject>> allowedChildTypes = 
-		Collections.unmodifiableList(new ArrayList<Class<? extends SPObject>>(
-				Arrays.asList(MatchCluster.class)));
-	
-    static final int DEFAULT_BATCH_SIZE = 1000;
-    static final int DEFAULT_LIMIT = 5;
-    
     /**
-     * List of the clusters that the match pool is currently showing or saving (also its children)
+     * A map of keys to node instances for this graph.  The values() set of
+     * this map is the node set for the graph.
      */
-    private List<MatchCluster> matchClusters = new ArrayList<MatchCluster>();
-    
-    /**
-     * A flag to keep track of whether or not to use batch updates when writing to the database.
-     */
-    private boolean useBatchUpdates;
-    
-    /**
-     * A flag to keep track of whether or not we want to use debug mode.
-     */
-    private boolean debug;
-    
-    /**
-     * This integer keeps track of the number of results we wish to display to the user at a time on the
-     * match result visualizer screen.
-     */
-    private int limit;
-    
-    /**
-     * This integer keeps track of which results we are currently displaying.
-     */
-    private int currentMatchNumber;
-    
-    /**
-     * This holds the total number of clusters calculated from the last save to the
-     * database.
-     */
-    private int clusterCount;
+    private final Map<List<Object>, SourceTableRecord> sourceTableRecords =
+        new HashMap<List<Object>, SourceTableRecord>();
 
-	/**
-     * This reads the database or server and finds all of the potential matches in community edition.
+    /**
+     * This is the list of potential match records that are still waiting to be deleted.
      */
-    private MatchPoolReader matchPoolReader;
+    private final Set<PotentialMatchRecord> deletedMatches = new HashSet<PotentialMatchRecord>();
     
     /**
-     * This stores the found matches to the database or server.
+     * A Map of PotentialMatchRecords that do not have a munge process that exists in the repository.
+     * These orphaned matches may come about from munge processes that got deleted or renamed.
+     * The MatchPool will not consider these to be official matches, but keeps a record of them
+     * so that they can be removed properly if a new match is created with the same source table records.
      */
-    private DatabaseMatchPoolListener matchPoolListener;
-
-	private List<SQLColumn> displayColumns;
+    private final Map<PotentialMatchRecord, PotentialMatchRecord> orphanedMatches = 
+    	new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
+    
+    /**
+     * A Map of PotentialMatchRecords with the status of {@link MatchType#MERGED}. The MatchPool needs
+     * to be aware of merged results so that it knows to delete them before writing new PotentialMatchRecords
+     * that may conflict with the merged results (i.e. have the same lhs and rhs key values).
+     */
+    private final Map<PotentialMatchRecord, PotentialMatchRecord> mergedMatches = 
+    	new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
 	
-	/**
-	 * This method sort a list of potential match records and source table records and sorts
-	 * them into their respectice match clusters.
-	 */
-	public static List<MatchCluster> sortMatches(Collection<SourceTableRecord> sourceTableRecords, 
-			Collection<PotentialMatchRecord> potentialMatchRecords) {
-		
-		/*
-		 * First create a map of source table records to their potential match records. This
-		 * should speed up this process by having them all already found.
-		 */
-		
-		Map<SourceTableRecord, Set<PotentialMatchRecord>> recordMap
-			= new HashMap<SourceTableRecord, Set<PotentialMatchRecord>>();
-		
-		for(SourceTableRecord src : sourceTableRecords) {
-			recordMap.put(src, new HashSet<PotentialMatchRecord>());
-		}
-		
-		for(PotentialMatchRecord pmr : potentialMatchRecords) {
-			recordMap.get(pmr.getOrigLHS()).add(pmr);
-			recordMap.get(pmr.getOrigRHS()).add(pmr);
-		}
-		
-		//Now we can sort the matches
-		
-		List<MatchCluster> matchClusters = new ArrayList<MatchCluster>();
-		Queue<SourceTableRecord> untouchedNodes = new LinkedList<SourceTableRecord>();
-		untouchedNodes.addAll(sourceTableRecords);
-		Queue<SourceTableRecord> stillToProcess = new LinkedList<SourceTableRecord>();
-		MatchCluster mc = null;
-		do {
-			if(!stillToProcess.isEmpty()) {
-				SourceTableRecord src = stillToProcess.poll();
-				if(untouchedNodes.contains(src)) {
-					untouchedNodes.remove(src);
-				}
-				List<SourceTableRecord> neighbours = new ArrayList<SourceTableRecord>();
-				for(PotentialMatchRecord pmr : recordMap.get(src)) {
-					SourceTableRecord foundSrc;
-					if(pmr.getOrigRHS() == src) {
-						foundSrc = pmr.getOrigLHS();
-					} else {
-						foundSrc = pmr.getOrigRHS();
-					}
-					if(!mc.getSourceTableRecords().contains(foundSrc)) {
-						mc.addSourceTableRecord(foundSrc);
-						neighbours.add(foundSrc);
-					}
-					if(untouchedNodes.contains(foundSrc)) {
-						untouchedNodes.remove(foundSrc);
-					}
-					mc.addPotentialMatchRecord(pmr);
-				}
-				stillToProcess.addAll(neighbours);
-				mc.addSourceTableRecord(src);
-			} else {
-				if(!untouchedNodes.isEmpty()) {
-					stillToProcess.add(untouchedNodes.poll());
-					if (mc != null) {
-						matchClusters.add(mc);
-					}
-					mc = new MatchCluster();
-				}
-			}
-		} while(!untouchedNodes.isEmpty() || !stillToProcess.isEmpty());
-		if (mc != null) {
-			matchClusters.add(mc);
-		}
-		return matchClusters;
-	}
-	
-	@Constructor
-    public MatchPool() {
-        this.limit = DEFAULT_LIMIT;
-        this.clusterCount = 0;
-        this.currentMatchNumber = 0;
-        matchPoolReader = new DatabaseMatchPoolReader(this);
-        matchPoolListener = new DatabaseMatchPoolListener(this);
-        addSPListener(matchPoolListener);
-        addSPListener(matchListener);
+    public MatchPool(Project project) {
+        this.project = project;
+        this.session = project.getSession();
+        this.potentialMatches = new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
     }
-
-	@NonProperty
+    
     public Project getProject() {
-        return (Project)getParent();
+        return project;
     }
    
     /**
@@ -222,16 +131,14 @@ public class MatchPool extends MatchMakerMonitorableImpl {
      * @param mungeProcessName
      * @return a list of potential match records that belong to the munge process
      */
-	@NonProperty
-    public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess (String mungeProcessName) {
+    public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess
+                        (String mungeProcessName) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
-        for(MatchCluster mc : matchClusters) {
-	        for (PotentialMatchRecord pmr : mc.getPotentialMatchRecords()){
-	            if (pmr.getMungeProcess().getName().equals(mungeProcessName)){
-	                matchList.add(pmr);
-	            }
-	        }
+        for (PotentialMatchRecord pmr : potentialMatches.keySet()){
+            if (pmr.getMungeProcess().getName().equals(mungeProcessName)){
+                matchList.add(pmr);
+            }
         }
         return matchList;
     }
@@ -242,11 +149,10 @@ public class MatchPool extends MatchMakerMonitorableImpl {
      * @param mungeProcess
      * @return a list of potential match records that belong to the munge process
      */
-	@NonProperty
     public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess(MungeProcess mungeProcess) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
-        for (PotentialMatchRecord pmr : getPotentialMatchRecords()){
+        for (PotentialMatchRecord pmr : potentialMatches.keySet()){
             if (pmr.getMungeProcess() == mungeProcess){
                 matchList.add(pmr);
             }
@@ -255,8 +161,20 @@ public class MatchPool extends MatchMakerMonitorableImpl {
     }
     
     /**
-     * Tells whichever reader is currently hooked up to read in a certain number of matches from
-     * either its cache (if database) or server (if, kinda obviously, server).
+	 * This removes all of the potential matches in the given munge process from
+	 * the pool ONLY. This does not remove the potential matches from the nodes
+	 * it connects. Nor does this modify the database.
+	 */
+    public void removePotentialMatchesInMungeProcess(String processName){
+        potentialMatches.keySet().removeAll(getAllPotentialMatchByMungeProcess(processName));        
+    }
+    
+    /**
+     * Executes SQL statements to initialize nodes {@link SourceTableRecord} and 
+     * edges {@link PotentialMatchRecord}. It is also used to update the display
+     * column values for the SourceTableRecord, which is done by passing in a 
+     * List of SQLColumns which represent the columns that you wish to display
+     * <p>
      * 
      * @param displayColumns A list of which SQLColumns to use to represent a SourceTableRecord
      * in the user interface. If null or empty, then the default will be the SourceTableRecord's 
@@ -265,43 +183,608 @@ public class MatchPool extends MatchMakerMonitorableImpl {
      * @throws SQLException if an unexpected error occurred running the SQL statements
      * @throws SQLObjectException if SQLObjects fail to populate its children
      */
-    public void find(List<SQLColumn> displayColumns) throws SQLException, SQLObjectException {
-    	this.displayColumns = displayColumns;
-		if (matchPoolReader != null) {
-    		matchPoolReader.getClusters(currentMatchNumber, currentMatchNumber + limit);
+    public void findAll(List<SQLColumn> displayColumns) throws SQLException, SQLObjectException {
+        SQLTable resultTable = project.getResultTable();
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        String lastSQL = null;
+        try {
+            con = project.createResultTableConnection();
+            stmt = con.createStatement();
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT ");
+            boolean first = true;
+            for (SQLColumn col : resultTable.getColumns()) {
+                if (!first) sql.append(",\n");
+                sql.append(" result.");
+                sql.append(col.getName());
+                first = false;
+            }
+            SQLIndex sourceTableIndex = project.getSourceTableIndex();
+			if (displayColumns == null || displayColumns.size() == 0) {
+            	displayColumns = new ArrayList<SQLColumn>();
+            	for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
+            		displayColumns.add(col.getColumn());
+            	}
+            }
+            for (SQLColumn col : displayColumns) {
+            	sql.append(",\n");
+            	sql.append(" source1.");
+            	sql.append(col.getName());
+            	sql.append(" as disp1" + displayColumns.indexOf(col));
+            	
+            	sql.append(",\n");
+            	sql.append(" source2.");
+            	sql.append(col.getName());
+            	sql.append(" as disp2" + displayColumns.indexOf(col));
+            }
+            
+            sql.append("\n FROM ");
+            sql.append(DDLUtils.toQualifiedName(resultTable));
+            sql.append(" result,");
+            SQLTable sourceTable = project.getSourceTable();
+			sql.append(DDLUtils.toQualifiedName(sourceTable));
+            sql.append(" source1,");
+            sql.append(DDLUtils.toQualifiedName(sourceTable));
+            sql.append(" source2");
+            int index = 0;
+            for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
+            	if (index == 0) { 
+            		sql.append("\n WHERE");
+            	} else {
+            		sql.append(" AND");
+            	}
+            	sql.append(" result.");
+            	sql.append("DUP_CANDIDATE_1"+index);
+            	sql.append("=");
+            	sql.append("source1." + col.getColumn().getName());
+            	sql.append(" AND");
+            	sql.append(" result.");
+            	sql.append("DUP_CANDIDATE_2"+index);
+            	sql.append("=");
+            	sql.append("source2." + col.getColumn().getName());
+            	index++;
+            }
+            lastSQL = sql.toString();
+            logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
+            rs = stmt.executeQuery(lastSQL);
+            while (rs.next()) {
+                MungeProcess mungeProcess = project.getMungeProcessByName(rs.getString("GROUP_ID"));
+                String statusCode = rs.getString("MATCH_STATUS");
+                MatchType matchStatus = MatchType.typeForCode(statusCode);
+                if (statusCode != null && matchStatus == null) {
+                    session.handleWarning(
+                            "Found a match record with the " +
+                            "unknown/invalid match status \""+statusCode+
+                            "\". Ignoring it.");
+                    continue;
+                }
+                
+				if (mungeProcess != null) {
+                	if (!mungeProcess.isValidate()) continue;
+                }
+                
+                int indexSize = sourceTableIndex.getChildCount();
+                List<Object> lhsKeyValues = new ArrayList<Object>(indexSize);
+                List<Object> rhsKeyValues = new ArrayList<Object>(indexSize);
+                for (int i = 0; i < indexSize; i++) {
+                	Class typeClass = TypeMap.typeClass(sourceTableIndex.getChild(i).getColumn().getType());
+					if (typeClass == BigDecimal.class) {
+                		lhsKeyValues.add(rs.getBigDecimal("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getBigDecimal("DUP_CANDIDATE_2"+i));
+                	} else if (typeClass == Date.class) {
+                		lhsKeyValues.add(rs.getDate("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getDate("DUP_CANDIDATE_2"+i));
+                	} else if (typeClass == Boolean.class) {
+                		lhsKeyValues.add(rs.getBoolean("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getBoolean("DUP_CANDIDATE_2"+i));
+                	} else {
+                		lhsKeyValues.add(rs.getString("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getString("DUP_CANDIDATE_2"+i));
+                	}
+                }
+                List<Object> lhsDisplayValues = new ArrayList<Object>();
+                List<Object> rhsDisplayValues = new ArrayList<Object>();
+                for (int i = 0; i < displayColumns.size(); i++) {
+                    lhsDisplayValues.add(rs.getObject("disp1"+i));
+                    rhsDisplayValues.add(rs.getObject("disp2"+i));
+                }
+                
+                SourceTableRecord rhs = null;
+            	SourceTableRecord lhs = null;
+                
+                if (mungeProcess != null && matchStatus != MatchType.MERGED) {
+                	rhs = makeSourceTableRecord(rhsDisplayValues, rhsKeyValues);
+                	lhs = makeSourceTableRecord(lhsDisplayValues, lhsKeyValues);
+                } else {
+                	rhs = new SourceTableRecord(session, project, null, rhsKeyValues);
+                	lhs = new SourceTableRecord(session, project, null, lhsKeyValues);
+                }
+                
+                PotentialMatchRecord pmr =
+                	new PotentialMatchRecord(mungeProcess, matchStatus, lhs, rhs, false);
+                if (matchStatus == MatchType.MATCH || matchStatus == MatchType.AUTOMATCH) {
+                	if (SQL.decodeInd(rs.getString("DUP1_MASTER_IND"))) {
+                		pmr.setMaster(lhs);
+                	} else {
+                		pmr.setMaster(rhs);
+                	}
+                }
+                if (pmr.getMatchStatus() == null) {
+                	pmr.setMatchStatus(MatchType.UNMATCH);
+                }
+                pmr.setStoreState(StoreState.CLEAN);
+                
+                if (matchStatus == MatchType.MERGED) {
+                	mergedMatches.put(pmr, pmr);
+                } else if (mungeProcess == null) {
+                	if (pmr.getMatchStatus() == null) {
+               			pmr.setMatchStatus(MatchType.UNMATCH);
+                	}
+                	orphanedMatches.put(pmr, pmr);
+            	} else {
+            		addPotentialMatch(pmr);
+            		logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.size());
+                }
+            }
+            
+        } catch (SQLException ex) {
+            logger.error("Error in query: "+lastSQL, ex);
+            session.handleWarning(
+                    "Error in SQL Query!" +
+                    "\nMessage: "+ex.getMessage() +
+                    "\nSQL State: "+ex.getSQLState() +
+                    "\nQuery: "+lastSQL);
+            throw ex;
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
+            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
+            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+        }
+
+    }
+    
+	/**
+	 * Calls {@link #store(Aborter, boolean)} with a null Aborter and debug
+	 * set to false.
+	 * 
+	 * @param aborter
+	 * @throws SQLException
+	 */
+    public void store() throws SQLException {
+    	store(null, false, false);
+    }
+
+	/**
+	 * This calls the regular store with a null aborter
+	 * 
+	 * @param debug
+	 *            Debug mode flag. If true, then any changes made to the
+	 *            database will be rolled back at the end of the method.
+	 *            Otherwise, all changes are committed at the end.
+	 */
+    public void store(boolean useBatchUpdates, boolean debug) throws SQLException {
+    	store(null, useBatchUpdates, debug);
+    }
+
+	/**
+	 * Calls {@link #store(Aborter, boolean)} with the given Aborter and debug
+	 * set to false.
+	 * 
+	 * @param aborter
+	 *            If this argument is not null, it will be checked from time to
+	 *            time.
+	 * @throws SQLException
+	 */
+    public void store(boolean useBatchUpdates, Aborter aborter) throws SQLException {
+    	store(aborter, useBatchUpdates, false);
+    }
+
+	/**
+	 * This algorithm stores and updates all of the potential match records in
+	 * the database. If the potential match record is dirty it will be updated.
+	 * If the potential match record is new it will be added to the database. If
+	 * a potential match record is in the deletedMatches set it will be deleted
+	 * from the database. If the record is clean it will not be modified in any
+	 * way.
+	 * 
+	 * @param aborter
+	 *            If this argument is not null, it will be checked from time to
+	 *            time.
+	 * @param debug
+	 *            Debug mode flag. If true, then any changes made to the
+	 *            database will be rolled back at the end of the method.
+	 *            Otherwise, all changes are committed at the end.
+	 * @throws CancellationException
+	 *             if the aborter's checkCancelled() method does. In this case,
+	 *             the changes to the match pool will be rolled back.
+	 */
+    public void store(Aborter aborter, boolean useBatchUpdates, boolean debug) throws SQLException {
+        logger.debug("Starting to store");
+        setProgress(0);
+        setCancelled(false);
+        setFinished(false);
+        
+        if (sourceTableRecords.size() == 0) return;
+        SQLTable resultTable = project.getResultTable();
+        Connection con = null;
+        String lastSQL = null;
+        PreparedStatement ps = null;
+        int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[0]).getKeyValues().size();
+        try {
+            con = project.createResultTableConnection();
+            boolean supportsBatchUpdates = useBatchUpdates && con.getMetaData().supportsBatchUpdates();
+            con.setAutoCommit(false);
+            StringBuilder sql = new StringBuilder();
+            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
+            sql.append("\n WHERE ");
+            for (int i = 0;; i++) {
+            	sql.append("DUP_CANDIDATE_1" + i + "=?");
+            	sql.append(" AND DUP_CANDIDATE_2" + i + "=?");
+            	if (i + 1 >= numKeyValues) break;
+            	sql.append(" AND ");
+            }
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            
+            if (ps != null) ps.close();
+            ps = null;
+            ps = con.prepareStatement(lastSQL);
+            
+            int batchCount = 0;
+            for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
+            	incrementProgress();
+            	if (aborter != null) {
+            	    aborter.checkCancelled();
+                }
+            	PotentialMatchRecord pmr = it.next();
+            	logger.debug("Dropping " + pmr + " from the database.");
+            	for (int i = 0; i < numKeyValues; i++) {
+            		ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
+            		logger.debug("Param " + (i * 2 + 1) + ": " + pmr.getOriginalLhs().getKeyValues().get(i));
+            		ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
+                    logger.debug("Param " + (i * 2 + 2) + ": " + pmr.getOriginalRhs().getKeyValues().get(i));
+            	}
+            	
+            	// Since not all JDBC drivers support batch updates.
+            	if (supportsBatchUpdates) {
+	        		batchCount++;
+	        		logger.debug("Adding statement to batch");
+	        		ps.addBatch();
+	        		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	        			logger.debug("Executing batch update");
+	        			ps.executeBatch();
+	        			batchCount = 0;
+	        		}
+            	} else {
+            		logger.debug("Executing update statement");
+            		ps.executeUpdate();
+            	}
+            	it.remove();
+            }
+            
+            sql = new StringBuilder();
+            sql.append("UPDATE ");
+            sql.append(DDLUtils.toQualifiedName(resultTable)); 
+            sql.append("\n SET ");
+            sql.append("MATCH_STATUS=?");
+            sql.append(", MATCH_STATUS_DATE=" + SQL.escapeDateTime(con, new Date(System.currentTimeMillis())));
+            sql.append(", MATCH_STATUS_USER=" + SQL.quote(session.getAppUser()));
+            sql.append(", DUP1_MASTER_IND=? ");
+            sql.append("\n WHERE ");
+            for (int i = 0;; i++) {
+            	sql.append("DUP_CANDIDATE_1" + i + "=?");
+            	sql.append(" AND DUP_CANDIDATE_2" + i + "=?");
+            	if (i + 1 >= numKeyValues) break;
+            	sql.append(" AND ");
+            }
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            
+            if (ps != null) ps.close();
+            ps = null;
+            ps = con.prepareStatement(lastSQL);
+            
+            batchCount = 0;
+            for (Iterator<PotentialMatchRecord> it = potentialMatches.keySet().iterator(); it.hasNext();) {
+            	incrementProgress();
+            	
+                if (aborter != null) {
+                    aborter.checkCancelled();
+                }
+                PotentialMatchRecord pmr = it.next();
+            	if (pmr.getStoreState() == StoreState.DIRTY) {
+            		logger.debug("The potential match " + pmr + " was dirty, storing");
+            		ps.setObject(1, pmr.getMatchStatus().getCode());
+            		if (pmr.isLhsMaster()) {
+            			ps.setObject(2, "Y");
+                    } else if (pmr.isRhsMaster()) {
+                    	ps.setObject(2, "N");
+                    } else {
+                    	ps.setNull(2, Types.VARCHAR);
+                    }
+            		for (int i = 0; i < pmr.getOriginalLhs().getKeyValues().size(); i++) {
+            			ps.setObject(i * 2 + 3, pmr.getOriginalLhs().getKeyValues().get(i));
+            			ps.setObject(i * 2 + 4, pmr.getOriginalRhs().getKeyValues().get(i));
+            		}
+
+            		if (supportsBatchUpdates) {
+	            		batchCount++;
+	            		logger.debug("Adding statement to batch");
+	            		ps.addBatch();
+	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	            			logger.debug("Executing batch update");
+	            			ps.executeBatch();
+	            			batchCount = 0;
+	            		}
+            		} else {
+            			logger.debug("Executing update statement");
+            			ps.executeUpdate();
+            		}
+            		pmr.setStoreState(StoreState.CLEAN);
+            	} else if (!it.hasNext() && supportsBatchUpdates) {
+            		// execute remaining batched commands
+            		logger.debug("Executing batch update");
+            		ps.executeBatch();
+            	}
+            	
+            }
+            
+            sql = new StringBuilder();
+            sql.append("INSERT INTO ").append(DDLUtils.toQualifiedName(resultTable)).append(" ");
+            sql.append("(");
+            for (int i = 0; i < numKeyValues; i++) {
+            	sql.append("DUP_CANDIDATE_1").append(i).append(", ");
+            	sql.append("DUP_CANDIDATE_2").append(i).append(", ");
+            }
+            sql.append("MATCH_PERCENT");
+            sql.append(", GROUP_ID");
+            sql.append(", MATCH_STATUS");
+            sql.append(", DUP1_MASTER_IND");
+            sql.append(", MATCH_DATE");
+            sql.append(", MATCH_STATUS_DATE");
+            sql.append(", MATCH_STATUS_USER");
+            
+            //These fields are only used for the old merge engine and will be removed when
+            //the merging is rewritten in Java
+            for (int i = 0; i < numKeyValues; i++) {
+            	sql.append(", DUP_ID").append(i);
+            	sql.append(", MASTER_ID").append(i);
+            }
+            
+            sql.append(")");
+            sql.append("\n VALUES (");
+            
+            for (int i = 0; i < numKeyValues * 2; i++) {
+            	sql.append("?, ");
+            }
+            sql.append("?, ");
+            sql.append("?, ");
+            sql.append("?, ");
+            sql.append("?, ");
+            sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
+            sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
+            sql.append(SQL.quote(session.getAppUser()));
+            for (int i = 0; i < numKeyValues * 2; i++) {
+            	sql.append(", ?");
+            }
+            sql.append(")");
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            
+            if (ps != null) ps.close();
+            ps = null;
+            ps = con.prepareStatement(lastSQL);
+            
+            batchCount = 0;
+            
+            for (Iterator<PotentialMatchRecord> it = potentialMatches.keySet().iterator(); it.hasNext();) {
+            	incrementProgress();
+                if (aborter != null) {
+                    aborter.checkCancelled();
+                }
+                PotentialMatchRecord pmr = it.next();
+            	if (pmr.getStoreState() == StoreState.NEW) {
+            		logger.debug("The potential match " + pmr + " was new, storing");
+            		for (int i = 0; i < numKeyValues; i++) {
+            			ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
+            			ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
+            		}
+            		ps.setObject(numKeyValues * 2 + 1, pmr.getMungeProcess().getMatchPriority());
+            		ps.setObject(numKeyValues * 2 + 2, pmr.getMungeProcess().getName());
+            		ps.setObject(numKeyValues * 2 + 3, pmr.getMatchStatus().getCode());
+            		
+            		SourceTableRecord duplicate;
+            		SourceTableRecord master;
+            		if (pmr.isLhsMaster()) {
+            			ps.setObject(numKeyValues * 2 + 4, "Y");
+            			duplicate = pmr.getOriginalRhs();
+            			master = pmr.getOriginalLhs();
+                    } else if (pmr.isRhsMaster()) {
+                    	ps.setObject(numKeyValues * 2 + 4, "N");
+                    	duplicate = pmr.getOriginalLhs();
+            			master = pmr.getOriginalRhs();
+                    } else {
+                    	ps.setObject(numKeyValues * 2 + 4, null);
+                    	duplicate = null;
+            			master = null;
+                    }
+            		
+            		//These fields are only used for the old merge engine and will be removed when
+                    //the merging is rewritten in Java
+            		if (duplicate != null && master != null) {
+            			for (int i = 0; i < numKeyValues; i++) {
+            				int baseParamIndex = (numKeyValues + i) * 2;
+							ps.setObject(baseParamIndex + 5, duplicate.getKeyValues().get(i));
+            				ps.setObject(baseParamIndex + 6, master.getKeyValues().get(i));
+            			}
+            		} else {
+            			for (int i = 0; i < numKeyValues; i++) {
+            				int baseParamIndex = (numKeyValues + i) * 2;
+							ps.setObject(baseParamIndex + 5, null);
+            				ps.setObject(baseParamIndex + 6, null);
+            			}
+            		}
+            		
+            		if (supportsBatchUpdates) {
+	            		batchCount++;
+	            		logger.debug("Adding insert statement to batch");
+	            		ps.addBatch();
+	            		if (batchCount >= DEFAULT_BATCH_SIZE || !it.hasNext()) {
+	            			logger.debug("Executing batch insert");
+	            			ps.executeBatch();
+	            			batchCount = 0;
+	            		}
+            		} else {
+            			logger.debug("Executing insert statement");
+            			ps.executeUpdate();
+            		}
+            		pmr.setStoreState(StoreState.CLEAN);
+            	} else if (!it.hasNext() && supportsBatchUpdates) {
+            		// execute remaining batched commands
+            		logger.debug("Executing batch insert");
+            		ps.executeBatch();
+            	}
+            }
+            
+            if (ps != null) ps.close();
+            ps = null;
+            
+            if (debug) {
+            	con.rollback();
+            } else {
+            	con.commit();
+            }
+            
+        } catch (SQLException ex) {
+            logger.error("Error in query: "+lastSQL, ex);
+            session.handleWarning(
+                    "Error in SQL Query while storing the Match Pool!" +
+                    "\nMessage: "+ex.getMessage() +
+                    "\nSQL State: "+ex.getSQLState() +
+                    "\nQuery: "+lastSQL);
+            try {
+                con.rollback();
+            } catch (SQLException doubleException) {
+                logger.error("Rollback failed. Squishing this exception since it would shadow the original one:", doubleException);
+            }
+            throw ex;
+        } catch (Exception ex) {
+            try {
+                con.rollback();
+            } catch (SQLException doubleException) {
+                logger.error("Rollback failed. Squishing this exception since it would shadow the original one:", doubleException);
+            }
+            if (ex instanceof RuntimeException) {
+                throw (RuntimeException) ex;
+            } else {
+                throw new RuntimeException(ex);
+            }
+        } finally {
+        	setFinished(true);
+            if (ps != null) try { ps.close(); } catch (SQLException ex) { logger.error("Couldn't close prepared statement", ex); }
+            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+        }
+
+    }
+    
+    /**
+     * Attempts to look up the existing SourceTableRecord instance in
+     * the cache, but makes a new one and puts it in the cache if not found.
+     * 
+     * @param diplayValues The values used to display this record in the UI
+     * @param keyValues The values for this record's unique index
+     * @return The source table record that corresponds with the given key values.
+     * The return value is never null.
+     */
+    private SourceTableRecord makeSourceTableRecord(List<Object> displayValues, List<Object> keyValues) {
+        SourceTableRecord node = sourceTableRecords.get(keyValues);
+        if (node == null) {
+            node = new SourceTableRecord(session, project, displayValues, keyValues);
+            addSourceTableRecord(node);
+        } else {
+        	node.setDisplayValues(displayValues);
+        }
+        return node;
+    }
+    
+    /**
+     * Adds the given source table record to this match pool.
+     * If a SourceTableRecord with the same key values is found, it will get
+     * overwritten by the SourceTableRecord given.
+     * 
+     * @param str The record to add. Its parent pool will be modified to point to
+     * this pool.
+     */
+    public void addSourceTableRecord(SourceTableRecord str) {
+    	str.setPool(this);
+        sourceTableRecords.put(str.getKeyValues(), str);
+    }
+
+    /**
+     * Adds the given potential match to this pool. If another 
+     * PotentialMatchRecord p exists in this pool, where p.equals(pmr) = true,
+     * then if p has a higher match priority, then it will not get added.
+     * (Note that a lower number represents a higher match priority)
+     * 
+     * @param pmr The record to add
+     */
+    public void addPotentialMatch(PotentialMatchRecord pmr) {
+    	
+    	PotentialMatchRecord merged = mergedMatches.get(pmr);
+    	if (merged != null) {
+    		deletedMatches.add(merged);
+    		pmr.setMatchStatus(MatchType.UNMATCH);
+    	}
+    	PotentialMatchRecord existing = potentialMatches.get(pmr);
+    	if (existing != null) { 
+    		logger.debug("Found duplicate match of " + pmr);
+    		Integer otherPriority = existing.getMungeProcess().getMatchPriority();
+    		Integer pmrPriority = pmr.getMungeProcess().getMatchPriority();
+			if (pmrPriority == null || otherPriority != null && otherPriority <= pmrPriority) { 
+    			logger.debug("other's priority is equal or higher, so NOT replacing with pmr");
+    			return;
+    		} else {
+    			logger.debug("pmr's priority is higher, so removing other");
+    			removePotentialMatch(existing);
+    		}
+    	}
+    	// If an equivalent orphaned match (a match with no munge process) is found, mark it for deletion from db
+    	PotentialMatchRecord orphan = orphanedMatches.get(pmr);
+    	if (orphan != null) {
+    		deletedMatches.add(orphan);
+    	}
+    	if (potentialMatches.containsKey(pmr)) {
+            throw new IllegalStateException("Potential match is already in pool (it should not be)");
+        }
+    	potentialMatches.put(pmr, pmr);
+    	recordChangedState(pmr);          // bootstraps the "decided record" cache entry
+    	logger.debug("added " + pmr + " to MatchPool");
+    	pmr.setPool(this);
+    	pmr.getOriginalLhs().addPotentialMatch(pmr);
+    	pmr.getOriginalRhs().addPotentialMatch(pmr);
+    	if (pmr.getMatchStatus() == null) {
+    	    pmr.setMatchStatus(MatchType.UNMATCH);
     	}
     }
     
     /**
-     * Tells whichever reader is currently hooked up to read in all of the old matches.
-     * either its cache (if database) or server (if, kinda obviously, server).
+     * Returns the set of PotentialMatchRecords in this match pool.  
+     * Before calling this, you should populate the pool by calling
+     * one of the findXXX() methods.
+     * <p>
+     * Potential Match records are the edges of this graph of matching records.
+     * For the nodes, see {@link #getSourceTableRecords()}.
      * 
-     * @param displayColumns A list of which SQLColumns to use to represent a SourceTableRecord
-     * in the user interface. If null or empty, then the default will be the SourceTableRecord's 
-     * primary key.
-     * 
-     * @throws SQLException if an unexpected error occurred running the SQL statements
-     * @throws SQLObjectException if SQLObjects fail to populate its children
+     * @return The current list of potential match records.
      */
-    public void findOld(List<SQLColumn> displayColumns) throws SQLException, SQLObjectException {
-    	this.displayColumns = displayColumns;
-		if (matchPoolReader != null) {
-			 matchPoolReader.getAllPreviousMatches();
-    	}
+    public Set<PotentialMatchRecord> getPotentialMatches() {
+        return potentialMatches.keySet();
     }
     
-    @NonProperty
-    public List<SQLColumn> getDisplayColumns() {
-    	return displayColumns;
-    }
-
-	@NonProperty
     public int getNumberOfPotentialMatches() {
-    	int sum = 0;
-    	for(MatchCluster mc : matchClusters) {
-    		sum += mc.getPotentialMatchRecords().size();
-    	}
-    	return sum;
+    	return potentialMatches.size();
     }
     
     /**
@@ -309,20 +792,22 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 * as its original left and right nodes. Null is returned if no PotentialMatchRecord
 	 * is found.
 	 */
-	@NonProperty
     public PotentialMatchRecord getPotentialMatchFromOriginals(SourceTableRecord node1, SourceTableRecord node2) {
     	for (PotentialMatchRecord pmr : node1.getOriginalMatchEdges()) {
-    		if (pmr.getOrigLHS() == node1 && pmr.getOrigRHS() == node2 
-    				|| pmr.getOrigLHS() == node2 && pmr.getOrigRHS() == node1) {
+    		if (pmr.getOriginalLhs() == node1 && pmr.getOriginalRhs() == node2 
+    				|| pmr.getOriginalLhs() == node2 && pmr.getOriginalRhs() == node1) {
     			return pmr;
     		}
     	}
     	return null;
     }
-
-	@NonProperty
-    public List<MatchCluster> getMatchClusters() {
-        return Collections.unmodifiableList(matchClusters);
+    
+    public Collection<SourceTableRecord> getSourceTableRecords() {
+        return Collections.unmodifiableCollection(sourceTableRecords.values());
+    }
+    
+    public SourceTableRecord getSourceTableRecord(List<? extends Object> key) {
+    	return sourceTableRecords.get(key);
     }
 
     /**
@@ -379,7 +864,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
     	logger.debug("Remove the master from the edge between the master and duplicate if the master exists.");
     	PotentialMatchRecord potentialMatch = getPotentialMatchFromOriginals(master, duplicate);
     	if (potentialMatch != null) {
-    		potentialMatch.setMasterRecord(null);
+    		potentialMatch.setMaster(null);
     	}
 
     	logger.debug("Create the graph that contains only nodes reachable by decided edges");
@@ -403,8 +888,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
         }
         
         logger.debug("Find the shortest path to all nodes in the graph");
-    	DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord> da
-    		= new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
+    	DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
     	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
     	
     	if (masterMapping.get(duplicate) == null) {
@@ -430,7 +914,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 * for synthetic edges if the rule set does not already exist.
 	 * IMPORTANT NOTE: In the case that the new munge process for synthetic edges
 	 * had to be created, this pool's match object will be saved using the current
-	 * Match DAO from the getSession().  This is a bit of a strange side effect of this
+	 * Match DAO from the session.  This is a bit of a strange side effect of this
 	 * method, so be careful!
 	 * <p>
 	 * Once the munge process for synthetic edges has been located or created, a
@@ -450,18 +934,19 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 *            potential match record.
 	 * @return The new potential match record that was added to the pool.
 	 */
-    
 	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
 			SourceTableRecord record2) {
-		MungeProcess syntheticMungeProcess = getProject().getMungeProcessByName(MungeProcess.SYNTHETIC_MATCHES);
+		MungeProcess syntheticMungeProcess = project.getMungeProcessByName(MungeProcess.SYNTHETIC_MATCHES);
 		if (syntheticMungeProcess == null) {
 			syntheticMungeProcess = new MungeProcess();
 			syntheticMungeProcess.setName(MungeProcess.SYNTHETIC_MATCHES);
-			getProject().addChild(syntheticMungeProcess);
+			project.getMungeProcessesFolder().addChild(syntheticMungeProcess);
+			MatchMakerDAO<Project> dao = session.getDAO(Project.class);
+			dao.save(project);
 		}
 		
 		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticMungeProcess, MatchType.UNMATCH, record1, record2, true);
-		record1.getCluster().addChild(pmr);
+		addPotentialMatch(pmr);
 		
 		return pmr;
 	}
@@ -484,10 +969,10 @@ public class MatchPool extends MatchMakerMonitorableImpl {
         	if (pmr.getMatchStatus() == MatchType.UNMATCH) {
         		logger.debug("Looking at record " + pmr);
         		SourceTableRecord str;
-        		if (pmr.getOrigLHS() == master) {
-        			str = pmr.getOrigRHS();
+        		if (pmr.getOriginalLhs() == master) {
+        			str = pmr.getOriginalRhs();
         		} else {
-        			str = pmr.getOrigLHS();
+        			str = pmr.getOriginalLhs();
         		}
         		if (noMatchNodes.contains(str)) continue;
         		logger.debug("Adding " + str + " to reachable nodes");
@@ -503,8 +988,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
         GraphModel<SourceTableRecord, PotentialMatchRecord> considerGivenNodesGraph =
         	new GraphConsideringOnlyGivenNodes(this, reachable);
         
-        DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord> da
-        = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
+        DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
     	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, master);
     	
     	defineMatchEdges(considerGivenNodesGraph, masterMapping);
@@ -522,10 +1006,10 @@ public class MatchPool extends MatchMakerMonitorableImpl {
         	for (PotentialMatchRecord pmr : reachableNode.getOriginalMatchEdges()) {
         		if (pmr.getMatchStatus() == MatchType.NOMATCH) {
         			SourceTableRecord str;
-        			if (pmr.getOrigLHS() == reachableNode) {
-        				str =pmr.getOrigRHS();
+        			if (pmr.getOriginalLhs() == reachableNode) {
+        				str =pmr.getOriginalRhs();
         			} else {
-        				str = pmr.getOrigLHS();
+        				str = pmr.getOriginalLhs();
         			}
         			GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
         	    		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
@@ -573,12 +1057,12 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 */
 	public void defineNoMatchOfAny(SourceTableRecord record1) throws SQLObjectException {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
-			if (pmr.getOrigLHS() == pmr.getOrigRHS()) continue;
-			logger.debug("Setting no match between " + pmr.getOrigLHS() + " and " + pmr.getOrigRHS());
-			if (pmr.getOrigLHS() == record1) {
-				defineNoMatch(pmr.getOrigRHS(), pmr.getOrigLHS());
+			if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
+			logger.debug("Setting no match between " + pmr.getOriginalLhs() + " and " + pmr.getOriginalRhs());
+			if (pmr.getOriginalLhs() == record1) {
+				defineNoMatch(pmr.getOriginalRhs(), pmr.getOriginalLhs());
 			} else {
-				defineNoMatch(pmr.getOrigLHS(), pmr.getOrigRHS());
+				defineNoMatch(pmr.getOriginalLhs(), pmr.getOriginalRhs());
 			}
 		}
 	}
@@ -647,13 +1131,13 @@ public class MatchPool extends MatchMakerMonitorableImpl {
         considerGivenNodesGraph = new GraphConsideringOnlyGivenNodes(this, reachable);
         for (PotentialMatchRecord pmr : rhs.getOriginalMatchEdges()) {
         	if (pmr.isMatch()) {
-        		pmr.setMasterRecord(null);
+        		pmr.setMaster(null);
         	}
         }
         logger.debug("Graph now contains " + considerGivenNodesGraph.getNodes().size() + " nodes.");
         
         logger.debug("Find the shortest path to all nodes in the graph");
-    	DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord> da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
+    	DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
     	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
     	
     	for (SourceTableRecord str : reachable) {
@@ -690,7 +1174,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 			boolean isAutoMatch) throws SQLObjectException {
 		logger.debug("Removing all decided edges from the given graph");
     	for (PotentialMatchRecord pmr : graph.getEdges()) {
-   			pmr.setMasterRecord(null);
+   			pmr.setMaster(null);
     	}
     	
     	logger.debug("Setting the new decided edges for this graph of nodes");
@@ -698,8 +1182,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
     	for (Map.Entry<SourceTableRecord, SourceTableRecord> nodeMasterPair : masterMapping.entrySet()) {
     		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
     		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
-   			matchRecord.setMasterRecord(nodeMasterPair.getValue(), isAutoMatch);
-   			decidedRecordsCache.add(matchRecord);
+   			matchRecord.setMaster(nodeMasterPair.getValue(), isAutoMatch);
     	}
 	}
 	
@@ -740,14 +1223,14 @@ public class MatchPool extends MatchMakerMonitorableImpl {
         	
         	SourceTableRecord newUltimateMaster = ultimateMaster;
         	for (PotentialMatchRecord pmr : graph.getOutboundEdges(ultimateMaster)) {
-        		if (pmr.getOrigLHS() != ultimateMaster) {
-        			if (!nodesCrossed.contains(pmr.getOrigLHS())) {
-        				newUltimateMaster = pmr.getOrigLHS();
+        		if (pmr.getOriginalLhs() != ultimateMaster) {
+        			if (!nodesCrossed.contains(pmr.getOriginalLhs())) {
+        				newUltimateMaster = pmr.getOriginalLhs();
         				break;
         			}
         		} else {
-        			if (!nodesCrossed.contains(pmr.getOrigRHS())) {
-        				newUltimateMaster = pmr.getOrigRHS();
+        			if (!nodesCrossed.contains(pmr.getOriginalRhs())) {
+        				newUltimateMaster = pmr.getOriginalRhs();
         				break;
         			}
         		}
@@ -768,11 +1251,11 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	public void defineUnmatchAll(SourceTableRecord record1) throws SQLObjectException {
 		logger.debug("unmatching " + record1 + " from everything");
         for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
-        	if (pmr.getOrigLHS() == pmr.getOrigRHS()) continue;
-        	if (pmr.getOrigLHS() == record1) {
-        		defineUnmatched(pmr.getOrigRHS(), pmr.getOrigLHS());
+        	if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
+        	if (pmr.getOriginalLhs() == record1) {
+        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
         	} else {
-        		defineUnmatched(pmr.getOrigLHS(), pmr.getOrigRHS());
+        		defineUnmatched(pmr.getOriginalLhs(), pmr.getOriginalRhs());
         	}
         }
 	}
@@ -783,15 +1266,32 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 * removed.
 	 */
 	public void resetPool() {
-		for (MatchCluster mc : matchClusters) {
-			try {
-				mc.reset();
-			} catch (IllegalArgumentException e) {
-				throw new RuntimeException(e);
-			} catch (ObjectDependentException e) {
-				throw new RuntimeException(e);
+		for (Iterator<PotentialMatchRecord> it = potentialMatches.keySet().iterator(); it.hasNext(); ) {
+        	PotentialMatchRecord pmr = it.next();
+			if (pmr.isSynthetic()) {
+				it.remove();
+				removePotentialMatch(pmr);
+				continue;
+			}
+			if (pmr.getMatchStatus() != MatchType.UNMATCH) {
+				logger.debug("Unmatching " + pmr + " for resetting the pool.");
+				pmr.setMatchStatus(MatchType.UNMATCH);
 			}
 		}
+	}
+
+	/**
+	 * Removes a potential match record from this pool and the source table
+	 * records that the potential match connects. This also removes the potential
+	 * match record from the database.
+	 */
+	public void removePotentialMatch(PotentialMatchRecord pmr) {
+		if (potentialMatches.remove(pmr) != null) {
+			pmr.getOriginalLhs().removePotentialMatch(pmr);
+			pmr.getOriginalRhs().removePotentialMatch(pmr);
+		}
+		decidedRecordsCache.remove(pmr);
+		deletedMatches.add(pmr);
 	}
 
 	/**
@@ -840,10 +1340,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
 					"invalid munge process");
 		}
-		List<SourceTableRecord> records = new ArrayList<SourceTableRecord>();
-		for(MatchCluster mc : matchClusters) {
-			records.addAll(mc.getSourceTableRecords());
-		}
+		Collection<SourceTableRecord> records = sourceTableRecords.values();
 		
 		logger.debug("Auto-Matching with " + records.size() + " records.");
 		
@@ -872,9 +1369,6 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 		makeAutoMatches(mungeProcess, selected, neighbours, visited);
 		//If we haven't visited all the nodes, we are not done!
 		while (visited.size() != records.size()) {
-			if(visited.size() == 103) {
-					System.out.println("sop");
-			}
 			SourceTableRecord temp = null;
 			for (SourceTableRecord record : records) {
 				if (!visited.contains(record)) {
@@ -933,17 +1427,17 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 			if (pmr.getMungeProcess() == mungeProcess 
 					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
-				if (record == pmr.getOrigLHS() && !visited.contains(pmr.getOrigRHS())) {
-					ret.add(pmr.getOrigRHS());
-				} else if (record == pmr.getOrigRHS() && !visited.contains(pmr.getOrigLHS())) {
-					ret.add(pmr.getOrigLHS());
+				if (record == pmr.getOriginalLhs() && !visited.contains(pmr.getOriginalRhs())) {
+					ret.add(pmr.getOriginalRhs());
+				} else if (record == pmr.getOriginalRhs() && !visited.contains(pmr.getOriginalLhs())) {
+					ret.add(pmr.getOriginalLhs());
 				}
 			}
 		}
 		logger.debug("findAutoMatchNeighbours: The neighbours to automatch for " + record + " are " + ret);
 		return ret;
 	}
-	
+
 	/**
 	 * Completely removes all SourceTableRecords and PotentialMatchRecords, and also
 	 * removes all PotentialMatchRecords in the database repository for this MatchPool
@@ -953,16 +1447,16 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 *            the user cancels it
 	 */
 	public void clear(Aborter aborter) throws SQLException {
-		SQLTable resultTable = getProject().getResultTable();
+		SQLTable resultTable = project.getResultTable();
         Connection con = null;
         String lastSQL = null;
         Statement stmt = null;
         try {
-            con = getProject().createResultTableConnection();
+            con = project.createResultTableConnection();
             con.setAutoCommit(false);
             StringBuilder sql = new StringBuilder();
             sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
-            sql.append("\n WHERE 0 = 0");
+            sql.append("\n WHERE match_status != 'MERGED'");
             lastSQL = sql.toString();
             logger.debug("The SQL statement we are running is " + lastSQL);
             
@@ -976,7 +1470,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
             con.commit();
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
-            getSession().handleWarning(
+            session.handleWarning(
                     "Error in SQL Query while clearing the Match Pool!" +
                     "\nMessage: "+ex.getMessage() +
                     "\nSQL State: "+ex.getSQLState() +
@@ -1014,34 +1508,34 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	}
 	
 	/**
-	 * Completely removes all clusters from the match pool. This will not fire any events because we
-	 * want it to be silent so the server doesn't suddenly remove them all after adding them.
+	 * Completely removes all SourceTableRecords and PotentialMatchRecords.
 	 */
-	public void clearRecords() {
-		matchClusters.clear();
+	public void clearRecords(){
+		sourceTableRecords.clear();
+		potentialMatches.clear();
 		decidedRecordsCache.clear();
+		orphanedMatches.clear();
 	}
 	
 	/**
-	 * Completely removes all clusters from the cache in the listener. They will have to be read anew.
+	 * A package private method for getting the set of orphaned matches.
+	 * This is mainly used for unit testing purposes. 
 	 */
-	public void clearCache() {
-		matchPoolReader.clear();
+	Map<PotentialMatchRecord, PotentialMatchRecord> getOrphanedMatches() {
+		return orphanedMatches;
+	}
+	
+	/**
+	 * A package private method for getting the set of merged matches.
+	 * This is mainly used for unit testing purposes. 
+	 */
+	Map<PotentialMatchRecord, PotentialMatchRecord> getMergedMatches() {
+		return mergedMatches;
 	}
 	
 	@Override
-	@NonProperty
 	public synchronized Integer getJobSize() {
-		return new Integer(getPotentialMatchRecords().size() * 2);
-	}
-	
-	@NonProperty
-	public List<PotentialMatchRecord> getPotentialMatchRecords() {
-		List<PotentialMatchRecord> pmrl = new ArrayList<PotentialMatchRecord>();
-		for (MatchCluster mc : matchClusters) {
-			pmrl.addAll(mc.getPotentialMatchRecords());
-		}
-		return pmrl;
+		return new Integer(deletedMatches.size() + potentialMatches.size() * 2);
 	}
 
 	/**
@@ -1050,52 +1544,7 @@ public class MatchPool extends MatchMakerMonitorableImpl {
 	 * need to treat the match pool as a graph where the edges are the decided
 	 * PMR's.
 	 */
-	private final List<PotentialMatchRecord> decidedRecordsCache = new ArrayList<PotentialMatchRecord>();
-	
-	private final SPListener matchListener = new SPListener() {
-		public void childAdded(SPChildEvent e) {
-			if(e.getSource() instanceof MatchPool) {
-				MatchCluster mc = (MatchCluster)e.getChild();
-				mc.addSPListener(this);
-				for(PotentialMatchRecord pmr : mc.getPotentialMatchRecords()) {
-					if(pmr.getMatchStatus().equals(MatchType.MATCH)) {
-						decidedRecordsCache.add(pmr);
-					}
-				}
-			}
-			if(e.getSource() instanceof MatchCluster && e.getChild() instanceof PotentialMatchRecord) {
-				PotentialMatchRecord pmr = (PotentialMatchRecord)e.getChild();
-				if(pmr.getMatchStatus().equals(MatchType.MATCH)) {
-					decidedRecordsCache.add(pmr);
-				}
-			}
-		}
-
-		@Override
-		public void childRemoved(SPChildEvent e) {
-			if(e.getChild() instanceof MatchCluster) {
-				MatchCluster mc = (MatchCluster)e.getChild();
-				mc.removeSPListener(this);
-			}
-		}
-
-		@Override
-		public void transactionStarted(TransactionEvent e) {
-		}
-
-		@Override
-		public void transactionEnded(TransactionEvent e) {
-		}
-
-		@Override
-		public void transactionRollback(TransactionEvent e) {
-		}
-
-		@Override
-		public void propertyChanged(PropertyChangeEvent evt) {
-		}
-		
-	};
+	private final Set<PotentialMatchRecord> decidedRecordsCache = new HashSet<PotentialMatchRecord>();
 	
     public void recordChangedState(PotentialMatchRecord potentialMatchRecord) {
         if (potentialMatchRecord.isMasterUndecided()) {
@@ -1104,254 +1553,8 @@ public class MatchPool extends MatchMakerMonitorableImpl {
             decidedRecordsCache.add(potentialMatchRecord);
         }
     }
-
-	@NonProperty
-    public List<PotentialMatchRecord> getDecidedRecordsCache() {
+    
+    public Set<PotentialMatchRecord> getDecidedRecordsCache() {
         return decidedRecordsCache;
     }
-
-	@Override
-	public MatchMakerObject duplicate(MatchMakerObject parent) {
-		return null;
-	}
-
-	@Override
-	@NonProperty
-	public List<SPObject> getChildren() {
-		List<SPObject> children = new ArrayList<SPObject>();
-		children.addAll(matchClusters);
-		return children;
-	}
-
-	@Override
-	@NonProperty
-	public List<Class<? extends SPObject>> getAllowedChildTypes() {
-		return allowedChildTypes;
-	}
-	
-	@Override
-	protected void addChildImpl(SPObject child, int index) {
-		if(child instanceof MatchCluster) {
-			addMatchCluster((MatchCluster)child, index);
-		}
-	}
-
-	public void addMatchCluster(MatchCluster mc, int index) {
-		matchClusters.add(index, mc);
-		fireChildAdded(MatchCluster.class, mc, index);
-	}
-	
-	public void addMatchCluster(MatchCluster mc) {
-		addChild(mc, matchClusters.size());
-	}
-	
-	@Override
-	protected boolean removeChildImpl(SPObject child) {
-		if(child instanceof MatchCluster) {
-			return removeMatchCluster((MatchCluster)child);
-		}
-		return false;
-	}
-
-	private boolean removeMatchCluster(MatchCluster child) {
-		int index = matchClusters.indexOf(child);
-		boolean removed = matchClusters.remove(child);
-		if(removed) {
-			fireChildRemoved(MatchCluster.class, child, index);
-		}
-		return removed;
-	}
-
-	@NonBound
-	public void setUseBatchUpdates(boolean useBatchUpdates) {
-			this.useBatchUpdates = useBatchUpdates;
-		
-	}
-
-	@NonBound
-	public boolean isUseBatchUpdates() {
-		return useBatchUpdates;
-	}
-
-	@NonBound
-	public void setDebug(boolean debug) {
-			this.debug = debug;
-	}
-
-	@NonBound
-	public boolean isDebug() {
-		return debug;
-	}
-
-	@NonBound
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-
-	@NonBound
-	public int getLimit() {
-		return limit;
-	}
-
-	@NonBound
-    public int getCurrentMatchNumber() {
-		return currentMatchNumber;
-	}
-
-	@NonBound
-	public void setCurrentMatchNumber(int currentMatchNumber) {
-		this.currentMatchNumber = currentMatchNumber;
-	}
-
-	@Mutator
-	public void setClusterCount(int clusterCount) {
-		int old = this.clusterCount;
-		this.clusterCount = clusterCount;
-		firePropertyChange("clusterCount", old, clusterCount);
-	}
-
-	@Accessor
-	public int getClusterCount() {
-		return clusterCount;
-	}
-	
-	@NonProperty
-	public List<SourceTableRecord> getAllSourceTableRecords() {
-		List<SourceTableRecord> srcl = new ArrayList<SourceTableRecord>();
-		for(MatchCluster mc : matchClusters) {
-			for(SourceTableRecord src : mc.getSourceTableRecords()) {
-				if(src != null) {
-					srcl.add(src);
-				}
-			}
-		}
-		return srcl;
-	}
-
-	public MatchCluster alreadyContains(SourceTableRecord src1, SourceTableRecord src2) {
-		for(MatchCluster mc : matchClusters) {
-			if(mc.getSourceTableRecords().contains(src1) ||
-					mc.getSourceTableRecords().contains(src2)) {
-				return mc;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Takes in a list of foreign clusters and checks, for each match cluster, if it has
-	 * any duplicate source table records to any clusters currently in the match pool.
-	 * If so, then it will merge them into a single larger cluster and remove the old one.
-	 * Otherwise it will add the match cluster to the match pool.
-	 * @param foundMatchClusters List of foreign match clusters
-	 */
-	public void mergeInClusters(List<MatchCluster> foundMatchClusters) {
-		boolean merged;
-		for(MatchCluster mc : foundMatchClusters) {
-			merged = false;
-			for(SourceTableRecord src : mc.getSourceTableRecords()) {
-				for(MatchCluster mc2 : matchClusters) {
-					if(!merged && mc2.getSourceTableRecords().contains(src)){
-						mergeCluster(mc2, mc);
-						merged = true;
-					}
-				}
-			}
-			if(!merged) {
-				addMatchCluster(mc);
-			}
-		}
-	}
-	
-	/**
-	 * Takes in two match records, and will merge one into the other. It does this by
-	 * adding in any extra source table records to the first cluster. Then it will transfer
-	 * the potential match records, reassigning origLHS and origRHS as necessary.
-	 * @param to MergeCluster to merge into
-	 * @param from MergeCluster to take records from
-	 */
-	public void mergeCluster(MatchCluster to, MatchCluster from) {
-		List<SourceTableRecord> srcl = new ArrayList<SourceTableRecord>();
-		List<PotentialMatchRecord> pmrl = new ArrayList<PotentialMatchRecord>();
-		srcl.addAll(from.getSourceTableRecords());
-		pmrl.addAll(from.getPotentialMatchRecords());
-		
-		for(PotentialMatchRecord pmr : pmrl) {
-			for(SourceTableRecord src : to.getSourceTableRecords()) {
-				if(pmr.getOrigLHS().equals(src)) {
-					pmr.setOrigLHS(src);
-				} else if(pmr.getOrigRHS().equals(src)) {
-					pmr.setOrigRHS(src);
-				}
-			}
-		}
-		
-		for(SourceTableRecord src : srcl) {
-			if(!to.getSourceTableRecords().contains(src)) {
-				to.addSourceTableRecord(src);
-			}
-		}
-		
-		for(SourceTableRecord src : to.getSourceTableRecords()) {
-			src.setParent(to);
-		}
-		
-		for(PotentialMatchRecord pmr : pmrl) {
-			to.addPotentialMatchRecord(pmr);
-		}
-	}
-
-	@NonProperty
-	public SourceTableRecord getSourceTableRecord(List<? extends Object> keyList) {
-		SourceTableRecord src;
-		for(MatchCluster mc : getMatchClusters()) {
-			src = mc.getSourceTableRecord(keyList);
-			if(src != null) return src;
-		}
-		return null;
-	}
-	
-	/**
-	 * This function should only be used for testing purposes.
-	 */
-	public void addPotentialMatchRecord(PotentialMatchRecord pmr) {
-		MatchCluster mc = new MatchCluster();
-		mc.addSourceTableRecord(pmr.getOrigLHS());
-		mc.addSourceTableRecord(pmr.getOrigRHS());
-		mc.addPotentialMatchRecord(pmr);
-		mergeInClusters(Collections.singletonList(mc));
-	}
-	
-	/**
-	 * This function should only be used for testing purposes.
-	 */
-	public boolean removePotentialMatchRecord(PotentialMatchRecord pmr) {
-		MatchCluster toCheck = null;
-		for(MatchCluster mc : matchClusters) {
-			if(mc.getPotentialMatchRecords().contains(pmr)) {
-				toCheck = mc;
-			}
-		}
-		if(toCheck != null) {
-			try {
-				if(toCheck.getPotentialMatchRecords().size() == 1) {
-					removeChild(toCheck);
-				}
-				return toCheck.removeChild(pmr);
-			} catch (IllegalArgumentException e) {
-				throw new RuntimeException(e);
-			} catch (ObjectDependentException e) { 
-				throw new RuntimeException(e);
-			}
-		} else {
-			return false;
-		}
-	}
-	
-	/**
-	 * Stores the current MatchPool cache back into the database.
-	 */
-	public void store() {
-		matchPoolListener.store();
-	}
 }

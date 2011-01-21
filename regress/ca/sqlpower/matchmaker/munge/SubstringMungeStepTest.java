@@ -21,16 +21,11 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
-import ca.sqlpower.object.SPObject;
-
-public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeStep> {
-
-	public SubstringMungeStepTest(String name) {
-		super(name);
-	}
+public class SubstringMungeStepTest extends TestCase {
 
 	private SubstringMungeStep step;
 	
@@ -39,23 +34,19 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
-		step = new SubstringMungeStep();
 		super.setUp();
-		MungeProcess process = (MungeProcess) createNewValueMaker(
-        		getRootObject(), null).makeNewValue(
-        				MungeProcess.class, null, "parent process");
-        process.addTransformationMungeStep(step);
+		step = new SubstringMungeStep();
 	}
 
 	public void testCallonNormalString() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
-		step.setBegIndex(3);
-		step.setEndIndex(9);
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
+		step.setParameter(step.END_PARAMETER_NAME, 9);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCabc", result);
@@ -66,30 +57,30 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
 		
-		step.setBegIndex(3);
-		step.setEndIndex(100);
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
+		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCabc", result);
-        step.mungeCommit();
-        step.mungeClose();
+        step.commit();
+        step.close();
 		
-		step.setBegIndex(90);
-		step.setEndIndex(100);
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 90);
+		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		step.call();
-		results = step.getMungeStepOutputs(); 
+		results = step.getChildren(); 
 		output = results.get(0);
 		result = (String)output.getData();
 		assertEquals("", result);
-        step.mungeCommit();
-        step.mungeClose();
+        step.commit();
+        step.close();
 		
-		step.setBegIndex(-100);
-		step.setEndIndex(100);
+		step.setParameter(step.BEGIN_PARAMETER_NAME, -100);
+		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		try {
 			step.call();
@@ -97,19 +88,19 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 		} catch (IndexOutOfBoundsException ex) {
 			// IndexOutOfBoundsException was thrown as expected
 		}
-        step.mungeCommit();
-        step.mungeClose();
+        step.commit();
+        step.close();
 	}
 	
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
-		step.setBegIndex(3);
-		step.setEndIndex(9);
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
+		step.setParameter(step.END_PARAMETER_NAME, 9);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
-		List<MungeStepOutput> results = step.getMungeStepOutputs(); 
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
@@ -124,20 +115,5 @@ public class SubstringMungeStepTest extends MatchMakerTestCase<SubstringMungeSte
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
-	}
-
-	@Override
-	protected SubstringMungeStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepOutput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// no-op
 	}
 }

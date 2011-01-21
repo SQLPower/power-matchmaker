@@ -21,32 +21,28 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerTestCase;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.object.SPObject;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 
-public class DeDupeResultStepTest extends MatchMakerTestCase<DeDupeResultStep> {
-
-	public DeDupeResultStepTest(String name) {
-		super(name);
-	}
+public class DeDupeResultStepTest extends TestCase {
 
 	private DeDupeResultStep step;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
+		super.setUp();
 		MungeStep inputStep = new SQLInputStep();
 		
         for (int i = 0; i < 3; i++) {
-            inputStep.addChild(new MungeStepOutput<String>("output_"+i, String.class), i);
+            inputStep.addChild(new MungeStepOutput<String>("output_"+i, String.class));
         }
 		
 		Project project = new Project();
@@ -72,16 +68,12 @@ public class DeDupeResultStepTest extends MatchMakerTestCase<DeDupeResultStep> {
 		step = new DeDupeResultStep();
 		MungeStepOutput<String> output = new MungeStepOutput<String>("munged", String.class);
 		output.setData("cow");
+		step.connectInput(0, output);
 		
 		MungeProcess mp = new MungeProcess();
 		mp.addChild(inputStep);
 		mp.addChild(step);
-		step.init();
-		step.connectInput(0, output);
-		project.addChild(mp);
-		super.setUp();
-		getRootObject().addChild(project, 0);
-		project.setSession(new TestingMatchMakerSession());
+		project.addMungeProcess(mp);
 	}
 
 	public void test() throws Exception {
@@ -113,31 +105,5 @@ public class DeDupeResultStepTest extends MatchMakerTestCase<DeDupeResultStep> {
 		assertEquals(1, mungedData.length);
 		String output = (String)mungedData[0];
 		assertEquals("cow", output);
-	}
-
-	@Override
-	protected DeDupeResultStep getTarget() {
-		return step;
-	}
-
-	@Override
-	protected Class<? extends SPObject> getChildClassType() {
-		return MungeStepInput.class;
-	}
-	
-	@Override
-	public void testAllowedChildTypesField() throws Exception {
-		// Already in AbstractMungeStep
-	}
-	
-	@Override
-	public void testDuplicate() throws Exception {
-		// Do nothing
-	}
-	
-	@Override
-	public void testPersisterCreatesNewObjects() throws Exception {
-		//This class should only be a final child of a process but hasn't been
-		//updated to this state yet.
 	}
 }

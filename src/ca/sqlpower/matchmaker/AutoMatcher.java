@@ -60,7 +60,7 @@ public class AutoMatcher extends MonitorableImpl {
 	 * a duplicate. When this operation is over, the engine lock will be released.
 	 */
 	public void doAutoMatch(MungeProcess mungeProcess) throws SQLException, SQLObjectException, InterruptedException {
-	    final Project project = mungeProcess.getParent();
+	    final Project project = mungeProcess.getParentProject();
 	    project.acquireEngineLock(this);
 	    try {
 	        actuallyDoAutoMatch(mungeProcess);
@@ -83,14 +83,14 @@ public class AutoMatcher extends MonitorableImpl {
 	    Set<SourceTableRecord> visited = new HashSet<SourceTableRecord>();
 	    try {
 	        setStarted(true);
-	        setJobSize(pool.getAllSourceTableRecords().size());
+	        setJobSize(pool.getSourceTableRecords().size());
 	        setFinished(false);
 	        if (mungeProcess == null) {
 	            throw new IllegalArgumentException("Auto-Match invoked with an " +
 	            "invalid munge process");
 	        }
 
-	        Collection<SourceTableRecord> records = pool.getAllSourceTableRecords();
+	        Collection<SourceTableRecord> records = pool.getSourceTableRecords();
 
 	        logger.debug("Auto-Matching with " + records.size() + " records.");
 
@@ -192,10 +192,10 @@ public class AutoMatcher extends MonitorableImpl {
 		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 			if (pmr.getMungeProcess() == mungeProcess 
 					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
-				if (record == pmr.getOrigLHS() && !visited.contains(pmr.getOrigRHS())) {
-					ret.add(pmr.getOrigRHS());
-				} else if (record == pmr.getOrigRHS() && !visited.contains(pmr.getOrigLHS())) {
-					ret.add(pmr.getOrigLHS());
+				if (record == pmr.getOriginalLhs() && !visited.contains(pmr.getOriginalRhs())) {
+					ret.add(pmr.getOriginalRhs());
+				} else if (record == pmr.getOriginalRhs() && !visited.contains(pmr.getOriginalLhs())) {
+					ret.add(pmr.getOriginalLhs());
 				}
 			}
 			setProgress(visited.size());

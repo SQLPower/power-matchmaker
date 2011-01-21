@@ -31,6 +31,8 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
@@ -68,6 +70,11 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 					throw new SQLObjectRuntimeException(e);
 				}
 			}
+
+			@Override
+			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+				return new StubMatchMakerDAO<T>(businessClass);
+			}
 		};
 		session.setDatabase(db);
 
@@ -84,7 +91,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("cleanseTest", "log");
 		settings.setLog(file);
-		settings.copyPropertiesToTarget(project.getMungeSettings());
+		project.setMungeSettings(settings);
 		engine = new CleanseEngineImpl(session, project);
    	}
 	
@@ -118,17 +125,17 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		mungep.addChild(step);
 		mungep.addChild(ucms);
 		mungep.setName("test");
-		project.addChild(mungep);
+		project.addMungeProcess(mungep);
 		
 		MungeStep mrs = step.getOutputStep();
 		mungep.addChild(mrs);
 		
 		step.refresh(logger);
 		mrs.open(logger);
-        mrs.mungeRollback();
-		mrs.mungeClose();
-		mrs.connectInput(1, ucms.getMungeStepOutputs().get(0));
-		ucms.connectInput(0, step.getMungeStepOutputs().get(1));
+        mrs.rollback();
+		mrs.close();
+		mrs.connectInput(1, ucms.getChildren().get(0));
+		ucms.connectInput(0, step.getChildren().get(1));
 		
 		engine.call();
 
