@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated Oct 23, 2006 12:50:07 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+	<class name="ca.sqlpower.matchmaker.MatchMakerTranslateWord"
+		table="PL_MATCH_TRANSLATE">
+		<id name="oid" type="long" access="field">
+			<column name="MATCH_TRANSLATE_OID" precision="22" scale="0" />
+			<generator class="native">
+				<param name="sequence">pl_match_translate_oid_seq</param>
+			</generator>
+		</id>
+		
+		<many-to-one name="parent"
+			class="ca.sqlpower.matchmaker.MatchMakerTranslateGroup" >
+			<column name="TRANSLATE_GROUP_OID" not-null="true" />
+		</many-to-one>
+		
+		<property name="from" type="string" access="field">
+			<column name="FROM_WORD" length="80" />
+		</property>
+		
+		<property name="to" type="string" access="field">
+			<column name="TO_WORD" length="80" />
+		</property>
+
+		<property name="visible"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="visible_ind" length="1" />
+		</property>
+		
+	</class>
+</hibernate-mapping>

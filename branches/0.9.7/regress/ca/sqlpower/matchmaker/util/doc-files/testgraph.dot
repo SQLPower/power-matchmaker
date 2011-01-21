@@ -1,0 +1,129 @@
+digraph cow
+	{
+
+"Dotted lines represent no match edges"
+
+a2 -> a1 [style=dashed arrowhead=none];
+a2 -> a3 [style=dashed arrowhead=none];
+
+b2 -> b1;
+b2 -> b3 [style=dashed arrowhead=none];
+
+c1 -> c2;
+c2 -> c3 [style=dashed arrowhead=none];
+
+d1 -> d2;
+d2 -> d3;
+
+e1 -> e2;
+e3 -> e2;
+
+f2 -> f1;
+f2 -> f3;
+
+g1 -> g2;
+g2 -> g3 [style=dashed arrowhead=none];
+g3 -> g4;
+
+h2 -> h1;
+h2 -> h3 [style=dashed arrowhead=none];
+h3 -> h4;
+
+i1 -> i2;
+i2 -> i3;
+i3 -> i1 [style=dashed arrowhead=none];
+
+j1 -> j2 [style=dashed arrowhead=none];
+j2 -> j3;
+j3 -> j4;
+j4 -> j2;
+
+k1 -> k2 [style=dashed arrowhead=none];
+k2 -> k3;
+k3 -> k4;
+k4 -> k5;
+k5 -> k3;
+
+l1 -> l2 [style=dashed arrowhead=none];
+l2 -> l3;
+l2 -> l4;
+
+m1 -> m2 [style=dashed arrowhead=none];
+m2 -> m3;
+m3 -> m5;
+m5 -> m6;
+m6 -> m4;
+m4 -> m3;
+m6 -> m7;
+
+n1 -> n2;
+n2 -> n3;
+n3 -> n4;
+
+o1 -> o3 [style=dotted arrowhead=none];
+o2 -> o3;
+
+p1 -> p2 [style=dotted arrowhead=none];
+p2 -> p3;
+p1 -> p3 [style=dotted arrowhead=none];
+p1 -> p4 [style=dashed arrowhead=none];
+p4 -> p3;
+
+q1 -> q2 [style=dotted arrowhead=none];
+q2 -> q3;
+q1 -> q3 [style=dotted arrowhead=none];
+q1 -> q4 [style=dashed arrowhead=none];
+q3 -> q4 [style=dashed arrowhead=none];
+
+r1 -> r2;
+r2 -> r3;
+r3 -> r4;
+r4 -> r1;
+
+s1 -> s2 [style=dotted arrowhead=none];
+s2 -> s3 [style=dashed arrowhead=none];
+s1 -> s3 [style=dashed arrowhead=none];
+s1 -> s4 [style=dashed arrowhead=none];
+s3 -> s4;
+
+t1 -> t2;
+t1 -> t3 [style=dashed arrowhead=none];
+t2 -> t3 [style=dotted arrowhead=none];
+t3 -> t4 [style=dashed arrowhead=none];
+
+u1 -> u2 [style=dashed arrowhead=none];
+u2 -> u3 [style=dashed arrowhead=none];
+u1 -> u3 [style=dotted arrowhead=none];
+
+v1 -> v2 [style=dotted arrowhead=none];
+v2 -> v3 [style=dashed arrowhead=none];
+v1 -> v3 [style=dashed arrowhead=none];
+v1 -> v4 [style=dashed arrowhead=none];
+v3 -> v4;
+
+cycle1 -> cycle2;
+cycle2 -> cycle3;
+cycle3 -> cycle1;
+
+unicycle -> unicycle;
+
+loner;
+"Black edges are in 'Group_One'" -> "Red edges are in 'Group_Two'" [style=invis];
+
+
+w2 -> w1 [style=dashed arrowhead=none color="red"];
+w2 -> w3 [style=dashed arrowhead=none];
+
+x2 -> x1 [style=dashed arrowhead=none];
+x2 -> x3 [style=dashed arrowhead=none color="red"];
+x3 -> x4 [style=dashed arrowhead=none];
+
+y2 -> y1 [style=dashed arrowhead=none];
+y2 -> y3 [style=dotted arrowhead=none];
+y3 -> y4 [style=dashed arrowhead=none];
+
+z2 -> z1 [color="red"];
+z2 -> z3 [style=dashed arrowhead=none];
+z3 -> z4 [color="red"];
+
+}
