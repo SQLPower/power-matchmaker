@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.lang.StringUtils;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -290,6 +291,17 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 		return Boolean.TRUE;
 	}
 	
+	private Boolean isAddressEqualToSuggested(Address address, Address suggestedAddress) {
+		if (StringUtils.equals(address.getAddress(),      suggestedAddress.getAddress()) &&
+			StringUtils.equals(address.getMunicipality(), suggestedAddress.getMunicipality()) &&
+			StringUtils.equals(address.getProvince(),     suggestedAddress.getProvince())) {
+			logger.debug("Suggested address is exactly the same, so skipping");
+			logger.debug("Only one suggestion and it's the same, so skipping");
+			return Boolean.TRUE;
+		}
+		return Boolean.FALSE;
+	}
+	
 	private Boolean doCallParseAndCorrect() throws Exception{
 		addressCorrected = false;
 		
@@ -343,12 +355,11 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 				return Boolean.TRUE;
 			} else if (suggestions.size() == 1) {
 				Address suggestedAddress = suggestions.get(0);
-				if (address.getAddress().equals(suggestedAddress.getAddress()) &&
-						address.getMunicipality().equals(suggestedAddress.getMunicipality()) &&
-						address.getProvince().equals(suggestedAddress.getProvince())) {						logger.debug("Suggested address is exactly the same, so skipping");
-					logger.debug("Only one suggestion and it's the same, so skipping");
-					return Boolean.TRUE;
+				Boolean isEqual = this.isAddressEqualToSuggested(address, suggestedAddress);
+				if (Boolean.TRUE.equals(isEqual)) {
+					return isEqual;
 				}
+				
 			}
 		} else if (setting == PoolFilterSetting.VALID_ONLY) {
 			if (!validator.isSerpValid()) {
@@ -367,11 +378,9 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 				// if only one suggestion and it's the same as the original, then skip
 				if (suggestions.size() == 1) {
 					Address suggestedAddress = suggestions.get(0);
-					if (address.getAddress().equals(suggestedAddress.getAddress()) &&
-							address.getMunicipality().equals(suggestedAddress.getMunicipality()) &&
-							address.getProvince().equals(suggestedAddress.getProvince())) {						logger.debug("Suggested address is exactly the same, so skipping");
-						logger.debug("Only one suggestion and it's the same, so skipping");
-						return Boolean.TRUE;
+					Boolean isEqual = this.isAddressEqualToSuggested(address, suggestedAddress);
+					if (Boolean.TRUE.equals(isEqual)) {
+						return isEqual;
 					}
 				}
 			}
