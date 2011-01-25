@@ -29,7 +29,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -68,8 +68,8 @@ public class AddressPool extends MonitorableImpl{
 	private static final String INPUT_COUNTRY 						= "input_country";
 	private static final String INPUT_POSTAL_CODE 					= "input_postal_code";
 	private static final String OUTPUT_COUNTRY						= "output_country";
-	private static final String OUTPUT_DELIVERY_INSTALLATION_NAME 	= "output_delivery_installation_name";
-	private static final String OUTPUT_DELIVERY_INSTALLATION_TYPE 	= "output_delivery_installation_type";
+	private static final String OUTPUT_DELIVERY_INSTALLATION_NAME 	= "output_delivery_install_name";
+	private static final String OUTPUT_DELIVERY_INSTALLATION_TYPE 	= "output_delivery_install_type";
 	private static final String OUTPUT_DIRECTION_PREFIX				= "output_direction_prefix";
 	private static final String OUTPUT_FAILED_PARSING_STRING		= "output_failed_parsing_string";
 	private static final String OUTPUT_GENERAL_DELIVERY_NAME		= "output_general_delivery_name";
@@ -84,7 +84,7 @@ public class AddressPool extends MonitorableImpl{
 	private static final String OUTPUT_STREET_DIRECTION 			= "output_street_direction";
 	private static final String OUTPUT_STREET_NUMBER 				= "output_street_number";
 	private static final String OUTPUT_STREET_NUMBER_SUFFIX 		= "output_street_number_suffix";
-	private static final String OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE= "output_street_number_suffix_separate";
+	private static final String OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE= "output_st_num_suffix_separate";
 	private static final String OUTPUT_STREET_TYPE 					= "output_street_type";
 	private static final String OUTPUT_STREET_TYPE_PREFIX			= "output_street_type_prefix";
 	private static final String OUTPUT_SUITE 						= "output_suite";
@@ -94,6 +94,27 @@ public class AddressPool extends MonitorableImpl{
 	private static final String OUTPUT_UNPARSED_ADDRESS				= "output_unparsed_address";
 	private static final String OUTPUT_URBAN_BEFORE_RURAL			= "output_urban_before_rural";
 	private static final String OUTPUT_VALID						= "output_valid";
+
+	/**
+	 * The old name for this column. Kept for backwards compatibility. This name
+	 * is no longer used as it is too long for Oracle's 30 character column name
+	 * limit.
+	 */
+	private static final String OLD_OUTPUT_DELIVERY_INSTALLATION_NAME 	= "output_delivery_installation_name";
+	
+	/**
+	 * The old name for this column. Kept for backwards compatibility. This name
+	 * is no longer used as it is too long for Oracle's 30 character column name
+	 * limit.
+	 */
+	private static final String OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE 	= "output_delivery_installation_type";
+	
+	/**
+	 * The old name for this column. Kept for backwards compatibility. This name
+	 * is no longer used as it is too long for Oracle's 30 character column name
+	 * limit.
+	 */
+	private static final String OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE= "output_street_number_suffix_separate";
 	
 	private Map<List<Object>, AddressResult> addresses;
 	
@@ -101,7 +122,7 @@ public class AddressPool extends MonitorableImpl{
 	
 	public AddressPool(Project project) {
 		this.project = project;
-		this.addresses = new HashMap<List<Object>, AddressResult>();
+		this.addresses = new LinkedHashMap<List<Object>, AddressResult>();
 	}
 	
 	/**
@@ -238,6 +259,34 @@ public class AddressPool extends MonitorableImpl{
 	}
 	
 	public void load(Logger engineLogger) throws SQLException, SQLObjectException {
+		load(engineLogger, true, 0, true, null);
+	}
+
+	/**
+	 * Loads the address pool with values for a specific range of entries.
+	 * 
+	 * @param engineLogger
+	 *            Error and other messages will be logged to this logger.
+	 * @param selectAll
+	 *            If true the following parameters don't matter, pass in null or
+	 *            dummy values. If false the following values will specify the
+	 *            size of the pool and where it should be created from.
+	 * @param entryCount
+	 *            How many entries should be in the address pool by the time
+	 *            loading is complete.
+	 * @param forward
+	 *            If we should move forward or backwards from the starting point
+	 *            to look for entries to put in the address pool.
+	 * @param colName
+	 *            XXX HACK!!!! This is for testing. We currently support only
+	 *            one column making up the primary key and it is an int
+	 *            specified as the starting point.
+	 * @param startPoint
+	 *            SEE ABOVE HACK
+	 */
+	public void load(Logger engineLogger, boolean selectAll, int entryCount, 
+			boolean forward, List<Object> startPoint) 
+			throws SQLException, SQLObjectException {
 		setCancelled(false);
 		setStarted(true);
 		setFinished(false);
@@ -248,21 +297,91 @@ public class AddressPool extends MonitorableImpl{
 		Statement stmt = null;
 		ResultSet rs = null;
 		
-		setJobSize(getNumRowsToProcess());
+		if (selectAll) {
+			setJobSize(getNumRowsToProcess());
+		} else {
+			setJobSize(entryCount);
+		}
 		
 		try {
 			con = project.createResultTableConnection();
 			
 			stmt = con.createStatement();
 			
-			StringBuilder sql = new StringBuilder("SELECT * FROM ");
-			appendFullyQualifiedTableName(sql, resultTable);
+			int numKeys = project.getSourceTableIndex().getChildCount();
+			StringBuilder sql;
+			if (selectAll) {
+				sql = new StringBuilder("SELECT * FROM ");
+				appendFullyQualifiedTableName(sql, resultTable);
+			} else {
+				addresses.clear();
+				//TODO what do we pass in for the first page?
+				
+				stmt.setFetchSize(entryCount);
+				stmt.setMaxRows(entryCount);
+				
+				sql = new StringBuilder("SELECT * FROM ");
+				appendFullyQualifiedTableName(sql, resultTable);
+				if (startPoint.size() > 0) {
+					sql.append(" WHERE ");
+
+					for (int i = 0; i < numKeys; i++) {
+						SQLColumn column = project.getSourceTableIndex().getChild(i).getColumn();
+						if (column != null && startPoint.size() > i) {
+							if (i != 0) {
+								sql.append("OR (");
+								for (int j = 0; j < i; j++) {
+									SQLColumn prevColumn = project.getSourceTableIndex().getChild(j).getColumn();
+									if (prevColumn != null) {
+										sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(j).append(" = ");
+										if (SQL.isNumeric(prevColumn.getType()) || SQL.isBoolean(prevColumn.getType())) {
+											sql.append(startPoint.get(j));
+										} else {
+											sql.append("'" + startPoint.get(j) + "'");
+										}
+										sql.append(" AND ");
+									}
+								}
+							}
+							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(i).append(" ");
+							if (forward) {
+								sql.append("> ");
+							} else {
+								sql.append("< ");
+							}
+
+							if (SQL.isNumeric(column.getType()) || SQL.isBoolean(column.getType())) {
+								sql.append(startPoint.get(i));
+							} else {
+								sql.append("'" + startPoint.get(i) + "'");
+							}
+							if (i != 0) {
+								sql.append(")");
+							}
+							sql.append(" ");
+						}
+						sql.append(" ");
+					}
+				}
+				
+				sql.append(" ORDER BY ");
+				for (int i = 0; i < numKeys; i++) {
+					if (i != 0) {
+						sql.append(", ");
+					}
+					sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(i).append(" ");
+					if (forward) {
+						sql.append("ASC");
+					} else {
+						sql.append("DESC");
+					}
+				}
+			}
 			
-			rs = stmt.executeQuery(sql.toString()); 
+			rs = stmt.executeQuery(sql.toString());
 			
 			while (rs.next()) {
 				List<Object> keyValues = new ArrayList<Object>();
-				int numKeys = project.getSourceTableIndex().getChildCount();
 
 				// We need to convert the column types to the base set of
 				// String, Boolean, BigDecimal, and Date that we use in the
@@ -292,8 +411,20 @@ public class AddressPool extends MonitorableImpl{
 				
 				Address address = new Address();
 				address.setCountry(rs.getString(OUTPUT_COUNTRY));
-				address.setDeliveryInstallationName(rs.getString(OUTPUT_DELIVERY_INSTALLATION_NAME));
-				address.setDeliveryInstallationType(rs.getString(OUTPUT_DELIVERY_INSTALLATION_TYPE));
+				String deliveryInstallName;
+				try {
+					deliveryInstallName = rs.getString(OUTPUT_DELIVERY_INSTALLATION_NAME);
+				} catch (SQLException e) {
+					deliveryInstallName = rs.getString(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME);
+				}
+				address.setDeliveryInstallationName(deliveryInstallName);
+				String deliveryInstallType;
+				try {
+					deliveryInstallType = rs.getString(OUTPUT_DELIVERY_INSTALLATION_TYPE);
+				} catch (SQLException e) {
+					deliveryInstallType = rs.getString(OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE);
+				}
+				address.setDeliveryInstallationType(deliveryInstallType);
 				address.setDirectionPrefix(rs.getBoolean(OUTPUT_DIRECTION_PREFIX));
 				address.setFailedParsingString(rs.getString(OUTPUT_FAILED_PARSING_STRING));
 				address.setGeneralDeliveryName(rs.getString(OUTPUT_GENERAL_DELIVERY_NAME));
@@ -307,7 +438,13 @@ public class AddressPool extends MonitorableImpl{
 				address.setStreet(rs.getString(OUTPUT_STREET_NAME));
 				address.setStreetDirection(rs.getString(OUTPUT_STREET_DIRECTION));
 				address.setStreetNumberSuffix(rs.getString(OUTPUT_STREET_NUMBER_SUFFIX));
-				address.setStreetNumberSuffix(rs.getString(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE));
+				String streetNumSuffix;
+				try {
+					streetNumSuffix = rs.getString(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE);
+				} catch (SQLException e) {
+					streetNumSuffix = rs.getString(OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE);
+				}
+				address.setStreetNumberSuffix(streetNumSuffix);
 				address.setStreetNumber(rs.getInt(OUTPUT_STREET_NUMBER));
 				address.setStreetType(rs.getString(OUTPUT_STREET_TYPE));
 				address.setStreetTypePrefix(rs.getBoolean(OUTPUT_STREET_TYPE_PREFIX));
@@ -433,6 +570,24 @@ public class AddressPool extends MonitorableImpl{
 				stmt = null;
 			}
 			
+			// For backward compatibility, see if old table names are being used
+			boolean usingNewNames = true;
+			try {
+				ResultSet oldNameSet = con.getMetaData().getColumns(resultTable.getCatalogName(), 
+						resultTable.getSchemaName(), 
+						resultTable.getName(), 
+						OLD_OUTPUT_DELIVERY_INSTALLATION_NAME);
+				
+				if (oldNameSet.next()) {
+					usingNewNames = false;
+				}
+			}
+			catch (SQLException e) {
+				// just in case something unexpected happens, we don't want this check to derail anything
+				engineLogger.warn("Unexpected exception getting column metadata", e);
+				// ignore
+			}
+			
 			if (dirtyAddresses.size() > 0) {
 				//First, create and UPDATE PreparedStatement to update dirty records
 				sql = new StringBuilder();
@@ -446,8 +601,13 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(INPUT_COUNTRY).append("=?, ");						// 5
 				sql.append(INPUT_POSTAL_CODE).append("=?, ");					// 6
 				sql.append(OUTPUT_COUNTRY).append("=?, ");						// 7
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append("=?, ");	// 8
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=?, ");	// 9			
+				if (usingNewNames) {
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append("=?, ");	// 8
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=?, ");	// 9
+				} else {
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME).append("=?, ");	// 8
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=?, ");	// 9
+				}
 				sql.append(OUTPUT_DIRECTION_PREFIX).append("=?, ");			// 10
 				sql.append(OUTPUT_FAILED_PARSING_STRING).append("=?, ");		// 11
 				sql.append(OUTPUT_GENERAL_DELIVERY_NAME).append("=?, ");		// 12
@@ -462,7 +622,11 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(OUTPUT_STREET_NAME).append("=?, ");					// 21
 				sql.append(OUTPUT_STREET_NUMBER).append("=?, ");				// 22
 				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=?, ");			// 23
-				sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=?, ");			// 23.5
+				if (usingNewNames) {
+					sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=?, ");			// 23.5
+				} else {
+					sql.append(OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=?, ");			// 23.5
+				}
 				sql.append(OUTPUT_STREET_TYPE).append("=?, ");					// 24
 				sql.append(OUTPUT_STREET_TYPE_PREFIX).append("=?, ");			// 25
 				sql.append(OUTPUT_SUITE).append("=?, ");						// 26
@@ -635,9 +799,14 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(INPUT_PROVINCE).append(", ");						
 				sql.append(INPUT_COUNTRY).append(", ");							
 				sql.append(INPUT_POSTAL_CODE).append(", ");						
-				sql.append(OUTPUT_COUNTRY).append(", ");						
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append(", ");	
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append(", ");		
+				sql.append(OUTPUT_COUNTRY).append(", ");	
+				if (usingNewNames) {
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append(", ");	
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append(", ");
+				} else {
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME).append(", ");	
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE).append(", ");
+				}
 				sql.append(OUTPUT_DIRECTION_PREFIX).append(", ");				
 				sql.append(OUTPUT_FAILED_PARSING_STRING).append(", ");			
 				sql.append(OUTPUT_GENERAL_DELIVERY_NAME).append(", ");			
@@ -652,7 +821,11 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(OUTPUT_STREET_NAME).append(", ");					
 				sql.append(OUTPUT_STREET_NUMBER).append(", ");					
 				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append(", ");
-				sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append(", ");
+				if (usingNewNames) {
+					sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append(", ");
+				} else {
+					sql.append(OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append(", ");
+				}
 				sql.append(OUTPUT_STREET_TYPE).append(", ");			
 				sql.append(OUTPUT_STREET_TYPE_PREFIX).append(", ");				
 				sql.append(OUTPUT_SUITE).append(", ");							
