@@ -421,13 +421,13 @@ public class AddressCorrectionMungeStep extends AbstractMungeStep {
 				}
 			case EVERYTHING_WITH_ONE_SUGGESTION:
 				logger.debug("Autovalidating anything with just one suggestion");
-				if (validator.getSuggestions().size() != 1 && autoValidateSetting == AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION) {
+				if (!validator.isValidSuggestion() || (validator.getSuggestions().size() != 1 && autoValidateSetting == AutoValidateSetting.EVERYTHING_WITH_ONE_SUGGESTION)) {
 					logger.debug("Validator has zero or more than one suggestion, so skipping");
 					break;
 				}
 			case EVERYTHING_WITH_SUGGESTION:
 				logger.debug("Autovalidating anything with a suggestion");
-				if (validator.getSuggestions().size() == 0) {
+				if (!validator.isValidSuggestion() || validator.getSuggestions().size() == 0) {
 					logger.debug("Validator has no suggestions, so skipping");
 					break;
 				}
