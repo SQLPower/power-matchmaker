@@ -587,8 +587,7 @@ public class AddressPool extends MonitorableImpl{
 			 */
 			boolean usingNewNames = true;
 			
-			if (columnMetaData.containsKey(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME) ||
-				columnMetaData.containsKey(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME.toUpperCase())) {
+			if (columnMetaData.containsKey(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME)) {
 				usingNewNames = false;  
 			}
 			engineLogger.debug("Using new shorter names? " + usingNewNames);
@@ -1105,7 +1104,7 @@ public class AddressPool extends MonitorableImpl{
 
 	/**
 	 * Build a Map of column meta data for the given table.
-	 * The Map's keys are the column names, which may or may not be in upper case.
+	 * The Map's keys are the column names, in lower case, to match the constants in this class.
 	 * The Map's values are the column widths (as Integers).
 	 * 
 	 * SQLExceptions are not propogated to the caller. However, if no column data
@@ -1122,11 +1121,12 @@ public class AddressPool extends MonitorableImpl{
 				columns = meta.getColumns(table.getCatalogName(), table.getSchemaName(), table.getName(), null);
 			
 				while (columns.next()) {
-					String col = columns.getString("COLUMN_NAME");
+					String col = StringUtils.lowerCase(columns.getString("COLUMN_NAME"));
 					int size = columns.getInt("COLUMN_SIZE");
+					
 					engineLogger.debug("Column: " + col + " Size: " + size);
 					
-					columnMetaData.put(col, Integer.valueOf(size));
+					columnMetaData.put(col.toLowerCase(), Integer.valueOf(size));
 				}
 			} catch (SQLException e) {
 				// Don't propogate exception, just log and keep rolling on.
