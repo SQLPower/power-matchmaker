@@ -124,6 +124,8 @@ public class ValidateStepUtil {
      * @return
      */
     public static boolean equivalentPostalCodes(String code1, String code2) {
+    	if (code1 == null) code1 = "";
+    	if (code2 == null) code2 = "";
     	
     	Matcher matcher1 = postalCodePattern.matcher(code1.trim());
     	Matcher matcher2 = postalCodePattern.matcher(code2.trim());
