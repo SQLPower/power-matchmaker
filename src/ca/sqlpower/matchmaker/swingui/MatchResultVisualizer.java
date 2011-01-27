@@ -27,9 +27,12 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.math.BigInteger;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,6 +48,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -56,6 +60,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
@@ -91,6 +96,7 @@ import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 
+import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -147,12 +153,18 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 							JOptionPane.YES_NO_OPTION,
 							JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) return;
 			try {
+				pool.clearRecords();
+				pool.findAll(displayColumns);
 				pool.resetPool();
 				pool.store();
-    		}catch (SQLException ex) {
+				updateDisplayedMatches(true, startGraph);
+    		} catch (SQLException ex) {
             	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
-            }
+            } catch (SQLObjectException ex) {
+            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
+            			"store changes to the database.", ex);
+			}
     		graph.repaint();
     	}
     };
@@ -211,13 +223,9 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     			
     			try {
     				MatchResultVisualizer.this.displayColumns = chosenColumns;
-					MatchResultVisualizer.this.getPool().findAll(chosenColumns);
-    				MatchResultVisualizer.this.getPanel().repaint();
-    				MatchResultVisualizer.this.doAutoLayout();
-    			} catch (SQLObjectException ex) {
+    				updateDisplayedMatches(true, startGraph);
+    			} catch (Exception ex) {
     				MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
-    			} catch (SQLException sqlEx) {
-    				MMSUtils.showExceptionDialog((Component) e.getSource(), sqlEx.getMessage(), sqlEx);
     			} finally {
     				dialog.dispose();
     			}
@@ -565,13 +573,20 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			autoMatcher = new AutoMatcher(pool);
 			this.mungeProcess = mungeProcess;
 			this.pool = pool;
+			pool.clearRecords();
+			try {
+				pool.findAll(displayColumns);
+			} catch (SQLException e) {
+				MMSUtils.showExceptionDialog(getPanel(), e.getMessage(), e);
+			} catch (SQLObjectException e) {
+				MMSUtils.showExceptionDialog(getPanel(), e.getMessage(), e);
+			}
 		}
 
 		@Override
 		public void cleanup() throws Exception {
 			if (getDoStuffException() != null) {
-				pool.clearRecords();
-				pool.findAll(displayColumns);
+				updateDisplayedMatches(true, startGraph);
 				if (!(getDoStuffException() instanceof CancellationException)) {
 					MMSUtils.showExceptionDialog(getPanel(), "Error during auto-match", getDoStuffException());
 					logger.error("Error during auto-match", getDoStuffException());
@@ -709,8 +724,40 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 	 */
     private final Preferences matchValidationPrefs;
     
+    /**
+     * The number of records to display per page.
+     */
+    private int displayCount = 5;
+
+	/**
+	 * This button will let users move back a group of graphs. The
+	 * {@link #displayCount} defines how many they will move back by.
+	 */
+    private final JButton prevButton;
+    /**
+	 * This button will let users move forward a group of graphs. The
+	 * {@link #displayCount} defines how many they will move forward by.
+	 */
+    private final JButton nextButton;
+    
+    /**
+	 * The graph id that is the first graph in the list of graphs displayed. Used
+	 * to move forwards, back and refresh the currently displayed graphs.
+	 */
+    private BigInteger startGraph = BigInteger.valueOf(0);
+
+	/**
+	 * The graph id that is the last graph in the list of graphs displayed. Used
+	 * to move forwards, back and refresh the currently displayed graphs.
+	 */
+    private BigInteger endGraph = BigInteger.valueOf(4);
+    
     public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, SQLObjectException {
     	super();
+    	if (!MMSUtils.checkForGraphTable(session, project, logger)) {
+    		SQLDatabase db = MMSUtils.setupProjectGraphTable(session, project, logger);
+    		MMSUtils.populateProjectGraphTable(project, logger, db);
+    	}
         this.project = project;
         
 		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
@@ -736,7 +783,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         JPanel topPanel = new JPanel (topLayout);
         PanelBuilder pb = new PanelBuilder(topLayout, topPanel);
         CellConstraints cc = new CellConstraints();
-        JPanel buttonPanel = new JPanel(new GridLayout(4,1));
+        JPanel buttonPanel = new JPanel(new GridLayout(6,1));
         buttonPanel.add(new JButton(chooseDisplayedValueAction));
         
         selectionButton = new MungeProcessSelectionList(project) {
@@ -756,13 +803,10 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			public void run() {
 				graph.setSelectedNode(null);
 				graph.setFocusedNode(null);
-				pool.clearRecords();
 		        try {
-					pool.findAll(displayColumns);
-				} catch (SQLObjectException ex) {
+		        	updateDisplayedMatches(true, startGraph);		        	
+				} catch (Exception ex) {
     				MMSUtils.showExceptionDialog(getPanel(), ex.getMessage(), ex);
-    			} catch (SQLException sqlEx) {
-    				MMSUtils.showExceptionDialog(getPanel(), sqlEx.getMessage(), sqlEx);
     			}
 				((DefaultGraphLayoutCache)graph.getLayoutCache()).clearNodes();
 				updateAutoMatchComboBox();
@@ -775,6 +819,44 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         resetClusterButton = new JButton(resetClusterAction);
         resetClusterButton.setEnabled(selectedNode != null);
         buttonPanel.add(resetClusterButton);
+        JPanel pageCountSelectorPanel = new JPanel();
+		pageCountSelectorPanel.setLayout(new BoxLayout(pageCountSelectorPanel, BoxLayout.X_AXIS));
+		pageCountSelectorPanel.add(new JLabel("# addresses per page"));
+		final JTextField displayCountField = new JTextField(Integer.toString(displayCount));
+		pageCountSelectorPanel.add(displayCountField);
+        displayCountField.addFocusListener(new FocusListener() {
+			public void focusLost(FocusEvent e) {
+				try {
+					displayCount = Integer.parseInt(displayCountField.getText());
+					updateDisplayedMatches(true, startGraph);
+				} catch (NumberFormatException ex) {
+					displayCountField.setText(Integer.toString(displayCount));
+				}
+			}
+			public void focusGained(FocusEvent e) {
+				//do nothing
+			}
+		});
+		buttonPanel.add(pageCountSelectorPanel);
+		
+		DefaultFormBuilder pageButtonBuilder = new DefaultFormBuilder(new FormLayout("pref:grow, 3dlu, pref:grow"));
+		prevButton = new JButton("Prev");
+		prevButton.setAction(new AbstractAction("Prev") {
+			public void actionPerformed(ActionEvent e) {
+				updateDisplayedMatches(false, startGraph.subtract(BigInteger.ONE));
+				nextButton.setEnabled(true);
+			}
+		});
+		prevButton.setEnabled(false);
+		nextButton = new JButton(new AbstractAction("Next") {
+			public void actionPerformed(ActionEvent e) {
+				updateDisplayedMatches(true, endGraph.add(BigInteger.ONE));
+				prevButton.setEnabled(true);
+			}
+		});
+		pageButtonBuilder.append(prevButton);
+		pageButtonBuilder.append(nextButton);
+		buttonPanel.add(pageButtonBuilder.getPanel());
         
         String prefNodePath = "ca/sqlpower/matchmaker/projectSettings/$" +
         						project.getSession().getDatabase().getDataSource().getName() +
@@ -834,7 +916,12 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
         
         pool = new MatchPool(project);
-        pool.findAll(displayColumns);
+        try {
+    		getPool().clearRecords();
+			MatchResultVisualizer.this.getPool().findAll(displayColumns, false, startGraph, true, displayCount);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
         graphModel = new MatchPoolGraphModel(pool);
         graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
         graph.setNodeRenderer(new SourceTableNodeRenderer());
@@ -881,6 +968,45 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         JPanel panel = new JPanel(new BorderLayout(12, 12));
         panel.add(splitPane, BorderLayout.CENTER);
         super.setPanel(panel);
+        updateDisplayedMatches(true, startGraph);
+    }
+
+	/**
+	 * Updates the displayed graphs in the validation screen.
+	 * 
+	 * @param forward
+	 *            Defines if we should move forward (greater) in the displayed
+	 *            matches or backwards.
+	 * @param startPoint
+	 *            The graph number to start at to display graphs. The graph
+	 *            represented by this value will be displayed as well.
+	 */
+    private void updateDisplayedMatches(boolean forward, BigInteger startPoint) {
+    	graph.setSelectedNode(null);
+    	graph.setFocusedNode(null);
+    	try {
+    		getPool().clearRecords();
+			getPool().findAll(displayColumns, false, startPoint, forward, displayCount);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		((DefaultGraphLayoutCache)graph.getLayoutCache()).clearNodes();
+		doAutoLayout();
+		getPanel().repaint();
+		
+		if (forward) {
+			startGraph = startPoint;
+			endGraph = startPoint.add(BigInteger.valueOf(displayCount)).subtract(BigInteger.ONE);
+		} else {
+			startGraph = startPoint.subtract(BigInteger.valueOf(displayCount)).add(BigInteger.ONE);
+			endGraph = startPoint;
+		}
+		if (startGraph.compareTo(BigInteger.ZERO) == -1) {
+			startGraph = BigInteger.ZERO;
+		}
+		if (startGraph.equals(BigInteger.ZERO)) {
+			prevButton.setEnabled(false);
+		}
     }
     
     /**

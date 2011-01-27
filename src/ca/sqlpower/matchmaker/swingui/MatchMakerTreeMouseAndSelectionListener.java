@@ -554,7 +554,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					} else if (node.getActionType() == ProjectActionType.VALIDATE_ADDRESSES) {
 						AddressPool pool = new AddressPool(node.getProject());
 						ProgressMonitor monitor = new ProgressMonitor(owningFrame, "", "", 0, 100);
-						AddressPoolLoadingWorker addressPoolLoadingWorker = new AddressPoolLoadingWorker(pool, swingSession);
+						AddressPoolLoadingWorker addressPoolLoadingWorker = new AddressPoolLoadingWorker(pool, swingSession, node.getProject());
 						ProgressWatcher.watchProgress(monitor, addressPoolLoadingWorker);
 						Thread workerThread = new Thread(addressPoolLoadingWorker);
 						workerThread.start();

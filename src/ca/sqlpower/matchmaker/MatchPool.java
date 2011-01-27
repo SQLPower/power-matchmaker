@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,8 +51,10 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.sql.CachedRowSet;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.sqlobject.SQLTable;
@@ -184,12 +187,81 @@ public class MatchPool extends MonitorableImpl {
      * @throws SQLObjectException if SQLObjects fail to populate its children
      */
     public void findAll(List<SQLColumn> displayColumns) throws SQLException, SQLObjectException {
+    	findAll(displayColumns, true, null, false, 0);
+    }
+
+	/**
+	 * Finds all of the potential matches. Can be limited to a specific range of
+	 * graphs.
+	 * 
+	 * @param displayColumns
+	 *            The columns to display to the user
+	 * @param selectAll
+	 *            If true the following parameters can be defaulted to nulls,
+	 *            empty strings or the like as they will not be used.
+	 * @param startPoint
+	 *            The start point of looking for a set of graphs. If we are
+	 *            going forward in the graphs all of the graphs including and
+	 *            following this number will be retrieved up to the display
+	 *            count value. If we are going backwards all of the graphs
+	 *            including and before this number will be retrieved.
+	 * @param forward
+	 *            If we are going forwards or backwards in the list of graphs.
+	 * @param displayCount
+	 *            The number of graphs to retrieve.
+	 * @throws SQLException
+	 * @throws SQLObjectException
+	 */
+    public void findAll(List<SQLColumn> displayColumns, boolean selectAll, BigInteger startPoint, 
+    		boolean forward, int displayCount) throws SQLException, SQLObjectException {
         SQLTable resultTable = project.getResultTable();
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
         String lastSQL = null;
         try {
+        	CachedRowSet pkCRS = null;
+        	if (!selectAll) {
+        		SQLDatabase db = MatchMakerUtils.createProjectGraphDataSource(session, project);
+        		try {
+        			con = db.getConnection();
+        			stmt = con.createStatement();
+        			StringBuffer sb = new StringBuffer();
+        			
+        			sb.append("SELECT * FROM ").append(MatchMakerUtils.GRAPH_TABLE_NAME);
+        			if (startPoint != null) {
+        				sb.append(" WHERE ").append(MatchMakerUtils.GRAPH_ID_COL_NAME);
+        				if (forward) {
+        					sb.append(" >= ");
+        				} else {
+        					sb.append(" <= ");
+        				}
+        				sb.append(startPoint);
+        				sb.append(" AND ").append(MatchMakerUtils.GRAPH_ID_COL_NAME);
+        				if (forward) {
+        					sb.append(" < ").append(startPoint.add(BigInteger.valueOf(displayCount)));
+        				} else {
+        					sb.append(" > ").append(startPoint.subtract(BigInteger.valueOf(displayCount)));
+        				}
+        			}
+        			sb.append(" ORDER BY ").append(MatchMakerUtils.GRAPH_ID_COL_NAME);
+        			if (forward) {
+        				sb.append(" ASC");
+        			} else {
+        				sb.append(" DESC");
+        			}
+        			rs = stmt.executeQuery(sb.toString());
+        			pkCRS = new CachedRowSet();
+        			pkCRS.populate(rs);
+                } finally {
+                    if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
+                    if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
+                    if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+                    rs = null;
+                    stmt = null;
+                    con = null;
+                }
+        	}
             con = project.createResultTableConnection();
             stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
@@ -245,6 +317,30 @@ public class MatchPool extends MonitorableImpl {
             	sql.append("=");
             	sql.append("source2." + col.getColumn().getName());
             	index++;
+            }
+            if (!selectAll && pkCRS.size() > 0) {
+            	sql.append(" AND (");
+            	while (pkCRS.next()) {
+            		if (!pkCRS.isFirst()) {
+            			sql.append(" OR");
+            		}
+            		sql.append("(");
+            		int i = 0;
+            		for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
+            			if (i > 0) {
+            				sql.append(" AND");
+            			}
+            			sql.append("DUP_CANDIDATE_1").append(i).append(" = ");
+            			if (SQL.isNumeric(col.getColumn().getType()) || SQL.isBoolean(col.getColumn().getType())) {
+							sql.append(pkCRS.getObject(i + 2));
+						} else {
+							sql.append("'" + pkCRS.getObject(i + 2) + "'");
+						}
+            			i++;
+            		}
+            		sql.append(")");
+            	}
+            	sql.append(")");
             }
             lastSQL = sql.toString();
             logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);

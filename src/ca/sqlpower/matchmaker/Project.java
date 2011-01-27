@@ -373,7 +373,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * @param baseName The base name of the new columns.
 	 * @throws SQLObjectException
 	 */
-	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws SQLObjectException {
+	public void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws SQLObjectException {
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);

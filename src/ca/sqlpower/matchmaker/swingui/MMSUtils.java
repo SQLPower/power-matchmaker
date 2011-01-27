@@ -30,10 +30,14 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
@@ -60,10 +64,23 @@ import ca.sqlpower.architect.ArchitectVersion;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.graph.ConnectedComponentFinder;
+import ca.sqlpower.graph.GraphModel;
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
+import ca.sqlpower.matchmaker.MatchPool;
+import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.SourceTableRecordDisplayComparator;
+import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sqlobject.SQLColumn;
+import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLIndex;
 import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLObjectRuntimeException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
@@ -373,4 +390,187 @@ public class MMSUtils {
 		editor.setLocationRelativeTo(null);
 		editor.setVisible(true);
 	}
+
+	/**
+	 * This method will load the entire pool of matches into memory, create the
+	 * subgraphs based on the potential matches, and store them in a Derby
+	 * database on the user's system.
+	 * 
+	 * @param project
+	 * @param logger
+	 * @param db
+	 * @throws SQLException
+	 */
+	public static void populateProjectGraphTable(Project project, Logger logger, SQLDatabase db) throws SQLException {
+		Connection testConnection;
+		// This will store the graphs in a derby table in the .mm folder to
+		// allow the validation screen to load up faster.
+	    MatchPool pool = new MatchPool(project);
+        try {
+			pool.findAll(null);
+		} catch (SQLObjectException e) {
+			throw new SQLObjectRuntimeException(e);
+		}
+        GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel = new MatchPoolGraphModel(pool);
+        ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord> ccf =
+            new ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord>(new SourceTableRecordDisplayComparator());
+        Set<Set<SourceTableRecord>> components = ccf.findConnectedComponents(graphModel);
+
+        testConnection = null;
+        PreparedStatement ps = null;
+        try {
+        	testConnection = db.getConnection();
+        	StringBuffer sb = new StringBuffer();
+        	sb.append("INSERT INTO ");
+        	sb.append(MatchMakerUtils.GRAPH_TABLE_NAME);
+        	sb.append(" (").append(MatchMakerUtils.GRAPH_ID_COL_NAME);
+        	for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
+        		sb.append(",");
+        		sb.append(MatchMakerUtils.PK_KEY_PREFIX).append(i);
+        	}
+        	sb.append(") VALUES (");
+        	for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
+        		sb.append("?,");
+        	}
+        	sb.append("?)");
+        	ps = testConnection.prepareStatement(sb.toString());
+        	int i = 0;
+        	for (Set<SourceTableRecord> graph : components) {
+        		for (SourceTableRecord str : graph) {
+        			ps.setObject(1, i);
+        			for (int j = 0; j < str.getKeyValues().size(); j++) {
+        				ps.setObject(j + 2, str.getKeyValues().get(j));
+        			}
+        			ps.execute();
+        		}
+        		i++;
+        	}
+        } catch (SQLObjectException e) {
+        	throw new RuntimeException(e);
+		} finally {
+        	if (ps != null) {
+        		try {
+        			ps.close();
+        		} catch (Exception e) {
+        			logger.error("Error closing statement to graph db.", e);
+        		}
+        	}
+        	if (testConnection != null) {
+        		try {
+        			testConnection.close();
+        		} catch (Exception e) {
+        			logger.error("Error closing connection test.", e);
+        		}
+        	}
+        }
+	}
+
+	/**
+	 * Returns true if there is a table that exists to contain the graph
+	 * groupings in the .mm directory.
+	 */
+	public static boolean checkForGraphTable(MatchMakerSession session, Project project, Logger logger) {
+		SQLDatabase db = MatchMakerUtils.createProjectGraphDataSource(session, project);
+		Connection con = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		try {
+			con = db.getConnection();
+			stmt = con.createStatement();
+			stmt.setFetchSize(1);
+			stmt.setMaxRows(1);
+			try {
+				rs = stmt.executeQuery("SELECT * FROM " + MatchMakerUtils.GRAPH_TABLE_NAME);
+				return true;
+			} catch (SQLException e) {
+				return false;
+			}
+			// XXX Should use getMetaData().getTables() but it does not return
+			// expected results so hacking a bit due to time.
+//			rs = con.getMetaData().getTables(null, null, MatchMakerUtils.GRAPH_TABLE_NAME, null);
+//			if (rs.next()) {
+//				return true;
+//			}
+		} catch (SQLObjectException e) {
+			throw new SQLObjectRuntimeException(e);
+		} catch (SQLException e) {
+			throw new RuntimeException("There was an error connecting to a local Derby database. " +
+        			"Please check your database type information for the type that starts with Derby. " +
+        			"Also ensure a correct driver exists.", e);
+		} finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					logger.error(e);
+				}
+			}
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					logger.error(e);
+				}
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException e) {
+					logger.error(e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Drops any existing graph table and re-creates it. 
+	 */
+	public static SQLDatabase setupProjectGraphTable(MatchMakerSession session, Project project, Logger logger) {
+		SQLDatabase db = MatchMakerUtils.createProjectGraphDataSource(session, project);
+        Connection testConnection = null;
+        Statement stmt = null;
+        try {
+        	testConnection = db.getConnection();
+        	stmt = testConnection.createStatement();
+        	try {
+        		stmt.execute("DROP TABLE " + MatchMakerUtils.GRAPH_TABLE_NAME);
+        	} catch (SQLException e) {
+        		//squishing as the table may not exist which is fine.
+        	}
+        	SQLTable graphTable = new SQLTable(db, true);
+			graphTable.setName(MatchMakerUtils.GRAPH_TABLE_NAME);
+			graphTable.addColumn(new SQLColumn(graphTable, MatchMakerUtils.GRAPH_ID_COL_NAME, Types.BIGINT, 0, 0));
+			project.addResultTableColumns(graphTable, project.getSourceTableIndex(), MatchMakerUtils.PK_KEY_PREFIX);
+    		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(db.getDataSource());
+    		ddlg.addTable(graphTable);
+    		List<DDLStatement> ddlStatements = ddlg.getDdlStatements();
+    		for (DDLStatement statement : ddlStatements) {
+    			stmt.execute(statement.getSQLText());
+    		}
+        } catch (SQLObjectException e) {
+        	throw new SQLObjectRuntimeException(e);
+        } catch (Exception e) {
+        	//TODO Make this a friendly error message not a runtime exception.
+        	throw new RuntimeException("There was an error connecting to a local Derby database. " +
+        			"Please check your database type information for the type that starts with Derby. " +
+        			"Also ensure a correct driver exists.", e);
+        } finally {
+        	if (stmt != null) {
+        		try {
+        			stmt.close();
+        		} catch (Exception e) {
+        			logger.error("Error closing statement to graph db.", e);
+        		}
+        	}
+        	if (testConnection != null) {
+        		try {
+        			testConnection.close();
+        		} catch (Exception e) {
+        			logger.error("Error closing connection test.", e);
+        		}
+        	}
+        }
+		return db;
+	}	
+	
 }
