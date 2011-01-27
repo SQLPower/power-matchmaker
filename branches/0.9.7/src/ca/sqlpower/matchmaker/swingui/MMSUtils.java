@@ -29,6 +29,7 @@ import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -571,6 +572,54 @@ public class MMSUtils {
         	}
         }
 		return db;
-	}	
-	
+	}
+
+	/**
+	 * Returns the largest graph number so we know when we get to the end of the
+	 * generated graphs.
+	 */
+	public static BigInteger findMaxGraphNumber(MatchMakerSession session, Project project) throws SQLException {
+		SQLDatabase db = MatchMakerUtils.createProjectGraphDataSource(session, project);
+        Connection testConnection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+        	testConnection = db.getConnection();
+        	stmt = testConnection.createStatement();
+        	rs = stmt.executeQuery("SELECT MAX(" + MatchMakerUtils.GRAPH_ID_COL_NAME + ") FROM " + MatchMakerUtils.GRAPH_TABLE_NAME);
+        	if (rs.next()) {
+        		if (rs.getBigDecimal(1) != null) {
+        			return rs.getBigDecimal(1).toBigInteger();
+        		} else {
+        			return BigInteger.ZERO;
+        		}
+        	} else {
+        		return BigInteger.ZERO;
+        	}
+        } catch (SQLObjectException e) {
+        	throw new SQLObjectRuntimeException(e);
+		} finally {
+			if (rs != null) {
+        		try {
+        			rs.close();
+        		} catch (Exception e) {
+        			logger.error("Error closing statement to graph db.", e);
+        		}
+        	}
+        	if (stmt != null) {
+        		try {
+        			stmt.close();
+        		} catch (Exception e) {
+        			logger.error("Error closing statement to graph db.", e);
+        		}
+        	}
+        	if (testConnection != null) {
+        		try {
+        			testConnection.close();
+        		} catch (Exception e) {
+        			logger.error("Error closing connection test.", e);
+        		}
+        	}
+        }
+	}
 }
