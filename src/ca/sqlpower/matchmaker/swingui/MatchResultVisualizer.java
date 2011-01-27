@@ -752,12 +752,15 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 	 */
     private BigInteger endGraph = BigInteger.valueOf(4);
     
+    private final BigInteger maxGraphNumber;
+    
     public MatchResultVisualizer(Project project, MatchMakerSwingSession session) throws SQLException, SQLObjectException {
     	super();
     	if (!MMSUtils.checkForGraphTable(session, project, logger)) {
     		SQLDatabase db = MMSUtils.setupProjectGraphTable(session, project, logger);
     		MMSUtils.populateProjectGraphTable(project, logger, db);
     	}
+    	maxGraphNumber = MMSUtils.findMaxGraphNumber(session, project);
         this.project = project;
         
 		if (!project.doesSourceTableExist() || !project.verifySourceTableStructure()) {
@@ -1006,6 +1009,12 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
 		if (startGraph.equals(BigInteger.ZERO)) {
 			prevButton.setEnabled(false);
+		}
+		if (endGraph.compareTo(maxGraphNumber) == 1) {
+			endGraph = maxGraphNumber;
+		}
+		if (endGraph.equals(maxGraphNumber)) {
+			nextButton.setEnabled(false);
 		}
     }
     
