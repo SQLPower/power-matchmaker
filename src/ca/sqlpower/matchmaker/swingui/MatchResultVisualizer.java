@@ -592,6 +592,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 					logger.error("Error during auto-match", getDoStuffException());
 				}
 			}
+			updateDisplayedMatches(true, startGraph);
 			graph.repaint();
 		}
 
