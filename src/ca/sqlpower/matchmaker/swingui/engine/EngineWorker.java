@@ -30,6 +30,7 @@ import javax.swing.text.Document;
 import org.apache.log4j.Appender;
 
 import ca.sqlpower.matchmaker.EngineSettingException;
+import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableException;
@@ -111,7 +112,10 @@ class EngineWorker extends SPSwingWorker {
 	
 	@Override
 	public void doStuff() throws EngineSettingException, IOException, SQLException, SourceTableException, InterruptedException {
-		SQLDatabase db = MMSUtils.setupProjectGraphTable(session, project, engine.getLogger());
+		SQLDatabase db = null;
+		if (engine instanceof MatchEngineImpl) {
+			 db = MMSUtils.setupProjectGraphTable(session, project, engine.getLogger());
+		}
         
 	    project.acquireEngineLock(engine);
 	    try {
@@ -122,7 +126,9 @@ class EngineWorker extends SPSwingWorker {
 	        project.releaseEngineLock(engine);
 	    }
 
-		MMSUtils.populateProjectGraphTable(project, engine.getLogger(), db);
+	    if (engine instanceof MatchEngineImpl) {
+	    	MMSUtils.populateProjectGraphTable(project, engine.getLogger(), db);
+	    }
 	}
 
 	@Override
