@@ -1094,11 +1094,27 @@ public class AddressPool extends MonitorableImpl{
 	    String ruralRouteNumber = adjustSize(address.getRuralRouteNumber(), columnData.get(OUTPUT_RURAL_ROUTE_NUMBER));
 	    address.setRuralRouteNumber(ruralRouteNumber);
 	    
+	    String ruralRouteType = adjustSize(address.getRuralRouteType(), columnData.get(OUTPUT_RURAL_ROUTE_TYPE));
+	    address.setRuralRouteType(ruralRouteType);
+	    
+	    // Street details.
 	    String street = adjustSize(address.getStreet(), columnData.get(OUTPUT_STREET_NAME));
 	    address.setStreet(street);
 	    
+	    String streetDirection = adjustSize(address.getStreetDirection(), columnData.get(OUTPUT_STREET_DIRECTION));
+	    address.setStreetDirection(streetDirection);
+	    
+	    String streetNumberSuffix = adjustSize(address.getStreetNumberSuffix(), columnData.get(OUTPUT_STREET_NUMBER_SUFFIX));
+	    address.setStreetNumberSuffix(streetNumberSuffix);
+	
+	    String streetType = adjustSize(address.getStreetType(), columnData.get(OUTPUT_STREET_TYPE));
+	    address.setStreetType(streetType);
+	    
 	    String unparsedAddressLine = adjustSize(address.getUnparsedAddressLine1(), columnData.get(OUTPUT_UNPARSED_ADDRESS));
 	    address.setUnparsedAddressLine1(unparsedAddressLine);
+	
+	    String suiteType = adjustSize(address.getSuiteType(), columnData.get(OUTPUT_SUITE_TYPE));
+	    address.setSuiteType(suiteType);
 	    			
 	}
 
