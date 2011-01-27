@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.swingui.address;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -39,15 +40,18 @@ public class AddressPoolLoadingWorker extends SPSwingWorker {
 	private MatchMakerSwingSession session;
 	private AddressPool pool;
 	private AddressValidationPanel panel;
+
+	private final Project project;
 	
 	/**
 	 * @param pool The Address Pool that we want to load and display in an {@link AddressValidationPanel}
 	 * @param session The {@link MatchMakerSwingSession} that will contain the panel we generate 
 	 */
-	public AddressPoolLoadingWorker(AddressPool pool, MatchMakerSwingSession session) {
+	public AddressPoolLoadingWorker(AddressPool pool, MatchMakerSwingSession session, Project project) {
 		super(session);
 		this.session = session;
 		this.pool = pool;
+		this.project = project;
 	}
 
 	@Override
@@ -62,8 +66,7 @@ public class AddressPoolLoadingWorker extends SPSwingWorker {
 	@Override
 	public void doStuff() throws Exception {
 		setMessage("Loading invalid addresses");
-		pool.load(logger);
-		panel = new AddressValidationPanel(session, pool);
+		panel = new AddressValidationPanel(session, pool, project);
 	}
 
 	@Override

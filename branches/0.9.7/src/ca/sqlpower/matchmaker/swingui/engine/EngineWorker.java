@@ -35,6 +35,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableException;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLObjectException;
 import ca.sqlpower.swingui.DocumentAppender;
 import ca.sqlpower.swingui.ProgressWatcher;
@@ -44,7 +45,7 @@ import ca.sqlpower.swingui.SPSwingWorker;
  * A SPSwingWorker implementation that runs a MatchMakerEngine.
  */
 class EngineWorker extends SPSwingWorker {
-
+	
 	/**
 	 * The maximum number of characters that will be displayed in the engine
 	 * output {@link JTextArea}. This is to keep the buffer from getting too
@@ -110,6 +111,8 @@ class EngineWorker extends SPSwingWorker {
 	
 	@Override
 	public void doStuff() throws EngineSettingException, IOException, SQLException, SourceTableException, InterruptedException {
+		SQLDatabase db = MMSUtils.setupProjectGraphTable(session, project, engine.getLogger());
+        
 	    project.acquireEngineLock(engine);
 	    try {
 	        appender = new DocumentAppender(engineOutputDoc, true, LOG_OUTPUT_CHAR_LIMIT);
@@ -119,6 +122,7 @@ class EngineWorker extends SPSwingWorker {
 	        project.releaseEngineLock(engine);
 	    }
 
+		MMSUtils.populateProjectGraphTable(project, engine.getLogger(), db);
 	}
 
 	@Override

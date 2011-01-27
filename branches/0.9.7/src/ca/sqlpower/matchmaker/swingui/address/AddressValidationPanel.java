@@ -22,24 +22,31 @@ package ca.sqlpower.matchmaker.swingui.address;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.AddressPool;
 import ca.sqlpower.matchmaker.address.AddressResult;
@@ -47,6 +54,8 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.sqlobject.SQLObjectException;
 
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
 import com.sleepycat.je.DatabaseException;
 
 public class AddressValidationPanel extends NoEditEditorPane {
@@ -56,7 +65,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
     /**
      * A collection of invalid addresses
      */
-    private Collection<AddressResult> addressResults;
+    private final List<AddressResult> addressResults = new ArrayList<AddressResult>();
     
     private AddressDatabase addressDatabase;
     
@@ -95,29 +104,45 @@ public class AddressValidationPanel extends NoEditEditorPane {
     
     private AddressPool pool;
     
-    public AddressValidationPanel(MatchMakerSwingSession session, AddressPool pool) {
+    /**
+     * The number of addresses to display at a time. 
+     */
+    private int displayCount = 5;
+    
+    private final List<Object> startPoint;
+    private final List<Object> endPoint;
+    private final int pkeyChildCount;
+
+	private final JButton prevButton = new JButton(new AbstractAction("Prev") {
+		public void actionPerformed(ActionEvent e) {
+			updateDisplayedAddresses(false, startPoint);
+			nextButton.setEnabled(true);
+		}
+	});
+
+	private final JButton nextButton = new JButton(new AbstractAction("Next") {
+		public void actionPerformed(ActionEvent e) {
+			updateDisplayedAddresses(true, endPoint);
+			prevButton.setEnabled(true);
+		}
+	});
+
+    public AddressValidationPanel(MatchMakerSwingSession session, AddressPool pool, Project project) {
+    	try {
+    		pkeyChildCount = project.getSourceTableIndex().getChildCount();
+    	} catch (SQLObjectException e) {
+    		throw new RuntimeException("A database exception occured while trying to connect to the Berkley DB", e);
+    	}
+    	startPoint = new ArrayList<Object>(pkeyChildCount);
+    	endPoint = new ArrayList<Object>(pkeyChildCount);
 		try {
 			addressDatabase = new AddressDatabase(new File(session.getContext().getAddressCorrectionDataPath()));
 		} catch (DatabaseException e) {
 			throw new RuntimeException("A database exception occured while trying to connect to the Berkley DB", e);
 		} 
 		this.pool = pool;
-		addressResults = pool.getAddressResults(logger);
 
-		Object[] addressArray = addressResults.toArray();
-		for (int i = 0; i < addressArray.length; i++) {
-			AddressResult address =(AddressResult)addressArray[i];
-			allResults.add(0, address);
-//			if (!address.getOutputAddress().isEmptyAddress()) {
-				if (address.isValid()) {
-					validResults.add(0, address);
-				} else {
-					invalidResults.add(0, address);
-				}
-//			} else {
-//				invalidResults.add(0, address);
-//			}
-		}
+		updateDisplayedAddresses(true, startPoint);
 
 		needsValidationList = new JList(allResults);
 		needsValidationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -146,12 +171,97 @@ public class AddressValidationPanel extends NoEditEditorPane {
 
 		});			
 		validateResultPane.add(displayComboBox);
+		JPanel pageCountSelectorPanel = new JPanel();
+		pageCountSelectorPanel.setLayout(new BoxLayout(pageCountSelectorPanel, BoxLayout.X_AXIS));
+		pageCountSelectorPanel.add(new JLabel("# addresses per page"));
+		final JTextField displayCountField = new JTextField(Integer.toString(displayCount));
+		pageCountSelectorPanel.add(displayCountField);
+		displayCountField.addFocusListener(new FocusListener() {
+			public void focusLost(FocusEvent e) {
+				try {
+					displayCount = Integer.parseInt(displayCountField.getText());
+					updateDisplayedAddresses(true, startPoint);
+				} catch (NumberFormatException ex) {
+					displayCountField.setText(Integer.toString(displayCount));
+				}
+			}
+			public void focusGained(FocusEvent e) {
+				//do nothing
+			}
+		});
+		validateResultPane.add(pageCountSelectorPanel);
+		
+		DefaultFormBuilder pageButtonBuilder = new DefaultFormBuilder(new FormLayout("pref:grow, 3dlu, pref:grow"));
+
+		prevButton.setEnabled(false);
+		pageButtonBuilder.append(prevButton);
+		pageButtonBuilder.append(nextButton);
+		validateResultPane.add(pageButtonBuilder.getPanel());
+		
+		DefaultFormBuilder pageLabelBuilder = new DefaultFormBuilder(new FormLayout("fill:pref:grow"));
+		validateResultPane.add(pageLabelBuilder.getPanel());
 		validateResultPane.add(addressPane);
 
 		horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, validateResultPane,
 				new JLabel("To begin address validation, please select an address from the list.",	JLabel.CENTER));
 		setPanel(horizontalSplitPane);
 	}
+
+	/**
+	 * Call this method to change the addresses displayed depending on the
+	 * {@link #displayCount} and {@link #displayPage}.
+	 */
+    private void updateDisplayedAddresses(boolean forward, List<Object> queryPoint) {
+    	addressResults.clear();
+    	try {
+			pool.load(logger, false, displayCount, forward, queryPoint);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+    	addressResults.addAll(pool.getAddressResults(logger));
+
+    	allResults.clear();
+    	validResults.clear();
+    	invalidResults.clear();
+		Object[] addressArray = addressResults.toArray();
+		for (int i = 0; i < addressArray.length; i++) {
+			AddressResult address =(AddressResult)addressArray[i];
+			allResults.add(0, address);
+//			if (!address.getOutputAddress().isEmptyAddress()) {
+				if (address.isValid()) {
+					validResults.add(0, address);
+				} else {
+					invalidResults.add(0, address);
+				}
+//			} else {
+//				invalidResults.add(0, address);
+//			}
+		}
+		startPoint.clear();
+		endPoint.clear();
+		if (addressArray.length > 0) {
+			int startArrayPoint;
+			int endArrayPoint;
+			if (forward) {
+				startArrayPoint = 0;
+				endArrayPoint = addressArray.length - 1;
+			} else {
+				startArrayPoint = addressArray.length - 1;
+				endArrayPoint = 0;
+			}
+			for (int i = 0; i < pkeyChildCount; i++) {
+				startPoint.add(((AddressResult) addressArray[startArrayPoint]).getKeyValues().get(i));
+				endPoint.add(((AddressResult) addressArray[endArrayPoint]).getKeyValues().get(i));
+			}
+		}
+		if (addressArray.length < displayCount) {
+			if (forward) {
+				nextButton.setEnabled(false);
+			} else {
+				prevButton.setEnabled(false);
+			}
+		}
+    }
 
 	@Override
 	public JSplitPane getPanel() {

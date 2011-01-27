@@ -22,12 +22,34 @@ package ca.sqlpower.matchmaker;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.sql.JDBCDataSource;
+import ca.sqlpower.sql.JDBCDataSourceType;
+import ca.sqlpower.sqlobject.SQLDatabase;
 
 /**
  * A collection of static methods that help with common operations
  * in the core MatchMaker API.
  */
 public class MatchMakerUtils {
+
+	/**
+	 * The name of the table that will group the keys of source table entries
+	 * into groups that make up graphs. This will be stored in Derby in the .mm
+	 * directory.
+	 */
+	public static final String GRAPH_TABLE_NAME = "validate_graph_table";
+	
+	/**
+	 * The column name for the graph table that groups source key entries into
+	 * a graph.
+	 */
+	public static final String GRAPH_ID_COL_NAME = "graph_id";
+	
+	/**
+	 * The column name prefix for primary key columns in the graph table.
+	 * The key columns together define the source entries that make up a graph.
+	 */
+	public static final String PK_KEY_PREFIX = "key_";
 	
 	private static final Logger logger = Logger.getLogger(MatchMakerUtils.class);
 
@@ -91,6 +113,41 @@ public class MatchMakerUtils {
 		for (MatchMakerObject<T,C> obj : root.getChildren()) {
 			unlistenToHierarchy(listener, obj);
 		}
+	}
+
+	/**
+	 * Creates a Derby database in the .mm directory in the user's home folder
+	 * to store the graph table. The database name is based on the project's
+	 * name which is sufficient since no two projects can have the same name.
+	 * 
+	 * @param session
+	 *            Used to retrieve the data source collection and data source
+	 *            types.
+	 * @param project
+	 *            Used to name the table.
+	 */
+	public static SQLDatabase createProjectGraphDataSource(MatchMakerSession session, Project project) {
+		JDBCDataSource ds = new JDBCDataSource(session.getContext().getPlDotIni());
+        ds.setName(project.getName() + "'s graph database");
+        ds.setUser("");
+        ds.setPass("");
+        ds.setUrl("jdbc:derby:"+System.getProperty("user.home")+"/.mm/" + project.getName() + ";create=true");
+
+        // find Derby parent type
+        JDBCDataSourceType derbyType = null;
+        for (JDBCDataSourceType type : session.getContext().getPlDotIni().getDataSourceTypes()) {
+        	if (type.getName() != null && type.getName().startsWith("Derby")) {
+        		derbyType = type;
+        		break;
+        	}
+        }
+        if (derbyType == null) {
+        	throw new RuntimeException("Derby database type is missing in pl.ini. " +
+        			"Please create a database type that starts with Derby.");
+        }
+        ds.setParentType(derbyType);
+        SQLDatabase db = new SQLDatabase(ds);
+		return db;
 	}
 
 }
