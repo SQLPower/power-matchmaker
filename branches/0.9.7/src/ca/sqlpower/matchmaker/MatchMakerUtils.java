@@ -19,6 +19,10 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -150,7 +154,48 @@ public class MatchMakerUtils {
 		return db;
 	}
 	
+	public static void deleteDirectory(File dbLocation) {
+		if (dbLocation.exists() && dbLocation.isDirectory()) {
+			//Must clean up files in the directory before we can delete it.
+			List<String> innerFiles = new ArrayList<String>();
+			innerFiles.add(dbLocation.getAbsolutePath());
+			for (File file : dbLocation.listFiles()) {
+				innerFiles.add(0, file.getAbsolutePath());
+			}
+			while (!innerFiles.isEmpty()) {
+				File innerFile = new File(innerFiles.get(0));
+				if (innerFile.isDirectory()) {
+					if (!innerFile.delete()) {
+						for (File file : innerFile.listFiles()) {
+							innerFiles.add(0, file.getAbsolutePath());
+						}
+					} else {
+						innerFiles.remove(0);
+					}
+				} else {
+					if (innerFile.canWrite() && !innerFile.delete()) {
+						logger.error("Cannot clean up file " + innerFile);
+					}
+					innerFiles.remove(0);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Helper method to keep the graph db names consistent.
+	 */
 	public static String makeGraphDBLocation(Project project) {
-		return System.getProperty("user.home")+"/.mm/" + project.getParent().getName() + "/" + project.getName();
+		if (project == null || project.getParent() == null) return "";
+		return makeGraphDBFolderLocation(project.getParent().getName()) + "/" + project.getName();
+	}
+	
+	/**
+	 * Helper method to keep the graph db folder names consistent.
+	 * @param folderName
+	 * @return
+	 */
+	public static String makeGraphDBFolderLocation(String folderName) {
+		return System.getProperty("user.home")+"/.mm/" + folderName;
 	}
 }

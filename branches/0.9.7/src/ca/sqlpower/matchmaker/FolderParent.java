@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
+
 
 /** 
  * A holder for folders.
@@ -51,6 +53,7 @@ public class FolderParent extends AbstractMatchMakerObject<FolderParent, PlFolde
     public void deleteAndRemoveChild(PlFolder child) {
     	this.session.getDAO(PlFolder.class).delete(child);
 		super.removeChild(child);
+		MatchMakerUtils.deleteDirectory(new File(MatchMakerUtils.makeGraphDBFolderLocation(child.getName())));
 	}
     
     
