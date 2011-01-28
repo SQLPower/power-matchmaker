@@ -47,10 +47,10 @@ import ca.sqlpower.matchmaker.address.PostalCode.RecordType;
 import ca.sqlpower.sql.SQL;
 import ca.sqlpower.sqlobject.SQLColumn;
 import ca.sqlpower.sqlobject.SQLIndex;
-import ca.sqlpower.sqlobject.SQLObjectException;
-import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.sqlobject.SQLIndex.AscendDescend;
 import ca.sqlpower.sqlobject.SQLIndex.Column;
+import ca.sqlpower.sqlobject.SQLObjectException;
+import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.util.MonitorableImpl;
 
 /**
@@ -402,10 +402,25 @@ public class AddressPool extends MonitorableImpl{
 				for (int i = 0; i < numKeys; i++) {
 					int type = project.getSourceTableIndex().getChild(i).getColumn().getType();
 					Class c = TypeMap.typeClass(type);
+					
 					if (c == BigDecimal.class) {
 						keyValues.add(rs.getBigDecimal(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
 					} else if (c == Date.class) {
-						keyValues.add(rs.getDate(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+						/*
+						 * KLUDGE. DateTime types are converted to Date's, thus losing
+						 * the Time portion of the value. When paging through results
+						 * and a DateTime column is used as part of the key, then inconsistent
+						 * paging will occur as the comparison logic will be comparing just
+						 * Date values. To avoid breaking any other parts of the application
+						 * as it is only the paging that is affected by this change,
+						 * explicitly check for the Timestamp type, and retrieve the right 
+						 * type from the ResultSet here, instead of altering TypeMap.typeClass().
+						 */
+						if (type == Types.TIMESTAMP) {
+							keyValues.add(rs.getTimestamp(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+						} else {
+							keyValues.add(rs.getDate(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+						}
 		            } else if (c == Boolean.class) {
 		            	keyValues.add(rs.getBoolean(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
 		            } else {
