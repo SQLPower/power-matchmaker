@@ -920,12 +920,6 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 		}
         
         pool = new MatchPool(project);
-        try {
-    		getPool().clearRecords();
-			MatchResultVisualizer.this.getPool().findAll(displayColumns, false, startGraph, true, displayCount);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
         graphModel = new MatchPoolGraphModel(pool);
         graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
         graph.setNodeRenderer(new SourceTableNodeRenderer());
