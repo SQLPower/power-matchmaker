@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -1075,5 +1076,15 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
 	public Monitorable getRunningEngine() {
 	    return runningEngine.get();
+	}
+	
+	@Override
+	public void setName(String name) {
+		File file = new File(MatchMakerUtils.makeGraphDBLocation(this));
+		super.setName(name);
+		File newFile = new File(MatchMakerUtils.makeGraphDBLocation(this));
+		if (file.exists()) {
+			file.renameTo(newFile);
+		}
 	}
 }
