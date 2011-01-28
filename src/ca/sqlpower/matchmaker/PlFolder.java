@@ -19,6 +19,12 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
@@ -31,6 +37,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 public class PlFolder<C extends MatchMakerObject>
 	extends AbstractMatchMakerObject<PlFolder, C> {
+	
+	private static final Logger logger = Logger.getLogger(PlFolder.class);
 
 	/**
 	 * The object id
@@ -146,4 +154,40 @@ public class PlFolder<C extends MatchMakerObject>
 	public Long getOid() {
 		return oid;
 	}
+	
+	public void removeChild(C child) {
+		String fileLocation = null;
+		if (child instanceof Project) {
+			fileLocation = MatchMakerUtils.makeGraphDBLocation((Project) child);
+		}
+		super.removeChild(child);
+		if (child instanceof Project) {
+			File dbLocation = new File(fileLocation);
+			if (dbLocation.exists() && dbLocation.isDirectory()) {
+				//Must clean up files in the directory before we can delete it.
+				List<String> innerFiles = new ArrayList<String>();
+				innerFiles.add(fileLocation);
+				for (File file : dbLocation.listFiles()) {
+					innerFiles.add(0, file.getAbsolutePath());
+				}
+				while (!innerFiles.isEmpty()) {
+					File innerFile = new File(innerFiles.get(0));
+					if (innerFile.isDirectory()) {
+						if (!innerFile.delete()) {
+							for (File file : innerFile.listFiles()) {
+								innerFiles.add(0, file.getAbsolutePath());
+							}
+						} else {
+							innerFiles.remove(0);
+						}
+					} else {
+						if (innerFile.canWrite() && !innerFile.delete()) {
+							logger.error("Cannot clean up file " + innerFile);
+						}
+						innerFiles.remove(0);
+					}
+				}
+			}
+		}
+	};
 }

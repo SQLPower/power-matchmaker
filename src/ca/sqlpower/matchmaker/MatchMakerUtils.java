@@ -131,7 +131,7 @@ public class MatchMakerUtils {
         ds.setName(project.getName() + "'s graph database");
         ds.setUser("");
         ds.setPass("");
-        ds.setUrl("jdbc:derby:"+System.getProperty("user.home")+"/.mm/" + project.getName() + ";create=true");
+        ds.setUrl("jdbc:derby:"+ makeGraphDBLocation(project) + ";create=true");
 
         // find Derby parent type
         JDBCDataSourceType derbyType = null;
@@ -149,5 +149,8 @@ public class MatchMakerUtils {
         SQLDatabase db = new SQLDatabase(ds);
 		return db;
 	}
-
+	
+	public static String makeGraphDBLocation(Project project) {
+		return System.getProperty("user.home")+"/.mm/" + project.getParent().getName() + "/" + project.getName();
+	}
 }
