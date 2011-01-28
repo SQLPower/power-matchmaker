@@ -328,7 +328,7 @@ public class MatchPool extends MonitorableImpl {
             		int i = 0;
             		for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
             			if (i > 0) {
-            				sql.append(" AND");
+            				sql.append(" AND ");
             			}
             			sql.append("DUP_CANDIDATE_1").append(i).append(" = ");
             			if (SQL.isNumeric(col.getColumn().getType()) || SQL.isBoolean(col.getColumn().getType())) {
