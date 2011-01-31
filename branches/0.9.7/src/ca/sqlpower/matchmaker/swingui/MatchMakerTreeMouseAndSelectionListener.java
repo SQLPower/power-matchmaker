@@ -22,12 +22,17 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JProgressBar;
 import javax.swing.JTree;
 import javax.swing.ProgressMonitor;
 import javax.swing.event.TreeSelectionEvent;
@@ -42,6 +47,7 @@ import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -73,8 +79,13 @@ import ca.sqlpower.matchmaker.swingui.action.ScriptAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.address.AddressPoolLoadingWorker;
 import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
+import ca.sqlpower.sqlobject.SQLDatabase;
 import ca.sqlpower.sqlobject.SQLTable;
 import ca.sqlpower.swingui.ProgressWatcher;
+import ca.sqlpower.swingui.SPSwingWorker;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component
@@ -278,6 +289,46 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 				public void actionPerformed(ActionEvent e) {
 					EngineSettingsPanel f = swingSession.getMergeEnginePanel(project.getMergingEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
+				}
+			}));
+			m.add(new JMenuItem(new AbstractAction("Refresh Validation Cache") {
+				public void actionPerformed(ActionEvent e) {
+					JProgressBar progress = new JProgressBar();
+					final JDialog dialog = new JDialog(swingSession.getFrame());
+					DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("pref:grow"));
+					builder.setDefaultDialogBorder();
+					builder.append(new JLabel("Refreshing graph cache"));
+					builder.nextLine();
+					builder.append(progress);
+					dialog.add(builder.getPanel());
+					dialog.pack();
+					dialog.setLocationRelativeTo(swingSession.getFrame());
+					dialog.setVisible(true);
+					SPSwingWorker worker = new SPSwingWorker(swingSession) {
+						
+						@Override
+						public void doStuff() throws Exception {
+							setJobSize(null);
+							setStarted(true);
+							setFinished(false);
+							MatchMakerUtils.deleteDirectory(new File(MatchMakerUtils.makeGraphDBLocation(project)));
+							SQLDatabase db = MMSUtils.setupProjectGraphTable(swingSession, project, logger);
+							try {
+								MMSUtils.populateProjectGraphTable(project, logger, db);
+							} catch (SQLException ex) {
+								throw new RuntimeException(ex);
+							}
+						}
+						
+						@Override
+						public void cleanup() throws Exception {
+							setFinished(true);
+							dialog.setVisible(false);
+							dialog.dispose();
+						}
+					};
+					ProgressWatcher.watchProgress(progress, worker);
+					new Thread(worker).start();
 				}
 			}));
 		} else if (project.getType() == ProjectMode.CLEANSE) {
