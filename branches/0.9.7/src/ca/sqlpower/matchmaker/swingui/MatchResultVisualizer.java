@@ -825,7 +825,7 @@ public class MatchResultVisualizer extends NoEditEditorPane {
         buttonPanel.add(resetClusterButton);
         JPanel pageCountSelectorPanel = new JPanel();
 		pageCountSelectorPanel.setLayout(new BoxLayout(pageCountSelectorPanel, BoxLayout.X_AXIS));
-		pageCountSelectorPanel.add(new JLabel("# addresses per page"));
+		pageCountSelectorPanel.add(new JLabel("# graphs per page"));
 		final JTextField displayCountField = new JTextField(Integer.toString(displayCount));
 		pageCountSelectorPanel.add(displayCountField);
         displayCountField.addFocusListener(new FocusListener() {
@@ -999,6 +999,8 @@ public class MatchResultVisualizer extends NoEditEditorPane {
 			startGraph = startPoint.subtract(BigInteger.valueOf(displayCount)).add(BigInteger.ONE);
 			endGraph = startPoint;
 		}
+		prevButton.setEnabled(true);
+		nextButton.setEnabled(true);
 		if (startGraph.compareTo(BigInteger.ZERO) == -1) {
 			startGraph = BigInteger.ZERO;
 		}
