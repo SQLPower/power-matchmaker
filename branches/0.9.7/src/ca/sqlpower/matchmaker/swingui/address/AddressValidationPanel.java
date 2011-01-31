@@ -109,20 +109,32 @@ public class AddressValidationPanel extends NoEditEditorPane {
      */
     private int displayCount = 5;
     
+    /**
+     * The total number of addresses that can be contained in the address pool. Used
+     * to decide if there are further pages the user can move to with the next button.
+     */
+    private long correctableAddressCount;
+    
+    /**
+     * The number of the first address in the list. Used to decide if there is an address
+     * that can be moved to with the next and previous buttons.
+     */
+    private long currentAddressBeingDisplayed = 0;
+    
     private final List<Object> startPoint;
     private final List<Object> endPoint;
     private final int pkeyChildCount;
 
 	private final JButton prevButton = new JButton(new AbstractAction("Prev") {
 		public void actionPerformed(ActionEvent e) {
-			updateDisplayedAddresses(false, startPoint);
+			updateDisplayedAddresses(false, startPoint, false);
 			nextButton.setEnabled(true);
 		}
 	});
 
 	private final JButton nextButton = new JButton(new AbstractAction("Next") {
 		public void actionPerformed(ActionEvent e) {
-			updateDisplayedAddresses(true, endPoint);
+			updateDisplayedAddresses(true, endPoint, false);
 			prevButton.setEnabled(true);
 		}
 	});
@@ -141,8 +153,13 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			throw new RuntimeException("A database exception occured while trying to connect to the Berkley DB", e);
 		} 
 		this.pool = pool;
+		try {
+			correctableAddressCount = pool.findAddressCount();
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
 
-		updateDisplayedAddresses(true, startPoint);
+		updateDisplayedAddresses(true, startPoint, true);
 
 		needsValidationList = new JList(allResults);
 		needsValidationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -180,7 +197,7 @@ public class AddressValidationPanel extends NoEditEditorPane {
 			public void focusLost(FocusEvent e) {
 				try {
 					displayCount = Integer.parseInt(displayCountField.getText());
-					updateDisplayedAddresses(true, startPoint);
+					updateDisplayedAddresses(true, startPoint, true);
 				} catch (NumberFormatException ex) {
 					displayCountField.setText(Integer.toString(displayCount));
 				}
@@ -211,10 +228,10 @@ public class AddressValidationPanel extends NoEditEditorPane {
 	 * Call this method to change the addresses displayed depending on the
 	 * {@link #displayCount} and {@link #displayPage}.
 	 */
-    private void updateDisplayedAddresses(boolean forward, List<Object> queryPoint) {
+    private void updateDisplayedAddresses(boolean forward, List<Object> queryPoint, boolean includeStartPoint) {
     	addressResults.clear();
     	try {
-			pool.load(logger, false, displayCount, forward, queryPoint);
+			pool.load(logger, false, displayCount, forward, queryPoint, includeStartPoint);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -237,6 +254,17 @@ public class AddressValidationPanel extends NoEditEditorPane {
 //				invalidResults.add(0, address);
 //			}
 		}
+		
+		if (!queryPoint.isEmpty() && !forward && startPoint.equals(queryPoint)) {
+			currentAddressBeingDisplayed -= displayCount;
+		} else if (!queryPoint.isEmpty() && forward && endPoint.equals(queryPoint)) {
+			currentAddressBeingDisplayed += displayCount;
+		}
+		if (currentAddressBeingDisplayed < 0) {
+			currentAddressBeingDisplayed = 0;
+		}
+		
+		
 		startPoint.clear();
 		endPoint.clear();
 		if (addressArray.length > 0) {
@@ -254,12 +282,18 @@ public class AddressValidationPanel extends NoEditEditorPane {
 				endPoint.add(((AddressResult) addressArray[endArrayPoint]).getKeyValues().get(i));
 			}
 		}
-		if (addressArray.length < displayCount) {
-			if (forward) {
-				nextButton.setEnabled(false);
-			} else {
-				prevButton.setEnabled(false);
-			}
+		prevButton.setEnabled(true);
+		nextButton.setEnabled(true);
+		if (currentAddressBeingDisplayed == 0) {
+			prevButton.setEnabled(false);
+    	} 
+		if (currentAddressBeingDisplayed >= correctableAddressCount - displayCount) {
+    		nextButton.setEnabled(false);
+    	}
+		//DisplayCount == 0 means all values are being displayed
+		if (displayCount == 0) {
+			prevButton.setEnabled(false);
+			nextButton.setEnabled(false);
 		}
     }
 

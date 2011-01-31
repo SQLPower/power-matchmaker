@@ -269,8 +269,33 @@ public class AddressPool extends MonitorableImpl{
 		addresses.clear();
 	}
 	
+	public long findAddressCount() throws SQLException {
+		SQLTable resultTable = project.getResultTable();
+		Connection con = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			con = project.createResultTableConnection();
+			
+			stmt = con.createStatement();
+			
+			StringBuilder sql;
+			sql = new StringBuilder("SELECT COUNT(*) FROM ");
+			appendFullyQualifiedTableName(sql, resultTable);
+			rs = stmt.executeQuery(sql.toString());
+			rs.next();
+			return rs.getLong(1);
+		} finally { 
+			setFinished(true);
+			if (rs != null) rs.close();
+			if (stmt != null) stmt.close();
+			if (con != null) con.close();
+		}
+	}
+	
 	public void load(Logger engineLogger) throws SQLException, SQLObjectException {
-		load(engineLogger, true, 0, true, null);
+		load(engineLogger, true, 0, true, null, true);
 	}
 
 	/**
@@ -296,7 +321,7 @@ public class AddressPool extends MonitorableImpl{
 	 *            SEE ABOVE HACK
 	 */
 	public void load(Logger engineLogger, boolean selectAll, int entryCount, 
-			boolean forward, List<Object> startPoint) 
+			boolean forward, List<Object> startPoint, boolean includeStartPoint) 
 			throws SQLException, SQLObjectException {
 		setCancelled(false);
 		setStarted(true);
@@ -356,9 +381,14 @@ public class AddressPool extends MonitorableImpl{
 							}
 							sql.append(SOURCE_ADDRESS_KEY_COLUMN_BASE).append(i).append(" ");
 							if (forward) {
-								sql.append("> ");
+								sql.append(">");
 							} else {
-								sql.append("< ");
+								sql.append("<");
+							}
+							if (includeStartPoint) {
+								sql.append("= ");
+							} else {
+								sql.append(" ");
 							}
 
 							if (SQL.isNumeric(column.getType()) || SQL.isBoolean(column.getType())) {
