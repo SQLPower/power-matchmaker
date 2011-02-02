@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.address.steps;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import ca.sqlpower.matchmaker.address.Address;
 import ca.sqlpower.matchmaker.address.AddressDatabase;
 import ca.sqlpower.matchmaker.address.PostalCode;
@@ -109,7 +112,32 @@ public class ValidateStepUtil {
         if (s2 == null) s2 = "";
         return !s1.trim().equalsIgnoreCase(s2.trim());
     }
-
+    
+	static Pattern postalCodePattern = Pattern.compile("(.{3})\\s?(.{3})");
+	/**
+     * Compares two string postal codes. 
+     * -Trims white space
+     * -Allows exactly one whitespace character at position 3
+     * 
+     * @param code1
+     * @param code2
+     * @return
+     */
+    public static boolean equivalentPostalCodes(String code1, String code2) {
+    	if (code1 == null) code1 = "";
+    	if (code2 == null) code2 = "";
+    	
+    	Matcher matcher1 = postalCodePattern.matcher(code1.trim());
+    	Matcher matcher2 = postalCodePattern.matcher(code2.trim());
+    	
+    	if (!matcher1.matches() || !matcher2.matches()) return false; // neither matched the pattern, no postal codes year
+    	
+    	StringBuilder sb1 = new StringBuilder().append(matcher1.group(1)).append(matcher1.group(2));   	
+    	StringBuilder sb2 = new StringBuilder().append(matcher2.group(1)).append(matcher2.group(2));
+    	
+     	return sb1.toString().equalsIgnoreCase(sb2.toString());
+    }
+    
     /**
      * Given an address to correct, a postal code to correct to and a partially validated suggestion,
      * this method will check the delivery installation information and update the suggestion accordingly.
