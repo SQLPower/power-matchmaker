@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.address;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,11 +29,14 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -60,6 +64,8 @@ public class AddressPool extends MonitorableImpl{
 
 	/**
 	 * A list of constants for the Address Correction result table column names
+	 * TODO: externalize these constants in a separate file - this would ease refactoring
+	 *       {@link #adjustInputAddress(Address, Map)} and {@link #adjustOutputAddress(Address, Map, boolean)}
 	 */
 	private static final String SOURCE_ADDRESS_KEY_COLUMN_BASE 		= "src_addr_key_col_";
 	private static final String INPUT_ADDRESS_LINE1 				= "input_address_line1";
@@ -69,8 +75,8 @@ public class AddressPool extends MonitorableImpl{
 	private static final String INPUT_COUNTRY 						= "input_country";
 	private static final String INPUT_POSTAL_CODE 					= "input_postal_code";
 	private static final String OUTPUT_COUNTRY						= "output_country";
-	private static final String OUTPUT_DELIVERY_INSTALLATION_NAME 	= "output_delivery_installation_name";
-	private static final String OUTPUT_DELIVERY_INSTALLATION_TYPE 	= "output_delivery_installation_type";
+	private static final String OUTPUT_DELIVERY_INSTALLATION_NAME 	= "output_delivery_install_name";
+	private static final String OUTPUT_DELIVERY_INSTALLATION_TYPE 	= "output_delivery_install_type";
 	private static final String OUTPUT_DIRECTION_PREFIX				= "output_direction_prefix";
 	private static final String OUTPUT_FAILED_PARSING_STRING		= "output_failed_parsing_string";
 	private static final String OUTPUT_GENERAL_DELIVERY_NAME		= "output_general_delivery_name";
@@ -85,7 +91,7 @@ public class AddressPool extends MonitorableImpl{
 	private static final String OUTPUT_STREET_DIRECTION 			= "output_street_direction";
 	private static final String OUTPUT_STREET_NUMBER 				= "output_street_number";
 	private static final String OUTPUT_STREET_NUMBER_SUFFIX 		= "output_street_number_suffix";
-	private static final String OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE= "output_street_number_suffix_separate";
+	private static final String OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE= "output_st_num_suffix_separate";
 	private static final String OUTPUT_STREET_TYPE 					= "output_street_type";
 	private static final String OUTPUT_STREET_TYPE_PREFIX			= "output_street_type_prefix";
 	private static final String OUTPUT_SUITE 						= "output_suite";
@@ -95,6 +101,27 @@ public class AddressPool extends MonitorableImpl{
 	private static final String OUTPUT_UNPARSED_ADDRESS				= "output_unparsed_address";
 	private static final String OUTPUT_URBAN_BEFORE_RURAL			= "output_urban_before_rural";
 	private static final String OUTPUT_VALID						= "output_valid";
+
+	/**
+	 * The old name for this column. Kept for backwards compatibility. This name
+	 * is no longer used as it is too long for Oracle's 30 character column name
+	 * limit.
+	 */
+	private static final String OLD_OUTPUT_DELIVERY_INSTALLATION_NAME 	= "output_delivery_installation_name";
+	
+	/**
+	 * The old name for this column. Kept for backwards compatibility. This name
+	 * is no longer used as it is too long for Oracle's 30 character column name
+	 * limit.
+	 */
+	private static final String OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE 	= "output_delivery_installation_type";
+	
+	/**
+	 * The old name for this column. Kept for backwards compatibility. This name
+	 * is no longer used as it is too long for Oracle's 30 character column name
+	 * limit.
+	 */
+	private static final String OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE= "output_street_number_suffix_separate";
 	
 	private Map<List<Object>, AddressResult> addresses;
 	
@@ -110,6 +137,9 @@ public class AddressPool extends MonitorableImpl{
 	 * projects. Note that this only builds the SQLTable object representing the
 	 * result table. It does not execute the SQL statements necessary to create
 	 * such a table in a database.
+	 * 
+	 * TODO: the column widths are hard-coded magic values! Refactor to constants.
+	 * TODO: this method belongs in another class.
 	 * 
 	 * @param resultTable
 	 * @param si
@@ -225,7 +255,9 @@ public class AddressPool extends MonitorableImpl{
 			stmt.execute(sql);
 			con.commit();
 		} catch (Exception ex) {
-			con.rollback();
+			if (con != null) {
+				con.rollback();
+			}
 			if (ex instanceof SQLException) {
 				throw (SQLException) ex;
 			} else {
@@ -233,7 +265,7 @@ public class AddressPool extends MonitorableImpl{
 			}
 		} finally {
 			if (stmt != null) stmt.close();
-			if (con != null) stmt.close();
+			if (con != null) con.close();
 		}
 		
 		addresses.clear();
@@ -274,10 +306,25 @@ public class AddressPool extends MonitorableImpl{
 				for (int i = 0; i < numKeys; i++) {
 					int type = project.getSourceTableIndex().getChild(i).getColumn().getType();
 					Class c = TypeMap.typeClass(type);
+					
 					if (c == BigDecimal.class) {
 						keyValues.add(rs.getBigDecimal(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
 					} else if (c == Date.class) {
-						keyValues.add(rs.getDate(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+						/*
+						 * KLUDGE. DateTime types are converted to Date's, thus losing
+						 * the Time portion of the value. When paging through results
+						 * and a DateTime column is used as part of the key, then inconsistent
+						 * paging will occur as the comparison logic will be comparing just
+						 * Date values. To avoid breaking any other parts of the application
+						 * as it is only the paging that is affected by this change,
+						 * explicitly check for the Timestamp type, and retrieve the right 
+						 * type from the ResultSet here, instead of altering TypeMap.typeClass().
+						 */
+						if (type == Types.TIMESTAMP) {
+							keyValues.add(rs.getTimestamp(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+						} else {
+							keyValues.add(rs.getDate(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
+						}
 		            } else if (c == Boolean.class) {
 		            	keyValues.add(rs.getBoolean(SOURCE_ADDRESS_KEY_COLUMN_BASE + i));
 		            } else {
@@ -294,8 +341,20 @@ public class AddressPool extends MonitorableImpl{
 				
 				Address address = new Address();
 				address.setCountry(rs.getString(OUTPUT_COUNTRY));
-				address.setDeliveryInstallationName(rs.getString(OUTPUT_DELIVERY_INSTALLATION_NAME));
-				address.setDeliveryInstallationType(rs.getString(OUTPUT_DELIVERY_INSTALLATION_TYPE));
+				String deliveryInstallName;
+				try {
+					deliveryInstallName = rs.getString(OUTPUT_DELIVERY_INSTALLATION_NAME);
+				} catch (SQLException e) {
+					deliveryInstallName = rs.getString(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME);
+				}
+				address.setDeliveryInstallationName(deliveryInstallName);
+				String deliveryInstallType;
+				try {
+					deliveryInstallType = rs.getString(OUTPUT_DELIVERY_INSTALLATION_TYPE);
+				} catch (SQLException e) {
+					deliveryInstallType = rs.getString(OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE);
+				}
+				address.setDeliveryInstallationType(deliveryInstallType);
 				address.setDirectionPrefix(rs.getBoolean(OUTPUT_DIRECTION_PREFIX));
 				address.setFailedParsingString(rs.getString(OUTPUT_FAILED_PARSING_STRING));
 				address.setGeneralDeliveryName(rs.getString(OUTPUT_GENERAL_DELIVERY_NAME));
@@ -309,7 +368,13 @@ public class AddressPool extends MonitorableImpl{
 				address.setStreet(rs.getString(OUTPUT_STREET_NAME));
 				address.setStreetDirection(rs.getString(OUTPUT_STREET_DIRECTION));
 				address.setStreetNumberSuffix(rs.getString(OUTPUT_STREET_NUMBER_SUFFIX));
-				address.setStreetNumberSuffix(rs.getString(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE));
+				String streetNumSuffix;
+				try {
+					streetNumSuffix = rs.getString(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE);
+				} catch (SQLException e) {
+					streetNumSuffix = rs.getString(OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE);
+				}
+				address.setStreetNumberSuffix(streetNumSuffix);
 				address.setStreetNumber(rs.getInt(OUTPUT_STREET_NUMBER));
 				address.setStreetType(rs.getString(OUTPUT_STREET_TYPE));
 				address.setStreetTypePrefix(rs.getBoolean(OUTPUT_STREET_TYPE_PREFIX));
@@ -435,6 +500,17 @@ public class AddressPool extends MonitorableImpl{
 				stmt = null;
 			}
 			
+			Map<String, Integer> columnMetaData = this.getColumnMetaData(engineLogger, resultTable);
+			/*  For backward compatibility, see if old column names are being used.
+			 *  NOTE: the database may return column names as upper case.
+			 */
+			boolean usingNewNames = true;
+			
+			if (columnMetaData.containsKey(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME)) {
+				usingNewNames = false;  
+			}
+			engineLogger.debug("Using new shorter names? " + usingNewNames);
+			
 			if (dirtyAddresses.size() > 0) {
 				//First, create and UPDATE PreparedStatement to update dirty records
 				sql = new StringBuilder();
@@ -448,8 +524,13 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(INPUT_COUNTRY).append("=?, ");						// 5
 				sql.append(INPUT_POSTAL_CODE).append("=?, ");					// 6
 				sql.append(OUTPUT_COUNTRY).append("=?, ");						// 7
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append("=?, ");	// 8
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=?, ");	// 9			
+				if (usingNewNames) {
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append("=?, ");	// 8
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=?, ");	// 9
+				} else {
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME).append("=?, ");	// 8
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE).append("=?, ");	// 9
+				}
 				sql.append(OUTPUT_DIRECTION_PREFIX).append("=?, ");			// 10
 				sql.append(OUTPUT_FAILED_PARSING_STRING).append("=?, ");		// 11
 				sql.append(OUTPUT_GENERAL_DELIVERY_NAME).append("=?, ");		// 12
@@ -464,7 +545,11 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(OUTPUT_STREET_NAME).append("=?, ");					// 21
 				sql.append(OUTPUT_STREET_NUMBER).append("=?, ");				// 22
 				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append("=?, ");			// 23
-				sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=?, ");			// 23.5
+				if (usingNewNames) {
+					sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=?, ");			// 23.5
+				} else {
+					sql.append(OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append("=?, ");			// 23.5
+				}
 				sql.append(OUTPUT_STREET_TYPE).append("=?, ");					// 24
 				sql.append(OUTPUT_STREET_TYPE_PREFIX).append("=?, ");			// 25
 				sql.append(OUTPUT_SUITE).append("=?, ");						// 26
@@ -509,21 +594,24 @@ public class AddressPool extends MonitorableImpl{
 					}
 					
 					ps = con.prepareStatement(sql.toString());
+					Address inputAddress = result.getInputAddress();
+					this.adjustInputAddress(inputAddress, columnMetaData);
 					
-					engineLogger.debug("Setting input unparsed address line 1 to " + result.getInputAddress().getUnparsedAddressLine1());
-					ps.setString(1, result.getInputAddress().getUnparsedAddressLine1());
-					engineLogger.debug("Setting input unparsed address line 2 to " + result.getInputAddress().getUnparsedAddressLine2());
-					ps.setString(2, result.getInputAddress().getUnparsedAddressLine2());
-					engineLogger.debug("Setting input municipality to " + result.getInputAddress().getMunicipality());
-					ps.setString(3, result.getInputAddress().getMunicipality());
-					engineLogger.debug("Setting input province to " + result.getInputAddress().getProvince());
-					ps.setString(4, result.getInputAddress().getProvince());
-					engineLogger.debug("Setting input country to " + result.getInputAddress().getCountry());
-					ps.setString(5, result.getInputAddress().getCountry());
-					engineLogger.debug("Setting input postal code to " + result.getInputAddress().getPostalCode());
-					ps.setString(6, result.getInputAddress().getPostalCode());
+					engineLogger.debug("Setting input unparsed address line 1 to " + inputAddress.getUnparsedAddressLine1());
+					ps.setString(1, inputAddress.getUnparsedAddressLine1());
+					engineLogger.debug("Setting input unparsed address line 2 to " + inputAddress.getUnparsedAddressLine2());
+					ps.setString(2, inputAddress.getUnparsedAddressLine2());
+					engineLogger.debug("Setting input municipality to " + inputAddress.getMunicipality());
+					ps.setString(3, inputAddress.getMunicipality());
+					engineLogger.debug("Setting input province to " + inputAddress.getProvince());
+					ps.setString(4, inputAddress.getProvince());
+					engineLogger.debug("Setting input country to " + inputAddress.getCountry());
+					ps.setString(5, inputAddress.getCountry());
+					engineLogger.debug("Setting input postal code to " + inputAddress.getPostalCode());
+					ps.setString(6, inputAddress.getPostalCode());
 				
 					Address outputAddress = result.getOutputAddress();
+					this.adjustOutputAddress(outputAddress, columnMetaData, usingNewNames);
 					engineLogger.debug("Setting output suite to " + outputAddress.getSuite());
 					ps.setString(7, outputAddress.getSuite());
 					engineLogger.debug("Setting output delivery installation name to " + outputAddress.getDeliveryInstallationName());
@@ -543,7 +631,7 @@ public class AddressPool extends MonitorableImpl{
 					engineLogger.debug("Setting output municipality to " + outputAddress.getMunicipality());
 					ps.setString(15, outputAddress.getMunicipality());
 					engineLogger.debug("Setting output postal code to " + outputAddress.getPostalCode());
-					ps.setString(16, outputAddress.getPostalCode());
+				    ps.setString(16, outputAddress.getPostalCode());
 					engineLogger.debug("Setting output province to " + outputAddress.getProvince());
 					ps.setString(17, outputAddress.getProvince());
 					engineLogger.debug("Setting output rural route number to " + outputAddress.getRuralRouteNumber());
@@ -637,9 +725,14 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(INPUT_PROVINCE).append(", ");						
 				sql.append(INPUT_COUNTRY).append(", ");							
 				sql.append(INPUT_POSTAL_CODE).append(", ");						
-				sql.append(OUTPUT_COUNTRY).append(", ");						
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append(", ");	
-				sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append(", ");		
+				sql.append(OUTPUT_COUNTRY).append(", ");	
+				if (usingNewNames) {
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_NAME).append(", ");	
+					sql.append(OUTPUT_DELIVERY_INSTALLATION_TYPE).append(", ");
+				} else {
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME).append(", ");	
+					sql.append(OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE).append(", ");
+				}
 				sql.append(OUTPUT_DIRECTION_PREFIX).append(", ");				
 				sql.append(OUTPUT_FAILED_PARSING_STRING).append(", ");			
 				sql.append(OUTPUT_GENERAL_DELIVERY_NAME).append(", ");			
@@ -654,7 +747,11 @@ public class AddressPool extends MonitorableImpl{
 				sql.append(OUTPUT_STREET_NAME).append(", ");					
 				sql.append(OUTPUT_STREET_NUMBER).append(", ");					
 				sql.append(OUTPUT_STREET_NUMBER_SUFFIX).append(", ");
-				sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append(", ");
+				if (usingNewNames) {
+					sql.append(OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append(", ");
+				} else {
+					sql.append(OLD_OUTPUT_STREET_NUMBER_SUFFIX_SEPARATE).append(", ");
+				}
 				sql.append(OUTPUT_STREET_TYPE).append(", ");			
 				sql.append(OUTPUT_STREET_TYPE_PREFIX).append(", ");				
 				sql.append(OUTPUT_SUITE).append(", ");							
@@ -682,6 +779,8 @@ public class AddressPool extends MonitorableImpl{
 					}
 					
 					Address inputAddress = result.getInputAddress();
+					this.adjustInputAddress(inputAddress, columnMetaData);
+										
 					engineLogger.debug("Setting input unparsed address line 1 to " + inputAddress.getUnparsedAddressLine1());
 					ps.setString(j, inputAddress.getUnparsedAddressLine1());
 					engineLogger.debug("Setting input unparsed address line 2 to " + inputAddress.getUnparsedAddressLine2());
@@ -694,8 +793,10 @@ public class AddressPool extends MonitorableImpl{
 					ps.setString(j + 4, inputAddress.getCountry());
 					engineLogger.debug("Setting input postal code to " + inputAddress.getPostalCode());
 					ps.setString(j + 5, inputAddress.getPostalCode());
-				
+		
 					Address outputAddress = result.getOutputAddress();
+					this.adjustOutputAddress(outputAddress, columnMetaData, usingNewNames);
+					
 					engineLogger.debug("Setting output suite to " + outputAddress.getSuite());
 					ps.setString(j + 6, outputAddress.getSuite());
 					engineLogger.debug("Setting output delivery installation name to " + outputAddress.getDeliveryInstallationName());
@@ -716,7 +817,7 @@ public class AddressPool extends MonitorableImpl{
 					ps.setString(j + 14, outputAddress.getMunicipality());
 					engineLogger.debug("Setting output postal code to " + outputAddress.getPostalCode());
 					ps.setString(j + 15, outputAddress.getPostalCode());
-					engineLogger.debug("Setting output province to " + outputAddress.getProvince());
+     				engineLogger.debug("Setting output province to " + outputAddress.getProvince());
 					ps.setString(j + 16, outputAddress.getProvince());
 					engineLogger.debug("Setting output rural route number to " + outputAddress.getRuralRouteNumber());
 					ps.setString(j + 17, outputAddress.getRuralRouteNumber());
@@ -827,6 +928,152 @@ public class AddressPool extends MonitorableImpl{
 			if (con != null) try { con.close(); } catch (SQLException e) { engineLogger.error("Error while closing Connection", e); }
 		}
 	}
+
+	private String adjustSize(String source, Integer size) {
+		if (size == null) {
+			return source; // we couldn't obtain the column size, so do nothing.
+		}
+		
+		if (StringUtils.length(source) > size) {
+			return StringUtils.substring(source, 0, size);
+		}
+		
+		return source;
+	}
+	
+	/**
+	 * TODO: this method (somehow) does not belong here, but belongs in {@link Address}.
+	 * It adjusts, if necessary, the values in the given Address to the widths of the associated columns.
+	 * This method lives here because knowledge of the column width is gained through the table's metadata
+	 * (via JDBC).
+	 * 
+	 * @param address
+	 * @param columnData
+	 */
+	private void adjustInputAddress(Address address, Map<String, Integer> columnData) {
+		String addressLine1 = adjustSize(address.getUnparsedAddressLine1(), columnData.get(INPUT_ADDRESS_LINE1));
+		address.setUnparsedAddressLine1(addressLine1);
+
+		String addressLine2 = adjustSize(address.getUnparsedAddressLine2(), columnData.get(INPUT_ADDRESS_LINE2));
+		address.setUnparsedAddressLine2(addressLine2);
+
+		String municipality = adjustSize(address.getMunicipality(), columnData.get(INPUT_MUNICIPALITY));
+		address.setMunicipality(municipality);
+
+		String province = adjustSize(address.getProvince(), columnData.get(INPUT_PROVINCE));
+		address.setProvince(province);
+
+		String postalCode = adjustSize(address.getPostalCode(), columnData.get(INPUT_POSTAL_CODE));
+		address.setPostalCode(postalCode);
+	}
+
+	/**
+	 * Same as {@link #adjustInputAddress(Address, Map)} but geared towards the Output address.
+	 * 
+	 * @param address
+	 * @param columnData
+	 * @param usingNewNames
+	 */
+	private void adjustOutputAddress(Address address, Map<String, Integer> columnData, boolean usingNewNames) {
+		
+		String country = adjustSize(address.getCountry(), columnData.get(OUTPUT_COUNTRY));
+		address.setCountry(country);
+
+		String suite = adjustSize(address.getSuite(), columnData.get(OUTPUT_SUITE));
+		address.setSuite(suite);
+		
+		String deliveryInstallationName = adjustSize(address.getDeliveryInstallationName(), 
+		                                             (usingNewNames) ? columnData.get(OUTPUT_DELIVERY_INSTALLATION_NAME) :
+		                                                               columnData.get(OLD_OUTPUT_DELIVERY_INSTALLATION_NAME));
+	    address.setDeliveryInstallationName(deliveryInstallationName);
+	    
+	    String deliveryInstallationType = adjustSize(address.getDeliveryInstallationType(),
+	                                                 (usingNewNames) ? columnData.get(OUTPUT_DELIVERY_INSTALLATION_TYPE) :
+		                                                               columnData.get(OLD_OUTPUT_DELIVERY_INSTALLATION_TYPE));
+	    address.setDeliveryInstallationType(deliveryInstallationType);
+
+	    String deliveryName = adjustSize(address.getGeneralDeliveryName(), columnData.get(OUTPUT_GENERAL_DELIVERY_NAME));
+	    address.setGeneralDeliveryName(deliveryName);
+	    
+	    String lockBoxNumber = adjustSize(address.getLockBoxNumber(), columnData.get(OUTPUT_LOCK_BOX_NUMBER));
+	    address.setLockBoxNumber(lockBoxNumber);
+	    
+	    String lockBoxType = adjustSize(address.getLockBoxType(), columnData.get(OUTPUT_LOCK_BOX_TYPE));
+	    address.setLockBoxType(lockBoxType);
+	   
+	    String municipality = adjustSize(address.getMunicipality(), columnData.get(OUTPUT_MUNICIPALITY));
+	    address.setMunicipality(municipality);
+	   
+	    String province = adjustSize(address.getProvince(), columnData.get(OUTPUT_PROVINCE));
+	    address.setProvince(province);
+	   
+	    String postalCode = adjustSize(address.getPostalCode(), columnData.get(OUTPUT_POSTAL_CODE));
+	    address.setPostalCode(postalCode);
+	    			
+	    String ruralRouteNumber = adjustSize(address.getRuralRouteNumber(), columnData.get(OUTPUT_RURAL_ROUTE_NUMBER));
+	    address.setRuralRouteNumber(ruralRouteNumber);
+	    
+	    String ruralRouteType = adjustSize(address.getRuralRouteType(), columnData.get(OUTPUT_RURAL_ROUTE_TYPE));
+	    address.setRuralRouteType(ruralRouteType);
+	    
+	    // Street details.
+	    String street = adjustSize(address.getStreet(), columnData.get(OUTPUT_STREET_NAME));
+	    address.setStreet(street);
+	    
+	    String streetDirection = adjustSize(address.getStreetDirection(), columnData.get(OUTPUT_STREET_DIRECTION));
+	    address.setStreetDirection(streetDirection);
+	    
+	    String streetNumberSuffix = adjustSize(address.getStreetNumberSuffix(), columnData.get(OUTPUT_STREET_NUMBER_SUFFIX));
+	    address.setStreetNumberSuffix(streetNumberSuffix);
+	
+	    String streetType = adjustSize(address.getStreetType(), columnData.get(OUTPUT_STREET_TYPE));
+	    address.setStreetType(streetType);
+	    
+	    String unparsedAddressLine = adjustSize(address.getUnparsedAddressLine1(), columnData.get(OUTPUT_UNPARSED_ADDRESS));
+	    address.setUnparsedAddressLine1(unparsedAddressLine);
+	
+	    String suiteType = adjustSize(address.getSuiteType(), columnData.get(OUTPUT_SUITE_TYPE));
+	    address.setSuiteType(suiteType);
+	    			
+	}
+
+	/**
+	 * Build a Map of column meta data for the given table.
+	 * The Map's keys are the column names, in lower case, to match the constants in this class.
+	 * The Map's values are the column widths (as Integers).
+	 * 
+	 * SQLExceptions are not propogated to the caller. However, if no column data
+	 * can be retreived, an empty Map is returned.
+	 * 
+	 */
+	private Map<String, Integer> getColumnMetaData(Logger engineLogger, final SQLTable table) {
+		Map<String, Integer> columnMetaData = new HashMap<String, Integer> ();
+		Connection con = null;
+		ResultSet columns = null;
+		try {
+				con = project.createResultTableConnection();
+				DatabaseMetaData meta = con.getMetaData();
+				columns = meta.getColumns(table.getCatalogName(), table.getSchemaName(), table.getName(), null);
+			
+				while (columns.next()) {
+					String col = StringUtils.lowerCase(columns.getString("COLUMN_NAME"));
+					int size = columns.getInt("COLUMN_SIZE");
+					
+					engineLogger.debug("Column: " + col + " Size: " + size);
+					
+					columnMetaData.put(col.toLowerCase(), Integer.valueOf(size));
+				}
+			} catch (SQLException e) {
+				// Don't propogate exception, just log and keep rolling on.
+				engineLogger.error("Error while retrieving column data", e);
+			} finally {
+				if (columns != null) try { columns.close(); } catch (SQLException e) { engineLogger.error("Error while closing ResultSet", e); }
+				if (con != null)     try { con.close(); } catch (SQLException e) { engineLogger.error("Error while closing Connection", e); }
+			}
+			
+			return Collections.unmodifiableMap(columnMetaData);
+	}
+	
 	/**
 	 * Returns a Collection of invalid addresses. Note that it will only return
 	 * invalid addresses stored in the result table as of the last call to the
